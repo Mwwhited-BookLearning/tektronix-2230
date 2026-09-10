@@ -672,10 +672,10 @@
     "notes": null
   },
   "E07B4": {
-    "name": "SUB_E07B4",
+    "name": "print_selftest_report_line",
     "kind": "sub",
     "ref_count": 27,
-    "functional_name": null,
+    "functional_name": "print_selftest_report_line",
     "notes": null
   },
   "E07E7": {
@@ -868,10 +868,10 @@
     "notes": null
   },
   "E0ADD": {
-    "name": "SUB_E0ADD",
+    "name": "wait_readout_tick",
     "kind": "sub",
     "ref_count": 9,
-    "functional_name": null,
+    "functional_name": "wait_readout_tick",
     "notes": null
   },
   "E0AE9": {
@@ -1092,10 +1092,10 @@
     "notes": null
   },
   "E0E56": {
-    "name": "SUB_E0E56",
+    "name": "clear_selftest_status_flags",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "clear_selftest_status_flags",
     "notes": null
   },
   "E0E8C": {
@@ -1204,17 +1204,17 @@
     "notes": null
   },
   "E0FD0": {
-    "name": "SUB_E0FD0",
+    "name": "selftest_measure_and_report",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_measure_and_report",
     "notes": null
   },
   "E0FF5": {
-    "name": "SUB_E0FF5",
+    "name": "selftest_measure_mode",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "selftest_measure_mode",
     "notes": null
   },
   "E1013": {
@@ -5908,10 +5908,10 @@
     "notes": null
   },
   "E6D2F": {
-    "name": "SUB_E6D2F",
+    "name": "seg_off_to_linear",
     "kind": "sub",
     "ref_count": 21,
-    "functional_name": null,
+    "functional_name": "seg_off_to_linear",
     "notes": null
   },
   "E6D4D": {

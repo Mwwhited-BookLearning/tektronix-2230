@@ -413,17 +413,28 @@ on the OLD, differently-purposed `print_selftest_banner` call site at
 not this dispatcher's caller).
 
 The sibling test subroutines called from `self_test_dispatcher` (in
-call order, not yet individually identified - good next targets,
-since matching each to a real peripheral would meaningfully advance
-the "what peripheral do these I/O ports belong to" question in
-`MEMORY_MAP.md`): `SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`,
-`SUB_E252A` (conditional, see above), `SUB_E0FD0`,
-**`check_comm_option_installed`** (comm/GPIB option detect, already
-identified), `SUB_E16EA`, `SUB_E1E3E`, `SUB_E1D28`, `SUB_E1DB3`,
-`SUB_E1E90`, `SUB_E1F18`, then `SUB_E0ADD`/`SUB_E0DCC`/`SUB_E0E56`/
-`SUB_E28FE`/`SUB_E227E`/`SUB_E26D6`/`SUB_E286C`/`SUB_E2CEC` interleaved
-with the report-printing logic in the surrounding caller (`SUB_E07B4`,
-see below) rather than being test calls themselves.
+call order): `SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`,
+`SUB_E252A` (conditional, see above), **`selftest_measure_and_report`**
+(`0xE0FD0` - identified this session: an enable/run/disable pattern via
+3 calls to `selftest_measure_mode` with idx 1, 3, 2; the specific
+peripheral it measures isn't confirmed yet, but the *shape* of the
+test - not just a pass/fail probe but a captured measurement copied
+into a report buffer - is), **`check_comm_option_installed`** (comm/
+GPIB option detect, already identified), `SUB_E16EA`, `SUB_E1E3E`,
+`SUB_E1D28`, `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18` - still not
+individually identified, good next targets since matching each to a
+real peripheral would meaningfully advance the "what peripheral do
+these I/O ports belong to" question in `MEMORY_MAP.md`. `SUB_E28FE`/
+`SUB_E227E`/`SUB_E26D6`/`SUB_E286C`/`SUB_E2CEC` are interleaved with
+the report-printing logic in the surrounding caller
+(`print_selftest_report_line`, `0xE07B4` - identified this session as
+the routine that wraps `print_selftest_banner` and prints one report
+line per self-test cycle) rather than being test calls themselves;
+`wait_readout_tick` (`0xE0ADD`, also identified this session) throttles
+`print_string_far`'s character-output loop to the readout hardware's
+actual pace, and `clear_selftest_status_flags` (`0xE0E56`) resets a
+small group of status bytes tied to the far-pointer table
+`SUB_E4443` sets up.
 
 `SUB_E374E`, `SUB_E3821`, and `SUB_E0AF5` (now `print_string_far`) -
 previously listed here as unidentified sibling test subroutines - are

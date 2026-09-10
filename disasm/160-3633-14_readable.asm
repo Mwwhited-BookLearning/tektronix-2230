@@ -424,7 +424,7 @@ L_E076A:
     db 0x02, 0x00, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xc6, 0x06, 0x76, 0x04, 0x00, 0x8b, 0xe5, 0x5d  ; 0790
     db 0xca, 0x02, 0x00, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xc6, 0x06, 0x76, 0x04, 0x00, 0x8b, 0xe5  ; 07A0
     db 0x5d, 0xca, 0x02, 0x00  ; 07B0
-SUB_E07B4:
+print_selftest_report_line:
     push bp                                  ; 07B4: push bp
     mov bp, sp                               ; 07B5: mov bp, sp
     sub sp, 0xc                              ; 07B7: sub sp, 0xc
@@ -721,7 +721,7 @@ SUB_E0AAA:
     retf 2                                   ; 0ABD: retf 2
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xe9, 0x08, 0x00, 0x9a, 0x2d, 0x04, 0x6b, 0xe0, 0xff, 0x4e  ; 0AC0
     db 0x06, 0x83, 0x7e, 0x06, 0x00, 0x7f, 0xf2, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 0AD0
-SUB_E0ADD:
+wait_readout_tick:
     push bp                                  ; 0ADD: push bp
     mov bp, sp                               ; 0ADE: mov bp, sp
     sub sp, 8                                ; 0AE0: sub sp, 8
@@ -1084,7 +1084,7 @@ SUB_E0DCC:
     mov sp, bp                               ; 0E50: mov sp, bp
     pop bp                                   ; 0E52: pop bp
     retf 2                                   ; 0E53: retf 2
-SUB_E0E56:
+clear_selftest_status_flags:
     push bp                                  ; 0E56: push bp
     mov bp, sp                               ; 0E57: mov bp, sp
     sub sp, 6                                ; 0E59: sub sp, 6
@@ -1122,7 +1122,7 @@ SUB_E0E56:
     db 0x18, 0x9a, 0x9c, 0x01, 0x6d, 0xe2, 0x89, 0x46, 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d  ; 0FAC
     db 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05, 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5  ; 0FBC
     db 0x5d, 0xca, 0x02, 0x00  ; 0FCC
-SUB_E0FD0:
+selftest_measure_and_report:
     push bp                                  ; 0FD0: push bp
     mov bp, sp                               ; 0FD1: mov bp, sp
     sub sp, 6                                ; 0FD3: sub sp, 6
@@ -1138,7 +1138,7 @@ SUB_E0FD0:
     mov sp, bp                               ; 0FF1: mov sp, bp
     pop bp                                   ; 0FF3: pop bp
     retf                                     ; 0FF4: retf 
-SUB_E0FF5:
+selftest_measure_mode:
     push bp                                  ; 0FF5: push bp
     mov bp, sp                               ; 0FF6: mov bp, sp
     sub sp, 0xa                              ; 0FF8: sub sp, 0xa
@@ -8183,7 +8183,7 @@ SUB_E6D20:
     mov sp, bp                               ; 6D2B: mov sp, bp
     pop bp                                   ; 6D2D: pop bp
     retf                                     ; 6D2E: retf 
-SUB_E6D2F:
+seg_off_to_linear:
     push bp                                  ; 6D2F: push bp
     mov bp, sp                               ; 6D30: mov bp, sp
     sub sp, 6                                ; 6D32: sub sp, 6

@@ -59,14 +59,21 @@ in `disasm/NOTES.md`.
 | `0xE3900` | `plot_readout_point_relative` **(renamed)** | `(dx, dy, attr)` - adds the offsets to the current base position (`[0x1AF8]`/`[0x1AFA]`) and calls `plot_readout_point` | Confirmed |
 | `0xE3930` | `plot_readout_point` **(renamed)** | `(x, y, attr)` - THE fundamental primitive: updates the current position (`[0x1AF8]`/`[0x1AFA]`), appends a `(y, x)` coordinate pair plus a duplicated attribute byte to the readout vector display-list buffer at `[0x1CC4]` (tracked via `[0x1AF4]`/`[0x1AF6]`, second plane offset in `[0x1C02]`), and handles circular-buffer wraparound (marker attribute `2`, matching `mark_readout_delimiter`) | Confirmed |
 | `0xE4217` | `print_banner_line` **(renamed)** | `(far-ptr string)` - calls `print_readout_string` on the given string, then `print_string_far` twice more on two *fixed* strings from the `0xFF7B` string table. Used by `print_selftest_banner` for both its "before"/"after" lines | Confirmed |
+| `0xE07B4` | `print_selftest_report_line` **(renamed)** | The outer routine that wraps `print_selftest_banner`; computes a row Y coordinate from `[0x1B10]*0x32` and prints one self-test report line per call (via `SUB_E35C2`, `plot_readout_point`, `draw_readout_char`, and the other print primitives) | Confirmed mechanism; the exact report-line layout not fully mapped |
+| `0xE0ADD` | `wait_readout_tick` **(renamed)** | Busy-waits for `[0x752]` (a counter, presumably interrupt-incremented) to change value - throttles `print_string_far`'s per-character loop to the readout hardware's real pace | Confirmed mechanism; what increments `[0x752]` not yet found |
+| `0xE0E56` | `clear_selftest_status_flags` **(renamed)** | Zeroes 4 fixed status bytes (`[0x256]`-`[0x259]`) and the byte pointed to by each of 3 far pointers `SUB_E4443` sets up (`[0x326]`, `[0x336]`, `[0x33A]`) | Confirmed mechanism; overall purpose (a per-cycle self-test reset) inferred from context |
+| `0xE0FD0` | `selftest_measure_and_report` **(renamed)** | One of `self_test_dispatcher`'s ~14 test calls, identified this session: enable/run/disable pattern via 3 calls to `selftest_measure_mode` with idx `1, 3, 2`. Which peripheral it measures isn't confirmed | Confirmed mechanism (enable/run/disable shape); peripheral identity not confirmed |
+| `0xE0FF5` | `selftest_measure_mode` **(renamed)** | `idx==1`: enable a measurement mode (`[0x1B5E]=1`); `idx==2`: disable (complementary reset); else (incl. `idx==3`): run the actual measurement (calls `SUB_E296E` + `SUB_E0C3D`) and return its result code in `ax` | Confirmed |
+| `0xE6D2F` | `seg_off_to_linear` **(renamed)** | `(offset, segment) -> offset + segment*16` - a compiled-in runtime helper for exactly the seg:off-to-flat-address math this project's own disassembly tooling uses, called 16x | Confirmed |
 
 ### The ~14 self-test subroutines are NOT yet identified by name
 
 Tried to match `self_test_dispatcher`'s (`0xE4244`) ~14 still-unnamed
 subsystem-test calls (`SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`,
-`SUB_E1B16`, `SUB_E252A`, `SUB_E0FD0`, `SUB_E16EA`, `SUB_E1E3E`,
-`SUB_E1D28`, `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18` - full list in
-`disasm/NOTES.md` "Found: the self-test dispatcher") to the diagnostic
+`SUB_E1B16`, `SUB_E252A`, `selftest_measure_and_report`, `SUB_E16EA`,
+`SUB_E1E3E`, `SUB_E1D28`, `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18` - full
+list in `disasm/NOTES.md` "Found: the self-test dispatcher") to the
+diagnostic
 message strings in `STRINGS.md` (`HS_ACQ`, `MM_ACQ`, `COMM_ROM`,
 `SYS_RAM`, etc.) by searching all decoded code for direct references
 (immediate operands matching each string's address) - **found zero

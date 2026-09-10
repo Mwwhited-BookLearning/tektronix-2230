@@ -231,6 +231,52 @@ FUNCTIONAL_NAMES = {
                                                # base position ([0x1AF8]/
                                                # [0x1AFA]) and calls
                                                # plot_readout_point
+    0xE07B4: "print_selftest_report_line",    # the outer per-cycle
+                                               # report-printing routine
+                                               # that wraps
+                                               # print_selftest_banner;
+                                               # computes a row Y coord
+                                               # from [0x1B10]*0x32 and
+                                               # prints one report line
+                                               # per call
+    0xE0ADD: "wait_readout_tick",             # busy-waits for [0x752]
+                                               # (a counter, presumably
+                                               # incremented by an
+                                               # interrupt handler) to
+                                               # change value - throttles
+                                               # print_string_far's per-
+                                               # character output loop to
+                                               # the readout hardware's
+                                               # actual speed
+    0xE0E56: "clear_selftest_status_flags",   # zeroes 4 fixed status
+                                               # bytes ([0x256]-[0x259])
+                                               # plus the byte at each of
+                                               # 3 far pointers set up by
+                                               # SUB_E4443 ([0x326],
+                                               # [0x336], [0x33A])
+    0xE0FD0: "selftest_measure_and_report",   # one of self_test_
+                                               # dispatcher's ~14 test
+                                               # calls (identified this
+                                               # session): enable/run/
+                                               # disable pattern via 3
+                                               # calls to selftest_
+                                               # measure_mode (idx 1,3,2)
+    0xE0FF5: "selftest_measure_mode",         # idx==1: enable a measure
+                                               # mode ([0x1B5E]=1);
+                                               # idx==2: disable (the
+                                               # complementary reset);
+                                               # else (incl. idx==3):
+                                               # run the actual
+                                               # measurement (SUB_E296E +
+                                               # SUB_E0C3D) and return its
+                                               # result code in ax
+    0xE6D2F: "seg_off_to_linear",             # (offset, segment) ->
+                                               # offset + segment*16 -
+                                               # the same seg:off -> flat
+                                               # address math this
+                                               # project's own tooling
+                                               # uses, but as a compiled-
+                                               # in runtime helper
     0xE4217: "print_banner_line",             # (far-ptr string) - calls
                                                # print_readout_string on
                                                # the given string, then
