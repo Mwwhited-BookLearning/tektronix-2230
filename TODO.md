@@ -2,6 +2,13 @@
 
 ## Next up
 
+- [ ] **REVIEW LATER**: `binary/aligned/*.bin` (NOP-padded, fully-
+      readable reconstructions - see `binary/aligned/README.md` and
+      `disasm/NOTES.md` "NOP-aligned readable reconstruction") were
+      adopted as the reference binary for future checks. Revisit this
+      choice once the rest of the analysis (self-test subroutine ID,
+      menu tree, I/O port mapping) is further along, to confirm
+      nothing was missed by not using the true original byte-for-byte.
 - [ ] Cross-reference the front-panel menu/parameter tree names found
       in `160-3633` (`ACQ_MODE_SETUP_TABLE`, `SELECT_MODE`, etc. - see
       `STRINGS.md`) against the code that reads them, to build the

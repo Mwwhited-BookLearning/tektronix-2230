@@ -606,6 +606,47 @@ Chasing these mismatches also surfaced (and fixed) several more real
   ignores it there) but there's no NASM syntax for it, so it's
   excluded from conversion rather than silently dropped.
 
+## NOP-aligned readable reconstruction (`binary/aligned/`)
+
+Tested whether NASM's `CPU` directive would resolve the encoding-
+choice ambiguities documented above (register-direction bit,
+immediate/displacement width, zero-displacement collapse, duplicate
+`0x80`/`0x82` opcode) so the buildable `.asm` wouldn't need a raw `db`
+fallback for them. Confirmed directly (`CPU 8086` tested against `mov
+bp,sp` and `cmp ax,1`): it doesn't - `CPU` only restricts which
+instruction-set level is *available*, it has no effect on which legal
+encoding NASM picks when more than one exists. Also tested `CPU 8086`
+as a guard against 386-only decode drift: mixed results (correctly
+rejects `esi`, but not `gs:` and only warns rather than errors on
+`popal`) - not reliable enough to lean on.
+
+Landed on NOP-padding instead, directly from the idea of substituting
+NASM's preferred (shorter) encoding and padding the difference with
+`NOP` (`0x90`) bytes so every following address is unchanged from the
+original. `disasm/gen_source_readable.py` implements this: every
+decoded instruction is emitted as real NASM text (never a raw `db`),
+and any instruction whose NASM-preferred encoding is shorter than the
+original gets `times N nop` appended to absorb the gap.
+
+Output: `160-XXXX-14_readable.asm` (disasm/) reassembles, per chip, to
+the same length as the true original with only a handful of bytes
+differing (all NASM's own equivalent-encoding choice, verified
+instruction-by-instruction, not decode error):
+
+| Chip | Bytes differing (of 65,536) |
+|------|------|
+| 160-3633-14 | 1,431 |
+| 160-3532-14 | 324 |
+| 160-2998-14 | 108 |
+
+The assembled result is saved permanently at `binary/aligned/160-XXXX-
+14_aligned.bin` - **not original firmware**, see `binary/aligned/
+README.md`. Adopted as the reference binary for *future* checks
+(easier to keep address-aligned with the growing symbol table than
+re-deriving encoding equivalence every time this comes up), but this
+is a methodology choice, not a fully-vetted one - flagged in `TODO.md`
+to review again once the rest of the analysis is further along.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to

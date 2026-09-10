@@ -11,6 +11,14 @@ are already settled and documented there and in `disasm/NOTES.md`.
 
 - `binary/` — the raw EPROM dumps (`160-XXXX-NN.bin`), read-only source
   material. Never edit these.
+- `binary/aligned/` — **NOT original firmware.** NOP-padded
+  reconstructions (`160-XXXX-NN_aligned.bin`) assembled from
+  `disasm/160-XXXX-NN_readable.asm` by `disasm/gen_source_readable.py`.
+  Same length and same addresses as the true original, but a handful
+  of bytes differ (NASM's own preferred encoding substituted in place
+  of an equivalent-but-differently-encoded original instruction). See
+  `binary/aligned/README.md` — status is **provisional, review later**
+  once the rest of the analysis is further along.
 - `disasm/` — the disassembly project: generator scripts, listings, and
   the symbol table that gets refined over time. See `disasm/NOTES.md`
   for the authoritative technical log (CPU, memory map, ROM roles).
