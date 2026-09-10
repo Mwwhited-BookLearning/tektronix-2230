@@ -6515,7 +6515,7 @@ SUB_E5839:
     db 0x8b, 0xe5  ; 58A7: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 58A9: pop bp
     retf 2                                   ; 58AA: retf 2
-SUB_E58AD:
+draw_readout_line:
     push bp                                  ; 58AD: push bp
     db 0x8b, 0xec  ; 58AE: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 58B0: sub sp, 0xa
@@ -8856,7 +8856,7 @@ L_E7906:
     mov bx, 0xffff                           ; 7909: mov bx, 0xffff
     sub di, 4                                ; 790C: sub di, 4
     jmp short 0x78ff                         ; 790F: jmp 0x1df
-SUB_E7911:
+format_string_va:
     push bp                                  ; 7911: push bp
     db 0x8b, 0xec  ; 7912: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 7914: sub sp, 0xc

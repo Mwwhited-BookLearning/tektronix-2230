@@ -6513,7 +6513,7 @@ SUB_E5839:
     mov sp, bp                               ; 58A7: mov sp, bp
     pop bp                                   ; 58A9: pop bp
     retf 2                                   ; 58AA: retf 2
-SUB_E58AD:
+draw_readout_line:
     push bp                                  ; 58AD: push bp
     mov bp, sp                               ; 58AE: mov bp, sp
     sub sp, 0xa                              ; 58B0: sub sp, 0xa
@@ -8854,7 +8854,7 @@ L_E7906:
     mov bx, 0xffff                           ; 7909: mov bx, 0xffff
     sub di, 4                                ; 790C: sub di, 4
     jmp short 0x78ff                         ; 790F: jmp 0x1df
-SUB_E7911:
+format_string_va:
     push bp                                  ; 7911: push bp
     mov bp, sp                               ; 7912: mov bp, sp
     sub sp, 0xc                              ; 7914: sub sp, 0xc

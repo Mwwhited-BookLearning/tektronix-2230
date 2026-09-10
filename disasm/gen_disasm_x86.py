@@ -422,6 +422,31 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    0xE7911: "format_string_va",              # walks a format string
+                                               # looking for '%' (0x25),
+                                               # dispatching per-
+                                               # specifier handlers that
+                                               # pull the next vararg
+                                               # off the stack (tracked
+                                               # via a caller-stack-
+                                               # relative far pointer at
+                                               # [bp+0xa]) - the core
+                                               # printf-style variadic
+                                               # formatting engine behind
+                                               # this firmware's %d/%c
+                                               # format strings (see
+                                               # STRINGS.md); dispatches
+                                               # to format_number-style
+                                               # helpers per specifier
+    0xE58AD: "draw_readout_line",             # (x1, y1, x_max, y_max,
+                                               # dx, dy) - steps from
+                                               # (x1,y1) toward (x_max,
+                                               # y_max) by (dx,dy),
+                                               # calling plot_readout_
+                                               # point_scaled per step -
+                                               # a line-drawing primitive
+                                               # for the readout vector
+                                               # display
     0xE5E53: "install_late_interrupt_vectors", # installs INT255_HANDLER_
                                                # LATE (0x3FC) and INT2_
                                                # HANDLER_LATE (0x008),

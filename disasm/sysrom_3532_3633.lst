@@ -9095,7 +9095,7 @@ SUB_E5839:
     3633:5848  [E5848]  ff7606          push    word ptr [bp + 6]
     3633:584B  [E584B]  ff7608          push    word ptr [bp + 8]
     3633:584E  [E584E]  ff7606          push    word ptr [bp + 6]
-    3633:5851  [E5851]  9add125de4      lcall   SUB_E58AD  ; 0xe45d, 0x12dd
+    3633:5851  [E5851]  9add125de4      lcall   draw_readout_line  ; 0xe45d, 0x12dd
     3633:5856  [E5856]  83c40a          add     sp, 0xa
     3633:5859  [E5859]  2bff            sub     di, di
     3633:585B  [E585B]  57              push    di
@@ -9104,7 +9104,7 @@ SUB_E5839:
     3633:5862  [E5862]  ff760a          push    word ptr [bp + 0xa]
     3633:5865  [E5865]  ff760c          push    word ptr [bp + 0xc]
     3633:5868  [E5868]  ff7606          push    word ptr [bp + 6]
-    3633:586B  [E586B]  9add125de4      lcall   SUB_E58AD  ; 0xe45d, 0x12dd
+    3633:586B  [E586B]  9add125de4      lcall   draw_readout_line  ; 0xe45d, 0x12dd
     3633:5870  [E5870]  83c40a          add     sp, 0xa
     3633:5873  [E5873]  ff760e          push    word ptr [bp + 0xe]
     3633:5876  [E5876]  2bff            sub     di, di
@@ -9113,7 +9113,7 @@ SUB_E5839:
     3633:587C  [E587C]  ff760a          push    word ptr [bp + 0xa]
     3633:587F  [E587F]  ff7608          push    word ptr [bp + 8]
     3633:5882  [E5882]  ff760a          push    word ptr [bp + 0xa]
-    3633:5885  [E5885]  9add125de4      lcall   SUB_E58AD  ; 0xe45d, 0x12dd
+    3633:5885  [E5885]  9add125de4      lcall   draw_readout_line  ; 0xe45d, 0x12dd
     3633:588A  [E588A]  83c40a          add     sp, 0xa
     3633:588D  [E588D]  2bff            sub     di, di
     3633:588F  [E588F]  57              push    di
@@ -9122,12 +9122,12 @@ SUB_E5839:
     3633:5896  [E5896]  ff760a          push    word ptr [bp + 0xa]
     3633:5899  [E5899]  ff7608          push    word ptr [bp + 8]
     3633:589C  [E589C]  ff7606          push    word ptr [bp + 6]
-    3633:589F  [E589F]  9add125de4      lcall   SUB_E58AD  ; 0xe45d, 0x12dd
+    3633:589F  [E589F]  9add125de4      lcall   draw_readout_line  ; 0xe45d, 0x12dd
     3633:58A4  [E58A4]  83c40a          add     sp, 0xa
     3633:58A7  [E58A7]  8be5            mov     sp, bp
     3633:58A9  [E58A9]  5d              pop     bp
     3633:58AA  [E58AA]  ca0200          retf    2
-SUB_E58AD:
+draw_readout_line:
     3633:58AD  [E58AD]  55              push    bp
     3633:58AE  [E58AE]  8bec            mov     bp, sp
     3633:58B0  [E58B0]  83ec0a          sub     sp, 0xa
@@ -11303,7 +11303,7 @@ L_E7906:
     3633:7909  [E7909]  bbffff          mov     bx, 0xffff
     3633:790C  [E790C]  83ef04          sub     di, 4
     3633:790F  [E790F]  ebee            jmp     L_E78FF  ; 0x1df
-SUB_E7911:
+format_string_va:
     3633:7911  [E7911]  55              push    bp
     3633:7912  [E7912]  8bec            mov     bp, sp
     3633:7914  [E7914]  83ec0c          sub     sp, 0xc
@@ -11442,7 +11442,7 @@ L_E7D9A:
     3633:7DA3  [E7DA3]  57              push    di
     3633:7DA4  [E7DA4]  baaa03          mov     dx, 0x3aa
     3633:7DA7  [E7DA7]  52              push    dx
-    3633:7DA8  [E7DA8]  9a010091e7      lcall   SUB_E7911  ; 0xe791, 1
+    3633:7DA8  [E7DA8]  9a010091e7      lcall   format_string_va  ; 0xe791, 1
     3633:7DAD  [E7DAD]  83c404          add     sp, 4
     3633:7DB0  [E7DB0]  e95400          jmp     L_E7E07  ; 0x97
 L_E7DB3:
@@ -11501,7 +11501,7 @@ L_E7E2A:
     3633:7E33  [E7E33]  57              push    di
     3633:7E34  [E7E34]  bab303          mov     dx, 0x3b3
     3633:7E37  [E7E37]  52              push    dx
-    3633:7E38  [E7E38]  9a010091e7      lcall   SUB_E7911  ; 0xe791, 1
+    3633:7E38  [E7E38]  9a010091e7      lcall   format_string_va  ; 0xe791, 1
     3633:7E3D  [E7E3D]  83c404          add     sp, 4
     3633:7E40  [E7E40]  e97600          jmp     L_E7EB9  ; 0x149
 L_E7E43:
@@ -13033,7 +13033,7 @@ print_and_reset_acq_buffers:
     3532:0425  [F0425]  52              push    dx
     3532:0426  [F0426]  bb6203          mov     bx, 0x362
     3532:0429  [F0429]  53              push    bx
-    3532:042A  [F042A]  9a010091e7      lcall   SUB_E7911  ; 0xe791, 1
+    3532:042A  [F042A]  9a010091e7      lcall   format_string_va  ; 0xe791, 1
     3532:042F  [F042F]  83c406          add     sp, 6
     3532:0432  [F0432]  b8ff1f          mov     ax, 0x1fff
     3532:0435  [F0435]  99              cdq     
@@ -13142,7 +13142,7 @@ SUB_F0CCC:
     3532:0CE7  [F0CE7]  57              push    di
     3532:0CE8  [F0CE8]  ba2903          mov     dx, 0x329
     3532:0CEB  [F0CEB]  52              push    dx
-    3532:0CEC  [F0CEC]  9a010091e7      lcall   SUB_E7911  ; 0xe791, 1
+    3532:0CEC  [F0CEC]  9a010091e7      lcall   format_string_va  ; 0xe791, 1
     3532:0CF1  [F0CF1]  83c404          add     sp, 4
     3532:0CF4  [F0CF4]  e9f200          jmp     L_F0DE9  ; 0x129
 

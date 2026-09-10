@@ -4620,10 +4620,10 @@
     "notes": null
   },
   "E58AD": {
-    "name": "SUB_E58AD",
+    "name": "draw_readout_line",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "draw_readout_line",
     "notes": null
   },
   "E58CF": {
@@ -6888,10 +6888,10 @@
     "notes": null
   },
   "E7911": {
-    "name": "SUB_E7911",
+    "name": "format_string_va",
     "kind": "sub",
     "ref_count": 23,
-    "functional_name": null,
+    "functional_name": "format_string_va",
     "notes": null
   },
   "E7923": {

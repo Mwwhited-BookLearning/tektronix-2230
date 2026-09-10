@@ -136,6 +136,8 @@ range-scan tests corresponds to.
 | `0xFBC4D` | `copy_word_far` **(renamed)** | Copies one word from a far source pointer to a far destination pointer | Confirmed |
 | `0xFBC69` | `pack_low5_bits` **(renamed)** | Packs the low 5 bits of a value into a record byte, preserving its high 3 bits - same pattern as `pack_row_col_bits` but a separate `160-3532` implementation | Confirmed |
 | `0xFBC84` | `set_position_record_3532` **(renamed)** | `value>>3` (character-cell scaling) written across 2 record bytes - same pattern as `set_position_record` but in `160-3532` | Confirmed |
+| `0xE58AD` | `draw_readout_line` **(renamed)** | `(x1, y1, x_max, y_max, dx, dy)` - steps from `(x1,y1)` toward `(x_max,y_max)` by `(dx,dy)`, calling `plot_readout_point_scaled` per step - a line-drawing primitive for the readout vector display | Confirmed |
+| `0xE7911` | `format_string_va` **(renamed)** | Walks a format string looking for `%` (`0x25`), dispatching per-specifier handlers that pull the next vararg off the stack (tracked via a caller-stack-relative far pointer). **The core printf-style variadic formatting engine** behind this firmware's `%d`/`%c` format strings (see `STRINGS.md`) - dispatches to `format_number`-style helpers per specifier | Confirmed mechanism; individual specifier handlers not all traced |
 
 ## Comm/GPIB ROM (160-2998)
 
