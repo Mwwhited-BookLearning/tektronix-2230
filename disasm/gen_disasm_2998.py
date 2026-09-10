@@ -51,7 +51,9 @@ def build_entry_points():
 def render_comm_only(chips, visited, labels, out_path, sym_path):
     import json
     for phys, lab in labels.items():
-        if "fixed_name" in lab:
+        if phys in g.FUNCTIONAL_NAMES:
+            lab["name"] = g.FUNCTIONAL_NAMES[phys]
+        elif "fixed_name" in lab:
             lab["name"] = lab["fixed_name"]
         else:
             lab["name"] = ("SUB_%05X" % phys) if lab["kind"] == "sub" else ("L_%05X" % phys)
@@ -107,7 +109,8 @@ def render_comm_only(chips, visited, labels, out_path, sym_path):
     sym_out = {
         ("%05X" % phys): {
             "name": lab["name"], "kind": lab["kind"],
-            "ref_count": len(lab["refs"]), "functional_name": None, "notes": None,
+            "ref_count": len(lab["refs"]),
+            "functional_name": g.FUNCTIONAL_NAMES.get(phys), "notes": None,
         }
         for phys, lab in sorted(labels.items())
         if 0x80000 <= phys < 0x90000

@@ -40,7 +40,7 @@ L_E006F:
     db 0x00  ; 009B
     db 0x73, 0x79, 0x73, 0x5f, 0x72, 0x6f, 0x6d, 0x5f, 0x30, 0x20, 0x41, 0x31, 0x30, 0x20, 0x55, 0x39, 0x31, 0x30, 0x39  ; 009C: "sys_rom_0 A10 U9109"
     db 0x00, 0x90  ; 00AF
-L_E00B1:
+boot_init:
     cli                                      ; 00B1: cli 
     mov ax, 0x4000                           ; 00B2: mov ax, 0x4000
     mov es, ax                               ; 00B5: mov es, ax
@@ -5340,7 +5340,7 @@ L_E416B:
     db 0x8b, 0xe5  ; 416B: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 416D: pop bp
     retf                                     ; 416E: retf 
-SUB_E416F:
+self_test_dispatcher:
     push bp                                  ; 416F: push bp
     db 0x8b, 0xec  ; 4170: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 4172: sub sp, 6
@@ -5645,7 +5645,7 @@ L_E44B7:
     db 0x8b, 0xe5  ; 44EB: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 44ED: pop bp
     retf 2                                   ; 44EE: retf 2
-SUB_E44F1:
+check_comm_option_installed:
     push bp                                  ; 44F1: push bp
     db 0x8b, 0xec  ; 44F2: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 44F4: sub sp, 0xa

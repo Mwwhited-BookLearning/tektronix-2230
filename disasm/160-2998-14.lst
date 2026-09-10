@@ -10646,7 +10646,7 @@ L_86B87:
     2998:6BA2  [86BA2]  03da            add     bx, dx
     2998:6BA4  [86BA4]  1e              push    ds
     2998:6BA5  [86BA5]  53              push    bx
-    2998:6BA6  [86BA6]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:6BA6  [86BA6]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:6BAB  [86BAB]  83c406          add     sp, 6
     2998:6BAE  [86BAE]  8b7ef8          mov     di, word ptr [bp - 8]
     2998:6BB1  [86BB1]  8a95dc01        mov     dl, byte ptr [di + 0x1dc]
@@ -10670,7 +10670,7 @@ L_86B87:
     2998:6BE2  [86BE2]  03d0            add     dx, ax
     2998:6BE4  [86BE4]  1e              push    ds
     2998:6BE5  [86BE5]  52              push    dx
-    2998:6BE6  [86BE6]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:6BE6  [86BE6]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:6BEB  [86BEB]  83c406          add     sp, 6
     2998:6BEE  [86BEE]  a03400          mov     al, byte ptr [0x34]
     2998:6BF1  [86BF1]  2ae4            sub     ah, ah
@@ -10690,7 +10690,7 @@ L_86C01:
     2998:6C0C  [86C0C]  03d0            add     dx, ax
     2998:6C0E  [86C0E]  1e              push    ds
     2998:6C0F  [86C0F]  52              push    dx
-    2998:6C10  [86C10]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:6C10  [86C10]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:6C15  [86C15]  83c406          add     sp, 6
     2998:6C18  [86C18]  8b7ef8          mov     di, word ptr [bp - 8]
     2998:6C1B  [86C1B]  8a95e21b        mov     dl, byte ptr [di + 0x1be2]
@@ -11023,7 +11023,7 @@ FUNC_2998_6F6F:
     2998:6F9D  [86F9D]  c47e08          les     di, ptr [bp + 8]
     2998:6FA0  [86FA0]  06              push    es
     2998:6FA1  [86FA1]  57              push    di
-    2998:6FA2  [86FA2]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:6FA2  [86FA2]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:6FA7  [86FA7]  83c406          add     sp, 6
     2998:6FAA  [86FAA]  c47e08          les     di, ptr [bp + 8]
     2998:6FAD  [86FAD]  268a5510        mov     dl, byte ptr es:[di + 0x10]
@@ -11046,7 +11046,7 @@ FUNC_2998_6F6F:
     2998:6FDB  [86FDB]  8d7f12          lea     di, [bx + 0x12]
     2998:6FDE  [86FDE]  06              push    es
     2998:6FDF  [86FDF]  57              push    di
-    2998:6FE0  [86FE0]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:6FE0  [86FE0]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:6FE5  [86FE5]  83c406          add     sp, 6
     2998:6FE8  [86FE8]  a03400          mov     al, byte ptr [0x34]
     2998:6FEB  [86FEB]  2ae4            sub     ah, ah
@@ -11063,7 +11063,7 @@ FUNC_2998_6F6F:
     2998:7002  [87002]  83c31c          add     bx, 0x1c
     2998:7005  [87005]  06              push    es
     2998:7006  [87006]  53              push    bx
-    2998:7007  [87007]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:7007  [87007]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:700C  [8700C]  83c406          add     sp, 6
     2998:700F  [8700F]  c47e08          les     di, ptr [bp + 8]
     2998:7012  [87012]  268a5526        mov     dl, byte ptr es:[di + 0x26]
@@ -11858,7 +11858,7 @@ L_87780:
     2998:77EC  [877EC]  c45694          les     dx, ptr [bp - 0x6c]
     2998:77EF  [877EF]  06              push    es
     2998:77F0  [877F0]  52              push    dx
-    2998:77F1  [877F1]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:77F1  [877F1]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:77F6  [877F6]  83c406          add     sp, 6
     2998:77F9  [877F9]  c47e90          les     di, ptr [bp - 0x70]
     2998:77FC  [877FC]  8cc2            mov     dx, es
@@ -12016,7 +12016,7 @@ L_878AF:
     2998:798D  [8798D]  c44694          les     ax, ptr [bp - 0x6c]
     2998:7990  [87990]  06              push    es
     2998:7991  [87991]  50              push    ax
-    2998:7992  [87992]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:7992  [87992]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:7997  [87997]  83c406          add     sp, 6
     2998:799A  [8799A]  c47e90          les     di, ptr [bp - 0x70]
     2998:799D  [8799D]  8cc2            mov     dx, es
@@ -12998,7 +12998,7 @@ FUNC_2998_94C2:
     2998:95B9  [895B9]  c456f6          les     dx, ptr [bp - 0xa]
     2998:95BC  [895BC]  06              push    es
     2998:95BD  [895BD]  52              push    dx
-    2998:95BE  [895BE]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:95BE  [895BE]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:95C3  [895C3]  83c406          add     sp, 6
     2998:95C6  [895C6]  ff76f4          push    word ptr [bp - 0xc]
     2998:95C9  [895C9]  8b7e0c          mov     di, word ptr [bp + 0xc]
@@ -13013,7 +13013,7 @@ FUNC_2998_94C2:
     2998:95DC  [895DC]  03df            add     bx, di
     2998:95DE  [895DE]  06              push    es
     2998:95DF  [895DF]  53              push    bx
-    2998:95E0  [895E0]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:95E0  [895E0]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:95E5  [895E5]  83c406          add     sp, 6
     2998:95E8  [895E8]  8be5            mov     sp, bp
     2998:95EA  [895EA]  5d              pop     bp
@@ -18220,7 +18220,7 @@ L_8C91C:
     2998:C962  [8C962]  c47e08          les     di, ptr [bp + 8]
     2998:C965  [8C965]  06              push    es
     2998:C966  [8C966]  57              push    di
-    2998:C967  [8C967]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:C967  [8C967]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:C96C  [8C96C]  83c406          add     sp, 6
     2998:C96F  [8C96F]  c47ef0          les     di, ptr [bp - 0x10]
     2998:C972  [8C972]  8cc2            mov     dx, es
@@ -18329,7 +18329,7 @@ L_8CA21:
     2998:CAA7  [8CAA7]  c47608          les     si, ptr [bp + 8]
     2998:CAAA  [8CAAA]  06              push    es
     2998:CAAB  [8CAAB]  56              push    si
-    2998:CAAC  [8CAAC]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:CAAC  [8CAAC]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:CAB1  [8CAB1]  83c406          add     sp, 6
     2998:CAB4  [8CAB4]  c47eec          les     di, ptr [bp - 0x14]
     2998:CAB7  [8CAB7]  8cc2            mov     dx, es
@@ -18453,7 +18453,7 @@ L_8CBF7:
     2998:CC26  [8CC26]  51              push    cx
     2998:CC27  [8CC27]  52              push    dx
     2998:CC28  [8CC28]  57              push    di
-    2998:CC29  [8CC29]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:CC29  [8CC29]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:CC2E  [8CC2E]  83c406          add     sp, 6
     2998:CC31  [8CC31]  c47eec          les     di, ptr [bp - 0x14]
     2998:CC34  [8CC34]  8cc2            mov     dx, es
@@ -20381,7 +20381,7 @@ FUNC_2998_E1AF:
     2998:E1CA  [8E1CA]  c4164607        les     dx, ptr [0x746]
     2998:E1CE  [8E1CE]  06              push    es
     2998:E1CF  [8E1CF]  52              push    dx
-    2998:E1D0  [8E1D0]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    2998:E1D0  [8E1D0]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     2998:E1D5  [8E1D5]  83c406          add     sp, 6
     2998:E1D8  [8E1D8]  ff76f8          push    word ptr [bp - 8]
     2998:E1DB  [8E1DB]  9a0e007094      lcall   SUB_9470E  ; 0x9470, 0xe

@@ -2051,10 +2051,10 @@
     "notes": null
   },
   "E00B1": {
-    "name": "L_E00B1",
+    "name": "boot_init",
     "kind": "loc",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "boot_init",
     "notes": null
   },
   "E00C2": {
@@ -4718,10 +4718,10 @@
     "notes": null
   },
   "E416F": {
-    "name": "SUB_E416F",
+    "name": "self_test_dispatcher",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "self_test_dispatcher",
     "notes": null
   },
   "E4217": {
@@ -4816,10 +4816,10 @@
     "notes": null
   },
   "E44F1": {
-    "name": "SUB_E44F1",
+    "name": "check_comm_option_installed",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "check_comm_option_installed",
     "notes": null
   },
   "E4563": {
@@ -8918,10 +8918,10 @@
     "notes": null
   },
   "FBC09": {
-    "name": "SUB_FBC09",
+    "name": "memcpy_far",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "memcpy_far",
     "notes": null
   },
   "FBC2F": {

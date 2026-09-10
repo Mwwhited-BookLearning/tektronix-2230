@@ -4368,7 +4368,7 @@ SUB_FBBE9:
     db 0x8b, 0xe5  ; BC03: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; BC05: pop bp
     retf 4                                   ; BC06: retf 4
-SUB_FBC09:
+memcpy_far:
     push bp                                  ; BC09: push bp
     db 0x8b, 0xec  ; BC0A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     push ds                                  ; BC0C: push ds

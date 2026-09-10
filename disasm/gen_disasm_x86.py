@@ -72,6 +72,29 @@ ENTRY_POINTS = [
     (0xE64C, 0x0000, "COMM_ROM_BOOTSTUB_TARGET"),
 ]
 
+# Semantic names for routines/branch targets whose purpose has been
+# understood well enough to name (see FUNCTIONS.md/VARIABLES.md for
+# the evidence behind each one - keep the two in sync). Keyed by
+# physical address; render() prefers these over the address-based
+# SUB_XXXXX/L_XXXXX placeholder. Unlike ENTRY_POINTS, these aren't
+# necessarily entry points themselves - just names for labels the
+# recursive descent already finds on its own.
+FUNCTIONAL_NAMES = {
+    0xE00B1: "boot_init",                    # RESET's target: cli, clear
+                                              # RAM, first stack setup
+    0xE416F: "self_test_dispatcher",         # ~25 calls to per-subsystem
+                                              # test routines - see NOTES.md
+                                              # "Found: the self-test
+                                              # dispatcher"
+    0xE44F1: "check_comm_option_installed",  # ROM-header-checksum +
+                                              # RAM/IO presence probe -
+                                              # see NOTES.md "Found: the
+                                              # option-board presence/
+                                              # RAM-detection routine"
+    0xFBC09: "memcpy_far",                   # generic far-pointer block
+                                              # copy: (dest, src, len)
+}
+
 CALL_MNEMONICS = {"call", "lcall"}
 JUMP_MNEMONICS = {"jmp", "ljmp"}
 COND_JUMP_PREFIX = "j"  # je, jne, jg, jl, ... (capstone x86 conditional jumps)
@@ -209,7 +232,9 @@ def main(chip_defs=None, entry_points=None):
 
 def render(chips, visited, labels, out_path, sym_path):
     for phys, lab in labels.items():
-        if "fixed_name" in lab:
+        if phys in FUNCTIONAL_NAMES:
+            lab["name"] = FUNCTIONAL_NAMES[phys]
+        elif "fixed_name" in lab:
             lab["name"] = lab["fixed_name"]
         else:
             lab["name"] = ("SUB_%05X" % phys) if lab["kind"] == "sub" else ("L_%05X" % phys)
@@ -262,7 +287,7 @@ def render(chips, visited, labels, out_path, sym_path):
             "name": lab["name"],
             "kind": lab["kind"],
             "ref_count": len(lab["refs"]),
-            "functional_name": None,
+            "functional_name": FUNCTIONAL_NAMES.get(phys),
             "notes": None,
         }
         for phys, lab in sorted(labels.items())

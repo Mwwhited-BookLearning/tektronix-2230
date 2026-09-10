@@ -19,7 +19,7 @@ inferred rather than confirmed, it's marked "(guess)".
 start
 
 :CPU reset\n(physical 0xFFFF0, in 160-3532);
-:Far jump into 160-3633\n(0xE00B:0001 -> phys 0xE00B1);
+:Far jump into 160-3633\n(0xE00B:0001 -> boot_init @ 0xE00B1);
 :Set up initial stack (SS:SP = 4000:3FFA),\nclear a RAM buffer;
 
 if (byte at cs:[bx+0x1AF] == 0xFF?) then (yes)
@@ -73,32 +73,38 @@ stop
 @enduml
 ```
 
-## Level 1 detail: self-test dispatcher (SUB_E416F)
+## Level 1 detail: self-test dispatcher
 
 ```plantuml
 @startuml
 start
 :Called from 0xE07F8,\nguarded by [0x1B10]==0;
 
-partition "SUB_E416F: self-test dispatcher" {
+partition "self_test_dispatcher (0xE416F)" {
   :Call subsystem test #1 (0xE374E);
   :Call subsystem test #2 (0xE3821);
   :Call subsystem test (0xE0AF5) - twice;
   :Call subsystem tests at 0xE3F2C,\n0xE3F99, 0xE2FC8, 0xE1B16, 0xE252A,\n0xE0ADD, 0xE0DCC, 0xE0E56, 0xE28FE,\n0xE227E, 0xE26D6, 0xE286C, 0xE2CEC,\n0xE0FD0;
-  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"
+  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"\n\nNone of these ~20 subroutines directly\nreference the diagnostic strings in\nSTRINGS.md (checked) - see FUNCTIONS.md,\nstill unidentified by name
 
-  :Call SUB_E44F1\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
+  :Call check_comm_option_installed\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
   note right: notably NOT OR'd into\nthe [bp-0xA] accumulator like its\nneighbors - informational, not a\npass/fail test
 
   :Call subsystem tests at 0xE16EA,\n0xE1E3E, 0xE1D28, 0xE1DB3, 0xE1E90,\n0xE1F18;
   :Call SUB_E553B (x3), SUB_E6D2F,\nSUB_E4429 (x2)\n(guess: end-of-sequence cleanup/\nreporting, outside the main\nper-subsystem loop);
 }
 :retf, result in accumulator\nat caller's [bp-0xA];
+:Caller far-calls SUB_E094B next;
+partition "SUB_E094B (not yet renamed)" {
+  :Load far pointer from [0x1C80]\ninto [0x1B56]/[0x1B58];
+  :Write a 3-byte record (3, 2, 0) there;
+  note right: looks like logging the\ntest run into a small record/event\nbuffer, not printing directly - may\nexplain why no test subroutine\nreferences a message string itself
+}
 stop
 @enduml
 ```
 
-`SUB_E44F1` itself:
+`check_comm_option_installed` itself:
 
 ```plantuml
 @startuml

@@ -342,7 +342,7 @@ comm option card is installed?" and "what if it's RAM or memory-mapped
 I/O on the comm board?" **Both are confirmed correct, and it's one
 function doing both:**
 
-`SUB_E44F1` (`160-3633`) hardcodes checking `ES:DI = 0x8000:0x0004` -
+`check_comm_option_installed` (`160-3633`) hardcodes checking `ES:DI = 0x8000:0x0004` -
 physical `0x80004`, which is exactly bytes 4-5 of the comm ROM's own
 10-byte self-ID header (the BCD-revision byte + its one's-complement
 byte, from the header format decoded on day one of this project). The
@@ -369,30 +369,30 @@ of this project.
 
 ## Found: the self-test dispatcher
 
-`SUB_E44F1` (above) isn't called on its own - it's one of a long chain
-of calls inside `SUB_E416F` (`160-3633`), which is a **self-test
+`check_comm_option_installed` (above) isn't called on its own - it's one of a long chain
+of calls inside `self_test_dispatcher` (`160-3633`), which is a **self-test
 dispatcher**: roughly 25+ calls to individual subsystem-test
 subroutines in a row, most immediately followed by `or word [bp-0xA],
 ax` (folding that test's return code into an accumulating result
 word) and `mov word [0x1B18], 1` (a status/progress flag, exact
-meaning tbd). `SUB_E44F1`'s option-detection call is one link in this
+meaning tbd). `check_comm_option_installed`'s option-detection call is one link in this
 chain but notably does NOT get OR'd into the same accumulator the way
 its neighbors do - consistent with "is an option installed" being
 informational rather than a pass/fail test that could error out.
 
-`SUB_E416F` is itself gated: called from `160-3633:0x07F8`, guarded by
+`self_test_dispatcher` is itself gated: called from `160-3633:0x07F8`, guarded by
 `cmp word [0x1B10], 0 / jne <skip>` - so it only runs when some flag at
 `0x1B10` is zero (candidate meanings: "self-test not yet run this
 power-cycle," or "not in some other mode" - not yet confirmed).
 
-The sibling test subroutines called from `SUB_E416F` (in call order,
+The sibling test subroutines called from `self_test_dispatcher` (in call order,
 not yet individually identified - good next targets, since matching
 each to a real peripheral would meaningfully advance the "what
 peripheral do these I/O ports belong to" question in `MEMORY_MAP.md`):
 `SUB_E374E`, `SUB_E3821`, `SUB_E0AF5` (called twice), `SUB_E3F2C`,
 `SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`, `SUB_E252A`, `SUB_E0ADD`,
 `SUB_E0DCC`, `SUB_E0E56`, `SUB_E28FE`, `SUB_E227E`, `SUB_E26D6`,
-`SUB_E286C`, `SUB_E2CEC`, `SUB_E0FD0`, **`SUB_E44F1`** (comm/GPIB
+`SUB_E286C`, `SUB_E2CEC`, `SUB_E0FD0`, **`check_comm_option_installed`** (comm/GPIB
 option detect, now identified), `SUB_E16EA`, `SUB_E1E3E`, `SUB_E1D28`,
 `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18`, then a few calls to `SUB_E553B`
 and `SUB_E6D2F`/`SUB_E4429` that look like they might be outside the
@@ -400,7 +400,7 @@ main per-subsystem-test loop (end-of-sequence cleanup/reporting?).
 
 Variables seen so far associated with this self-test machinery (roles
 inferred from usage, not confirmed):
-- `[0x1B10]` - gates whether `SUB_E416F` (the whole dispatcher) runs at
+- `[0x1B10]` - gates whether `self_test_dispatcher` (the whole dispatcher) runs at
   all this call.
 - `[0x1B18]` - written `1` after nearly every individual test call;
   exact role (progress indicator? "last test index"? always the
@@ -408,9 +408,9 @@ inferred from usage, not confirmed):
 - `[bp-0xA]` (a caller-local, not a fixed address) - accumulates OR'd
   return codes from each test into an overall self-test result.
 - `[0x1BF9]` - the option-board-presence/RAM status byte set by
-  `SUB_E44F1` specifically (bit 1 = valid header found, bit 2 = also
+  `check_comm_option_installed` specifically (bit 1 = valid header found, bit 2 = also
   RAM/IO-backed).
-- `[0x1B83]` - a config byte `SUB_E44F1` checks equals `0x1E` as part
+- `[0x1B83]` - a config byte `check_comm_option_installed` checks equals `0x1E` as part
   of confirming the RAM/IO result; role otherwise unconfirmed.
 
 ## The 0x90000+ region: fully resolved (see above)

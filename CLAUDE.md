@@ -43,10 +43,15 @@ are already settled and documented there and in `disasm/NOTES.md`.
 ## Conventions
 
 - Disassembly labels start as address-based placeholders (`SUB_XXXXX`
-  for call targets, `L_XXXXX` for branch targets) and get renamed to
-  functional names in the `.symbols.json` files as their purpose is
-  understood — don't rename in the `.lst` files directly, the generator
-  script re-renders those from the symbol table.
+  for call targets, `L_XXXXX` for branch targets). To rename one once
+  its purpose is understood, add `{physical_address: "name"}` to
+  `disasm/gen_disasm_x86.FUNCTIONAL_NAMES` (with a short comment citing
+  the evidence) and regenerate — that's what actually makes the name
+  appear in the `.lst`/`.asm`/`.symbols.json` outputs. Editing a
+  `.symbols.json` file's `name`/`functional_name` directly doesn't
+  stick; it gets overwritten the next time anything regenerates it.
+  Add the matching entry to `FUNCTIONS.md`/`VARIABLES.md` at the same
+  time — don't rename in only one place.
 - Don't re-litigate settled facts (currently: the CPU is a confirmed
   Intel 8088/8086, not the 6809 originally guessed) — check
   `disasm/NOTES.md` first.

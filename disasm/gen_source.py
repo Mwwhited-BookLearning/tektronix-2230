@@ -162,7 +162,7 @@ def main(nasm_exe, entry_points=None, only_chips=None):
 
     labels_by_addr = {}
     for phys, lab in labels.items():
-        name = lab.get("fixed_name") or (
+        name = g.FUNCTIONAL_NAMES.get(phys) or lab.get("fixed_name") or (
             ("SUB_%05X" % phys) if lab["kind"] == "sub" else ("L_%05X" % phys))
         chip_name, chip_off = v.g.phys_to_chip_offset(chips, phys)
         if chip_name:

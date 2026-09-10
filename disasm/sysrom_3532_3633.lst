@@ -3100,7 +3100,7 @@ L_E006F:
     3633:0079  [E0079]  5d              pop     bp
     3633:007A  [E007A]  ca0200          retf    2
 
-L_E00B1:
+boot_init:
     3633:00B1  [E00B1]  fa              cli     
     3633:00B2  [E00B2]  b80040          mov     ax, 0x4000
     3633:00B5  [E00B5]  8ec0            mov     es, ax
@@ -3439,7 +3439,7 @@ L_E07E7:
     3633:07EC  [E07EC]  c746f80000      mov     word ptr [bp - 8], 0
     3633:07F1  [E07F1]  833e101b00      cmp     word ptr [0x1b10], 0
     3633:07F6  [E07F6]  751d            jne     L_E0815  ; 0x165
-    3633:07F8  [E07F8]  9a5f06b1e3      lcall   SUB_E416F  ; 0xe3b1, 0x65f
+    3633:07F8  [E07F8]  9a5f06b1e3      lcall   self_test_dispatcher  ; 0xe3b1, 0x65f
     3633:07FD  [E07FD]  9a9b026be0      lcall   SUB_E094B  ; 0xe06b, 0x29b
     3633:0802  [E0802]  c43edc1d        les     di, ptr [0x1ddc]
     3633:0806  [E0806]  8d951c02        lea     dx, [di + 0x21c]
@@ -8163,7 +8163,7 @@ L_E416B:
     3633:416B  [E416B]  8be5            mov     sp, bp
     3633:416D  [E416D]  5d              pop     bp
     3633:416E  [E416E]  cb              retf    
-SUB_E416F:
+self_test_dispatcher:
     3633:416F  [E416F]  55              push    bp
     3633:4170  [E4170]  8bec            mov     bp, sp
     3633:4172  [E4172]  83ec06          sub     sp, 6
@@ -8321,7 +8321,7 @@ L_E42EC:
     3633:4332  [E4332]  c706181b0100    mov     word ptr [0x1b18], 1
     3633:4338  [E4338]  9a5001e8e0      lcall   SUB_E0FD0  ; 0xe0e8, 0x150
     3633:433D  [E433D]  0946f6          or      word ptr [bp - 0xa], ax
-    3633:4340  [E4340]  9ae109b1e3      lcall   SUB_E44F1  ; 0xe3b1, 0x9e1
+    3633:4340  [E4340]  9ae109b1e3      lcall   check_comm_option_installed  ; 0xe3b1, 0x9e1
     3633:4345  [E4345]  c706181b0100    mov     word ptr [0x1b18], 1
     3633:434B  [E434B]  9aaa0154e1      lcall   SUB_E16EA  ; 0xe154, 0x1aa
     3633:4350  [E4350]  0946f6          or      word ptr [bp - 0xa], ax
@@ -8468,7 +8468,7 @@ L_E44B7:
     3633:44EB  [E44EB]  8be5            mov     sp, bp
     3633:44ED  [E44ED]  5d              pop     bp
     3633:44EE  [E44EE]  ca0200          retf    2
-SUB_E44F1:
+check_comm_option_installed:
     3633:44F1  [E44F1]  55              push    bp
     3633:44F2  [E44F2]  8bec            mov     bp, sp
     3633:44F4  [E44F4]  83ec0a          sub     sp, 0xa
@@ -12817,7 +12817,7 @@ L_EF403:
     3633:F42F  [EF42F]  03d0            add     dx, ax
     3633:F431  [EF431]  1e              push    ds
     3633:F432  [EF432]  52              push    dx
-    3633:F433  [EF433]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    3633:F433  [EF433]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     3633:F438  [EF438]  83c406          add     sp, 6
     3633:F43B  [EF43B]  8b7e06          mov     di, word ptr [bp + 6]
     3633:F43E  [EF43E]  d1ff            sar     di, 1
@@ -12857,7 +12857,7 @@ L_EF464:
     3633:F48A  [EF48A]  03d0            add     dx, ax
     3633:F48C  [EF48C]  1e              push    ds
     3633:F48D  [EF48D]  52              push    dx
-    3633:F48E  [EF48E]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    3633:F48E  [EF48E]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     3633:F493  [EF493]  83c406          add     sp, 6
 L_EF496:
     3633:F496  [EF496]  c47ee4          les     di, ptr [bp - 0x1c]
@@ -14006,7 +14006,7 @@ L_F815F:
     3532:816E  [F816E]  8d4701          lea     ax, [bx + 1]
     3532:8171  [F8171]  06              push    es
     3532:8172  [F8172]  50              push    ax
-    3532:8173  [F8173]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    3532:8173  [F8173]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     3532:8178  [F8178]  83c406          add     sp, 6
     3532:817B  [F817B]  8346f206        add     word ptr [bp - 0xe], 6
     3532:817F  [F817F]  ff46f0          inc     word ptr [bp - 0x10]
@@ -14105,7 +14105,7 @@ SUB_F8234:
     3532:8249  [F8249]  c41e9c1c        les     bx, ptr [0x1c9c]
     3532:824D  [F824D]  06              push    es
     3532:824E  [F824E]  53              push    bx
-    3532:824F  [F824F]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    3532:824F  [F824F]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     3532:8254  [F8254]  83c406          add     sp, 6
     3532:8257  [F8257]  ff76f8          push    word ptr [bp - 8]
     3532:825A  [F825A]  c43eec01        les     di, ptr [0x1ec]
@@ -14114,7 +14114,7 @@ SUB_F8234:
     3532:8260  [F8260]  c416a01c        les     dx, ptr [0x1ca0]
     3532:8264  [F8264]  06              push    es
     3532:8265  [F8265]  52              push    dx
-    3532:8266  [F8266]  9a2900befb      lcall   SUB_FBC09  ; 0xfbbe, 0x29
+    3532:8266  [F8266]  9a2900befb      lcall   memcpy_far  ; 0xfbbe, 0x29
     3532:826B  [F826B]  83c406          add     sp, 6
     3532:826E  [F826E]  8be5            mov     sp, bp
     3532:8270  [F8270]  5d              pop     bp
@@ -14602,7 +14602,7 @@ SUB_FBBE9:
     3532:BC03  [FBC03]  8be5            mov     sp, bp
     3532:BC05  [FBC05]  5d              pop     bp
     3532:BC06  [FBC06]  ca0400          retf    4
-SUB_FBC09:
+memcpy_far:
     3532:BC09  [FBC09]  55              push    bp
     3532:BC0A  [FBC0A]  8bec            mov     bp, sp
     3532:BC0C  [FBC0C]  1e              push    ds
@@ -15036,4 +15036,4 @@ L_FF495:
     3532:F49F  [FF49F]  ca0200          retf    2
 
 RESET:
-    3532:FFF0  [FFFF0]  ea01000be0      ljmp    L_E00B1  ; 0xe00b:1
+    3532:FFF0  [FFFF0]  ea01000be0      ljmp    boot_init  ; 0xe00b:1

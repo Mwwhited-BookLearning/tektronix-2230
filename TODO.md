@@ -25,13 +25,19 @@
         identified within the reached regions is the other likely
         source of "unreached" bytes.
 - [ ] **Identify the ~20 not-yet-named subsystem-test subroutines**
-      called from the self-test dispatcher `SUB_E416F` (see
-      `disasm/NOTES.md` "Found: the self-test dispatcher" for the full
-      call list). This is probably the single best lever for matching
-      the I/O ports in `MEMORY_MAP.md` to real peripherals (A/D
-      converter, front panel, display, etc.) - each test routine likely
-      exercises one specific piece of hardware. Start a `FUNCTIONS.md`
-      entry for each as it's identified.
+      called from `self_test_dispatcher` (see `disasm/NOTES.md` "Found:
+      the self-test dispatcher" for the full call list). Already tried
+      matching them directly to the diagnostic message strings in
+      `STRINGS.md` (`HS_ACQ`, `COMM_ROM`, `SYS_RAM`, etc.) by searching
+      for code references - found none; they likely return a status
+      code that `SUB_E094B` logs rather than printing a message
+      directly (see `FUNCTIONS.md`). Next: find where `SUB_E094B`'s
+      logged results actually get displayed/printed - that routine is
+      more likely to hold the string-to-test mapping. This is probably
+      the single best lever for matching the I/O ports in
+      `MEMORY_MAP.md` to real peripherals. Add a `FUNCTIONS.md` entry
+      (and wire a name into `gen_disasm_x86.FUNCTIONAL_NAMES`) for each
+      as it's identified.
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
@@ -58,7 +64,7 @@
       above; there's no separate region to populate.
 - [x] ~~Figure out what the `0xAA55` pattern really tests~~ — **it's an
       option-board presence + RAM/IO detection routine**
-      (`SUB_E44F1`), not a generic memory-size probe. Checks a ROM-
+      (`check_comm_option_installed`), not a generic memory-size probe. Checks a ROM-
       header-style checksum first (byte + one's-complement = `0xFF`,
       same pattern as every ROM's self-ID header), then tests
       writability only if that passes. Prompted by the user asking
@@ -81,13 +87,15 @@
 - [ ] Narrow down what peripheral the I/O ports actually seen in code
       (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to —
       see `MEMORY_MAP.md` "I/O ports actually seen in code".
-- [ ] Start filling in `functional_name` fields in the `.symbols.json`
-      files as routines are understood (e.g. `SUB_E06B6` looks like a
-      small dispatch/switch function keyed on a low nibble, touching
-      memory locations 0x1B50/0x1B51/0x1B18 — candidate for renaming
-      once those locations' purpose is confirmed), and add an entry to
-      `FUNCTIONS.md` for each so there's one human-readable index across
-      all three ROMs instead of three separate JSON files.
+- [ ] Keep renaming routines as they're understood: add the address to
+      `gen_disasm_x86.FUNCTIONAL_NAMES` (this is what actually makes
+      the name show up in the `.lst`/`.asm`/`.symbols.json` outputs -
+      editing `.symbols.json` directly gets overwritten on the next
+      regenerate) and add the matching entry to `FUNCTIONS.md`. Next
+      candidate: `SUB_E06B6` looks like a small dispatch/switch
+      function keyed on a low nibble, touching memory locations
+      `0x1B50`/`0x1B51`/`0x1B18` — needs those locations' purpose
+      confirmed first.
 - [ ] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
       real 8087 math coprocessor in the design (plausible for a scope
       doing voltage/time calculations) — check against the service
