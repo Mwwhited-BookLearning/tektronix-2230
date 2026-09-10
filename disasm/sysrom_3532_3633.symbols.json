@@ -7329,10 +7329,10 @@
     "notes": null
   },
   "E9255": {
-    "name": "SUB_E9255",
+    "name": "assert_and_halt",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "assert_and_halt",
     "notes": null
   },
   "E92B0": {
@@ -8050,10 +8050,10 @@
     "notes": null
   },
   "F1001": {
-    "name": "SUB_F1001",
+    "name": "convert_sample_value",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "convert_sample_value",
     "notes": null
   },
   "F103E": {

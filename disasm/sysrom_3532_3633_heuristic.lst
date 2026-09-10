@@ -10097,7 +10097,7 @@ L_E64FB:
     3633:64FB  [E64FB]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:64FF  [E64FF]  7cef            jl      L_E64F0  ; 0x30
     3633:6501  [E6501]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
-    3633:6506  [E6506]  9a050025e9      lcall   SUB_E9255  ; 0xe925, 5
+    3633:6506  [E6506]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
     3633:650B  [E650B]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:6510  [E6510]  b80000          mov     ax, 0
     3633:6513  [E6513]  baffff          mov     dx, 0xffff
@@ -10679,7 +10679,7 @@ L_E6B6B:
 L_E6B71:
     3633:6B71  [E6B71]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
     3633:6B76  [E6B76]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
-    3633:6B7B  [E6B7B]  9a050025e9      lcall   SUB_E9255  ; 0xe925, 5
+    3633:6B7B  [E6B7B]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
     3633:6B80  [E6B80]  9a080023e7      lcall   SUB_E7238  ; 0xe723, 8
     3633:6B85  [E6B85]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6B8A  [E6B8A]  fe06911a        inc     byte ptr [0x1a91]
@@ -13713,7 +13713,7 @@ FUNC_3633_9023:
 L_E902C:
     3633:902C  [E902C]  bf5d00          mov     di, 0x5d
     3633:902F  [E902F]  57              push    di
-    3633:9030  [E9030]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:9030  [E9030]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:9035  [E9035]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9038  [E9038]  2bff            sub     di, di
     3633:903A  [E903A]  57              push    di
@@ -13723,7 +13723,7 @@ L_E902C:
     3633:9044  [E9044]  8946f8          mov     word ptr [bp - 8], ax
     3633:9047  [E9047]  bffd00          mov     di, 0xfd
     3633:904A  [E904A]  57              push    di
-    3633:904B  [E904B]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:904B  [E904B]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:9050  [E9050]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9053  [E9053]  bf0100          mov     di, 1
     3633:9056  [E9056]  57              push    di
@@ -13735,7 +13735,7 @@ L_E902C:
 L_E9066:
     3633:9066  [E9066]  bf9f00          mov     di, 0x9f
     3633:9069  [E9069]  57              push    di
-    3633:906A  [E906A]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:906A  [E906A]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:906F  [E906F]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9072  [E9072]  bf0200          mov     di, 2
     3633:9075  [E9075]  57              push    di
@@ -13747,7 +13747,7 @@ L_E9066:
 L_E9085:
     3633:9085  [E9085]  bfbf00          mov     di, 0xbf
     3633:9088  [E9088]  57              push    di
-    3633:9089  [E9089]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:9089  [E9089]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:908E  [E908E]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9091  [E9091]  bf0300          mov     di, 3
     3633:9094  [E9094]  57              push    di
@@ -13764,7 +13764,7 @@ SUB_E90A5:
     3633:90A6  [E90A6]  00579a          add     byte ptr [bx - 0x66], dl
 
     3633:90A7  [E90A7]  57              push    di
-    3633:90A8  [E90A8]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:90A8  [E90A8]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
 
     3633:90A9  [E90A9]  51              push    cx
     3633:90AA  [E90AA]  01eb            add     bx, bp
@@ -13850,12 +13850,12 @@ L_E924B:
     3633:9251  [E9251]  ca0200          retf    2
 FUNC_3633_9254:
     3633:9254  [E9254]  55              push    bp
-SUB_E9255:
+assert_and_halt:
     3633:9255  [E9255]  8bec            mov     bp, sp
     3633:9257  [E9257]  83ec0a          sub     sp, 0xa
     3633:925A  [E925A]  bf3d00          mov     di, 0x3d
     3633:925D  [E925D]  57              push    di
-    3633:925E  [E925E]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:925E  [E925E]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:9263  [E9263]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9266  [E9266]  bf0b00          mov     di, 0xb
     3633:9269  [E9269]  57              push    di
@@ -13865,7 +13865,7 @@ SUB_E9255:
     3633:9273  [E9273]  8946f8          mov     word ptr [bp - 8], ax
     3633:9276  [E9276]  bf9d00          mov     di, 0x9d
     3633:9279  [E9279]  57              push    di
-    3633:927A  [E927A]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:927A  [E927A]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:927F  [E927F]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:9282  [E9282]  bf0c00          mov     di, 0xc
     3633:9285  [E9285]  57              push    di
@@ -13875,7 +13875,7 @@ SUB_E9255:
     3633:928F  [E928F]  0946f8          or      word ptr [bp - 8], ax
     3633:9292  [E9292]  bf9f00          mov     di, 0x9f
     3633:9295  [E9295]  57              push    di
-    3633:9296  [E9296]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:9296  [E9296]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
     3633:929B  [E929B]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:929E  [E929E]  bf0200          mov     di, 2
     3633:92A1  [E92A1]  57              push    di
@@ -13889,7 +13889,7 @@ SUB_E92B0:
     3633:92B0  [E92B0]  00579a          add     byte ptr [bx - 0x66], dl
 
     3633:92B1  [E92B1]  57              push    di
-    3633:92B2  [E92B2]  9a5101ebf0      lcall   SUB_F1001  ; 0xf0eb, 0x151
+    3633:92B2  [E92B2]  9a5101ebf0      lcall   convert_sample_value  ; 0xf0eb, 0x151
 
     3633:92B3  [E92B3]  51              push    cx
     3633:92B4  [E92B4]  01eb            add     bx, bp
@@ -25640,7 +25640,7 @@ L_F0FEA:
     3532:0FFC  [F0FFC]  ff76de          push    word ptr [bp - 0x22]
     3532:0FFF  [F0FFF]  ff76dc          push    word ptr [bp - 0x24]
 
-SUB_F1001:
+convert_sample_value:
     3532:1001  [F1001]  dc8b46e4        fmul    qword ptr [bp + di - 0x1bba]
 
     3532:1002  [F1002]  8b46e4          mov     ax, word ptr [bp - 0x1c]
@@ -25930,7 +25930,7 @@ FUNC_3532_12B0:
     3532:12B0  [F12B0]  55              push    bp
     3532:12B1  [F12B1]  8bec            mov     bp, sp
     3532:12B3  [F12B3]  83ec06          sub     sp, 6
-    3532:12B6  [F12B6]  9a050025e9      lcall   SUB_E9255  ; 0xe925, 5
+    3532:12B6  [F12B6]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
     3532:12BB  [F12BB]  8be5            mov     sp, bp
     3532:12BD  [F12BD]  5d              pop     bp
     3532:12BE  [F12BE]  cb              retf    

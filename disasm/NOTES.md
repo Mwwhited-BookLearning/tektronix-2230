@@ -1243,6 +1243,31 @@ changes**. Not confirmed against a schematic, but the mechanism (a
 serial shift-register write) now is, closing a mystery that's been
 open since the very first coverage pass found these two ports.
 
+## Found: the firmware's assert()/panic mechanism
+
+`halt_cpu` (`0xF1611`) is a single `hlt` instruction - but tracing its
+callers turned up something more interesting than a generic halt.
+Callers (e.g. `assert_and_halt`, `0xE9255`) call it with 2 words
+pushed as arguments (a computed value plus a small constant tag like
+`0xB`/`0xC`/`2`) and then have unreachable stack-cleanup code
+immediately after the call - because `hlt` never returns, that cleanup
+never executes. This is exactly what compiled C looks like when a
+function is declared to never return (an `abort()`/panic-style call):
+the compiler still generates the normal call-then-cleanup sequence
+(it doesn't know the callee halts forever), but the cleanup is dead
+code in practice. `assert_and_halt` computes a value via
+`convert_sample_value` (`0xF1001`) and halts with it plus a tag if
+some bound is exceeded - a genuine embedded assertion-failure trap,
+presumably only ever tripped during development/debugging (or as a
+last-resort safety stop on real hardware fault). `convert_sample_value`
+itself opens with a real x87 `fmul` instruction (entered via
+fallthrough, no prologue of its own) followed by `mul32`/`sdiv32` -
+further, more concrete evidence toward `TODO.md`'s open question of
+whether a real 8087 coprocessor is present (this is a genuine,
+non-drifted floating-point instruction in the middle of otherwise
+completely ordinary compiled-C integer code, not part of any known
+decode-drift cluster).
+
 ## A second, more puzzling decode anomaly: SUB_EAC86
 
 Found while renaming: `SUB_EAC86` (`160-3633`, in the *proven*, not

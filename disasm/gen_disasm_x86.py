@@ -636,6 +636,30 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xF1001: "convert_sample_value",          # starts with a real x87
+                                               # `fmul` (entered via
+                                               # fallthrough, no own
+                                               # prologue - shares a
+                                               # caller's stack frame),
+                                               # then calls mul32 and
+                                               # sdiv32 - a mixed float/
+                                               # integer value
+                                               # conversion, likely
+                                               # ADC-count-to-engineering
+                                               # -unit scaling; possible
+                                               # evidence of a real 8087
+                                               # coprocessor (see TODO.md)
+    0xE9255: "assert_and_halt",               # computes a value via
+                                               # SUB_F1001, then calls
+                                               # halt_cpu with that value
+                                               # plus a small constant
+                                               # tag (0xb/0xc/2 across 3
+                                               # checks seen) - the
+                                               # firmware's assertion-
+                                               # failure/panic mechanism:
+                                               # if a computed bound is
+                                               # exceeded, halt with a
+                                               # diagnostic code
     0xE777D: "mul32",                         # 32-bit x 32-bit -> 32-bit
                                                # (truncated) multiply,
                                                # classic 3-partial-
@@ -829,6 +853,21 @@ FUNCTIONAL_NAMES = {
                                                # likely a per-cycle
                                                # report-line refresh step
     0xF1611: "halt_cpu",                      # a single hlt instruction
+                                               # - but called from
+                                               # elsewhere (see
+                                               # assert_and_halt) WITH
+                                               # pushed diagnostic
+                                               # arguments that are never
+                                               # actually used/cleaned
+                                               # (the hlt never returns,
+                                               # so the caller's "add
+                                               # sp,N" cleanup after the
+                                               # call is unreachable) -
+                                               # this is genuinely the
+                                               # firmware's equivalent of
+                                               # a C `abort()`/assertion-
+                                               # failure trap, not a
+                                               # normal function
     0xF8EC8: "set_item_active_flag",          # (item_index, set_flag) -
                                                # sets or clears a bit in
                                                # a byte-per-item flag

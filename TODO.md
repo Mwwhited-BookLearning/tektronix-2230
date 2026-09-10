@@ -172,7 +172,12 @@
 - [ ] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
       real 8087 math coprocessor in the design (plausible for a scope
       doing voltage/time calculations) — check against the service
-      manual's parts list.
+      manual's parts list. Stronger evidence found: `convert_sample_
+      value` (`0xF1001`) opens with a genuine `fmul` in the middle of
+      otherwise ordinary compiled-C integer code (mixed with `mul32`/
+      `sdiv32`), not part of any known decode-drift cluster - see
+      `disasm/NOTES.md` "Found: the firmware's assert()/panic
+      mechanism".
 - [x] ~~Revisit the 3 backward loop/jmp branches flagged by
       validate_nasm.py as landing outside the mapped ROM window~~ —
       **done, it was a validator bug, not a real 8086 quirk**. An
