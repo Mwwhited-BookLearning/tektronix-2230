@@ -2,7 +2,7 @@
   "80060": {
     "name": "FUNC_2998_0060",
     "kind": "sub",
-    "ref_count": 5,
+    "ref_count": 7,
     "functional_name": null,
     "notes": null
   },
@@ -30,7 +30,7 @@
   "8009B": {
     "name": "FUNC_2998_009B",
     "kind": "sub",
-    "ref_count": 3,
+    "ref_count": 5,
     "functional_name": null,
     "notes": null
   },
@@ -51,7 +51,7 @@
   "800FC": {
     "name": "FUNC_2998_00FC",
     "kind": "sub",
-    "ref_count": 2,
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },
@@ -72,7 +72,7 @@
   "80133": {
     "name": "SUB_80133",
     "kind": "sub",
-    "ref_count": 2,
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },
@@ -4783,7 +4783,7 @@
   "838C0": {
     "name": "FUNC_2998_38C0",
     "kind": "sub",
-    "ref_count": 7,
+    "ref_count": 9,
     "functional_name": null,
     "notes": null
   },
@@ -4846,7 +4846,7 @@
   "839D1": {
     "name": "FUNC_2998_39D1",
     "kind": "sub",
-    "ref_count": 10,
+    "ref_count": 13,
     "functional_name": null,
     "notes": null
   },
@@ -7135,7 +7135,7 @@
   "850A2": {
     "name": "FUNC_2998_50A2",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -7268,14 +7268,14 @@
   "85238": {
     "name": "FUNC_2998_5238",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
   "8526B": {
     "name": "FUNC_2998_526B",
     "kind": "sub",
-    "ref_count": 9,
+    "ref_count": 13,
     "functional_name": null,
     "notes": null
   },
@@ -7310,7 +7310,7 @@
   "85301": {
     "name": "FUNC_2998_5301",
     "kind": "sub",
-    "ref_count": 20,
+    "ref_count": 21,
     "functional_name": null,
     "notes": null
   },
@@ -7989,7 +7989,7 @@
   "85B2B": {
     "name": "FUNC_2998_5B2B",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -8262,7 +8262,7 @@
   "85E66": {
     "name": "FUNC_2998_5E66",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -9375,7 +9375,7 @@
   "86B4B": {
     "name": "FUNC_2998_6B4B",
     "kind": "sub",
-    "ref_count": 17,
+    "ref_count": 19,
     "functional_name": null,
     "notes": null
   },

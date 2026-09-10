@@ -171,6 +171,11 @@ def main(nasm_exe, entry_points=None, only_chips=None):
     for name, info in chips.items():
         if only_chips is not None and name not in only_chips:
             continue
+        if "alias" in name:
+            # a view into bytes another chip already owns a committed
+            # .asm for (e.g. the 0x90000 comm-ROM alias) - nothing new
+            # to write out here.
+            continue
         src = build_source(name, info["buf"], visited, info["base"], nasm_exe)
         out_path = f"160-{name}-14.asm"
         open(out_path, "w").write(src)

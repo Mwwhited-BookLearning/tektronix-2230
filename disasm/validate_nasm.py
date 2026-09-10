@@ -207,7 +207,7 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
             return None
         return f"{mnem} short 0x{target:04x}"
 
-    if mnem == "loop" and NEAR_HEX_RE.match(op):
+    if mnem in ("loop", "loope", "loopne", "loopz", "loopnz") and NEAR_HEX_RE.match(op):
         target = near_target_addr(op)
         if target is None:
             return None

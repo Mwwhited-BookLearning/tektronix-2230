@@ -239,40 +239,123 @@ to be proven-reachable-only. `gen_source_2998.py` now passes
 heuristic-assisted view; the main ROM's `.asm` files stay proven-only,
 regenerated separately via `gen_source.py`'s default entry set.
 
-## The 0x90000+ region: real mystery narrowed down
+## The 0x90000-0x97FFF region is fully resolved: an address-decode alias
 
-Originally flagged as "`~0x80000-0x97000`, likely RAM, contents
-unknown" - the lower half of that turned out to just be the comm ROM
-at its correct address (see "The comm ROM is NOT bank-switched"
-above), so the actual open mystery is narrower: **segments from
-roughly `0x90000` up to `0x97C95`** (`911e`, `91ba`, `92cf`, `941f`,
-`9470`, `9471`, `9628`, `9687`, `96f5`, `97c6`, ...), called into by
-both the comm ROM's own code and (likely - worth re-checking now that
-the comm ROM's real addresses are known) the main ROM. TekWiki
-confirms no third ROM chip exists for the 2230, so this still isn't
-"a ROM dump we're missing" in the straightforward sense.
+**Not RAM, not a missing chip - it's the comm ROM's own upper half
+(`0x88000-0x8FFFF`, file offset `0x8000-0xFFFF`, pages 2-3) appearing a
+second time at a different physical address.** The user asked "would
+the pointers into `0x90000-0x97FFF` make sense if they were a shadow
+of `0x80000-0x8FFFF`?" - a plain `+0x10000` shift didn't fit (1/82
+targets matched), but brute-forcing every possible base offset against
+all 82 observed far-call targets found `base=0x88000` gives **82/82
+exact matches**. So: `phys - 0x88000 == file_offset` for everything in
+this range, meaning physical address `P` (for `0x90000 <= P <
+0x98000`) is electrically the same location as physical address
+`P - 0x8000` (which already falls inside the confirmed comm-ROM
+window). This is a classic partial/incomplete address-decode artifact
+- the comm ROM's chip-select logic most likely only compares a subset
+of the high address lines, so it responds (aliases) across a wider
+range than its "official" 64KB window. Nothing to reverse-engineer
+further here; these are bytes we already have a complete dump of.
 
-Direct evidence real RAM exists near there: the main ROM contains a
-classic non-destructive memory-test sequence (`160-3633` offsets
-around `0x4544`/`0x4566`) targeting `es=0x8000` - read, write the test
-pattern `0xAA55`, restore - the standard way period boot code detects
-how much memory is installed. Whether that probe extends as far as
-`0x90000+`, or whether that range is something else entirely (a second
-comm-ROM-adjacent device, RAM populated by a mechanism not yet found,
-etc.) is still open.
+**General technique worth reusing for any future "why does this
+address not resolve" puzzle**: don't assume a single fixed offset -
+brute-force every candidate base against the full set of observed
+targets and take whichever one maximizes exact matches against known
+function-start (or other) signatures. A single spot-check can miss a
+non-obvious offset; scoring all of them at once found this instantly.
 
-**Still open: how code gets into that region for the comm ROM to call
-into it.** Went looking for a block-copy (`rep movsw`/`movsb`) moving
-bytes there; found a generic memcpy-style utility (`SUB_FBC09`, in
-both `160-3532` and `160-3633`, called from 5 places) but the 2 call
-sites checked so far both copy within the normal low-RAM globals area.
-Remaining possibilities: a call site not yet checked, a different
-loading mechanism (GPIB/RS-232 download, runtime code generation), or
-this range means something else altogether that hasn't been
-considered yet. Whatever it is, if it's RAM populated only at runtime,
-its contents may be invisible to static analysis of these three ROM
-dumps alone - worth factoring into any estimate of how much of this
-system can ultimately be reverse-engineered from what we have.
+## Found: the option-board presence/RAM-detection routine
+
+Tracing why the `0xAA55` pattern gets tested (originally read as a
+generic RAM-size probe) led to a much more specific and useful answer,
+prompted by two user questions: "might this be a check for whether the
+comm option card is installed?" and "what if it's RAM or memory-mapped
+I/O on the comm board?" **Both are confirmed correct, and it's one
+function doing both:**
+
+`SUB_E44F1` (`160-3633`) hardcodes checking `ES:DI = 0x8000:0x0004` -
+physical `0x80004`, which is exactly bytes 4-5 of the comm ROM's own
+10-byte self-ID header (the BCD-revision byte + its one's-complement
+byte, from the header format decoded on day one of this project). The
+function:
+1. Reads that word, splits it into high/low bytes, and checks whether
+   they sum to exactly `0xFF` - i.e., re-derives the same
+   value+complement checksum every one of these ROMs' headers uses.
+   This is a **"is a genuine Tektronix ROM header present here"**
+   check, not a generic memory probe.
+2. Only if that passes does it run the save/write-`0xAA55`/verify/
+   restore sequence against the *same* address - testing whether that
+   location is *also* writable, i.e., whether the option board carries
+   its own RAM/memory-mapped I/O in addition to its ROM.
+3. Packs the result into a status byte (`[0x1BF9]`): one bit for "valid
+   header found," a second bit (only set if the RAM-write also stuck
+   *and* another config byte at `[0x1B83]` reads `0x1E`) for "and it
+   has working RAM/IO too."
+
+So the comm/GPIB option board's presence detection and its RAM/IO
+presence detection are the same probe, just gated in sequence - exactly
+matching the "Function requires options not installed in this
+instrument" message string found in `160-3532` back at the very start
+of this project.
+
+## Found: the self-test dispatcher
+
+`SUB_E44F1` (above) isn't called on its own - it's one of a long chain
+of calls inside `SUB_E416F` (`160-3633`), which is a **self-test
+dispatcher**: roughly 25+ calls to individual subsystem-test
+subroutines in a row, most immediately followed by `or word [bp-0xA],
+ax` (folding that test's return code into an accumulating result
+word) and `mov word [0x1B18], 1` (a status/progress flag, exact
+meaning tbd). `SUB_E44F1`'s option-detection call is one link in this
+chain but notably does NOT get OR'd into the same accumulator the way
+its neighbors do - consistent with "is an option installed" being
+informational rather than a pass/fail test that could error out.
+
+`SUB_E416F` is itself gated: called from `160-3633:0x07F8`, guarded by
+`cmp word [0x1B10], 0 / jne <skip>` - so it only runs when some flag at
+`0x1B10` is zero (candidate meanings: "self-test not yet run this
+power-cycle," or "not in some other mode" - not yet confirmed).
+
+The sibling test subroutines called from `SUB_E416F` (in call order,
+not yet individually identified - good next targets, since matching
+each to a real peripheral would meaningfully advance the "what
+peripheral do these I/O ports belong to" question in `MEMORY_MAP.md`):
+`SUB_E374E`, `SUB_E3821`, `SUB_E0AF5` (called twice), `SUB_E3F2C`,
+`SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`, `SUB_E252A`, `SUB_E0ADD`,
+`SUB_E0DCC`, `SUB_E0E56`, `SUB_E28FE`, `SUB_E227E`, `SUB_E26D6`,
+`SUB_E286C`, `SUB_E2CEC`, `SUB_E0FD0`, **`SUB_E44F1`** (comm/GPIB
+option detect, now identified), `SUB_E16EA`, `SUB_E1E3E`, `SUB_E1D28`,
+`SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18`, then a few calls to `SUB_E553B`
+and `SUB_E6D2F`/`SUB_E4429` that look like they might be outside the
+main per-subsystem-test loop (end-of-sequence cleanup/reporting?).
+
+Variables seen so far associated with this self-test machinery (roles
+inferred from usage, not confirmed):
+- `[0x1B10]` - gates whether `SUB_E416F` (the whole dispatcher) runs at
+  all this call.
+- `[0x1B18]` - written `1` after nearly every individual test call;
+  exact role (progress indicator? "last test index"? always the
+  literal `1`, so maybe not an index) not yet confirmed.
+- `[bp-0xA]` (a caller-local, not a fixed address) - accumulates OR'd
+  return codes from each test into an overall self-test result.
+- `[0x1BF9]` - the option-board-presence/RAM status byte set by
+  `SUB_E44F1` specifically (bit 1 = valid header found, bit 2 = also
+  RAM/IO-backed).
+- `[0x1B83]` - a config byte `SUB_E44F1` checks equals `0x1E` as part
+  of confirming the RAM/IO result; role otherwise unconfirmed.
+
+## The 0x90000+ region: fully resolved (see above)
+
+This used to be a substantial open question ("`~0x80000-0x97000`,
+likely RAM, contents unknown"). It's now completely closed - see "The
+0x90000-0x97FFF region is fully resolved: an address-decode alias"
+above. Short version: it's not a separate region at all, it's the same
+comm-ROM bytes we already have, visible at a second physical address
+because of how the chip-select logic decodes address lines. Nothing
+further to chase here. (The `0xAA55` pattern that originally suggested
+"RAM test" turned out to be part of the option-presence/RAM-detection
+routine documented above too, not a generic memory-size probe.)
 
 ## Interrupt vector table entries (real code entry points)
 

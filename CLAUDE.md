@@ -16,6 +16,20 @@ are already settled and documented there and in `disasm/NOTES.md`.
   for the authoritative technical log (CPU, memory map, ROM roles).
 - `CONTEXT.md` — why this project exists and what's been learned about
   the hardware/device itself.
+- `MEMORY_MAP.md` — the physical memory/IO map as understood so far
+  (with a PlantUML diagram). **Update this whenever a new address
+  range, segment, or I/O port gets identified or corrected** — it's
+  meant to stay current, not just grow a "recent findings" tail.
+- `JUMP_MAP.md` — control-flow relationships as PlantUML activity
+  diagrams, high-level first with room for per-subsystem detail.
+  **Update/extend this as new call chains or dispatchers are traced**
+  (e.g. the self-test dispatcher, boot sequence) — don't let it go
+  stale once a diagram's been drawn once.
+- `FUNCTIONS.md` — one entry per identified routine/variable across all
+  three ROMs (address, label, purpose, confidence), the human-readable
+  companion to the `.symbols.json` files. **Add an entry here every
+  time a `functional_name` gets filled in** — the two should never
+  drift apart.
 - `TODO.md` — active/near-term work items.
 - `changes/YYYY-MM-DD.md` — a dated log entry per session of completed
   work, for a human-readable history alongside git log.
@@ -37,7 +51,13 @@ are already settled and documented there and in `disasm/NOTES.md`.
   building a separate image asset.
 - Beyond individual routine names, build up the bigger picture as it's
   understood: user-facing flows/menu structure, configuration options,
-  the full memory map (RAM/I/O/peripheral registers, not just the ROM
-  address map), and how the firmware drives each peripheral (A/D
-  converter, front panel, GPIB/RS-232). See `TODO.md`'s "Ongoing
-  documentation goal" section.
+  and how the firmware drives each peripheral (A/D converter, front
+  panel, GPIB/RS-232) — see `TODO.md`'s "Ongoing documentation goal"
+  section. `MEMORY_MAP.md`, `JUMP_MAP.md`, and `FUNCTIONS.md` are the
+  concrete artifacts for this — keep them current, not just `TODO.md`.
+- When a technique proves useful for resolving an addressing puzzle
+  (e.g. "brute-force every candidate base offset against observed
+  targets and keep whichever maximizes exact matches" — that's how the
+  comm ROM's real address and its `0x90000` alias were both found),
+  write it down in `disasm/NOTES.md` so it gets reused next time
+  instead of rediscovered.

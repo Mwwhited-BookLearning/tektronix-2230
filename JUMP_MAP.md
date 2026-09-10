@@ -67,16 +67,65 @@ stop
 start
 :Main ROM's proven-reachable code\nmakes several far calls directly\ninto the comm ROM (0x80000-0x8FFFF);
 :Comm ROM's own boot-stub jump\n(both its page-2 and page-3 halves)\nfar-jumps to 0xE64C:0000, landing\ninside the main ROM's own code;
-:Comm ROM's own functions make far\ncalls into segments at 0x90000+\n(the real remaining memory mystery -\nsee MEMORY_MAP.md);
-note right: these targets aren't\ncovered by any ROM dump we have -\nmay be RAM populated at runtime,\ncontents unknown
+:Comm ROM's own functions make far\ncalls into 0x90000-0x97FFF;
+note right: resolved - this is an\naddress-decode ALIAS of the comm\nROM's own 0x88000-0x8FFFF (same\nbytes, second physical address).\nNot a separate device - see\nMEMORY_MAP.md.
 stop
 @enduml
 ```
 
-## Level 1 detail: (none yet)
+## Level 1 detail: self-test dispatcher (SUB_E416F)
 
-As specific subsystem-init calls (`0xE3B1`, `0xFDB3`, `0xF9FE`,
-`0xF156`, `0xE75C`, `0xFBCF`, `0xE925`, `0xE723`, ...) get identified,
-add a Level-1 diagram here per subsystem showing its own internal
-control flow, and link back to this file from `disasm/NOTES.md` and
-`TODO.md`.
+```plantuml
+@startuml
+start
+:Called from 0xE07F8,\nguarded by [0x1B10]==0;
+
+partition "SUB_E416F: self-test dispatcher" {
+  :Call subsystem test #1 (0xE374E);
+  :Call subsystem test #2 (0xE3821);
+  :Call subsystem test (0xE0AF5) - twice;
+  :Call subsystem tests at 0xE3F2C,\n0xE3F99, 0xE2FC8, 0xE1B16, 0xE252A,\n0xE0ADD, 0xE0DCC, 0xE0E56, 0xE28FE,\n0xE227E, 0xE26D6, 0xE286C, 0xE2CEC,\n0xE0FD0;
+  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"
+
+  :Call SUB_E44F1\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
+  note right: notably NOT OR'd into\nthe [bp-0xA] accumulator like its\nneighbors - informational, not a\npass/fail test
+
+  :Call subsystem tests at 0xE16EA,\n0xE1E3E, 0xE1D28, 0xE1DB3, 0xE1E90,\n0xE1F18;
+  :Call SUB_E553B (x3), SUB_E6D2F,\nSUB_E4429 (x2)\n(guess: end-of-sequence cleanup/\nreporting, outside the main\nper-subsystem loop);
+}
+:retf, result in accumulator\nat caller's [bp-0xA];
+stop
+@enduml
+```
+
+`SUB_E44F1` itself:
+
+```plantuml
+@startuml
+start
+:Read word at ES:DI\n(hardcoded here to 0x8000:0004 =\nphysical 0x80004, the comm ROM's\nown BCD-revision + complement bytes);
+if (high byte + low byte == 0xFF?) then (yes)
+  :Valid ROM header checksum found\n-> set bit 1 of [0x1BF9];
+  :Save current word at that address;
+  :Write test pattern 0xAA55;
+  if (read-back == 0xAA55\nAND [0x1B83] == 0x1E?) then (yes)
+    :Also RAM/IO-backed\n-> set bit 2 of [0x1BF9];
+  else (no)
+  endif
+  :Restore the saved word;
+else (no)
+  :No option board detected here;
+endif
+:retf;
+stop
+@enduml
+```
+
+## Level 1 detail: (more as identified)
+
+As the remaining subsystem-test subroutines above get identified, add
+a Level-1 diagram here per subsystem showing its own internal control
+flow (and update `FUNCTIONS.md` + the relevant `.symbols.json` at the
+same time). Also still open from the main boot sequence: what
+`SUB_E3B1`/`SUB_FDB3`/`SUB_F9FE`/`SUB_F156` (called from `SUB_E6AAB`)
+and `SUB_E75C`/`SUB_FBCF`/`SUB_E925`/`SUB_E723` actually do.

@@ -37,6 +37,17 @@ CHIPS = {
     # address space has plenty of room free). See NOTES.md "The comm ROM
     # is NOT bank-switched".
     "2998": {"path": "../binary/160-2998-14.bin", "phys_base": 0x80000},
+    # 0x90000-0x97FFF is an address-decode ALIAS of the comm ROM's own
+    # upper half (0x88000-0x8FFFF, file offset 0x8000-0xFFFF) - not a
+    # separate device. Confirmed by brute-forcing every possible base
+    # offset against 82 observed far-call targets in that range: only
+    # base=0x88000 (equivalently, this alias's own base of 0x90000,
+    # pointing at file offset 0x8000+) gives 82/82 exact matches against
+    # the comm ROM's own function-start signatures. Almost certainly
+    # incomplete address-line decoding in the chip-select logic. See
+    # NOTES.md "The 0x90000-0x97FFF region is fully resolved".
+    "2998_alias_90000": {"path": "../binary/160-2998-14.bin",
+                          "phys_base": 0x90000, "slice": (0x8000, 0x10000)},
 }
 
 ENTRY_POINTS = [
@@ -74,6 +85,9 @@ def load_chips(chip_defs=None):
     data = {}
     for name, info in chip_defs.items():
         buf = open(info["path"], "rb").read()
+        if "slice" in info:
+            lo, hi = info["slice"]
+            buf = buf[lo:hi]
         data[name] = {"buf": buf, "base": info["phys_base"], "size": len(buf)}
     return data
 
