@@ -5110,10 +5110,10 @@
     "notes": null
   },
   "E61E3": {
-    "name": "SUB_E61E3",
+    "name": "create_task_b",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "create_task_b",
     "notes": null
   },
   "E6224": {

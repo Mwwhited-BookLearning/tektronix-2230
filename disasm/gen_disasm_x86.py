@@ -619,6 +619,20 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE61E3: "create_task_b",                 # near-identical duplicate
+                                               # of create_task's body
+                                               # (same pushf/cli/push-9-
+                                               # regs, same param-
+                                               # reordering xchg
+                                               # sequence, same [0x1A9D+
+                                               # idx*4] table write, same
+                                               # ready-flag OR) - called
+                                               # specifically from
+                                               # mark_task_ready, exact
+                                               # reason for the
+                                               # duplication (rather than
+                                               # sharing create_task)
+                                               # not confirmed
     0xE6524: "scheduler_tick_service",        # called unconditionally
                                                # from BOTH paths inside
                                                # INT2_HANDLER_LATE (every

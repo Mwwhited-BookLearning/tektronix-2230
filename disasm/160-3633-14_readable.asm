@@ -7314,7 +7314,7 @@ L_E61A7:
     call far [es:bx]                         ; 61DC: lcall es:[bx]
     cli                                      ; 61DF: cli 
     jmp 0x6274                               ; 61E0: jmp 0x1c4
-SUB_E61E3:
+create_task_b:
     pushf                                    ; 61E3: pushf 
     cli                                      ; 61E4: cli 
     push ax                                  ; 61E5: push ax

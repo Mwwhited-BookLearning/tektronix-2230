@@ -718,9 +718,18 @@ polling, unified in one place.
 
 **Still not confirmed**: how many tasks exist and what each one does
 (the self-test/UI/acquisition-refresh loop are plausible candidates),
-exactly which hardware `0x403FFA`/`0x403FFB` belong to (front-panel
+and exactly which hardware `0x403FFA`/`0x403FFB` belong to (front-panel
 key/encoder status is the leading candidate, matching where `[0x758]`
-gets used elsewhere), and what `SUB_E61E3` does.
+gets used elsewhere).
+
+`SUB_E61E3` (now `create_task_b`) turned out to be a near-identical
+duplicate of `create_task`'s own body - same save-context, same
+per-task table write, same ready-flag set - called specifically from
+`mark_task_ready` rather than sharing the existing `create_task`. Not
+confirmed why the compiler/source duplicated this rather than calling
+`create_task` directly - possibly an artifact of how the original C
+source structured task creation vs. task wake-up as textually separate
+functions despite near-identical bodies.
 
 ## Validation status
 

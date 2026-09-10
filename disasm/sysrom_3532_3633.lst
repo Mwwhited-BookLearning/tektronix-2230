@@ -9895,7 +9895,7 @@ L_E61A7:
     3633:61DC  [E61DC]  26ff1f          lcall   es:[bx]
     3633:61DF  [E61DF]  fa              cli     
     3633:61E0  [E61E0]  e99100          jmp     L_E6274  ; 0x1c4
-SUB_E61E3:
+create_task_b:
     3633:61E3  [E61E3]  9c              pushf   
     3633:61E4  [E61E4]  fa              cli     
     3633:61E5  [E61E5]  50              push    ax
@@ -10578,7 +10578,7 @@ mark_task_ready:
     3633:6A94  [E6A94]  8b7e06          mov     di, word ptr [bp + 6]
     3633:6A97  [E6A97]  c685440700      mov     byte ptr [di + 0x744], 0
     3633:6A9C  [E6A9C]  fe85911a        inc     byte ptr [di + 0x1a91]
-    3633:6AA0  [E6AA0]  9a33010be6      lcall   SUB_E61E3  ; 0xe60b, 0x133
+    3633:6AA0  [E6AA0]  9a33010be6      lcall   create_task_b  ; 0xe60b, 0x133
     3633:6AA5  [E6AA5]  8be5            mov     sp, bp
     3633:6AA7  [E6AA7]  5d              pop     bp
     3633:6AA8  [E6AA8]  ca0200          retf    2
