@@ -128,6 +128,9 @@ names but the bigger picture):
 - a strings/constants catalog — started in `STRINGS.md` (curated) with
   a machine-readable companion in `disasm/strings_<rom>.json`
   (regenerate via `disasm/gen_strings.py`)
+- clean pseudo-C reconstructions of well-understood routines — started
+  in `PSEUDOCODE.md`; add one whenever a `FUNCTIONS.md` entry reaches
+  "Confirmed" confidence
 - peripherals: the A/D converter, front-panel controls, GPIB/RS-232
   hardware, and how the firmware talks to each
 

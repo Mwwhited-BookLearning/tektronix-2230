@@ -32,6 +32,10 @@ are already settled and documented there and in `disasm/NOTES.md`.
   drift apart.
 - `VARIABLES.md` — same idea as `FUNCTIONS.md` but for memory
   locations/variables rather than routines.
+- `PSEUDOCODE.md` — hand-written C reconstructions of routines
+  understood well enough to read as code, not just a disassembly
+  listing. Only for routines already in `FUNCTIONS.md`; mark anything
+  not confirmed as a comment rather than stating it as fact.
 - `STRINGS.md` — every printable string found in the raw ROM binaries
   plus known constants, categorized and curated; machine-readable
   companion is `disasm/strings_<rom>.json` (regenerate with

@@ -112,8 +112,8 @@ start
 :Read word at ES:DI\n(hardcoded here to 0x8000:0004 =\nphysical 0x80004, the comm ROM's\nown BCD-revision + complement bytes);
 if (high byte + low byte == 0xFF?) then (yes)
   :Valid ROM header checksum found\n-> set bit 1 of [0x1BF9];
-  :Save current word at that address;
-  :Write test pattern 0xAA55;
+  :Save current word at ES:[DI+0xA000]\n(a DIFFERENT word, physical 0x8A004 -\nnot the same address just checked);
+  :Write test pattern 0xAA55 there;
   if (read-back == 0xAA55\nAND [0x1B83] == 0x1E?) then (yes)
     :Also RAM/IO-backed\n-> set bit 2 of [0x1BF9];
   else (no)

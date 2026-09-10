@@ -353,9 +353,20 @@ function:
    This is a **"is a genuine Tektronix ROM header present here"**
    check, not a generic memory probe.
 2. Only if that passes does it run the save/write-`0xAA55`/verify/
-   restore sequence against the *same* address - testing whether that
-   location is *also* writable, i.e., whether the option board carries
-   its own RAM/memory-mapped I/O in addition to its ROM.
+   restore sequence - **not against the same address**, against
+   `ES:[DI+0xA000]` (`DI` is unchanged from the checksum read, still
+   `4`), i.e. physical `0x8A004` - a *different* word 0xA000 bytes
+   further into the same 64KB comm-board window. Testing whether
+   *that* location is writable, i.e., whether the option board
+   provides RAM/memory-mapped I/O somewhere in its address space in
+   addition to its ROM. Why that specific offset was chosen isn't
+   confirmed - one plausible explanation is a small dedicated
+   presence-detect scratch register on the option board, decoded by
+   the board's own sub-decode logic to occupy just that one word
+   while everything else in the window reads as ROM (this would also
+   explain why our raw EPROM dump shows ordinary code/data there: a
+   dump reads the physical EPROM chip directly, not "as seen by the
+   CPU with the board installed and its sub-decode active").
 3. Packs the result into a status byte (`[0x1BF9]`): one bit for "valid
    header found," a second bit (only set if the RAM-write also stuck
    *and* another config byte at `[0x1B83]` reads `0x1E`) for "and it
