@@ -27,10 +27,17 @@
       confidence is lower than the main ROM's — entry points are
       heuristic (push-bp signature scan), not proven reachable. See
       `disasm/NOTES.md` "Comm ROM disassembly" for full detail.
-- [ ] Identify the unidentified `~0x80000-0x97000` region referenced by
-      far calls from BOTH the main ROM and the comm ROM (see
-      `MEMORY_MAP.md`) — likely a shared service/API call table, either
-      RAM-resident or a ROM we don't have a dump of.
+- [ ] Figure out how code gets INTO the `0x80000-0x97FFF` region (see
+      `MEMORY_MAP.md` and `disasm/NOTES.md`). Now confirmed much bigger
+      than first thought (150+ distinct call targets from the comm ROM
+      alone) and very likely real RAM (a classic 0xAA55 memory-size-
+      test pattern targets `es=0x8000` in the main ROM) rather than a
+      missing ROM (TekWiki confirms no 3rd EPROM exists). Checked 2 of
+      5 call sites of a generic memcpy utility (`SUB_FBC09`) looking
+      for a load-into-that-region copy; found nothing yet — check the
+      other 3, and look for non-memcpy loading mechanisms (GPIB/RS-232
+      download, runtime code generation). This may be a hard ceiling
+      on what's recoverable from static analysis alone.
 - [ ] Narrow down what peripheral the I/O ports actually seen in code
       (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to —
       see `MEMORY_MAP.md` "I/O ports actually seen in code".

@@ -166,6 +166,42 @@ be shifted to the matching global file offset (`page*0x4000 +
 page-relative value`) before being embedded, or it silently points at
 the wrong page.
 
+## The 0x80000-0x97FFF region: likely RAM, contents unknown
+
+With the comm ROM fully disassembled, its far calls into the
+previously-flagged "mystery" region turned out to be much larger than
+first thought: **150+ distinct call targets** across dozens of
+separate segments (`8006`, `802c`, `81ae`, `82c9`, `839f`, `8511`,
+`85eb`, `911e`, `92cf`, `941f`, `9470`, `9628`, `9687`, `96f5`, `97c6`,
+...), spanning `0x80000` to `0x97C95` - roughly 96KB. None of it
+overlaps the confirmed main-ROM window, and TekWiki explicitly
+confirms there is no third ROM chip for the 2230 (just the two 27512s
+on A10 plus the comm option ROM), ruling out "it's a ROM we simply
+don't have a dump of."
+
+Direct evidence it's real, tested RAM rather than something exotic:
+the main ROM contains a classic non-destructive memory-test sequence
+targeting `es=0x8000` (`160-3633` offsets around `0x4544`/`0x4566`) -
+read the current value, write the test pattern `0xAA55`, then (per the
+disassembly around there) restore it - the standard way period BIOS/
+POST code detects how much RAM is actually installed by probing
+upward until the pattern stops sticking.
+
+**Still open: how code gets into that RAM for the comm ROM to call.**
+Went looking for a block-copy (`rep movsw`/`movsb`) moving bytes from
+ROM into `0x80000+`; found a generic memcpy-style utility
+(`SUB_FBC09`, appears in both `160-3532` and `160-3633`, called from 5
+places) but the 2 call sites checked so far both copy within the
+normal low-RAM globals area, not into the mystery region. Remaining
+possibilities: the load happens via a call site not yet checked, via
+a different mechanism entirely (downloaded over GPIB/RS-232 at
+runtime, generated programmatically, or something else), or the RAM
+simply isn't populated with anything meaningful unless a specific
+hardware option is installed. **Whatever the mechanism, it's likely
+invisible to static analysis of these three ROM dumps alone** - worth
+factoring into any estimate of how much of this system can ultimately
+be reverse-engineered from what we have.
+
 ## Interrupt vector table entries (real code entry points)
 
 The reset routine and two later routines (`SUB_E5E53`, inside what's
