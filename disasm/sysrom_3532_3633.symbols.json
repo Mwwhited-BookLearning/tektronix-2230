@@ -490,10 +490,10 @@
     "notes": null
   },
   "950C2": {
-    "name": "SUB_950C2",
+    "name": "build_gpib_message_checksum",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "build_gpib_message_checksum",
     "notes": null
   },
   "951AA": {
@@ -1127,10 +1127,10 @@
     "notes": null
   },
   "961E9": {
-    "name": "SUB_961E9",
+    "name": "init_gpib_record",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "init_gpib_record",
     "notes": null
   },
   "9628C": {

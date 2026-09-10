@@ -173,6 +173,8 @@ range-scan tests corresponds to.
 | `0x83241` | `putchar_serial` **(renamed)** | Thin wrapper: stores the byte argument at local `[5]`, calls `serial_tx_buffer_put` | Confirmed |
 | `0x83259` | `putchar_serial_seg` **(renamed)** | Same as `putchar_serial` but swaps `DS` to a fixed segment (`0x8F80`) first via `set_ds_return_old` | Confirmed |
 | `0x839D1` | `comm_call_main_rom` **(renamed)** | Swaps `DS` to the main ROM's low-RAM segment (`0x41`), calls a main-ROM handler (`SUB_ED7DF`), swaps back - a cross-ROM callback wrapper, same pattern as `set_comm_critical_flag` | Confirmed mechanism; the specific main-ROM callback's purpose not traced |
+| `0x950C2` | `build_gpib_message_checksum` **(renamed)** | Indexes a 78-byte record table at `[0x742]` and a 12-byte record table at `[0x73E]` by a caller-given index, computes checksums (via `checksum_bytes`) over message regions derived from those records' fields - part of GPIB message building/verification | Mechanism confirmed; exact message format not fully traced |
+| `0x961E9` | `init_gpib_record` **(renamed)** | `(record_index)` - zeroes 5 word fields and sets a status byte to 1 within one 12-byte entry of the `[0x73E]` record table (the same table `build_gpib_message_checksum` reads a length field from) | Confirmed |
 | `0x9605A` | `checksum_bytes` **(renamed)** | `(far ptr, count)` - sums `count` bytes into a byte accumulator (wrapping), returns it - a plain byte checksum | Confirmed |
 | `0x96087` | `memset_far` **(renamed)** | `(far ptr, fill_byte, count)` - writes `fill_byte` to `count` consecutive bytes | Confirmed |
 

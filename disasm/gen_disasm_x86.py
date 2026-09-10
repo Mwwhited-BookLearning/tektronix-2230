@@ -126,6 +126,27 @@ FUNCTIONAL_NAMES = {
     # --- Renamed during the "rename everything" pass (session:
     # keep going until everything is renamed) - see NOTES.md "The
     # readout vector display list" and FUNCTIONS.md for evidence. ---
+    0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
+                                               # 78-byte record table at
+                                               # [0x742] and a 12-byte
+                                               # record table at [0x73E]
+                                               # by a caller-given index,
+                                               # computes checksums
+                                               # (via checksum_bytes)
+                                               # over message regions
+                                               # derived from those
+                                               # records' fields - part
+                                               # of GPIB message
+                                               # building/verification
+    0x961E9: "init_gpib_record",              # comm ROM: (record_index)
+                                               # - zeroes 5 word fields
+                                               # and sets a status byte
+                                               # to 1 within one 12-byte
+                                               # entry of the [0x73E]
+                                               # record table (the same
+                                               # table build_gpib_
+                                               # message_checksum reads
+                                               # a length field from)
     0x83241: "putchar_serial",                # thin wrapper: stores the
                                                # byte argument at local
                                                # [5], calls serial_tx_

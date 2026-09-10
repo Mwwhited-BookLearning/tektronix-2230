@@ -652,7 +652,7 @@ set_ds_return_old:
     2998_alias_90000:4718  [94718]  5d              pop     bp
     2998_alias_90000:4719  [94719]  ca0200          retf    2
 
-SUB_950C2:
+build_gpib_message_checksum:
     2998_alias_90000:50C2  [950C2]  55              push    bp
     2998_alias_90000:50C3  [950C3]  8bec            mov     bp, sp
     2998_alias_90000:50C5  [950C5]  83ec0c          sub     sp, 0xc
@@ -1177,7 +1177,7 @@ L_95671:
     2998_alias_90000:56A8  [956A8]  7412            je      L_956BC  ; 0xfac
     2998_alias_90000:56AA  [956AA]  c70690066204    mov     word ptr [0x690], 0x462
     2998_alias_90000:56B0  [956B0]  ffb656ff        push    word ptr [bp - 0xaa]
-    2998_alias_90000:56B4  [956B4]  9ad91a7194      lcall   SUB_961E9  ; 0x9471, 0x1ad9
+    2998_alias_90000:56B4  [956B4]  9ad91a7194      lcall   init_gpib_record  ; 0x9471, 0x1ad9
     2998_alias_90000:56B9  [956B9]  e93d00          jmp     L_956F9  ; 0xfe9
 L_956BC:
     2998_alias_90000:56BC  [956BC]  8b8656ff        mov     ax, word ptr [bp - 0xaa]
@@ -1702,7 +1702,7 @@ L_95C38:
     2998_alias_90000:5CB8  [95CB8]  2689413c        mov     word ptr es:[bx + di + 0x3c], ax
     2998_alias_90000:5CBC  [95CBC]  2689513e        mov     word ptr es:[bx + di + 0x3e], dx
     2998_alias_90000:5CC0  [95CC0]  ff76f4          push    word ptr [bp - 0xc]
-    2998_alias_90000:5CC3  [95CC3]  9ab2097194      lcall   SUB_950C2  ; 0x9471, 0x9b2
+    2998_alias_90000:5CC3  [95CC3]  9ab2097194      lcall   build_gpib_message_checksum  ; 0x9471, 0x9b2
     2998_alias_90000:5CC8  [95CC8]  8b7eee          mov     di, word ptr [bp - 0x12]
     2998_alias_90000:5CCB  [95CCB]  017ef0          add     word ptr [bp - 0x10], di
     2998_alias_90000:5CCE  [95CCE]  83c402          add     sp, 2
@@ -1717,9 +1717,9 @@ L_95CD4:
     2998_alias_90000:5CE6  [95CE6]  7419            je      L_95D01  ; 0x15f1
     2998_alias_90000:5CE8  [95CE8]  c7069006aa05    mov     word ptr [0x690], 0x5aa
     2998_alias_90000:5CEE  [95CEE]  ff76f4          push    word ptr [bp - 0xc]
-    2998_alias_90000:5CF1  [95CF1]  9ad91a7194      lcall   SUB_961E9  ; 0x9471, 0x1ad9
+    2998_alias_90000:5CF1  [95CF1]  9ad91a7194      lcall   init_gpib_record  ; 0x9471, 0x1ad9
     2998_alias_90000:5CF6  [95CF6]  ff76f4          push    word ptr [bp - 0xc]
-    2998_alias_90000:5CF9  [95CF9]  9ab2097194      lcall   SUB_950C2  ; 0x9471, 0x9b2
+    2998_alias_90000:5CF9  [95CF9]  9ab2097194      lcall   build_gpib_message_checksum  ; 0x9471, 0x9b2
     2998_alias_90000:5CFE  [95CFE]  e93800          jmp     L_95D39  ; 0x1629
 L_95D01:
     2998_alias_90000:5D01  [95D01]  8b46f4          mov     ax, word ptr [bp - 0xc]
@@ -1886,7 +1886,7 @@ L_9609C:
     2998_alias_90000:60A7  [960A7]  5d              pop     bp
     2998_alias_90000:60A8  [960A8]  ca0400          retf    4
 
-SUB_961E9:
+init_gpib_record:
     2998_alias_90000:61E9  [961E9]  55              push    bp
     2998_alias_90000:61EA  [961EA]  8bec            mov     bp, sp
     2998_alias_90000:61EC  [961EC]  83ec06          sub     sp, 6
