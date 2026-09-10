@@ -4166,7 +4166,7 @@ L_E1086:
     3633:1088  [E1088]  5d              pop     bp
     3633:1089  [E1089]  ca0200          retf    2
 
-SUB_E1116:
+verify_pattern_with_report:
     3633:1116  [E1116]  55              push    bp
     3633:1117  [E1117]  8bec            mov     bp, sp
     3633:1119  [E1119]  83ec36          sub     sp, 0x36
@@ -5677,7 +5677,7 @@ SUB_E230B:
     3633:2415  [E2415]  8d7eda          lea     di, [bp - 0x26]
     3633:2418  [E2418]  16              push    ss
     3633:2419  [E2419]  57              push    di
-    3633:241A  [E241A]  9a9602e8e0      lcall   SUB_E1116  ; 0xe0e8, 0x296
+    3633:241A  [E241A]  9a9602e8e0      lcall   verify_pattern_with_report  ; 0xe0e8, 0x296
     3633:241F  [E241F]  83c40e          add     sp, 0xe
     3633:2422  [E2422]  0946f6          or      word ptr [bp - 0xa], ax
     3633:2425  [E2425]  8b46f6          mov     ax, word ptr [bp - 0xa]
@@ -6081,7 +6081,7 @@ selftest_xy_acq:
     3633:28E6  [E28E6]  50              push    ax
     3633:28E7  [E28E7]  bf4906          mov     di, 0x649
     3633:28EA  [E28EA]  57              push    di
-    3633:28EB  [E28EB]  9a9602e8e0      lcall   SUB_E1116  ; 0xe0e8, 0x296
+    3633:28EB  [E28EB]  9a9602e8e0      lcall   verify_pattern_with_report  ; 0xe0e8, 0x296
     3633:28F0  [E28F0]  83c40e          add     sp, 0xe
     3633:28F3  [E28F3]  0946f6          or      word ptr [bp - 0xa], ax
     3633:28F6  [E28F6]  8b46f6          mov     ax, word ptr [bp - 0xa]
@@ -6132,7 +6132,7 @@ selftest_hs_acq:
     3633:2957  [E2957]  57              push    di
     3633:2958  [E2958]  ba1f06          mov     dx, 0x61f
     3633:295B  [E295B]  52              push    dx
-    3633:295C  [E295C]  9a9602e8e0      lcall   SUB_E1116  ; 0xe0e8, 0x296
+    3633:295C  [E295C]  9a9602e8e0      lcall   verify_pattern_with_report  ; 0xe0e8, 0x296
     3633:2961  [E2961]  83c40e          add     sp, 0xe
     3633:2964  [E2964]  0946f8          or      word ptr [bp - 8], ax
     3633:2967  [E2967]  8b46f8          mov     ax, word ptr [bp - 8]
@@ -7813,7 +7813,7 @@ L_E3D7E:
     3633:3DA2  [E3DA2]  9aaf02a8e6      lcall   seg_off_to_linear  ; 0xe6a8, 0x2af
     3633:3DA7  [E3DA7]  c43ee01d        les     di, ptr [0x1de0]
     3633:3DAB  [E3DAB]  268905          mov     word ptr es:[di], ax
-    3633:3DAE  [E3DAE]  9abe05b1e3      lcall   SUB_E40CE  ; 0xe3b1, 0x5be
+    3633:3DAE  [E3DAE]  9abe05b1e3      lcall   print_boot_rom_id_banner  ; 0xe3b1, 0x5be
     3633:3DB3  [E3DB3]  833ee41a00      cmp     word ptr [0x1ae4], 0
     3633:3DB8  [E3DB8]  7434            je      L_E3DEE  ; 0x2de
     3633:3DBA  [E3DBA]  c706181b0100    mov     word ptr [0x1b18], 1
@@ -8099,7 +8099,7 @@ L_E40BD:
     3633:40CA  [E40CA]  8be5            mov     sp, bp
     3633:40CC  [E40CC]  5d              pop     bp
     3633:40CD  [E40CD]  cb              retf    
-SUB_E40CE:
+print_boot_rom_id_banner:
     3633:40CE  [E40CE]  55              push    bp
     3633:40CF  [E40CF]  8bec            mov     bp, sp
     3633:40D1  [E40D1]  83ec06          sub     sp, 6

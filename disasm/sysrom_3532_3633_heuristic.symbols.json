@@ -1309,10 +1309,10 @@
     "notes": null
   },
   "E1116": {
-    "name": "SUB_E1116",
+    "name": "verify_pattern_with_report",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "verify_pattern_with_report",
     "notes": null
   },
   "E1130": {
@@ -3850,10 +3850,10 @@
     "notes": null
   },
   "E40CE": {
-    "name": "SUB_E40CE",
+    "name": "print_boot_rom_id_banner",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "print_boot_rom_id_banner",
     "notes": null
   },
   "E414F": {

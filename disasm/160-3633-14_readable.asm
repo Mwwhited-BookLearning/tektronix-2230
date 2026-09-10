@@ -1201,7 +1201,7 @@ L_E1086:
     db 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x18, 0x9a, 0x1b, 0x00, 0xce, 0xe2, 0x89, 0x46, 0xf8, 0x8b  ; 10EC
     db 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05, 0x00, 0x2b  ; 10FC
     db 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 110C
-SUB_E1116:
+verify_pattern_with_report:
     push bp                                  ; 1116: push bp
     mov bp, sp                               ; 1117: mov bp, sp
     sub sp, 0x36                             ; 1119: sub sp, 0x36
@@ -5274,7 +5274,7 @@ L_E40BD:
     mov sp, bp                               ; 40CA: mov sp, bp
     pop bp                                   ; 40CC: pop bp
     retf                                     ; 40CD: retf 
-SUB_E40CE:
+print_boot_rom_id_banner:
     push bp                                  ; 40CE: push bp
     mov bp, sp                               ; 40CF: mov bp, sp
     sub sp, 6                                ; 40D1: sub sp, 6

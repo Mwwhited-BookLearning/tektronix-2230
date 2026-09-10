@@ -515,6 +515,35 @@ FUNCTIONAL_NAMES = {
                                                # different word counts
                                                # for what look like
                                                # different delay lengths
+    0xE1116: "verify_pattern_with_report",    # compares a byte from the
+                                               # [0x31E]-based (physical
+                                               # 0x48000) scratch buffer
+                                               # against an expected
+                                               # value in a loop; on
+                                               # mismatch, builds a
+                                               # detailed error message
+                                               # ("latent"/"END_OF_
+                                               # RECORD"-area text +
+                                               # offset + [0x795]'s
+                                               # value) rather than a
+                                               # plain pass/fail - a
+                                               # data-integrity check
+                                               # with rich diagnostics,
+                                               # likely acquisition-
+                                               # memory-related given
+                                               # neighboring strings
+                                               # ("acq_mem")
+    0xE40CE: "print_boot_rom_id_banner",      # gated on [0x1B48]!=0 (the
+                                               # test-mode byte); prints
+                                               # "2230/2220 boot : 160-"
+                                               # plus ROM ID/revision
+                                               # bytes from [0x1DD4]+2/
+                                               # +3/+4 (via format_byte_
+                                               # hex) and "POWER UP
+                                               # FAILURES"-area text, all
+                                               # via print_string_far (to
+                                               # the CRT readout, not a
+                                               # separate serial port)
     0xE43A0: "init_selftest_report_screen",   # saves the readout
                                                # buffer's base pointer
                                                # ([0x1CC4]) to [0x45E]/
