@@ -982,10 +982,41 @@ display list" above): idle-state check (`line stuck high`) and an
 active check after drawing a shape and expecting an interrupt within a
 timeout (`TIMEOUT`/`unable to reset`).
 
-**Remaining unidentified in this whole self-test area**: which
-specific ADC(s)/status registers the `configure_measurement_hw`/
-`run_adc_selftest` cluster addresses (see below), and which physical
-front-panel control each of the 3 range-scan tests corresponds to.
+**Follow-up sweep found 4 more, closing most of the remaining
+questions**: wrote a one-off scanner (`disasm/scan_string_refs.py`,
+not part of the regular pipeline, kept for reuse) that automates the
+same technique across every still-unnamed function at once - for each
+one, find any `mov reg, 0xFF7B` within 2 lines of another `mov reg,
+0xNNNN`, and read the string at that computed address. Found:
+- `format_selftest_result_string` (`0xE0C3D`) - **this is the missing
+  link** noted in earlier sessions ("the actual message printing
+  happening elsewhere, not yet found"). Builds `PASSED`/`FAILED`/
+  `UNTESTED`/`Not installed` text from a status-bits argument:
+  `0x20`=not installed, `0x02`=failed, `0x01`=passed, else untested -
+  this is the bit encoding used throughout `self_test_dispatcher`'s
+  OR-folded `[bp-0xA]` accumulator.
+- `selftest_front_panel_adc` (`0xE296E`) - references `FP_a2d`,
+  identifying the peripheral behind the `configure_measurement_hw`/
+  `run_adc_selftest`/`selftest_measure_and_report` cluster: **the
+  front-panel A/D converter**, not an acquisition-channel ADC as
+  originally guessed.
+- `ram_pattern_test` (`0xE1B89`) - a generic memory test engine
+  (alternating `0xAA`/`0x55` write, then masked read-back verify) -
+  the likely shared implementation behind the `SYS_RAM`/`NIB_RAM`/
+  `ACQ_RAM`/`COMM_RAM` self-tests. Identified from its code shape
+  alone, no string needed.
+- `selftest_comm_readback` (`0xE20B0`) - the 2nd phase called by
+  `selftest_comm_loopback_a`, references `COMM_RB`/`rb(1)=`/`rb(0)=`.
+  **Surprising and unreconciled**: it reads/writes physical
+  `0x40000+0x67C`/`0x6F8` - the readout/CRT memory window documented
+  above, nowhere near the comm ROM's actual `0x80000` address. Either
+  the comm board's registers are somehow also mapped into part of the
+  `0x40000` RAM window (a form of shared/dual-ported memory not
+  otherwise evidenced), or "COMM" in `COMM_RB` doesn't mean the GPIB/
+  RS-232 option board in this specific string (could be a different
+  "communication" - e.g. between the CRT controller and main CPU).
+  Left unresolved - worth another look once more of this address
+  range's other uses are mapped.
 
 ## Possible ADC/measurement self-test hardware
 

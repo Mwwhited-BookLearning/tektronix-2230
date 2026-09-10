@@ -3871,7 +3871,7 @@ L_E0C37:
     3633:0C37  [E0C37]  8be5            mov     sp, bp
     3633:0C39  [E0C39]  5d              pop     bp
     3633:0C3A  [E0C3A]  ca0200          retf    2
-SUB_E0C3D:
+format_selftest_result_string:
     3633:0C3D  [E0C3D]  55              push    bp
     3633:0C3E  [E0C3E]  8bec            mov     bp, sp
     3633:0C40  [E0C40]  83ec06          sub     sp, 6
@@ -4149,12 +4149,12 @@ L_E1047:
     3633:105D  [E105D]  c7065c1b0000    mov     word ptr [0x1b5c], 0
     3633:1063  [E1063]  837e0603        cmp     word ptr [bp + 6], 3
     3633:1067  [E1067]  7518            jne     L_E1081  ; 0x201
-    3633:1069  [E1069]  9a0e0096e2      lcall   SUB_E296E  ; 0xe296, 0xe
+    3633:1069  [E1069]  9a0e0096e2      lcall   selftest_front_panel_adc  ; 0xe296, 0xe
     3633:106E  [E106E]  8946f8          mov     word ptr [bp - 8], ax
     3633:1071  [E1071]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1074  [E1074]  57              push    di
     3633:1075  [E1075]  50              push    ax
-    3633:1076  [E1076]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1076  [E1076]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:107B  [E107B]  5f              pop     di
     3633:107C  [E107C]  0bc7            or      ax, di
     3633:107E  [E107E]  e90500          jmp     L_E1086  ; 0x206
@@ -4895,7 +4895,7 @@ selftest_acq_ram:
     3633:1B40  [E1B40]  50              push    ax
     3633:1B41  [E1B41]  ba4807          mov     dx, 0x748
     3633:1B44  [E1B44]  52              push    dx
-    3633:1B45  [E1B45]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1B45  [E1B45]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1B4A  [E1B4A]  83c40e          add     sp, 0xe
     3633:1B4D  [E1B4D]  8946f8          mov     word ptr [bp - 8], ax
     3633:1B50  [E1B50]  bfff00          mov     di, 0xff
@@ -4916,14 +4916,14 @@ selftest_acq_ram:
     3633:1B72  [E1B72]  50              push    ax
     3633:1B73  [E1B73]  bf5507          mov     di, 0x755
     3633:1B76  [E1B76]  57              push    di
-    3633:1B77  [E1B77]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1B77  [E1B77]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1B7C  [E1B7C]  83c40e          add     sp, 0xe
     3633:1B7F  [E1B7F]  0946f8          or      word ptr [bp - 8], ax
     3633:1B82  [E1B82]  8b46f8          mov     ax, word ptr [bp - 8]
     3633:1B85  [E1B85]  8be5            mov     sp, bp
     3633:1B87  [E1B87]  5d              pop     bp
     3633:1B88  [E1B88]  cb              retf    
-SUB_E1B89:
+ram_pattern_test:
     3633:1B89  [E1B89]  55              push    bp
     3633:1B8A  [E1B8A]  8bec            mov     bp, sp
     3633:1B8C  [E1B8C]  83ec36          sub     sp, 0x36
@@ -5072,7 +5072,7 @@ selftest_comm_loopback_a:
     3633:1D38  [E1D38]  b82000          mov     ax, 0x20
     3633:1D3B  [E1D3B]  e90500          jmp     L_E1D43  ; 0x93
 L_E1D3E:
-    3633:1D3E  [E1D3E]  9a0004cbe1      lcall   SUB_E20B0  ; 0xe1cb, 0x400
+    3633:1D3E  [E1D3E]  9a0004cbe1      lcall   selftest_comm_readback  ; 0xe1cb, 0x400
 L_E1D43:
     3633:1D43  [E1D43]  8be5            mov     sp, bp
     3633:1D45  [E1D45]  5d              pop     bp
@@ -5162,7 +5162,7 @@ L_E1EA6:
     3633:1EC4  [E1EC4]  53              push    bx
     3633:1EC5  [E1EC5]  bab706          mov     dx, 0x6b7
     3633:1EC8  [E1EC8]  52              push    dx
-    3633:1EC9  [E1EC9]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1EC9  [E1EC9]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1ECE  [E1ECE]  83c40e          add     sp, 0xe
     3633:1ED1  [E1ED1]  8946f8          mov     word ptr [bp - 8], ax
     3633:1ED4  [E1ED4]  b80000          mov     ax, 0
@@ -5371,7 +5371,7 @@ L_E20AC:
     3633:20AC  [E20AC]  8be5            mov     sp, bp
     3633:20AE  [E20AE]  5d              pop     bp
     3633:20AF  [E20AF]  cb              retf    
-SUB_E20B0:
+selftest_comm_readback:
     3633:20B0  [E20B0]  55              push    bp
     3633:20B1  [E20B1]  8bec            mov     bp, sp
     3633:20B3  [E20B3]  83ec32          sub     sp, 0x32
@@ -6139,7 +6139,7 @@ selftest_hs_acq:
     3633:296A  [E296A]  8be5            mov     sp, bp
     3633:296C  [E296C]  5d              pop     bp
     3633:296D  [E296D]  cb              retf    
-SUB_E296E:
+selftest_front_panel_adc:
     3633:296E  [E296E]  55              push    bp
     3633:296F  [E296F]  8bec            mov     bp, sp
     3633:2971  [E2971]  83ec38          sub     sp, 0x38

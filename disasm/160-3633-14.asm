@@ -880,7 +880,7 @@ L_E0C37:
     db 0x8b, 0xe5  ; 0C37: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0C39: pop bp
     retf 2                                   ; 0C3A: retf 2
-SUB_E0C3D:
+format_selftest_result_string:
     push bp                                  ; 0C3D: push bp
     db 0x8b, 0xec  ; 0C3E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0C40: sub sp, 6
@@ -2011,7 +2011,7 @@ selftest_acq_ram:
     db 0x8b, 0xe5  ; 1B85: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1B87: pop bp
     retf                                     ; 1B88: retf 
-SUB_E1B89:
+ram_pattern_test:
     push bp                                  ; 1B89: push bp
     db 0x8b, 0xec  ; 1B8A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x36                             ; 1B8C: sub sp, 0x36
@@ -2477,7 +2477,7 @@ L_E20AC:
     db 0x8b, 0xe5  ; 20AC: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 20AE: pop bp
     retf                                     ; 20AF: retf 
-SUB_E20B0:
+selftest_comm_readback:
     push bp                                  ; 20B0: push bp
     db 0x8b, 0xec  ; 20B1: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x32                             ; 20B3: sub sp, 0x32
@@ -3267,7 +3267,7 @@ selftest_hs_acq:
     db 0x8b, 0xe5  ; 296A: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 296C: pop bp
     retf                                     ; 296D: retf 
-SUB_E296E:
+selftest_front_panel_adc:
     push bp                                  ; 296E: push bp
     db 0x8b, 0xec  ; 296F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x38                             ; 2971: sub sp, 0x38

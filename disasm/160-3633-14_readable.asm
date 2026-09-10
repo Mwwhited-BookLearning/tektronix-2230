@@ -878,7 +878,7 @@ L_E0C37:
     mov sp, bp                               ; 0C37: mov sp, bp
     pop bp                                   ; 0C39: pop bp
     retf 2                                   ; 0C3A: retf 2
-SUB_E0C3D:
+format_selftest_result_string:
     push bp                                  ; 0C3D: push bp
     mov bp, sp                               ; 0C3E: mov bp, sp
     sub sp, 6                                ; 0C40: sub sp, 6
@@ -2009,7 +2009,7 @@ selftest_acq_ram:
     mov sp, bp                               ; 1B85: mov sp, bp
     pop bp                                   ; 1B87: pop bp
     retf                                     ; 1B88: retf 
-SUB_E1B89:
+ram_pattern_test:
     push bp                                  ; 1B89: push bp
     mov bp, sp                               ; 1B8A: mov bp, sp
     sub sp, 0x36                             ; 1B8C: sub sp, 0x36
@@ -2475,7 +2475,7 @@ L_E20AC:
     mov sp, bp                               ; 20AC: mov sp, bp
     pop bp                                   ; 20AE: pop bp
     retf                                     ; 20AF: retf 
-SUB_E20B0:
+selftest_comm_readback:
     push bp                                  ; 20B0: push bp
     mov bp, sp                               ; 20B1: mov bp, sp
     sub sp, 0x32                             ; 20B3: sub sp, 0x32
@@ -3265,7 +3265,7 @@ selftest_hs_acq:
     mov sp, bp                               ; 296A: mov sp, bp
     pop bp                                   ; 296C: pop bp
     retf                                     ; 296D: retf 
-SUB_E296E:
+selftest_front_panel_adc:
     push bp                                  ; 296E: push bp
     mov bp, sp                               ; 296F: mov bp, sp
     sub sp, 0x38                             ; 2971: sub sp, 0x38

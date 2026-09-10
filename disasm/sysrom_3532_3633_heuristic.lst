@@ -1279,7 +1279,7 @@ L_E0C37:
     3633:0C37  [E0C37]  8be5            mov     sp, bp
     3633:0C39  [E0C39]  5d              pop     bp
     3633:0C3A  [E0C3A]  ca0200          retf    2
-SUB_E0C3D:
+format_selftest_result_string:
     3633:0C3D  [E0C3D]  55              push    bp
     3633:0C3E  [E0C3E]  8bec            mov     bp, sp
     3633:0C40  [E0C40]  83ec06          sub     sp, 6
@@ -1532,7 +1532,7 @@ L_E0EB3:
     3633:0EDD  [E0EDD]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:0EE0  [E0EE0]  57              push    di
     3633:0EE1  [E0EE1]  50              push    ax
-    3633:0EE2  [E0EE2]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:0EE2  [E0EE2]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:0EE7  [E0EE7]  5f              pop     di
     3633:0EE8  [E0EE8]  0bc7            or      ax, di
     3633:0EEA  [E0EEA]  e90500          jmp     L_E0EF2  ; 0xef2
@@ -1573,7 +1573,7 @@ L_E0F1F:
     3633:0F49  [E0F49]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:0F4C  [E0F4C]  57              push    di
     3633:0F4D  [E0F4D]  50              push    ax
-    3633:0F4E  [E0F4E]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:0F4E  [E0F4E]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:0F53  [E0F53]  5f              pop     di
     3633:0F54  [E0F54]  0bc7            or      ax, di
     3633:0F56  [E0F56]  e90500          jmp     L_E0F5E  ; 0xf5e
@@ -1614,7 +1614,7 @@ L_E0F8B:
     3633:0FB5  [E0FB5]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:0FB8  [E0FB8]  57              push    di
     3633:0FB9  [E0FB9]  50              push    ax
-    3633:0FBA  [E0FBA]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:0FBA  [E0FBA]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:0FBF  [E0FBF]  5f              pop     di
     3633:0FC0  [E0FC0]  0bc7            or      ax, di
     3633:0FC2  [E0FC2]  e90500          jmp     L_E0FCA  ; 0xfca
@@ -1679,12 +1679,12 @@ L_E1047:
     3633:105D  [E105D]  c7065c1b0000    mov     word ptr [0x1b5c], 0
     3633:1063  [E1063]  837e0603        cmp     word ptr [bp + 6], 3
     3633:1067  [E1067]  7518            jne     L_E1081  ; 0x201
-    3633:1069  [E1069]  9a0e0096e2      lcall   SUB_E296E  ; 0xe296, 0xe
+    3633:1069  [E1069]  9a0e0096e2      lcall   selftest_front_panel_adc  ; 0xe296, 0xe
     3633:106E  [E106E]  8946f8          mov     word ptr [bp - 8], ax
     3633:1071  [E1071]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1074  [E1074]  57              push    di
     3633:1075  [E1075]  50              push    ax
-    3633:1076  [E1076]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1076  [E1076]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:107B  [E107B]  5f              pop     di
     3633:107C  [E107C]  0bc7            or      ax, di
     3633:107E  [E107E]  e90500          jmp     L_E1086  ; 0x206
@@ -1735,7 +1735,7 @@ L_E10D1:
     3633:10FB  [E10FB]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:10FE  [E10FE]  57              push    di
     3633:10FF  [E10FF]  50              push    ax
-    3633:1100  [E1100]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1100  [E1100]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1105  [E1105]  5f              pop     di
     3633:1106  [E1106]  0bc7            or      ax, di
     3633:1108  [E1108]  e90500          jmp     L_E1110  ; 0x1110
@@ -2222,7 +2222,7 @@ L_E156B:
     3633:15C6  [E15C6]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:15C9  [E15C9]  57              push    di
     3633:15CA  [E15CA]  50              push    ax
-    3633:15CB  [E15CB]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:15CB  [E15CB]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:15D0  [E15D0]  5f              pop     di
     3633:15D1  [E15D1]  0bc7            or      ax, di
     3633:15D3  [E15D3]  e90500          jmp     L_E15DB  ; 0x15db
@@ -2287,7 +2287,7 @@ L_E1608:
     3633:1663  [E1663]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1666  [E1666]  57              push    di
     3633:1667  [E1667]  50              push    ax
-    3633:1668  [E1668]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1668  [E1668]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:166D  [E166D]  5f              pop     di
     3633:166E  [E166E]  0bc7            or      ax, di
     3633:1670  [E1670]  e90500          jmp     L_E1678  ; 0x1678
@@ -2328,7 +2328,7 @@ L_E16A5:
     3633:16CF  [E16CF]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:16D2  [E16D2]  57              push    di
     3633:16D3  [E16D3]  50              push    ax
-    3633:16D4  [E16D4]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:16D4  [E16D4]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:16D9  [E16D9]  5f              pop     di
     3633:16DA  [E16DA]  0bc7            or      ax, di
     3633:16DC  [E16DC]  e90500          jmp     L_E16E4  ; 0x16e4
@@ -2665,13 +2665,13 @@ L_E19A1:
     3633:19E0  [E19E0]  52              push    dx
     3633:19E1  [E19E1]  ba3807          mov     dx, 0x738
     3633:19E4  [E19E4]  52              push    dx
-    3633:19E5  [E19E5]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:19E5  [E19E5]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:19EA  [E19EA]  83c40e          add     sp, 0xe
     3633:19ED  [E19ED]  8946f8          mov     word ptr [bp - 8], ax
     3633:19F0  [E19F0]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:19F3  [E19F3]  57              push    di
     3633:19F4  [E19F4]  50              push    ax
-    3633:19F5  [E19F5]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:19F5  [E19F5]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:19FA  [E19FA]  5f              pop     di
     3633:19FB  [E19FB]  0bc7            or      ax, di
     3633:19FD  [E19FD]  e90500          jmp     L_E1A05  ; 0x1a05
@@ -2730,13 +2730,13 @@ L_E1A32:
     3633:1A7F  [E1A7F]  57              push    di
     3633:1A80  [E1A80]  bf4007          mov     di, 0x740
     3633:1A83  [E1A83]  57              push    di
-    3633:1A84  [E1A84]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1A84  [E1A84]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1A89  [E1A89]  83c40e          add     sp, 0xe
     3633:1A8C  [E1A8C]  8946f8          mov     word ptr [bp - 8], ax
     3633:1A8F  [E1A8F]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1A92  [E1A92]  57              push    di
     3633:1A93  [E1A93]  50              push    ax
-    3633:1A94  [E1A94]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1A94  [E1A94]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1A99  [E1A99]  5f              pop     di
     3633:1A9A  [E1A9A]  0bc7            or      ax, di
     3633:1A9C  [E1A9C]  e90500          jmp     L_E1AA4  ; 0x1aa4
@@ -2777,7 +2777,7 @@ L_E1AD1:
     3633:1AFB  [E1AFB]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1AFE  [E1AFE]  57              push    di
     3633:1AFF  [E1AFF]  50              push    ax
-    3633:1B00  [E1B00]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1B00  [E1B00]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1B05  [E1B05]  5f              pop     di
     3633:1B06  [E1B06]  0bc7            or      ax, di
     3633:1B08  [E1B08]  e90500          jmp     L_E1B10  ; 0x1b10
@@ -2810,7 +2810,7 @@ selftest_acq_ram:
     3633:1B40  [E1B40]  50              push    ax
     3633:1B41  [E1B41]  ba4807          mov     dx, 0x748
     3633:1B44  [E1B44]  52              push    dx
-    3633:1B45  [E1B45]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1B45  [E1B45]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1B4A  [E1B4A]  83c40e          add     sp, 0xe
     3633:1B4D  [E1B4D]  8946f8          mov     word ptr [bp - 8], ax
     3633:1B50  [E1B50]  bfff00          mov     di, 0xff
@@ -2831,14 +2831,14 @@ selftest_acq_ram:
     3633:1B72  [E1B72]  50              push    ax
     3633:1B73  [E1B73]  bf5507          mov     di, 0x755
     3633:1B76  [E1B76]  57              push    di
-    3633:1B77  [E1B77]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1B77  [E1B77]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1B7C  [E1B7C]  83c40e          add     sp, 0xe
     3633:1B7F  [E1B7F]  0946f8          or      word ptr [bp - 8], ax
     3633:1B82  [E1B82]  8b46f8          mov     ax, word ptr [bp - 8]
     3633:1B85  [E1B85]  8be5            mov     sp, bp
     3633:1B87  [E1B87]  5d              pop     bp
     3633:1B88  [E1B88]  cb              retf    
-SUB_E1B89:
+ram_pattern_test:
     3633:1B89  [E1B89]  55              push    bp
     3633:1B8A  [E1B8A]  8bec            mov     bp, sp
     3633:1B8C  [E1B8C]  83ec36          sub     sp, 0x36
@@ -3006,7 +3006,7 @@ L_E1CE3:
     3633:1D0D  [E1D0D]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1D10  [E1D10]  57              push    di
     3633:1D11  [E1D11]  50              push    ax
-    3633:1D12  [E1D12]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1D12  [E1D12]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1D17  [E1D17]  5f              pop     di
     3633:1D18  [E1D18]  0bc7            or      ax, di
     3633:1D1A  [E1D1A]  e90500          jmp     L_E1D22  ; 0x1d22
@@ -3027,7 +3027,7 @@ selftest_comm_loopback_a:
     3633:1D38  [E1D38]  b82000          mov     ax, 0x20
     3633:1D3B  [E1D3B]  e90500          jmp     L_E1D43  ; 0x93
 L_E1D3E:
-    3633:1D3E  [E1D3E]  9a0004cbe1      lcall   SUB_E20B0  ; 0xe1cb, 0x400
+    3633:1D3E  [E1D3E]  9a0004cbe1      lcall   selftest_comm_readback  ; 0xe1cb, 0x400
 L_E1D43:
     3633:1D43  [E1D43]  8be5            mov     sp, bp
     3633:1D45  [E1D45]  5d              pop     bp
@@ -3062,7 +3062,7 @@ L_E1D6E:
     3633:1D98  [E1D98]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1D9B  [E1D9B]  57              push    di
     3633:1D9C  [E1D9C]  50              push    ax
-    3633:1D9D  [E1D9D]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1D9D  [E1D9D]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1DA2  [E1DA2]  5f              pop     di
     3633:1DA3  [E1DA3]  0bc7            or      ax, di
     3633:1DA5  [E1DA5]  e90500          jmp     L_E1DAD  ; 0x1dad
@@ -3118,7 +3118,7 @@ L_E1DF9:
     3633:1E23  [E1E23]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:1E26  [E1E26]  57              push    di
     3633:1E27  [E1E27]  50              push    ax
-    3633:1E28  [E1E28]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:1E28  [E1E28]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:1E2D  [E1E2D]  5f              pop     di
     3633:1E2E  [E1E2E]  0bc7            or      ax, di
     3633:1E30  [E1E30]  e90500          jmp     L_E1E38  ; 0x1e38
@@ -3197,7 +3197,7 @@ L_E1EA6:
     3633:1EC4  [E1EC4]  53              push    bx
     3633:1EC5  [E1EC5]  bab706          mov     dx, 0x6b7
     3633:1EC8  [E1EC8]  52              push    dx
-    3633:1EC9  [E1EC9]  9a190297e1      lcall   SUB_E1B89  ; 0xe197, 0x219
+    3633:1EC9  [E1EC9]  9a190297e1      lcall   ram_pattern_test  ; 0xe197, 0x219
     3633:1ECE  [E1ECE]  83c40e          add     sp, 0xe
     3633:1ED1  [E1ED1]  8946f8          mov     word ptr [bp - 8], ax
     3633:1ED4  [E1ED4]  b80000          mov     ax, 0
@@ -3406,7 +3406,7 @@ L_E20AC:
     3633:20AC  [E20AC]  8be5            mov     sp, bp
     3633:20AE  [E20AE]  5d              pop     bp
     3633:20AF  [E20AF]  cb              retf    
-SUB_E20B0:
+selftest_comm_readback:
     3633:20B0  [E20B0]  55              push    bp
     3633:20B1  [E20B1]  8bec            mov     bp, sp
     3633:20B3  [E20B3]  83ec32          sub     sp, 0x32
@@ -3589,7 +3589,7 @@ L_E223D:
     3633:2262  [E2262]  9aaf0020e2      lcall   SUB_E22AF  ; 0xe220, 0xaf
     3633:2267  [E2267]  8946f8          mov     word ptr [bp - 8], ax
     3633:226A  [E226A]  50              push    ax
-    3633:226B  [E226B]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:226B  [E226B]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:2270  [E2270]  e90500          jmp     L_E2278  ; 0x2278
 L_E2273:
     3633:2273  [E2273]  2bc0            sub     ax, ax
@@ -3822,7 +3822,7 @@ L_E24E9:
     3633:250E  [E250E]  9ade0048e2      lcall   SUB_E255E  ; 0xe248, 0xde
     3633:2513  [E2513]  8946f8          mov     word ptr [bp - 8], ax
     3633:2516  [E2516]  50              push    ax
-    3633:2517  [E2517]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:2517  [E2517]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:251C  [E251C]  e90500          jmp     L_E2524  ; 0x2524
 L_E251F:
     3633:251F  [E251F]  2bc0            sub     ax, ax
@@ -4285,7 +4285,7 @@ selftest_hs_acq:
     3633:296A  [E296A]  8be5            mov     sp, bp
     3633:296C  [E296C]  5d              pop     bp
     3633:296D  [E296D]  cb              retf    
-SUB_E296E:
+selftest_front_panel_adc:
     3633:296E  [E296E]  55              push    bp
     3633:296F  [E296F]  8bec            mov     bp, sp
     3633:2971  [E2971]  83ec38          sub     sp, 0x38
@@ -4880,7 +4880,7 @@ L_E2F87:
     3633:2FAC  [E2FAC]  9abc00f4e2      lcall   SUB_E2FFC  ; 0xe2f4, 0xbc
     3633:2FB1  [E2FB1]  8946f8          mov     word ptr [bp - 8], ax
     3633:2FB4  [E2FB4]  50              push    ax
-    3633:2FB5  [E2FB5]  9a8d056be0      lcall   SUB_E0C3D  ; 0xe06b, 0x58d
+    3633:2FB5  [E2FB5]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
     3633:2FBA  [E2FBA]  e90500          jmp     L_E2FC2  ; 0x2fc2
 L_E2FBD:
     3633:2FBD  [E2FBD]  2bc0            sub     ax, ax

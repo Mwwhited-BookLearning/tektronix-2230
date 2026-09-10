@@ -422,6 +422,52 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    0xE0C3D: "format_selftest_result_string", # (status_bits) - builds a
+                                               # PASSED/FAILED/UNTESTED/
+                                               # "Not installed" text
+                                               # into buffer [0x476]
+                                               # based on which bits are
+                                               # set (0x20=not installed,
+                                               # 0x02=failed, 0x01=passed,
+                                               # else untested); returns
+                                               # status_bits unchanged.
+                                               # THE missing link for how
+                                               # self-test results become
+                                               # printed text
+    0xE296E: "selftest_front_panel_adc",      # references "FP_a2d"/
+                                               # "gnd ="/"TIME-OUT" -
+                                               # tests the front-panel
+                                               # A/D converter; called
+                                               # from selftest_measure_
+                                               # mode's "run" case (idx
+                                               # 3), whose result feeds
+                                               # format_selftest_result_
+                                               # string
+    0xE20B0: "selftest_comm_readback",        # references "COMM_RB"/
+                                               # "rb(1)="/"rb(0)=" -
+                                               # called (as the 2nd
+                                               # phase) by selftest_comm_
+                                               # loopback_a. Reads/writes
+                                               # physical 0x40000+0x67C/
+                                               # 0x6F8 (the readout
+                                               # memory window, not the
+                                               # comm ROM's own 0x80000
+                                               # address) - this address
+                                               # choice is surprising and
+                                               # not yet reconciled, see
+                                               # NOTES.md
+    0xE1B89: "ram_pattern_test",              # (start far ptr, end far
+                                               # ptr, step, mask) -
+                                               # generic RAM test engine:
+                                               # writes an alternating
+                                               # 0xAA/0x55 pattern across
+                                               # the range, then reads
+                                               # back and compares
+                                               # (masked) - the shared
+                                               # implementation behind
+                                               # the SYS_RAM/NIB_RAM/
+                                               # ACQ_RAM/COMM_RAM self-
+                                               # tests
     # --- self_test_dispatcher's sibling subroutines, identified by
     # cross-referencing the diagnostic-message strings each one
     # actually references against STRINGS.md's known self-test labels

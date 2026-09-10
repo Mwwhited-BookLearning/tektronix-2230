@@ -121,10 +121,15 @@ label already catalogued in `STRINGS.md`.
 | `0xE3F2C` | `selftest_display_irq_idle` **(renamed)** | Readout/CRT display controller interrupt line, idle-state check (`MI`/`line stuck high`/`Display controller`) | Confirmed via string reference |
 | `0xE3F99` | `selftest_display_irq_active` **(renamed)** | Readout/CRT display controller interrupt line, active check after drawing a test shape (`Display controller`/`TIMEOUT`/`unable to reset`) | Confirmed via string reference |
 
-**Still open**: which specific ADC/status-register hardware
-`configure_measurement_hw`/`run_adc_selftest`/`selftest_measure_and_
-report` address, and which physical front-panel control each of the 3
+**Still open**: which physical front-panel control each of the 3
 range-scan tests corresponds to.
+
+| Address | Label | Purpose | Confidence |
+|---|---|---|---|
+| `0xE0C3D` | `format_selftest_result_string` **(renamed)** | `(status_bits)` - builds a `PASSED`/`FAILED`/`UNTESTED`/`Not installed` text string into buffer `[0x476]` based on which bits are set (`0x20`=not installed, `0x02`=failed, `0x01`=passed, else untested); returns `status_bits` unchanged. **This is the missing link** for how self-test results become the printed pass/fail text | Confirmed - resolves the "actual message printing happening elsewhere" open question from earlier sessions |
+| `0xE296E` | `selftest_front_panel_adc` **(renamed)** | References `FP_a2d`/`gnd =`/`TIME-OUT` - tests the front-panel A/D converter. Called from `selftest_measure_mode`'s "run" case (`idx==3`), whose result feeds `format_selftest_result_string` | Confirmed via string reference - identifies the peripheral behind `configure_measurement_hw`/`run_adc_selftest`/`selftest_measure_and_report` |
+| `0xE20B0` | `selftest_comm_readback` **(renamed)** | References `COMM_RB`/`rb(1)=`/`rb(0)=` - called as the 2nd phase by `selftest_comm_loopback_a`. Reads/writes physical `0x40000+0x67C`/`0x6F8` (the readout memory window, not the comm ROM's own `0x80000` address) | Mechanism and string reference confirmed; the address choice is surprising and not yet reconciled - see `disasm/NOTES.md` |
+| `0xE1B89` | `ram_pattern_test` **(renamed)** | `(start far ptr, end far ptr, step, mask)` - generic RAM test engine: writes an alternating `0xAA`/`0x55` pattern across the range, then reads back and compares (masked). The shared implementation likely behind the `SYS_RAM`/`NIB_RAM`/`ACQ_RAM`/`COMM_RAM` self-tests | Confirmed from code alone (classic march-pattern RAM test shape) |
 
 ## Comm/GPIB ROM (160-2998)
 

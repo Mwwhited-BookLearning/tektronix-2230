@@ -2625,10 +2625,10 @@
     "notes": null
   },
   "E0C3D": {
-    "name": "SUB_E0C3D",
+    "name": "format_selftest_result_string",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "format_selftest_result_string",
     "notes": null
   },
   "E0C85": {
@@ -3066,10 +3066,10 @@
     "notes": null
   },
   "E1B89": {
-    "name": "SUB_E1B89",
+    "name": "ram_pattern_test",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "ram_pattern_test",
     "notes": null
   },
   "E1B9C": {
@@ -3360,10 +3360,10 @@
     "notes": null
   },
   "E20B0": {
-    "name": "SUB_E20B0",
+    "name": "selftest_comm_readback",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_comm_readback",
     "notes": null
   },
   "E210E": {
@@ -3577,10 +3577,10 @@
     "notes": null
   },
   "E296E": {
-    "name": "SUB_E296E",
+    "name": "selftest_front_panel_adc",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_front_panel_adc",
     "notes": null
   },
   "E2985": {
