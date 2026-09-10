@@ -183,11 +183,16 @@ def build_source(chip_name, buf, visited, chip_base, nasm_exe):
             if mnem.startswith("f"):
                 reason = "x87 FPU instruction, not handled yet - see NOTES.md"
             elif mnem in branch_mnems or (mnem.startswith("j") and mnem != "jmp"):
-                reason = ("relative-branch target resolves outside this "
-                           "chip's mapped range when IP wraps mod 0x10000 "
-                           "inside a non-16-aligned code segment - genuine "
-                           "8086 addressing quirk, not a NASM gap, see "
-                           "NOTES.md \"IP-wraparound branches\"")
+                # NOTE: this branch used to fire for 3 real instructions
+                # (a validate_nasm.py masking bug made their targets look
+                # like they resolved outside the chip - fixed, see
+                # NOTES.md "IP-wraparound branches was a validator bug").
+                # Kept as a defensive fallback in case a genuinely
+                # unresolvable branch target ever shows up.
+                reason = ("relative-branch target could not be resolved "
+                           "within this chip's mapped range - see "
+                           "NOTES.md \"IP-wraparound branches was a "
+                           "validator bug\"")
             else:
                 reason = "not converted or a genuine mismatch"
             lines.append(f"    db " + ", ".join(f"0x{b:02x}" for b in raw)

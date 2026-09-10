@@ -154,7 +154,22 @@ def string_segment_prefix(mnem, op):
 
 def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
     def near_target_addr(off_str):
-        toff = int(off_str, 16) & 0xFFFF
+        # Do NOT mask to 16 bits here. Capstone sometimes represents a
+        # backward branch's target as a huge sign-extended hex string
+        # (e.g. "0xfffffe50") when the raw IP+disp computation goes
+        # negative. Masking that to 16 bits first (the previous bug)
+        # models a literal 8086 IP-register wraparound - which turned
+        # out to be the WRONG interpretation (see disasm/NOTES.md
+        # "IP-wraparound branches was a validator bug, not a real
+        # quirk"): the actual target intended by the compiler is
+        # recovered correctly by leaving the raw (possibly huge/
+        # negative-as-unsigned) value unmasked and letting the final
+        # 20-bit physical-address mask absorb it, since 2**32 is an
+        # exact multiple of 2**20. Confirmed by cross-checking against
+        # gen_disasm_x86.py's own seg_off_to_phys(), which never
+        # masked the offset first and reaches real, already-labeled
+        # code at the resulting address.
+        toff = int(off_str, 16)
         phys = ((seg << 4) + toff) & 0xFFFFF
         if not (chip_base <= phys < chip_base + 0x10000):
             return None

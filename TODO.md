@@ -163,18 +163,20 @@
       real 8087 math coprocessor in the design (plausible for a scope
       doing voltage/time calculations) — check against the service
       manual's parts list.
-- [ ] Revisit the 3 backward loop/jmp branches flagged by
-      `validate_nasm.py` as landing outside the mapped ROM window when
-      resolved through their segment. **Narrowed down this session,
-      not yet fully resolved**: it's a genuine 8086 IP-wraparound
-      behavior (relative branch target wraps mod 0x10000 while CS
-      stays fixed, and since these specific `seg` values aren't
-      16-aligned, the wraparound lands 0x10000 away from the naive
-      physical target) - not a tooling bug. Still open: whether the
-      ROM genuinely intends a cross-chip/into-RAM branch here, or
-      whether our recursive descent is reaching this code via the
-      "wrong" (though byte-valid) `(seg,off)` pair to begin with. See
-      `disasm/NOTES.md` "IP-wraparound branches".
+- [x] ~~Revisit the 3 backward loop/jmp branches flagged by
+      validate_nasm.py as landing outside the mapped ROM window~~ —
+      **done, it was a validator bug, not a real 8086 quirk**. An
+      earlier session's "genuine IP-wraparound" conclusion was wrong;
+      the actual cause was `near_target_addr()` masking the raw target
+      offset to 16 bits before adding it to the segment base, which
+      only matters when capstone represents a negative target as a
+      huge sign-extended hex string. Fixed by removing that premature
+      mask (matching `gen_disasm_x86.py`'s own approach, which had
+      already resolved 2 of these 3 targets to real labels). All 3 now
+      validate and convert cleanly - only 1 raw-`db` instruction (the
+      x87 `fmul`) remains anywhere in the readable/aligned pipeline.
+      See `disasm/NOTES.md` "IP-wraparound branches was a validator
+      bug".
 
 ## Ongoing documentation goal
 

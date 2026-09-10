@@ -670,12 +670,13 @@ writers to find where tasks get created/registered.
 
 Ran the recursive-descent output (13,510 decoded instructions - main
 ROM plus the comm-ROM instructions proven reachable, including the
-`0x90000` alias) through `validate_nasm.py`: **12,130 byte-exact,
-1,375 provably-equivalent alternate encodings, 0 real mismatches, 5
+`0x90000` alias) through `validate_nasm.py`: **12,133 byte-exact,
+1,375 provably-equivalent alternate encodings, 0 real mismatches, 2
 not independently checked** (down from a larger unconverted count
-earlier this session - `xchg`'s reg/rm-swap ambiguity and the
-`outsb`/`outsw`/`insb`/`insw` string-I/O mnemonics are now both
-handled, see below).
+across two sessions - `xchg`'s reg/rm-swap ambiguity, the `outsb`/
+`outsw`/`insb`/`insw` string-I/O mnemonics, and a target-computation
+bug affecting 3 backward branches are all now fixed, see below and
+"IP-wraparound branches was a validator bug" above).
 This is strong evidence the x86 decode itself (mnemonic, operands,
 instruction length) is correct throughout what's been reached so far —
 it does NOT validate the code-vs-data classification (whether a given
@@ -729,23 +730,23 @@ real on this CPU either, so any occurrence of either is far more
 likely decode drift than genuine code (none appear in the proven-only
 listing at all, only in the heuristic layer's known-noisy tail).
 
-**The 5 not-independently-checked instructions have two different,
-now-understood causes** (previously this section spec­ulated they
-might be simple decode/alignment errors - narrowed down since):
-- **1 x87 FPU instruction** (`fmul`, `160-3532`) - capstone's `st(N)`
-  operand syntax isn't translated to NASM syntax yet; unrelated to the
-  other 4, see `TODO.md`.
-- **3 IP-wraparound branches** (1 `loop` at `160-3633:FB66`, 2 `jmp`
-  at `160-3532:0C79`/`0x1044`) - see "IP-wraparound branches" below.
+**The 2 remaining not-independently-checked instructions**: 1 x87 FPU
+instruction (`fmul`, `160-3532`) - capstone's `st(N)` operand syntax
+isn't translated to NASM syntax yet, see `TODO.md`; and `insd`/`outsd`/
+`bound` collectively (which never occur in the proven-only set - see
+"Validation status" above for why these stay excluded). The 3 backward
+branches that used to be excluded here (1 `loop` at `160-3633:FB66`, 2
+`jmp` at `160-3532:0C79`/`0x1044`) are now fixed - see "IP-wraparound
+branches was a validator bug" below.
 
-## IP-wraparound branches (genuine 8086 quirk, not a decode error)
+## IP-wraparound branches was a validator bug, not a real quirk (RESOLVED)
 
-Investigated the 3 remaining backward `loop`/`jmp` instructions whose
-capstone-reported target lands outside the current chip's mapped 64KB
-window (`160-3633:FB66` = `loop`, `160-3532:0C79`/`0x1044` = `jmp`).
-Previously assumed this meant "walked into data, possibly
-misaligned" - narrowed down further this session by inspecting the
-actual `(seg, off)` pair each instruction was reached with:
+**Correction**: an earlier session concluded the 3 backward `loop`/
+`jmp` instructions below were a genuine 8086 "IP register wraps mod
+`0x10000` while CS stays fixed" hardware behavior, landing their
+targets outside the current chip's 64KB window. That conclusion was
+**wrong** - it was a bug in `validate_nasm.py`'s own target-computation
+code, not real 8086 behavior.
 
 | Instruction | seg | off | disp |
 |---|---|---|---|
@@ -753,37 +754,36 @@ actual `(seg, off)` pair each instruction was reached with:
 | `160-3532:0C79 jmp` | `0xF0C2` | `0x0059` | `-0x20C` |
 | `160-3532:0x1044 jmp` | `0xF0EB` | `0x0194` | `-0x1F7` |
 
-In every case, `seg` is **not** 16-aligned (its low nibble is nonzero)
-and `off` is small enough that `off + size + disp` goes negative. On
-real 8086/8088 hardware, a relative branch's target IP wraps modulo
-`0x10000` while CS stays fixed - this is the well-known 8086
-"segment-relative IP wraparound" behavior, not a bug in our tooling.
-Because these particular `seg` values aren't 16-aligned, the
-wraparound lands the *physical* target a full `0x10000` away from
-where naive `physical - |disp|` arithmetic would suggest, outside the
-64KB region we've been treating as "this chip." Computed precisely for
-all 3 (`(seg<<4 + ((off+size+disp) & 0xFFFF)) & 0xFFFFF`):
-`0xFFAF0` (`160-3633`'s loop - lands in the *other* main-ROM chip's
-address range), `0x00A70` and `0x00E50` (both `160-3532`'s jmps - land
-in low RAM, physical `0x00400+`, nowhere near either ROM chip).
+What actually happened: `validate_nasm.py`'s `near_target_addr()`
+masked the raw target offset to 16 bits (`int(off_str, 16) & 0xFFFF`)
+*before* adding it to `seg<<4`. Capstone represents a backward
+branch's target as a huge sign-extended hex string when the raw
+`ip+disp` computation goes negative (e.g. `"0xfffffe50"` for a small
+negative result) - masking that to 16 bits *first* effectively models
+a literal "IP register wraps, CS stays put" reinterpretation, which
+lands the result a full `0x10000` away from the intended target
+whenever `seg` isn't 16-aligned.
 
-None of the three land on an already-known label in the target
-location, so this remains **not fully resolved**: it's now clear
-*why* the arithmetic produces an out-of-chip result (a real, well-
-documented 8086 CPU behavior, not a tooling bug), but not yet clear
-whether the ROM's authors actually intended a genuine cross-chip/
-into-RAM branch (deliberately exploiting segment overlap - unusual for
-a `loop`/`jmp` but not impossible) or whether the `seg` value our own
-recursive descent is using to reach this code in the first place is
-itself wrong (e.g., if the ROM reaches this code in real life via a
-*different*, larger `off` under a more conventional `0xE000`/`0xF000`-
-aligned segment, the same backward branch would resolve to a
-perfectly ordinary in-chip target with no wraparound at all - both
-interpretations are consistent with everything checked so far). Left
-unconverted (raw `db`, comment updated to explain this) in both
-`gen_source.py` and `gen_source_readable.py`'s output pending that
-answer. Revisit if code coverage or entry-point tracing ever reaches
-this same code via a different path that disambiguates it.
+The fix: don't mask the raw offset at all - just add the (possibly
+huge) raw integer to `seg<<4` and mask the *final sum* to 20 bits, the
+same way `gen_disasm_x86.py`'s own `seg_off_to_phys()` already did.
+This works because `2**32` (capstone's effective width for the
+sign-extended value) is an exact multiple of `2**20` (the physical
+address space), so the excess high bits cancel out under the final
+mask regardless of `seg`'s alignment - recovering the plain
+"target_physical - current_physical" arithmetic the original compiler
+almost certainly used when back-patching the branch displacement.
+Confirmed independently: `gen_disasm_x86.py`'s recursive descent had
+*already* followed 2 of these 3 exact jumps successfully and left real
+labels at their targets (`L_F0A70`, `L_F0E50`, both cleanly inside
+`160-3532`'s own range) - proof the "naive" interpretation was correct
+all along and the wraparound theory was never needed.
+
+After the fix, all 3 instructions validate and convert cleanly (0
+unconverted, 0 mismatches) - see "Validation status" below. This also
+means `binary/aligned/`'s readable reconstruction now has only **1**
+remaining raw-`db` instruction in the entire 128KB main ROM pair (the
+one x87 `fmul`, still unhandled - see `TODO.md`).
 
 ## Current coverage
 

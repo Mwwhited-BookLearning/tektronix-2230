@@ -12374,7 +12374,7 @@ L_EF503:
     db 0x04, 0x00, 0xc6, 0x46, 0xf0, 0x10, 0x8a, 0x56, 0x06, 0x2a  ; FB5A
 SUB_EFB64:
     not cl                                   ; FB64: not cl
-    db 0xe2, 0x88  ; FB66: loop 0xffffff90 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
+    loop 0xfaf0                              ; FB66: loop 0xffffff90
     push si                                  ; FB68: push si
     int1                                     ; FB69: int1 
     sub dh, dh                               ; FB6A: sub dh, dh

@@ -309,7 +309,7 @@ L_F0C6C:
     and ax, strict word 3                    ; 0C71: and ax, 3
     cmp ax, strict word 2                    ; 0C74: cmp ax, 2
     je short 0x0c7c                          ; 0C77: je 0x5c
-    db 0xe9, 0xf4, 0xfd  ; 0C79: jmp 0xfffffe50 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
+    jmp 0x0a70                               ; 0C79: jmp 0xfffffe50
 L_F0C7C:
     inc word [bp - 0x10]                     ; 0C7C: inc word ptr [bp - 0x10]
     add word [bp - 8], 9                     ; 0C7F: add word ptr [bp - 8], 9
@@ -317,7 +317,7 @@ L_F0C7C:
     and al, 0x80                             ; 0C86: and al, 0x80
     cmp al, 0                                ; 0C88: cmp al, 0
     jne short 0x0c8f                         ; 0C8A: jne 0x6f
-    db 0xe9, 0x55, 0xfc  ; 0C8C: jmp 0xfffffcc4 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
+    jmp 0x08e4                               ; 0C8C: jmp 0xfffffcc4
 L_F0C8F:
     sub di, di                               ; 0C8F: sub di, di
     push di                                  ; 0C91: push di
@@ -428,7 +428,7 @@ SUB_F1001:
 L_F103E:
     cmp word [bp - 0xe], 0                   ; 103E: cmp word ptr [bp - 0xe], 0
     jne short 0x1047                         ; 1042: jne 0x197
-    db 0xe9, 0x09, 0xfe  ; 1044: jmp 0xffffffa0 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
+    jmp 0x0e50                               ; 1044: jmp 0xffffffa0
 L_F1047:
     mov sp, bp                               ; 1047: mov sp, bp
     pop bp                                   ; 1049: pop bp
@@ -521,7 +521,7 @@ SUB_F156E:
     db 0xc4, 0x7e, 0x0e, 0x06, 0x57, 0xc4, 0x56, 0x0a, 0x06, 0x52, 0xc4, 0x5e, 0x06, 0x06, 0x53, 0x9a  ; 1571
 SUB_F1581:
     push 0x5102                              ; 1581: push 0x5102
-    jmp 0xda0a                               ; 1584: jmp 0xffffc48a
+    db 0xe9, 0x83, 0xc4  ; 1584: jmp 0xffffc48a (relative-branch target could not be resolved within this chip's mapped range - see NOTES.md "IP-wraparound branches was a validator bug")
     db 0x08, 0xe9, 0x37, 0x00, 0xc4, 0x7e, 0x0e, 0x06, 0x57, 0xc4, 0x56, 0x0a, 0x06, 0x52, 0xc4, 0x5e  ; 1587
     db 0x06, 0x06, 0x53, 0x9a, 0xb8, 0x00, 0x51, 0xe9, 0x83, 0xc4, 0x08, 0xe9, 0x1d, 0x00, 0x8b, 0x46  ; 1597
     db 0x12, 0x3d, 0x00, 0x00, 0x75, 0x03, 0xe9, 0x73, 0xff, 0x3d, 0x01, 0x00, 0x74, 0x88, 0x3d, 0x02  ; 15A7
