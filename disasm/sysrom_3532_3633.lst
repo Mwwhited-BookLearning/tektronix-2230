@@ -3674,7 +3674,7 @@ SUB_E0A23:
     3633:0A53  [E0A53]  26fe4501        inc     byte ptr es:[di + 1]
     3633:0A57  [E0A57]  baff00          mov     dx, 0xff
     3633:0A5A  [E0A5A]  52              push    dx
-    3633:0A5B  [E0A5B]  9afa036be0      lcall   SUB_E0AAA  ; 0xe06b, 0x3fa
+    3633:0A5B  [E0A5B]  9afa036be0      lcall   write_measurement_channel_reg  ; 0xe06b, 0x3fa
     3633:0A60  [E0A60]  e94300          jmp     L_E0AA6  ; 0x3f6
 L_E0A63:
     3633:0A63  [E0A63]  c43e561b        les     di, ptr [0x1b56]
@@ -3687,7 +3687,7 @@ L_E0A63:
     3633:0A77  [E0A77]  268a11          mov     dl, byte ptr es:[bx + di]
     3633:0A7A  [E0A7A]  2af6            sub     dh, dh
     3633:0A7C  [E0A7C]  52              push    dx
-    3633:0A7D  [E0A7D]  9afa036be0      lcall   SUB_E0AAA  ; 0xe06b, 0x3fa
+    3633:0A7D  [E0A7D]  9afa036be0      lcall   write_measurement_channel_reg  ; 0xe06b, 0x3fa
     3633:0A82  [E0A82]  c43e561b        les     di, ptr [0x1b56]
     3633:0A86  [E0A86]  8cc2            mov     dx, es
     3633:0A88  [E0A88]  c41e561b        les     bx, ptr [0x1b56]
@@ -3703,7 +3703,7 @@ L_E0AA6:
     3633:0AA6  [E0AA6]  8be5            mov     sp, bp
     3633:0AA8  [E0AA8]  5d              pop     bp
     3633:0AA9  [E0AA9]  cb              retf    
-SUB_E0AAA:
+write_measurement_channel_reg:
     3633:0AAA  [E0AAA]  55              push    bp
     3633:0AAB  [E0AAB]  8bec            mov     bp, sp
     3633:0AAD  [E0AAD]  83ec06          sub     sp, 6
@@ -7638,7 +7638,7 @@ L_E3BAE:
     3633:3BAE  [E3BAE]  837ef401        cmp     word ptr [bp - 0xc], 1
     3633:3BB2  [E3BB2]  7512            jne     L_E3BC6  ; 0xb6
     3633:3BB4  [E3BB4]  ff76f4          push    word ptr [bp - 0xc]
-    3633:3BB7  [E3BB7]  9ab0005de4      lcall   SUB_E4680  ; 0xe45d, 0xb0
+    3633:3BB7  [E3BB7]  9ab0005de4      lcall   refresh_report_display  ; 0xe45d, 0xb0
     3633:3BBC  [E3BBC]  9a9008b1e3      lcall   init_selftest_report_screen  ; 0xe3b1, 0x890
     3633:3BC1  [E3BC1]  c746f40300      mov     word ptr [bp - 0xc], 3
 L_E3BC6:
@@ -7676,7 +7676,7 @@ L_E3C13:
 L_E3C16:
     3633:3C16  [E3C16]  c746f80000      mov     word ptr [bp - 8], 0
     3633:3C1B  [E3C1B]  ff76f4          push    word ptr [bp - 0xc]
-    3633:3C1E  [E3C1E]  9ab0005de4      lcall   SUB_E4680  ; 0xe45d, 0xb0
+    3633:3C1E  [E3C1E]  9ab0005de4      lcall   refresh_report_display  ; 0xe45d, 0xb0
 L_E3C23:
     3633:3C23  [E3C23]  e988ff          jmp     L_E3BAE  ; 0x9e
 L_E3C26:
@@ -7684,7 +7684,7 @@ L_E3C26:
 L_E3C2B:
     3633:3C2B  [E3C2B]  bf0200          mov     di, 2
     3633:3C2E  [E3C2E]  57              push    di
-    3633:3C2F  [E3C2F]  9ab0005de4      lcall   SUB_E4680  ; 0xe45d, 0xb0
+    3633:3C2F  [E3C2F]  9ab0005de4      lcall   refresh_report_display  ; 0xe45d, 0xb0
     3633:3C34  [E3C34]  837ef201        cmp     word ptr [bp - 0xe], 1
     3633:3C38  [E3C38]  756d            jne     L_E3CA7  ; 0x197
     3633:3C3A  [E3C3A]  c746f00000      mov     word ptr [bp - 0x10], 0
@@ -8570,7 +8570,7 @@ L_E45C7:
     3633:45CD  [E45CD]  5d              pop     bp
     3633:45CE  [E45CE]  ca0200          retf    2
 
-SUB_E4680:
+refresh_report_display:
     3633:4680  [E4680]  55              push    bp
     3633:4681  [E4681]  8bec            mov     bp, sp
     3633:4683  [E4683]  83ec06          sub     sp, 6

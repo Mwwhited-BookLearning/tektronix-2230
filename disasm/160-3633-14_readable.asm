@@ -709,7 +709,7 @@ L_E0AA6:
     mov sp, bp                               ; 0AA6: mov sp, bp
     pop bp                                   ; 0AA8: pop bp
     retf                                     ; 0AA9: retf 
-SUB_E0AAA:
+write_measurement_channel_reg:
     push bp                                  ; 0AAA: push bp
     mov bp, sp                               ; 0AAB: mov bp, sp
     sub sp, 6                                ; 0AAD: sub sp, 6
@@ -5755,7 +5755,7 @@ L_E45C7:
     db 0x0a, 0x1b, 0xff, 0x06, 0x0a, 0x1b, 0x3d, 0x00, 0x00, 0x75, 0x0f, 0xff, 0x36, 0x08, 0x1b, 0x9a  ; 4651
     db 0xb0, 0x00, 0x5d, 0xe4, 0xc7, 0x06, 0x08, 0x1b, 0x03, 0x00, 0xa1, 0xe6, 0x1a, 0x39, 0x06, 0x0a  ; 4661
     db 0x1b, 0x75, 0x06, 0xc7, 0x06, 0x0a, 0x1b, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 4671
-SUB_E4680:
+refresh_report_display:
     push bp                                  ; 4680: push bp
     mov bp, sp                               ; 4681: mov bp, sp
     sub sp, 6                                ; 4683: sub sp, 6

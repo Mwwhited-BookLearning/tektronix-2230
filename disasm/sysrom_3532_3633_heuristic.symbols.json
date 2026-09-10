@@ -840,10 +840,10 @@
     "notes": null
   },
   "E0AAA": {
-    "name": "SUB_E0AAA",
+    "name": "write_measurement_channel_reg",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "write_measurement_channel_reg",
     "notes": null
   },
   "E0AC0": {
@@ -4081,10 +4081,10 @@
     "notes": null
   },
   "E4680": {
-    "name": "SUB_E4680",
+    "name": "refresh_report_display",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "refresh_report_display",
     "notes": null
   },
   "E46BD": {

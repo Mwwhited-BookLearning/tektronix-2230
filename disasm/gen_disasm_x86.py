@@ -564,6 +564,27 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xE0AAA: "write_measurement_channel_reg", # writes the byte argument
+                                               # into the shared hardware
+                                               # register [0x33A] - a
+                                               # simple setter for the
+                                               # same configure_
+                                               # measurement_hw register
+                                               # cluster
+    0xE4680: "refresh_report_display",        # (mode) - calls 5-6
+                                               # sub-functions in
+                                               # sequence with the same
+                                               # mode argument; one
+                                               # maintains a rotating
+                                               # bit/offset cursor in
+                                               # [0x1B0C] and clears
+                                               # bytes at that offset in
+                                               # the [0x31E]-based
+                                               # scratch buffer - called
+                                               # from print_selftest_
+                                               # report_line's context,
+                                               # likely a per-cycle
+                                               # report-line refresh step
     0xF1611: "halt_cpu",                      # a single hlt instruction
     0xF8EC8: "set_item_active_flag",          # (item_index, set_flag) -
                                                # sets or clears a bit in
