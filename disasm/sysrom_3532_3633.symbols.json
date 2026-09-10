@@ -252,24 +252,24 @@
     "notes": null
   },
   "83241": {
-    "name": "SUB_83241",
+    "name": "putchar_serial",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "putchar_serial",
     "notes": null
   },
   "83259": {
-    "name": "SUB_83259",
+    "name": "putchar_serial_seg",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "putchar_serial_seg",
     "notes": null
   },
   "839D1": {
-    "name": "SUB_839D1",
+    "name": "comm_call_main_rom",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "comm_call_main_rom",
     "notes": null
   },
   "850A2": {

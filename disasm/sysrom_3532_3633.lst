@@ -119,7 +119,7 @@ SUB_81404:
     2998:140E  [8140E]  7d11            jge     L_81421  ; 0x1161
     2998:1410  [81410]  bf2d00          mov     di, 0x2d
     2998:1413  [81413]  57              push    di
-    2998:1414  [81414]  9ab105c982      lcall   SUB_83241  ; 0x82c9, 0x5b1
+    2998:1414  [81414]  9ab105c982      lcall   putchar_serial  ; 0x82c9, 0x5b1
     2998:1419  [81419]  8b7e06          mov     di, word ptr [bp + 6]
     2998:141C  [8141C]  f7df            neg     di
     2998:141E  [8141E]  897e06          mov     word ptr [bp + 6], di
@@ -283,12 +283,12 @@ L_82EDE:
     2998:2EF8  [82EF8]  740c            je      L_82F06  ; 0x276
     2998:2EFA  [82EFA]  bf2c00          mov     di, 0x2c
     2998:2EFD  [82EFD]  57              push    di
-    2998:2EFE  [82EFE]  9ab105c982      lcall   SUB_83241  ; 0x82c9, 0x5b1
+    2998:2EFE  [82EFE]  9ab105c982      lcall   putchar_serial  ; 0x82c9, 0x5b1
     2998:2F03  [82F03]  e9d8ff          jmp     L_82EDE  ; 0x24e
 L_82F06:
     2998:2F06  [82F06]  bf3b00          mov     di, 0x3b
     2998:2F09  [82F09]  57              push    di
-    2998:2F0A  [82F0A]  9ab105c982      lcall   SUB_83241  ; 0x82c9, 0x5b1
+    2998:2F0A  [82F0A]  9ab105c982      lcall   putchar_serial  ; 0x82c9, 0x5b1
     2998:2F0F  [82F0F]  59              pop     cx
     2998:2F10  [82F10]  8be5            mov     sp, bp
     2998:2F12  [82F12]  5d              pop     bp
@@ -312,7 +312,7 @@ SUB_82F14:
     2998:2F38  [82F38]  5d              pop     bp
     2998:2F39  [82F39]  cb              retf    
 
-SUB_83241:
+putchar_serial:
     2998:3241  [83241]  55              push    bp
     2998:3242  [83242]  8bec            mov     bp, sp
     2998:3244  [83244]  83ec06          sub     sp, 6
@@ -322,7 +322,7 @@ SUB_83241:
     2998:3253  [83253]  8be5            mov     sp, bp
     2998:3255  [83255]  5d              pop     bp
     2998:3256  [83256]  ca0200          retf    2
-SUB_83259:
+putchar_serial_seg:
     2998:3259  [83259]  55              push    bp
     2998:325A  [8325A]  8bec            mov     bp, sp
     2998:325C  [8325C]  83ec08          sub     sp, 8
@@ -339,7 +339,7 @@ SUB_83259:
     2998:3281  [83281]  5d              pop     bp
     2998:3282  [83282]  ca0200          retf    2
 
-SUB_839D1:
+comm_call_main_rom:
     2998:39D1  [839D1]  55              push    bp
     2998:39D2  [839D2]  8bec            mov     bp, sp
     2998:39D4  [839D4]  83ec08          sub     sp, 8
@@ -2125,7 +2125,7 @@ L_964A7:
     2998_alias_90000:64A7  [964A7]  c43e3207        les     di, ptr [0x732]
     2998_alias_90000:64AB  [964AB]  2680a59700fd    and     byte ptr es:[di + 0x97], 0xfd
 L_964B1:
-    2998_alias_90000:64B1  [964B1]  9a410dc982      lcall   SUB_839D1  ; 0x82c9, 0xd41
+    2998_alias_90000:64B1  [964B1]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
     2998_alias_90000:64B6  [964B6]  e9d500          jmp     L_9658E  ; 0x30e
 L_964B9:
     2998_alias_90000:64B9  [964B9]  bfffff          mov     di, 0xffff
@@ -2949,7 +2949,7 @@ L_97A03:
     2998_alias_90000:7A03  [97A03]  c43e3207        les     di, ptr [0x732]
     2998_alias_90000:7A07  [97A07]  2680a59700fb    and     byte ptr es:[di + 0x97], 0xfb
 L_97A0D:
-    2998_alias_90000:7A0D  [97A0D]  9a410dc982      lcall   SUB_839D1  ; 0x82c9, 0xd41
+    2998_alias_90000:7A0D  [97A0D]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
     2998_alias_90000:7A12  [97A12]  8be5            mov     sp, bp
     2998_alias_90000:7A14  [97A14]  5d              pop     bp
     2998_alias_90000:7A15  [97A15]  cb              retf    
@@ -11321,7 +11321,7 @@ L_E7934:
     3633:7934  [E7934]  c47ef4          les     di, ptr [bp - 0xc]
     3633:7937  [E7937]  8346f402        add     word ptr [bp - 0xc], 2
     3633:793B  [E793B]  26ff35          push    word ptr es:[di]
-    3633:793E  [E793E]  9ac905c982      lcall   SUB_83259  ; 0x82c9, 0x5c9
+    3633:793E  [E793E]  9ac905c982      lcall   putchar_serial_seg  ; 0x82c9, 0x5c9
     3633:7943  [E7943]  e97100          jmp     L_E79B7  ; 0xa7
 L_E7946:
     3633:7946  [E7946]  c47ef4          les     di, ptr [bp - 0xc]
@@ -11397,7 +11397,7 @@ L_E79F9:
     3633:79F9  [E79F9]  8a5606          mov     dl, byte ptr [bp + 6]
     3633:79FC  [E79FC]  2af6            sub     dh, dh
     3633:79FE  [E79FE]  52              push    dx
-    3633:79FF  [E79FF]  9ac905c982      lcall   SUB_83259  ; 0x82c9, 0x5c9
+    3633:79FF  [E79FF]  9ac905c982      lcall   putchar_serial_seg  ; 0x82c9, 0x5c9
 L_E7A04:
     3633:7A04  [E7A04]  8be5            mov     sp, bp
     3633:7A06  [E7A06]  5d              pop     bp
@@ -11413,7 +11413,7 @@ L_E7A13:
     3633:7A19  [E7A19]  268a15          mov     dl, byte ptr es:[di]
     3633:7A1C  [E7A1C]  2af6            sub     dh, dh
     3633:7A1E  [E7A1E]  52              push    dx
-    3633:7A1F  [E7A1F]  9ac905c982      lcall   SUB_83259  ; 0x82c9, 0x5c9
+    3633:7A1F  [E7A1F]  9ac905c982      lcall   putchar_serial_seg  ; 0x82c9, 0x5c9
 L_E7A24:
     3633:7A24  [E7A24]  c47e06          les     di, ptr [bp + 6]
     3633:7A27  [E7A27]  26803d00        cmp     byte ptr es:[di], 0

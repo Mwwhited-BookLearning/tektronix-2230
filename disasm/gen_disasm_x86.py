@@ -126,6 +126,23 @@ FUNCTIONAL_NAMES = {
     # --- Renamed during the "rename everything" pass (session:
     # keep going until everything is renamed) - see NOTES.md "The
     # readout vector display list" and FUNCTIONS.md for evidence. ---
+    0x83241: "putchar_serial",                # thin wrapper: stores the
+                                               # byte argument at local
+                                               # [5], calls serial_tx_
+                                               # buffer_put
+    0x83259: "putchar_serial_seg",            # same as putchar_serial
+                                               # but swaps DS to a fixed
+                                               # segment (0x8F80) first
+                                               # via set_ds_return_old
+    0x839D1: "comm_call_main_rom",            # swaps DS to the main
+                                               # ROM's low-RAM segment
+                                               # (0x41, via set_ds_
+                                               # return_old), calls a
+                                               # main-ROM handler
+                                               # (SUB_ED7DF), swaps back -
+                                               # a cross-ROM callback
+                                               # wrapper, same pattern as
+                                               # set_comm_critical_flag
     0x9605A: "checksum_bytes",                # (far ptr, count) - sums
                                                # `count` bytes starting
                                                # at the pointer into a
