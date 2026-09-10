@@ -36,6 +36,15 @@ ENTRY_POINTS = [
     (0xF000, 0xFFF0, "RESET"),
     (0xE5D1, 0x00B4, "ENTRY_E5D1_B4"),
     (0xE5D1, 0x00C7, "ENTRY_E5D1_C7"),
+    # Found by tracing interrupt-vector-table writes (mov word [es:bx],
+    # imm with es=0 or es=0x3f, i.e. real IVT slots) in the already-
+    # decoded code: these handler addresses are never reached by any
+    # direct call/jmp in the program, only by the corresponding
+    # hardware/software interrupt actually firing.
+    (0xE5D1, 0x019D, "INT1_HANDLER"),           # INT 1 (single-step/trap)
+    (0xE5D1, 0x0090, "INT255_HANDLER_EARLY"),   # INT 255, installed at reset
+    (0xE60B, 0x0005, "INT255_HANDLER_LATE"),    # INT 255, reinstalled later
+    (0xE60B, 0x003A, "INT2_HANDLER_LATE"),      # INT 2 (NMI), reinstalled later
 ]
 
 CALL_MNEMONICS = {"call", "lcall"}

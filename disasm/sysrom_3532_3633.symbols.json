@@ -44,7 +44,7 @@
   "9470E": {
     "name": "SUB_9470E",
     "kind": "sub",
-    "ref_count": 4,
+    "ref_count": 8,
     "functional_name": null,
     "notes": null
   },
@@ -248,6 +248,41 @@
     "name": "L_E01F1",
     "kind": "loc",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E060A": {
+    "name": "SUB_E060A",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E0660": {
+    "name": "L_E0660",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E06A7": {
+    "name": "L_E06A7",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E06AA": {
+    "name": "L_E06AA",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E06AF": {
+    "name": "L_E06AF",
+    "kind": "loc",
+    "ref_count": 4,
     "functional_name": null,
     "notes": null
   },
@@ -3551,7 +3586,28 @@
   "E5D31": {
     "name": "SUB_E5D31",
     "kind": "sub",
-    "ref_count": 2,
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E5D3D": {
+    "name": "SUB_E5D3D",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E5D49": {
+    "name": "SUB_E5D49",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E5D58": {
+    "name": "SUB_E5D58",
+    "kind": "sub",
+    "ref_count": 1,
     "functional_name": null,
     "notes": null
   },
@@ -3562,10 +3618,17 @@
     "functional_name": null,
     "notes": null
   },
+  "E5DA0": {
+    "name": "INT255_HANDLER_EARLY",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
   "E5DC4": {
     "name": "ENTRY_E5D1_B4",
     "kind": "entry",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -3580,6 +3643,20 @@
     "name": "SUB_E5E53",
     "kind": "sub",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E5E99": {
+    "name": "L_E5E99",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E5EAD": {
+    "name": "INT1_HANDLER",
+    "kind": "entry",
+    "ref_count": 0,
     "functional_name": null,
     "notes": null
   },
@@ -3604,10 +3681,45 @@
     "functional_name": null,
     "notes": null
   },
+  "E60B5": {
+    "name": "INT255_HANDLER_LATE",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "E60EA": {
+    "name": "INT2_HANDLER_LATE",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6139": {
+    "name": "L_E6139",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6144": {
+    "name": "L_E6144",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6157": {
+    "name": "L_E6157",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "E6166": {
     "name": "SUB_E6166",
     "kind": "sub",
-    "ref_count": 3,
+    "ref_count": 5,
     "functional_name": null,
     "notes": null
   },
@@ -3629,6 +3741,384 @@
     "name": "L_E6274",
     "kind": "loc",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E62EE": {
+    "name": "SUB_E62EE",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6306": {
+    "name": "L_E6306",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6311": {
+    "name": "L_E6311",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6335": {
+    "name": "L_E6335",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6359": {
+    "name": "L_E6359",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6393": {
+    "name": "L_E6393",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E63D2": {
+    "name": "L_E63D2",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E63D5": {
+    "name": "L_E63D5",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E63D8": {
+    "name": "L_E63D8",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E63FD": {
+    "name": "L_E63FD",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6400": {
+    "name": "L_E6400",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6407": {
+    "name": "L_E6407",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E640A": {
+    "name": "L_E640A",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6417": {
+    "name": "L_E6417",
+    "kind": "loc",
+    "ref_count": 4,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6439": {
+    "name": "L_E6439",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E643C": {
+    "name": "L_E643C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E646D": {
+    "name": "L_E646D",
+    "kind": "loc",
+    "ref_count": 5,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6493": {
+    "name": "L_E6493",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64AE": {
+    "name": "L_E64AE",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64B7": {
+    "name": "L_E64B7",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64BC": {
+    "name": "L_E64BC",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6524": {
+    "name": "SUB_E6524",
+    "kind": "sub",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6538": {
+    "name": "L_E6538",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E653B": {
+    "name": "L_E653B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6543": {
+    "name": "L_E6543",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E654B": {
+    "name": "L_E654B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6559": {
+    "name": "L_E6559",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E656D": {
+    "name": "L_E656D",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6593": {
+    "name": "L_E6593",
+    "kind": "loc",
+    "ref_count": 5,
+    "functional_name": null,
+    "notes": null
+  },
+  "E65F5": {
+    "name": "L_E65F5",
+    "kind": "loc",
+    "ref_count": 4,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6634": {
+    "name": "L_E6634",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E663A": {
+    "name": "L_E663A",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E666A": {
+    "name": "L_E666A",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66A0": {
+    "name": "L_E66A0",
+    "kind": "loc",
+    "ref_count": 4,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66B9": {
+    "name": "L_E66B9",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66BC": {
+    "name": "L_E66BC",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66BF": {
+    "name": "L_E66BF",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66C6": {
+    "name": "L_E66C6",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E66F2": {
+    "name": "L_E66F2",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E671D": {
+    "name": "L_E671D",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6720": {
+    "name": "L_E6720",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6733": {
+    "name": "L_E6733",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6739": {
+    "name": "L_E6739",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6759": {
+    "name": "L_E6759",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E675C": {
+    "name": "L_E675C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E678A": {
+    "name": "L_E678A",
+    "kind": "loc",
+    "ref_count": 4,
+    "functional_name": null,
+    "notes": null
+  },
+  "E679D": {
+    "name": "L_E679D",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E67BF": {
+    "name": "L_E67BF",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E67D1": {
+    "name": "L_E67D1",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E680C": {
+    "name": "L_E680C",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E680F": {
+    "name": "L_E680F",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6840": {
+    "name": "L_E6840",
+    "kind": "loc",
+    "ref_count": 5,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6844": {
+    "name": "SUB_E6844",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E6865": {
+    "name": "L_E6865",
+    "kind": "loc",
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -3810,7 +4300,7 @@
   "E6D2F": {
     "name": "SUB_E6D2F",
     "kind": "sub",
-    "ref_count": 15,
+    "ref_count": 16,
     "functional_name": null,
     "notes": null
   },
@@ -3902,6 +4392,34 @@
     "name": "L_E6F27",
     "kind": "loc",
     "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E71C9": {
+    "name": "SUB_E71C9",
+    "kind": "sub",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "E71D7": {
+    "name": "L_E71D7",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E720D": {
+    "name": "L_E720D",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7210": {
+    "name": "L_E7210",
+    "kind": "loc",
+    "ref_count": 1,
     "functional_name": null,
     "notes": null
   },
@@ -4430,6 +4948,34 @@
     "functional_name": null,
     "notes": null
   },
+  "E7F03": {
+    "name": "SUB_E7F03",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7F2C": {
+    "name": "L_E7F2C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7F32": {
+    "name": "L_E7F32",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7F34": {
+    "name": "L_E7F34",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "E7F39": {
     "name": "SUB_E7F39",
     "kind": "sub",
@@ -4843,6 +5389,174 @@
     "functional_name": null,
     "notes": null
   },
+  "ED9BC": {
+    "name": "SUB_ED9BC",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "ED9E2": {
+    "name": "L_ED9E2",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "ED9F6": {
+    "name": "L_ED9F6",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA02": {
+    "name": "L_EDA02",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA0A": {
+    "name": "L_EDA0A",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA11": {
+    "name": "L_EDA11",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA21": {
+    "name": "L_EDA21",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA28": {
+    "name": "L_EDA28",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA48": {
+    "name": "L_EDA48",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA4B": {
+    "name": "L_EDA4B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA5F": {
+    "name": "L_EDA5F",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA67": {
+    "name": "L_EDA67",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA81": {
+    "name": "L_EDA81",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA96": {
+    "name": "L_EDA96",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDA9B": {
+    "name": "L_EDA9B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDAC4": {
+    "name": "L_EDAC4",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDACC": {
+    "name": "L_EDACC",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDB05": {
+    "name": "L_EDB05",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDB2C": {
+    "name": "L_EDB2C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDB55": {
+    "name": "L_EDB55",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "EDFFD": {
+    "name": "SUB_EDFFD",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EE043": {
+    "name": "L_EE043",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "EE097": {
+    "name": "L_EE097",
+    "kind": "loc",
+    "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "EE0B7": {
+    "name": "L_EE0B7",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "EE139": {
     "name": "L_EE139",
     "kind": "loc",
@@ -5214,6 +5928,13 @@
     "functional_name": null,
     "notes": null
   },
+  "F1581": {
+    "name": "SUB_F1581",
+    "kind": "sub",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
   "F15C2": {
     "name": "L_F15C2",
     "kind": "loc",
@@ -5361,6 +6082,34 @@
     "functional_name": null,
     "notes": null
   },
+  "F5D89": {
+    "name": "SUB_F5D89",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F5DB5": {
+    "name": "L_F5DB5",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F5DC7": {
+    "name": "L_F5DC7",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F5DD9": {
+    "name": "L_F5DD9",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "F60F7": {
     "name": "SUB_F60F7",
     "kind": "sub",
@@ -5382,10 +6131,17 @@
     "functional_name": null,
     "notes": null
   },
+  "F6382": {
+    "name": "SUB_F6382",
+    "kind": "sub",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
   "F63A7": {
     "name": "L_F63A7",
     "kind": "loc",
-    "ref_count": 2,
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },
@@ -5931,14 +6687,14 @@
   "F9FEE": {
     "name": "SUB_F9FEE",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 7,
     "functional_name": null,
     "notes": null
   },
   "FA00C": {
     "name": "SUB_FA00C",
     "kind": "sub",
-    "ref_count": 2,
+    "ref_count": 8,
     "functional_name": null,
     "notes": null
   },
@@ -6166,6 +6922,41 @@
     "functional_name": null,
     "notes": null
   },
+  "FC624": {
+    "name": "SUB_FC624",
+    "kind": "sub",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "FC654": {
+    "name": "L_FC654",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "FC666": {
+    "name": "L_FC666",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "FC678": {
+    "name": "L_FC678",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDA3C": {
+    "name": "L_FDA3C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "FDB3E": {
     "name": "SUB_FDB3E",
     "kind": "sub",
@@ -6180,10 +6971,115 @@
     "functional_name": null,
     "notes": null
   },
+  "FDB8F": {
+    "name": "SUB_FDB8F",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDBC1": {
+    "name": "L_FDBC1",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDBDC": {
+    "name": "L_FDBDC",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDBEF": {
+    "name": "L_FDBEF",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC01": {
+    "name": "L_FDC01",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC15": {
+    "name": "L_FDC15",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC18": {
+    "name": "L_FDC18",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC1B": {
+    "name": "L_FDC1B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC21": {
+    "name": "L_FDC21",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FDC23": {
+    "name": "L_FDC23",
+    "kind": "loc",
+    "ref_count": 2,
+    "functional_name": null,
+    "notes": null
+  },
   "FDC73": {
     "name": "SUB_FDC73",
     "kind": "sub",
     "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "FF469": {
+    "name": "SUB_FF469",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FF47C": {
+    "name": "L_FF47C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FF480": {
+    "name": "L_FF480",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FF488": {
+    "name": "L_FF488",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "FF495": {
+    "name": "L_FF495",
+    "kind": "loc",
+    "ref_count": 1,
     "functional_name": null,
     "notes": null
   },

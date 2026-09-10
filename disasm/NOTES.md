@@ -74,10 +74,48 @@
   a secondary diagnostic view with extra formatting `.asm` doesn't
   have (physical addresses, chip:offset pairs).
 
+## Interrupt vector table entries (real code entry points)
+
+The reset routine and two later routines (`SUB_E5E53`, inside what's
+now `INT255_HANDLER_EARLY`'s neighborhood) install real 8086 interrupt
+vectors by writing directly into low memory with `es=0` (or `es=0x3F`,
+whose paragraph base `0x3F0` still lands inside the 1KB IVT that spans
+physical `0x000-0x3FF`). Found by tracing `mov <reg>, imm` / `mov
+es,<reg>` / `mov word [es:bx(+disp)], <reg>` triples through the
+already-decoded code:
+
+| IVT slot (int #) | Handler installed | When |
+|---|---|---|
+| 0x008 (INT 2, NMI) | `E5D1:0057` (`SUB_E5D67`) | at reset |
+| 0x004 (INT 1, trap) | `E5D1:019D` (`INT1_HANDLER`) | at reset |
+| 0x3FC (INT 255) | `E5D1:0090` (`INT255_HANDLER_EARLY`) | at reset |
+| 0x3FC (INT 255) | `E60B:0005` (`INT255_HANDLER_LATE`) | later, overwrites the above |
+| 0x008 (INT 2, NMI) | `E60B:003A` (`INT2_HANDLER_LATE`) | later, overwrites the reset-time NMI handler |
+
+These 4 non-`SUB_E5D67` handlers are entry points nothing in the
+program's direct call graph would ever reach (only the corresponding
+interrupt firing calls them), so they were added to
+`gen_disasm_x86.py`'s `ENTRY_POINTS` list and seeded directly. This
+raised coverage from 9,369 to 10,360 instructions. Re-running the same
+vector-tracing search against the newly-reached code found no further
+handlers - this specific lead is exhausted for now, though other
+interrupt-installing sites may still exist in code we haven't reached
+by other means.
+
+INT 1 (trap/single-step) being explicitly handled is a little unusual
+for shipped production firmware and might be diagnostic/self-test
+infrastructure left in; INT 2 (NMI) and INT 255 (a software-only
+vector, not a CPU exception) getting reprogrammed mid-run suggests the
+firmware switches between distinct operating states (e.g. a
+diagnostic/POST mode vs. normal-run mode) with different NMI/software-
+interrupt handling per state - worth confirming once
+`INT255_HANDLER_EARLY`/`_LATE` and `INT2_HANDLER_LATE` are read closely.
+
 ## Validation status
 
-Ran the full recursive-descent output (9,369 decoded instructions)
-through `validate_nasm.py`: **8,450 byte-exact, 915 provably-equivalent
+Ran the recursive-descent output (10,360 decoded instructions, after
+seeding the interrupt-handler entry points above) through
+`validate_nasm.py`: **9,368 byte-exact, 988 provably-equivalent
 alternate encodings, 0 real mismatches, 4 not independently checked.**
 This is strong evidence the x86 decode itself (mnemonic, operands,
 instruction length) is correct throughout what's been reached so far —
@@ -119,12 +157,17 @@ coverage expands into that area.
 
 ## Current coverage
 
-As of the first working recursive-descent pass: ~9,400 instruction-start
-bytes reached out of 131,072 total ROM bytes (~7%), from just 3 seed
-entry points. This is expected — most unreached bytes are either (a)
-code only reachable via computed/indirect jumps we can't resolve
-statically (e.g. jump tables), or (b) data (string tables, bitmaps,
-constant tables) that hasn't been identified yet.
+10,360 instruction-start bytes reached out of 131,072 total ROM bytes
+(~8%), from 7 seed entry points (reset vector, 2 discovered while
+tracing the reset path, 4 interrupt handlers found via IVT-write
+tracing - see above). This is expected to still be a small fraction —
+most unreached bytes are either (a) code only reachable via computed/
+indirect jumps we can't resolve statically (e.g. jump tables - though
+notably **zero unresolved indirect jmp/call instructions exist in the
+code reached so far**, suggesting this codebase may prefer cmp+je
+dispatch chains over jump tables, at least in what's been seen), or
+(b) data (string tables, bitmaps, constant tables) that hasn't been
+identified yet.
 
 12 call targets resolve to addresses in the 0x80000-0x97000 range, well
 below the mapped ROM window (0xE0000+) — likely calls into RAM-resident
@@ -133,10 +176,13 @@ Not yet investigated.
 
 ## Open questions / next steps
 
-1. Widen code coverage: many routines are probably only reachable via
-   jump tables (`SUB_E06B6`-style dispatch functions suggest the
-   convention exists) — need to find and manually seed those table
-   entries as additional entry points.
+1. Widen code coverage further. Jump-table dispatch doesn't appear to
+   be in use in what's been reached (0 unresolved indirect jmp/call
+   sites), so the next lever isn't jump tables - it's finding more
+   entry points nothing in-graph calls directly (interrupt handlers,
+   as above, are one source; worth checking for others e.g. timer
+   ISRs, or simply reading through `INT1_HANDLER`/`INT255_HANDLER_*`/
+   `INT2_HANDLER_LATE` themselves, which may install further vectors).
 2. Identify data regions (ASCII string tables like the command-name
    list found in the comm ROM, the acquisition-mode-setup strings in
    3633) within the *reached* code so the listing doesn't try to

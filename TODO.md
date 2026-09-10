@@ -2,13 +2,19 @@
 
 ## Next up
 
-- [ ] Widen code coverage beyond the current ~7% (9,369 of 131,072
-      bytes) of the main ROM pair. Most of what's unreached is either:
-      - code only reachable via computed/indirect jumps (jump tables) —
-        need to find and manually seed those table entries as
-        additional recursive-descent entry points, or
+- [ ] Widen code coverage beyond the current ~8% (10,360 of 131,072
+      bytes) of the main ROM pair. Jump tables don't appear to be the
+      lever here (0 unresolved indirect jmp/call in reached code) -
+      instead look for more entry points nothing in-graph calls
+      directly, the way the 4 interrupt handlers were found (see
+      disasm/NOTES.md "Interrupt vector table entries"). Candidates:
+      read through `INT1_HANDLER`/`INT255_HANDLER_*`/`INT2_HANDLER_LATE`
+      themselves for further vector installs, and look for other
+      IVT-write patterns (different base registers than `bx`) the
+      current tracer wouldn't catch.
       - data (string tables, bitmaps, constant tables) not yet
-        identified within the reached regions.
+        identified within the reached regions is the other likely
+        source of "unreached" bytes.
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
