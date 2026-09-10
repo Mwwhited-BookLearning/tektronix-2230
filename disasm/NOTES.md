@@ -50,6 +50,56 @@
 - `gen_disasm.py` — the earlier (obsolete) naive-linear-sweep 6809
   attempt. Kept for history; not useful now that we know the real CPU.
   Safe to ignore/delete once the x86 tooling supersedes it.
+- `validate_nasm.py` — round-trip validator. Converts every decoded
+  instruction to NASM syntax, assembles each in its own `section ...
+  vstart=<real address>` (packed sequentially in the output so one
+  instruction's encoded length can't shift/cascade into the next one's
+  comparison), and diffs against the original ROM bytes. Requires a
+  NASM executable path as its one argument (NASM isn't vendored in the
+  repo - see "Validation status" below for how to get one).
+
+## Validation status
+
+Ran the full recursive-descent output (9,369 decoded instructions)
+through `validate_nasm.py`: **8,450 byte-exact, 915 provably-equivalent
+alternate encodings, 0 real mismatches, 4 not independently checked.**
+This is strong evidence the x86 decode itself (mnemonic, operands,
+instruction length) is correct throughout what's been reached so far —
+it does NOT validate the code-vs-data classification (whether a given
+address *should* be treated as code at all), only that wherever we did
+treat something as an instruction, the decode is right.
+
+The "alternate encoding" bucket is large (~10% of instructions) because
+x86 has several genuinely ambiguous encodings where two different byte
+sequences produce identical CPU behavior, and NASM's default encoder
+doesn't always pick the same one this ROM's original assembler did:
+- register-to-register ALU ops/MOV: the ModRM "direction" bit can go
+  either way (e.g. `mov bp,sp` as `8B EC` or as `89 E5`) for the same
+  effect - detected by flipping the direction bit and reg/rm subfields
+  in Python and re-comparing, rather than trusting NASM to reproduce it.
+- immediate width: `cmp ax, 1` can be the 3-byte AX-specific opcode
+  (`3D 01 00`, always 16-bit immediate) or the generic group-1 form
+  sign-extended from a byte (`83 F8 01`) - NASM defaults to the
+  shorter sign-extended form, so the converter checks the *original*
+  opcode byte and adds a `strict word` qualifier only when the ROM
+  actually used the wider encoding.
+- displacement width: `[bx+0x68]` can be encoded with an 8-bit or
+  16-bit displacement when the value fits in a signed byte; the ROM
+  consistently used the wider disp16 form where NASM would default to
+  disp8, so this is detected the same way (recompute the alternate
+  encoding in Python, compare against NASM's actual output).
+- capstone names the 16-bit `CBW`/`CWD` opcodes after their 32-bit
+  (386+) identities (`cwde`/`cdq`) regardless of mode; taken literally
+  under `BITS 16` that makes NASM add a spurious `0x66` operand-size
+  prefix, so the converter renames them back to the 16-bit mnemonics.
+
+The 4 not-independently-checked instructions are backward `loop`/`jmp`
+branches whose capstone-reported target, once resolved through the
+current segment, lands outside either chip's mapped 64K window - a
+signal that these specific spots may be misaligned/misdecoded (walked
+into data) rather than a validator limitation, so they're deliberately
+left unverified rather than force-converted. Worth revisiting if code
+coverage expands into that area.
 
 ## Current coverage
 

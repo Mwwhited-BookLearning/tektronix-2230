@@ -1,1 +1,5 @@
 __pycache__/
+_validate_*.asm
+_validate_*.bin
+_tmp*.asm
+_tmp*.bin
