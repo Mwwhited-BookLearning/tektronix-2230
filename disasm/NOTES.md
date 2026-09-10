@@ -1131,6 +1131,68 @@ ROM, so that's less likely). Revisit if the self-test subroutines or
 menu-string cross-referencing work ever turns up a direct link to
 "record length" or a channel-buffer concept.
 
+## Found: the hardware shift-register write (I/O ports 0xD1/0xC4)
+
+Renamed `write_hw_shift_register` (`0xEE13B`), resolving I/O ports
+`0xD1`/`0xC4` from `MEMORY_MAP.md`'s long-standing "no documentation
+yet on which physical device" list. It writes `ax` to port `0xD1`
+three times in a row - each write preceded by `shl di,1` - then once
+to port `0xC4`. This is the textbook shape of clocking a value out to
+a **serial shift-register-based hardware latch**: `0xD1` looks like
+the data/clock port (written repeatedly as the value shifts) and
+`0xC4` the strobe/latch port (written once, after the shift sequence
+completes) - though which is which isn't confirmed.
+
+Found it by reading the larger function around it (starting near
+`0xEE004`): that function reads a table entry at `[0x1D10 + idx*16]`
+(`idx` from `[0x464]`), and either makes an *indirect* far call through
+the table (`lcall es:[bx+di+6]`) or falls through to
+`write_hw_shift_register` as a default action. This shape - "look up a
+setting's handler, call it, or do a generic hardware push if none" -
+is consistent with a **front-panel setting (attenuator/gain/offset
+calibration value) being written out to analog hardware whenever it
+changes**. Not confirmed against a schematic, but the mechanism (a
+serial shift-register write) now is, closing a mystery that's been
+open since the very first coverage pass found these two ports.
+
+## A second, more puzzling decode anomaly: SUB_EAC86
+
+Found while renaming: `SUB_EAC86` (`160-3633`, in the *proven*, not
+heuristic, set) decodes as unambiguous garbage from its very first
+byte - `add bl,al` / `int1` / more nonsense, eventually including
+`minps xmm4,xmm4` (an SSE instruction, decades newer than anything
+this hardware could execute). This is a **different, more serious**
+case than the already-documented `0xEA1A0-0xEA615` fallthrough cluster
+above:
+
+- It's **outside** that cluster's address range entirely.
+- It's reached via a **clean, unambiguous far call** (`lcall 0xEA34:
+  0x946`, computing to physical `0xEAC86` with no ambiguity), not
+  fallthrough - and the *same* literal `(0xEA34, 0x946)` target is
+  called from **3 separate places**: twice more in `160-3532` and once
+  from the comm ROM (`2998_alias_90000`). A shared target called this
+  consistently from three different ROMs strongly implies it's
+  supposed to be a real, working function.
+- Checked for an off-by-a-few-bytes misalignment (the classic
+  "recursive descent walked into the middle of an instruction"
+  failure mode) by dumping the raw bytes a few positions before and
+  after `0xEAC86` - no nearby shift produces a clean `55 8B EC`-style
+  prologue either. The bytes genuinely look like non-code data at
+  every alignment checked.
+
+**Not resolved.** Left `SUB_EAC86` unrenamed rather than guess a
+purpose for what might not be reachable code in practice - naming it
+would imply confidence that isn't there. Candidate explanations, none
+confirmed: (a) another address-decode alias like the confirmed
+`0x90000` one, where the real hardware serves different bytes at this
+physical address than our flat EPROM dump does; (b) genuinely dead
+code (a stale far-call target left over from an earlier build) that
+happens to still be called 3x but never actually executed in practice
+(e.g. gated by a runtime condition that's always false); (c) some
+other decode subtlety not yet identified. Worth revisiting if the
+`0x90000`-alias-style brute-force technique (documented in
+`CLAUDE.md`) ever gets pointed at this specific address.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to

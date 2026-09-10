@@ -36,6 +36,16 @@
       but reaching it via pure fallthrough with no owning label means
       there's a real function boundary nearby the recursive descent
       doesn't know about - worth finding for a cleaner listing.
+- [ ] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
+      unambiguous garbage (including an impossible SSE instruction)
+      despite being a **clean, unambiguous far-call target** reached
+      identically from 3 separate places across 2 ROMs (`160-3532` x2,
+      comm ROM x1). Different and more puzzling than the
+      `0xEA1A0-0xEA615` fallthrough cluster above - no nearby byte
+      shift produces a clean prologue either. Left unrenamed rather
+      than guess. See `disasm/NOTES.md` "A second, more puzzling
+      decode anomaly: SUB_EAC86" for what's been ruled out and
+      candidate explanations (address-decode alias? dead code?).
 - [x] ~~Follow `SUB_E094B` to find where self-test results get
       displayed~~ — traced it, and found something more valuable: it's
       called from `print_selftest_banner` (`0xE416F` - renamed;

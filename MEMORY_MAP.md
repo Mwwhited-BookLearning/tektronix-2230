@@ -79,9 +79,23 @@ misnamed" and "The readout/CRT display memory".
 | Port | Access | Context |
 |---|---|---|
 | `0x83` | `out 0x83, ax` | `160-3532`, offset `0x0CCF` - sits directly in the middle of HPGL plotter command generation code (`update_plot_position` and neighbors emit `PU%d,%d;`/`SP1;SC0,1023,0,1023;`/`ESC*rB`-style HPGL/HP-GL2 commands via `format_string_va` right around this instruction) - candidate: the GPIB/plotter output port, not confirmed |
-| `0xC4` | `out 0xc4, ax` | `160-3633`, offset `0xE143` |
-| `0xD1` | `out 0xd1, ax` (x3) | `160-3633`, offsets `0xE13D/E13F/E141` - written 3x in a row, possibly a multi-register peripheral or a retry/settle pattern |
+| `0xC4` | `out 0xc4, ax` | `160-3633`, offset `0xE143` - confirmed part of `write_hw_shift_register`'s 4-write sequence, see below |
+| `0xD1` | `out 0xd1, ax` (x3) | `160-3633`, offsets `0xE13D/E13F/E141` - confirmed: each write is preceded by `shl di,1`, all inside `write_hw_shift_register` (`0xEE13B`) |
 | (in DX) | `in al, dx` | `160-3633`, offset `0xDA0A` - port number computed at runtime, not a literal, so this reads from a *range* of ports (a peripheral with multiple addressable registers, or a scan loop) |
+
+**Found: `0xD1`/`0xC4` are a serial shift-register-style hardware
+write.** `write_hw_shift_register` (`0xEE13B`) writes `ax` to port
+`0xD1` three times in a row (each preceded by `shl di,1`) then once to
+port `0xC4` - the classic shape of clocking a value out to a
+shift-register-based DAC/latch (`0xD1` = data/clock, `0xC4` = strobe/
+latch, roles not confirmed). It's reached from a larger dispatch
+function (starting around `0xEE004`) that indexes a table at
+`[0x1D10]` by a value from `[0x464]` (`*16`) and either calls a
+specific handler indirectly or falls through to this default hardware
+write - consistent with a **front-panel setting (e.g. an attenuator,
+gain, or offset calibration value) being pushed out to analog hardware
+whenever it changes**. Peripheral identity still not confirmed against
+a schematic, but the *mechanism* (serial shift-register write) now is.
 
 All writes are 16-bit (`ax`), suggesting word-wide peripheral
 registers. No documentation yet on which physical device these

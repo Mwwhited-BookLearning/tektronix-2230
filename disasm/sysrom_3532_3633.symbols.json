@@ -7714,10 +7714,10 @@
     "notes": null
   },
   "EE13B": {
-    "name": "SUB_EE13B",
+    "name": "write_hw_shift_register",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "write_hw_shift_register",
     "notes": null
   },
   "EE355": {

@@ -11836,7 +11836,7 @@ L_E82DD:
     3633:8304  [E8304]  7508            jne     L_E830E  ; 0x2ce
     3633:8306  [E8306]  2bff            sub     di, di
     3633:8308  [E8308]  57              push    di
-    3633:8309  [E8309]  9a1b07a2ed      lcall   SUB_EE13B  ; 0xeda2, 0x71b
+    3633:8309  [E8309]  9a1b07a2ed      lcall   write_hw_shift_register  ; 0xeda2, 0x71b
 L_E830E:
     3633:830E  [E830E]  bf0100          mov     di, 1
     3633:8311  [E8311]  57              push    di
@@ -11863,7 +11863,7 @@ L_E8323:
     3633:834A  [E834A]  7508            jne     L_E8354  ; 0x314
     3633:834C  [E834C]  2bff            sub     di, di
     3633:834E  [E834E]  57              push    di
-    3633:834F  [E834F]  9a1b07a2ed      lcall   SUB_EE13B  ; 0xeda2, 0x71b
+    3633:834F  [E834F]  9a1b07a2ed      lcall   write_hw_shift_register  ; 0xeda2, 0x71b
 L_E8354:
     3633:8354  [E8354]  bf0200          mov     di, 2
     3633:8357  [E8357]  57              push    di
@@ -11890,7 +11890,7 @@ L_E8369:
     3633:8390  [E8390]  7508            jne     L_E839A  ; 0x35a
     3633:8392  [E8392]  2bff            sub     di, di
     3633:8394  [E8394]  57              push    di
-    3633:8395  [E8395]  9a1b07a2ed      lcall   SUB_EE13B  ; 0xeda2, 0x71b
+    3633:8395  [E8395]  9a1b07a2ed      lcall   write_hw_shift_register  ; 0xeda2, 0x71b
 L_E839A:
     3633:839A  [E839A]  bf0300          mov     di, 3
     3633:839D  [E839D]  57              push    di
@@ -12597,7 +12597,7 @@ L_EE0B7:
 L_EE139:
     3633:E139  [EE139]  8b7ef6          mov     di, word ptr [bp - 0xa]
 
-SUB_EE13B:
+write_hw_shift_register:
     3633:E13B  [EE13B]  f6d1            not     cl
 
     3633:E13C  [EE13C]  d1e7            shl     di, 1
@@ -13831,7 +13831,7 @@ L_F7540:
 L_F7549:
     3532:7549  [F7549]  c7066e050000    mov     word ptr [0x56e], 0
     3532:754F  [F754F]  ff367005        push    word ptr [0x570]
-    3532:7553  [F7553]  9a1b07a2ed      lcall   SUB_EE13B  ; 0xeda2, 0x71b
+    3532:7553  [F7553]  9a1b07a2ed      lcall   write_hw_shift_register  ; 0xeda2, 0x71b
     3532:7558  [F7558]  8b7ef4          mov     di, word ptr [bp - 0xc]
     3532:755B  [F755B]  d1e7            shl     di, 1
     3532:755D  [F755D]  818d50050008    or      word ptr [di + 0x550], 0x800

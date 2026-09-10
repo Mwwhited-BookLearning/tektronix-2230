@@ -515,6 +515,22 @@ FUNCTIONAL_NAMES = {
                                                # different word counts
                                                # for what look like
                                                # different delay lengths
+    0xEE13B: "write_hw_shift_register",       # writes ax to port 0xD1
+                                               # three times (each
+                                               # preceded by shl di,1)
+                                               # then to port 0xC4 once
+                                               # - a serial shift-
+                                               # register-style hardware
+                                               # write (0xD1=data/clock,
+                                               # 0xC4=latch/strobe, exact
+                                               # roles not confirmed).
+                                               # THE function behind
+                                               # MEMORY_MAP.md's
+                                               # previously-mysterious
+                                               # I/O ports 0xD1/0xC4 -
+                                               # see NOTES.md "Found:
+                                               # the hardware shift-
+                                               # register write"
     0xE260A: "verify_timebase_prc",           # configures the shared
                                                # measurement hardware
                                                # register cluster
