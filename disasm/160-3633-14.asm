@@ -7555,13 +7555,39 @@ L_E64BC:
     db 0x8b, 0xe5  ; 64BC: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 64BE: pop bp
     retf                                     ; 64BF: retf 
-    db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x0c, 0xc6, 0x06, 0x66, 0x07, 0x00, 0xbf, 0x41, 0x00, 0x57, 0x9a  ; 64C0
-    db 0x08, 0x00, 0x07, 0xf0, 0x9a, 0x43, 0x01, 0xd1, 0xe5, 0x9a, 0x1f, 0x00, 0xd1, 0xe5, 0x9a, 0x0e  ; 64D0
-    db 0x00, 0xb3, 0xfd, 0x9a, 0x0e, 0x00, 0x56, 0xf1, 0xc7, 0x46, 0xf8, 0x00, 0x00, 0xe9, 0x0b, 0x00  ; 64E0
-    db 0x8b, 0x7e, 0xf8, 0xc6, 0x85, 0x91, 0x1a, 0x00, 0xff, 0x46, 0xf8, 0x83, 0x7e, 0xf8, 0x0c, 0x7c  ; 64F0
-    db 0xef, 0x9a, 0x03, 0x00, 0xcf, 0xfb, 0x9a, 0x05, 0x00, 0x25, 0xe9, 0x9a, 0x43, 0x01, 0xd1, 0xe5  ; 6500
-    db 0xb8, 0x00, 0x00, 0xba, 0xff, 0xff, 0x89, 0x46, 0xf4, 0x89, 0x56, 0xf6, 0xff, 0x5e, 0xf4, 0x8b  ; 6510
-    db 0xe5, 0x5d, 0xcb, 0xff  ; 6520
+COMM_ROM_BOOTSTUB_TARGET:
+    push bp                                  ; 64C0: push bp
+    db 0x8b, 0xec  ; 64C1: mov bp, sp (not byte-exact via NASM - see NOTES.md)
+    sub sp, 0xc                              ; 64C3: sub sp, 0xc
+    mov byte [0x766], 0                      ; 64C6: mov byte ptr [0x766], 0
+    mov di, 0x41                             ; 64CB: mov di, 0x41
+    push di                                  ; 64CE: push di
+    call 0xf007:0x0008                       ; 64CF: lcall 0xf007, 8
+    call 0xe5d1:0x0143                       ; 64D4: lcall 0xe5d1, 0x143
+    call 0xe5d1:0x001f                       ; 64D9: lcall 0xe5d1, 0x1f
+    call 0xfdb3:0x000e                       ; 64DE: lcall 0xfdb3, 0xe
+    call 0xf156:0x000e                       ; 64E3: lcall 0xf156, 0xe
+    mov word [bp - 8], 0                     ; 64E8: mov word ptr [bp - 8], 0
+    jmp 0x64fb                               ; 64ED: jmp 0x3b
+L_E64F0:
+    mov di, word [bp - 8]                    ; 64F0: mov di, word ptr [bp - 8]
+    mov byte [di + 0x1a91], 0                ; 64F3: mov byte ptr [di + 0x1a91], 0
+    inc word [bp - 8]                        ; 64F8: inc word ptr [bp - 8]
+L_E64FB:
+    cmp word [bp - 8], 0xc                   ; 64FB: cmp word ptr [bp - 8], 0xc
+    jl short 0x64f0                          ; 64FF: jl 0x30
+    call 0xfbcf:0x0003                       ; 6501: lcall 0xfbcf, 3
+    call 0xe925:0x0005                       ; 6506: lcall 0xe925, 5
+    call 0xe5d1:0x0143                       ; 650B: lcall 0xe5d1, 0x143
+    mov ax, 0                                ; 6510: mov ax, 0
+    mov dx, 0xffff                           ; 6513: mov dx, 0xffff
+    mov word [bp - 0xc], ax                  ; 6516: mov word ptr [bp - 0xc], ax
+    mov word [bp - 0xa], dx                  ; 6519: mov word ptr [bp - 0xa], dx
+    call far [bp - 0xc]                      ; 651C: lcall [bp - 0xc]
+    db 0x8b, 0xe5  ; 651F: mov sp, bp (not byte-exact via NASM - see NOTES.md)
+    pop bp                                   ; 6521: pop bp
+    retf                                     ; 6522: retf 
+    db 0xff  ; 6523
 SUB_E6524:
     push bp                                  ; 6524: push bp
     db 0x8b, 0xec  ; 6525: mov bp, sp (not byte-exact via NASM - see NOTES.md)

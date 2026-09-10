@@ -110,6 +110,62 @@ but **not its own CPU**. Evidence:
 Still unknown: the exact bank-switch mechanism (which port/register
 selects this ROM into the address space, and what window size).
 
+## Comm ROM disassembly (160-2998-14)
+
+Built with `gen_disasm_2998.py`, reusing `gen_disasm_x86.py`'s engine
+with a combined chip set: the comm ROM's four 16KB pages get arbitrary
+non-overlapping virtual physical bases (`0xA0000`, `0xB0000`, `0xC0000`,
+`0xD0000` - a full 64KB apart per page, not just 16KB, so a near-branch
+offset overflowing past `0x3FFF` lands in genuinely unmapped space
+instead of bleeding into the next page's window) alongside the real
+main-ROM chips, so a far call/jmp landing in `0xE0000-0xFFFFF`
+correctly continues into the already-disassembled main ROM.
+
+**Confidence is lower than the main ROM's disassembly.** The main ROM
+is seeded only from proven entry points (the real reset vector, and
+things reachable from it). The comm ROM has no known reset vector and
+nothing we've disassembled calls into it directly, so it's seeded
+heuristically: every occurrence of the `55 8B EC` (`push bp; mov
+bp,sp`) prologue (398 of them) plus the two boot-stub far jumps. This
+is a strong signal (C-compiler prologues are distinctive) but not
+proof of reachability the way the main ROM's recursive descent is.
+
+One genuinely high-confidence discovery came out of this, though: the
+boot-stub far jump target (`0xE64C:0000`) is directly observed (both
+comm-ROM pages 2 and 3 independently encode the identical jump), so it
+was promoted into the *official* `gen_disasm_x86.py` `ENTRY_POINTS` as
+`COMM_ROM_BOOTSTUB_TARGET` - this grew the main ROM's own confirmed
+coverage by 29 instructions.
+
+Result: 20,180 instructions reached, NASM-validated the same way as
+the main ROM (`validate_2998.py`): 18,039 exact + 2,141 alt-encoding,
+0 real mismatches. A buildable NASM source (`160-2998-14.asm`, via
+`gen_source_2998.py`) reassembles byte-identical to the original .bin,
+same guarantee as the main ROM's `.asm` files. Chasing validation
+failures here surfaced two more real bugs in `validate_nasm.py`,
+fixed and now benefiting both ROMs' validation:
+- a segment-override prefix byte (`0x26`/`0x2E`/`0x36`/`0x3E`) was
+  being read as if it were the instruction's opcode, which broke the
+  immediate-width-widening check for any segment-overridden `add`/
+  `or`/`cmp`/etc. with a memory destination (e.g. `or word
+  [es:di+0xA], imm`).
+- capstone omits the `0x` prefix on some near-branch targets too (not
+  just far ones, which were already handled) - an unprefixed numeric
+  target like a bare `"9"` was silently falling through to a bogus
+  literal-address conversion instead of being resolved or safely
+  rejected.
+
+Because the comm ROM's page-relative addressing differs from the main
+ROM's real absolute addressing, `gen_source_2998.py` needed one more
+fix beyond reusing `gen_source.py`'s logic: `classify_instructions()`
+resolves near-branch targets to page-relative addresses (correct for
+validating one 16KB page in isolation via its own `vstart` section),
+but the reconstruction concatenates all four pages under a single
+`ORG 0` spanning the full 64KB file - so a page-relative target must
+be shifted to the matching global file offset (`page*0x4000 +
+page-relative value`) before being embedded, or it silently points at
+the wrong page.
+
 ## Interrupt vector table entries (real code entry points)
 
 The reset routine and two later routines (`SUB_E5E53`, inside what's

@@ -3579,7 +3579,7 @@
   "E5D2F": {
     "name": "SUB_E5D2F",
     "kind": "sub",
-    "ref_count": 6,
+    "ref_count": 7,
     "functional_name": null,
     "notes": null
   },
@@ -3642,7 +3642,7 @@
   "E5E53": {
     "name": "SUB_E5E53",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },
@@ -3888,6 +3888,27 @@
     "name": "L_E64BC",
     "kind": "loc",
     "ref_count": 3,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64C0": {
+    "name": "COMM_ROM_BOOTSTUB_TARGET",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64F0": {
+    "name": "L_E64F0",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E64FB": {
+    "name": "L_E64FB",
+    "kind": "loc",
+    "ref_count": 1,
     "functional_name": null,
     "notes": null
   },
@@ -5343,7 +5364,7 @@
   "E9255": {
     "name": "SUB_E9255",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -5784,7 +5805,7 @@
   "F0078": {
     "name": "SUB_F0078",
     "kind": "sub",
-    "ref_count": 6,
+    "ref_count": 7,
     "functional_name": null,
     "notes": null
   },
@@ -5924,7 +5945,7 @@
   "F156E": {
     "name": "SUB_F156E",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -6799,7 +6820,7 @@
   "FBCF3": {
     "name": "SUB_FBCF3",
     "kind": "sub",
-    "ref_count": 1,
+    "ref_count": 2,
     "functional_name": null,
     "notes": null
   },
@@ -6960,7 +6981,7 @@
   "FDB3E": {
     "name": "SUB_FDB3E",
     "kind": "sub",
-    "ref_count": 2,
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },

@@ -43,6 +43,10 @@ PTR_RE = re.compile(r"\b(byte|word|dword|qword) ptr\b")
 BARE_PTR_RE = re.compile(r"(?<!\w)ptr\s+")
 REGREG_RE = re.compile(r"^(\w+),\s*(\w+)$")
 IMM_OPERAND_RE = re.compile(r"^(?P<dst>.+),\s*(?P<imm>-?\d+|0x[0-9a-fA-F]+)$")
+# capstone sometimes omits the "0x" prefix on near-branch targets (seen
+# already for far targets too - see gen_disasm_x86.FAR_TARGET_RE) - match
+# either form rather than assuming "0x" is always present.
+NEAR_HEX_RE = re.compile(r"^(?:0x)?[0-9a-fA-F]+$")
 WORD_REGS = {"ax", "bx", "cx", "dx", "si", "di", "bp", "sp"}
 
 
@@ -56,6 +60,21 @@ AX_IMM_OPCODE = {
     "and": 0x25, "sub": 0x2D, "xor": 0x35, "cmp": 0x3D,
 }
 GROUP1_LONG_OPCODE = 0x81
+
+
+SEGMENT_PREFIX_BYTES = {0x26, 0x2E, 0x36, 0x3E}  # es:/cs:/ss:/ds:
+
+
+def real_opcode_byte(orig_bytes):
+    """Skip a leading segment-override prefix byte (0x26/0x2E/0x36/0x3E)
+    to find the actual opcode byte - needed because a segment-overridden
+    instruction's first byte is the prefix, not the opcode, which would
+    otherwise make widen_immediate() silently fail to recognize e.g. an
+    `or word [es:di+0xa], imm` using the wide 0x81 encoding."""
+    for b in orig_bytes:
+        if b not in SEGMENT_PREFIX_BYTES:
+            return b
+    return orig_bytes[0]
 
 
 def widen_immediate(mnem, op2, first_orig_byte):
@@ -152,14 +171,14 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
     if mnem in NO_OPERAND_MNEMONICS:
         return mnem
 
-    if mnem in ("jmp", "call") and op.startswith("0x"):
+    if mnem in ("jmp", "call") and NEAR_HEX_RE.match(op):
         target = near_target_addr(op)
         if target is None:
             return None
         kw = "short " if size == 2 and mnem == "jmp" else ""
         return f"{mnem} {kw}0x{target:04x}"
 
-    if mnem.startswith("j") and mnem not in ("jmp",) and op.startswith("0x"):
+    if mnem.startswith("j") and mnem not in ("jmp",) and NEAR_HEX_RE.match(op):
         # 8086/8088 has no near-conditional-jump encoding (that's 386+) -
         # every jcc here MUST be the 2-byte short form. Without an explicit
         # "short", NASM will happily emit the invalid-on-this-CPU 0F 8x form.
@@ -168,7 +187,7 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
             return None
         return f"{mnem} short 0x{target:04x}"
 
-    if mnem == "loop" and re.match(r"^0x[0-9a-fA-F]+$", op):
+    if mnem == "loop" and NEAR_HEX_RE.match(op):
         target = near_target_addr(op)
         if target is None:
             return None
@@ -190,7 +209,7 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
     op2 = fix_mem_operand(op)
     if "ptr" in op2:
         return None
-    op2 = widen_immediate(mnem, op2, orig_bytes[0])
+    op2 = widen_immediate(mnem, op2, real_opcode_byte(orig_bytes))
     return f"{mnem} {op2}".rstrip()
 
 

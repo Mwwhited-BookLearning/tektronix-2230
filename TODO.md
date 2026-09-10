@@ -2,7 +2,7 @@
 
 ## Next up
 
-- [ ] Widen code coverage beyond the current ~8% (10,360 of 131,072
+- [ ] Widen code coverage beyond the current ~8% (10,389 of 131,072
       bytes) of the main ROM pair. Jump tables don't appear to be the
       lever here (0 unresolved indirect jmp/call in reached code) -
       instead look for more entry points nothing in-graph calls
@@ -22,10 +22,11 @@
       scheme/window. CPU identity is now settled (same 8088, not a
       separate coprocessor — see `disasm/NOTES.md` "Is the comm ROM
       its own CPU?"), but which port/register selects it and how large
-      the overlay window is are still unknown. In progress: building a
-      page-relative recursive-descent disassembly of this ROM's ~398
-      candidate functions (found via the `55 8B EC` push-bp/mov-bp,sp
-      prologue signature).
+      the overlay window is are still unknown. Disassembly done
+      (`160-2998-14.asm`, 20,180 instructions, NASM-validated) but
+      confidence is lower than the main ROM's — entry points are
+      heuristic (push-bp signature scan), not proven reachable. See
+      `disasm/NOTES.md` "Comm ROM disassembly" for full detail.
 - [ ] Identify the unidentified `~0x80000-0x97000` region referenced by
       far calls from BOTH the main ROM and the comm ROM (see
       `MEMORY_MAP.md`) — likely a shared service/API call table, either

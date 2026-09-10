@@ -45,6 +45,12 @@ ENTRY_POINTS = [
     (0xE5D1, 0x0090, "INT255_HANDLER_EARLY"),   # INT 255, installed at reset
     (0xE60B, 0x0005, "INT255_HANDLER_LATE"),    # INT 255, reinstalled later
     (0xE60B, 0x003A, "INT2_HANDLER_LATE"),      # INT 2 (NMI), reinstalled later
+    # Both 16KB pages at file offset 0x8000 and 0xC000 in the comm/GPIB
+    # ROM (160-2998) open with an identical, deliberate far jump here
+    # (`EA 00 00 4C E6` = `ljmp 0xE64C:0`) - a directly-observed, high-
+    # confidence entry point (unlike the comm ROM's OWN disassembly,
+    # which is seeded heuristically - see gen_disasm_2998.py).
+    (0xE64C, 0x0000, "COMM_ROM_BOOTSTUB_TARGET"),
 ]
 
 CALL_MNEMONICS = {"call", "lcall"}
@@ -54,9 +60,11 @@ RET_MNEMONICS = {"ret", "retf", "iret"}
 STOP_MNEMONICS = {"hlt"} | RET_MNEMONICS
 
 
-def load_chips():
+def load_chips(chip_defs=None):
+    if chip_defs is None:
+        chip_defs = CHIPS
     data = {}
-    for name, info in CHIPS.items():
+    for name, info in chip_defs.items():
         buf = open(info["path"], "rb").read()
         data[name] = {"buf": buf, "base": info["phys_base"], "size": len(buf)}
     return data
@@ -69,8 +77,9 @@ def phys_to_chip_offset(chips, phys):
     return None, None
 
 
-def main():
-    chips = load_chips()
+def main(chip_defs=None, entry_points=None):
+    chips = load_chips(chip_defs)
+    entry_points = ENTRY_POINTS if entry_points is None else entry_points
     md = cs.Cs(cs.CS_ARCH_X86, cs.CS_MODE_16)
     md.detail = False
 
@@ -87,7 +96,7 @@ def main():
             lab["kind"] = "sub"
         lab["refs"].append(from_phys)
 
-    for seg, off, name in ENTRY_POINTS:
+    for seg, off, name in entry_points:
         phys = seg_off_to_phys(seg, off)
         labels[phys] = {"kind": "entry", "refs": [], "fixed_name": name}
         queue.append((seg, off))
