@@ -18,12 +18,21 @@
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
-- [ ] Figure out the comm/GPIB ROM's (`160-2998`) actual mapping or
-      bank-switching scheme, and confirm whether it's driven by the
-      same 8088 or a separate coprocessor on the option board.
-- [ ] Investigate the 12 call targets that resolve into 0x80000-0x97000
-      — below the mapped ROM window (0xE0000+) — likely RAM-resident
-      overlay code we don't have a dump of.
+- [ ] Figure out the comm/GPIB ROM's (`160-2998`) exact bank-switching
+      scheme/window. CPU identity is now settled (same 8088, not a
+      separate coprocessor — see `disasm/NOTES.md` "Is the comm ROM
+      its own CPU?"), but which port/register selects it and how large
+      the overlay window is are still unknown. In progress: building a
+      page-relative recursive-descent disassembly of this ROM's ~398
+      candidate functions (found via the `55 8B EC` push-bp/mov-bp,sp
+      prologue signature).
+- [ ] Identify the unidentified `~0x80000-0x97000` region referenced by
+      far calls from BOTH the main ROM and the comm ROM (see
+      `MEMORY_MAP.md`) — likely a shared service/API call table, either
+      RAM-resident or a ROM we don't have a dump of.
+- [ ] Narrow down what peripheral the I/O ports actually seen in code
+      (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to —
+      see `MEMORY_MAP.md` "I/O ports actually seen in code".
 - [ ] Start filling in `functional_name` fields in
       `disasm/sysrom_3532_3633.symbols.json` as routines are understood
       (e.g. `SUB_E06B6` looks like a small dispatch/switch function
@@ -48,8 +57,9 @@ names but the bigger picture):
   actually lets someone do, and how the code implements it)
 - configuration options and where they're stored
 - the full memory map (RAM regions, I/O port assignments, peripheral
-  registers) as it's discovered, not just the ROM address map already
-  in `disasm/NOTES.md`
+  registers) — started in `MEMORY_MAP.md` (IVT, RAM segments, the
+  unidentified shared `~0x9470`-area region, and the 4 I/O ports seen
+  so far); keep it updated as more segments/ports are identified
 - peripherals: the A/D converter, front-panel controls, GPIB/RS-232
   hardware, and how the firmware talks to each
 

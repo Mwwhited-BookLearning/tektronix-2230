@@ -12,6 +12,8 @@
     "comm_rom_0", sockets U1243/U1343 on boards A23/A24). Not yet mapped
     into the main address space — appears to be paged/bank-switched in
     16KB windows (see below). Not handled by the x86 disassembler yet.
+    **Confirmed same CPU/address space, not a separate coprocessor** —
+    see "Is the comm ROM its own CPU?" below.
   - `160-3633-13/14.bin` — main system ROM, low half. Silkscreen
     "sys_rom_0", socket **U9109**, board A10. **Mapped at physical
     0xE0000-0xEFFFF.**
@@ -73,6 +75,40 @@
   ones to open when reading or editing "the disassembly" - `.lst` is
   a secondary diagnostic view with extra formatting `.asm` doesn't
   have (physical addresses, chip:offset pairs).
+
+## Is the comm ROM its own CPU?
+
+Own ROM chips, own physical board (A23/A24 vs. the main board A10) —
+but **not its own CPU**. Evidence:
+
+- Both 16KB pages at file offset `0x8000` and `0xC000` in `160-2998`
+  open with byte `0xEA` (x86 far-JMP), decoding cleanly as
+  `ljmp 0xE64C:0000` → physical `0xE64C0` — which falls *inside* the
+  already-confirmed main-ROM window (`0xE0000-0xEFFFF`). A genuinely
+  separate CPU with its own private address space would have no reason
+  to reference an address inside the other board's ROM.
+- The classic C-compiler prologue `55 8B EC` (`push bp; mov bp,sp`)
+  appears **398 times** across all four 16KB pages (121/102/84/91 per
+  page) — real compiled functions, same style (BP-based frames, `retf`/
+  `retf N` far returns) as the main ROM, consistent with the same
+  toolchain having built both.
+- Comm-ROM code makes far calls like `lcall 0x9470, 0xE` (physical
+  `0x9470E`) — landing in the *same* unidentified `~0x80000-0x97000`
+  region that the main ROM's code also calls into (see `MEMORY_MAP.md`).
+  Two independently-addressed CPUs coincidentally referencing the same
+  absolute address for what looks like a shared service-call table
+  would be a bizarre coincidence; far more likely this is one shared
+  bus/address space with a documented low-level API both the main
+  firmware and any plug-in option board call through.
+- Reset vector check: confirmed absent. Both `160-2998-13.bin` and
+  `-14.bin`'s last 16 bytes (physical `0xFFF0-0xFFFF`, where an 8088
+  always starts fetching after reset) are unprogrammed `0xFF` — this
+  ROM was never a candidate to be the boot ROM, consistent with it
+  being a bank-switched overlay that only gets paged in once the main
+  firmware's boot code decides to.
+
+Still unknown: the exact bank-switch mechanism (which port/register
+selects this ROM into the address space, and what window size).
 
 ## Interrupt vector table entries (real code entry points)
 
