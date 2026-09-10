@@ -398,7 +398,7 @@ L_E03D2:
     3633:03DC  [E03DC]  8d959102        lea     dx, [di + 0x291]
     3633:03E0  [E03E0]  06              push    es
     3633:03E1  [E03E1]  52              push    dx
-    3633:03E2  [E03E2]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:03E2  [E03E2]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:03E7  [E03E7]  2bff            sub     di, di
     3633:03E9  [E03E9]  57              push    di
     3633:03EA  [E03EA]  8d56ce          lea     dx, [bp - 0x32]
@@ -445,7 +445,7 @@ FUNC_3633_041D:
     3633:043B  [E043B]  8d870a02        lea     ax, [bx + 0x20a]
     3633:043F  [E043F]  06              push    es
     3633:0440  [E0440]  50              push    ax
-    3633:0441  [E0441]  9aa20052e3      lcall   SUB_E35C2  ; 0xe352, 0xa2
+    3633:0441  [E0441]  9aa20052e3      lcall   build_print_region  ; 0xe352, 0xa2
     3633:0446  [E0446]  83c40c          add     sp, 0xc
     3633:0449  [E0449]  2bff            sub     di, di
     3633:044B  [E044B]  57              push    di
@@ -887,7 +887,7 @@ L_E0860:
     3633:0880  [E0880]  c416521b        les     dx, ptr [0x1b52]
     3633:0884  [E0884]  06              push    es
     3633:0885  [E0885]  52              push    dx
-    3633:0886  [E0886]  9aa20052e3      lcall   SUB_E35C2  ; 0xe352, 0xa2
+    3633:0886  [E0886]  9aa20052e3      lcall   build_print_region  ; 0xe352, 0xa2
     3633:088B  [E088B]  83c40c          add     sp, 0xc
     3633:088E  [E088E]  2bff            sub     di, di
     3633:0890  [E0890]  57              push    di
@@ -1233,7 +1233,7 @@ SUB_E0BA3:
     3633:0BCA  [E0BCA]  c4460a          les     ax, ptr [bp + 0xa]
     3633:0BCD  [E0BCD]  06              push    es
     3633:0BCE  [E0BCE]  50              push    ax
-    3633:0BCF  [E0BCF]  9aa20052e3      lcall   SUB_E35C2  ; 0xe352, 0xa2
+    3633:0BCF  [E0BCF]  9aa20052e3      lcall   build_print_region  ; 0xe352, 0xa2
     3633:0BD4  [E0BD4]  83c40c          add     sp, 0xc
     3633:0BD7  [E0BD7]  2bff            sub     di, di
     3633:0BD9  [E0BD9]  57              push    di
@@ -5524,7 +5524,7 @@ init_print_region:
     3633:3593  [E3593]  8be5            mov     sp, bp
     3633:3595  [E3595]  5d              pop     bp
     3633:3596  [E3596]  ca0400          retf    4
-SUB_E3599:
+init_print_region_home:
     3633:3599  [E3599]  55              push    bp
     3633:359A  [E359A]  8bec            mov     bp, sp
     3633:359C  [E359C]  83ec06          sub     sp, 6
@@ -5546,7 +5546,7 @@ SUB_E3599:
     3633:35BC  [E35BC]  8be5            mov     sp, bp
     3633:35BE  [E35BE]  5d              pop     bp
     3633:35BF  [E35BF]  ca0400          retf    4
-SUB_E35C2:
+build_print_region:
     3633:35C2  [E35C2]  55              push    bp
     3633:35C3  [E35C3]  8bec            mov     bp, sp
     3633:35C5  [E35C5]  83ec06          sub     sp, 6
@@ -7344,7 +7344,7 @@ FUNC_3633_48C5:
     3633:48CF  [E48CF]  8d950a02        lea     dx, [di + 0x20a]
     3633:48D3  [E48D3]  06              push    es
     3633:48D4  [E48D4]  52              push    dx
-    3633:48D5  [E48D5]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:48D5  [E48D5]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:48DA  [E48DA]  bf2800          mov     di, 0x28
     3633:48DD  [E48DD]  57              push    di
     3633:48DE  [E48DE]  bf7bff          mov     di, 0xff7b
@@ -7998,7 +7998,7 @@ L_E4EBD:
     3633:4EC0  [E4EC0]  8346f609        add     word ptr [bp - 0xa], 9
     3633:4EC4  [E4EC4]  06              push    es
     3633:4EC5  [E4EC5]  57              push    di
-    3633:4EC6  [E4EC6]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:4EC6  [E4EC6]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:4ECB  [E4ECB]  ff46f4          inc     word ptr [bp - 0xc]
 L_E4ECE:
     3633:4ECE  [E4ECE]  837ef411        cmp     word ptr [bp - 0xc], 0x11
@@ -8176,7 +8176,7 @@ FUNC_3633_5058:
     3633:5062  [E5062]  8d950a02        lea     dx, [di + 0x20a]
     3633:5066  [E5066]  06              push    es
     3633:5067  [E5067]  52              push    dx
-    3633:5068  [E5068]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5068  [E5068]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:506D  [E506D]  bf7bff          mov     di, 0xff7b
     3633:5070  [E5070]  57              push    di
     3633:5071  [E5071]  baf503          mov     dx, 0x3f5
@@ -8283,7 +8283,7 @@ FUNC_3633_5150:
     3633:5166  [E5166]  8d874902        lea     ax, [bx + 0x249]
     3633:516A  [E516A]  06              push    es
     3633:516B  [E516B]  50              push    ax
-    3633:516C  [E516C]  9aa20052e3      lcall   SUB_E35C2  ; 0xe352, 0xa2
+    3633:516C  [E516C]  9aa20052e3      lcall   build_print_region  ; 0xe352, 0xa2
     3633:5171  [E5171]  83c40c          add     sp, 0xc
     3633:5174  [E5174]  2bff            sub     di, di
     3633:5176  [E5176]  57              push    di
@@ -8511,7 +8511,7 @@ L_E536A:
     3633:5380  [E5380]  8d950a02        lea     dx, [di + 0x20a]
     3633:5384  [E5384]  06              push    es
     3633:5385  [E5385]  52              push    dx
-    3633:5386  [E5386]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5386  [E5386]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:538B  [E538B]  c746f0a302      mov     word ptr [bp - 0x10], 0x2a3
     3633:5390  [E5390]  c43edc1d        les     di, ptr [0x1ddc]
     3633:5394  [E5394]  8d950a02        lea     dx, [di + 0x20a]
@@ -8625,7 +8625,7 @@ FUNC_3633_540A:
     3633:5487  [E5487]  26c405          les     ax, ptr es:[di]
     3633:548A  [E548A]  06              push    es
     3633:548B  [E548B]  50              push    ax
-    3633:548C  [E548C]  9aa20052e3      lcall   SUB_E35C2  ; 0xe352, 0xa2
+    3633:548C  [E548C]  9aa20052e3      lcall   build_print_region  ; 0xe352, 0xa2
     3633:5491  [E5491]  83c40c          add     sp, 0xc
     3633:5494  [E5494]  2bff            sub     di, di
     3633:5496  [E5496]  57              push    di
@@ -8712,7 +8712,7 @@ L_E555A:
     3633:556A  [E556A]  81c20a02        add     dx, 0x20a
     3633:556E  [E556E]  06              push    es
     3633:556F  [E556F]  52              push    dx
-    3633:5570  [E5570]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5570  [E5570]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5575  [E5575]  ff46f8          inc     word ptr [bp - 8]
 L_E5578:
     3633:5578  [E5578]  837ef808        cmp     word ptr [bp - 8], 8
@@ -8817,7 +8817,7 @@ SUB_E5676:
     3633:567C  [E567C]  c47e06          les     di, ptr [bp + 6]
     3633:567F  [E567F]  06              push    es
     3633:5680  [E5680]  57              push    di
-    3633:5681  [E5681]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5681  [E5681]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5686  [E5686]  bf0200          mov     di, 2
     3633:5689  [E5689]  57              push    di
     3633:568A  [E568A]  bfe100          mov     di, 0xe1
@@ -9110,7 +9110,7 @@ L_E5957:
     3633:596D  [E596D]  8d950a02        lea     dx, [di + 0x20a]
     3633:5971  [E5971]  06              push    es
     3633:5972  [E5972]  52              push    dx
-    3633:5973  [E5973]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5973  [E5973]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5978  [E5978]  2bff            sub     di, di
     3633:597A  [E597A]  57              push    di
     3633:597B  [E597B]  57              push    di
@@ -9268,19 +9268,19 @@ L_E5AF7:
     3633:5B01  [E5B01]  8d950a02        lea     dx, [di + 0x20a]
     3633:5B05  [E5B05]  06              push    es
     3633:5B06  [E5B06]  52              push    dx
-    3633:5B07  [E5B07]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5B07  [E5B07]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5B0C  [E5B0C]  c43edc1d        les     di, ptr [0x1ddc]
     3633:5B10  [E5B10]  8d951302        lea     dx, [di + 0x213]
     3633:5B14  [E5B14]  06              push    es
     3633:5B15  [E5B15]  52              push    dx
-    3633:5B16  [E5B16]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5B16  [E5B16]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5B1B  [E5B1B]  2bff            sub     di, di
     3633:5B1D  [E5B1D]  57              push    di
     3633:5B1E  [E5B1E]  57              push    di
     3633:5B1F  [E5B1F]  c456f0          les     dx, ptr [bp - 0x10]
     3633:5B22  [E5B22]  06              push    es
     3633:5B23  [E5B23]  52              push    dx
-    3633:5B24  [E5B24]  9a790052e3      lcall   SUB_E3599  ; 0xe352, 0x79
+    3633:5B24  [E5B24]  9a790052e3      lcall   init_print_region_home  ; 0xe352, 0x79
     3633:5B29  [E5B29]  83c404          add     sp, 4
 L_E5B2C:
     3633:5B2C  [E5B2C]  2bc0            sub     ax, ax
@@ -9693,7 +9693,7 @@ INT255_HANDLER_LATE:
     3633:60DF  [E60DF]  a1cd1a          mov     ax, word ptr [0x1acd]
     3633:60E2  [E60E2]  03d8            add     bx, ax
     3633:60E4  [E60E4]  800f40          or      byte ptr [bx], 0x40
-    3633:60E7  [E60E7]  eb7d            jmp     SUB_E6166  ; 0xb6
+    3633:60E7  [E60E7]  eb7d            jmp     switch_to_next_task  ; 0xb6
 
 INT2_HANDLER_LATE:
     3633:60EA  [E60EA]  fa              cli     
@@ -9743,7 +9743,7 @@ L_E6144:
     3633:614A  [E614A]  03d8            add     bx, ax
     3633:614C  [E614C]  800f40          or      byte ptr [bx], 0x40
     3633:614F  [E614F]  9a040052e6      lcall   SUB_E6524  ; 0xe652, 4
-    3633:6154  [E6154]  eb10            jmp     SUB_E6166  ; 0xb6
+    3633:6154  [E6154]  eb10            jmp     switch_to_next_task  ; 0xb6
 
 L_E6157:
     3633:6157  [E6157]  9a040052e6      lcall   SUB_E6524  ; 0xe652, 4
@@ -9757,7 +9757,7 @@ L_E6157:
     3633:6163  [E6163]  5b              pop     bx
     3633:6164  [E6164]  58              pop     ax
     3633:6165  [E6165]  cf              iret    
-SUB_E6166:
+switch_to_next_task:
     3633:6166  [E6166]  9a0500c6e5      lcall   SUB_E5C65  ; 0xe5c6, 5
     3633:616B  [E616B]  bb911a          mov     bx, 0x1a91
     3633:616E  [E616E]  a1cd1a          mov     ax, word ptr [0x1acd]
@@ -9846,7 +9846,7 @@ SUB_E61E3:
     3633:6217  [E6217]  a1cd1a          mov     ax, word ptr [0x1acd]
     3633:621A  [E621A]  03d8            add     bx, ax
     3633:621C  [E621C]  800f40          or      byte ptr [bx], 0x40
-    3633:621F  [E621F]  eab6000be6      ljmp    SUB_E6166  ; 0xe60b:0xb6
+    3633:621F  [E621F]  eab6000be6      ljmp    switch_to_next_task  ; 0xe60b:0xb6
 SUB_E6224:
     3633:6224  [E6224]  9c              pushf   
     3633:6225  [E6225]  fa              cli     
@@ -9882,7 +9882,7 @@ SUB_E6224:
     3633:6267  [E6267]  03d8            add     bx, ax
     3633:6269  [E6269]  800f40          or      byte ptr [bx], 0x40
     3633:626C  [E626C]  802f01          sub     byte ptr [bx], 1
-    3633:626F  [E626F]  eab6000be6      ljmp    SUB_E6166  ; 0xe60b:0xb6
+    3633:626F  [E626F]  eab6000be6      ljmp    switch_to_next_task  ; 0xe60b:0xb6
 L_E6274:
     3633:6274  [E6274]  fa              cli     
     3633:6275  [E6275]  b84100          mov     ax, 0x41
@@ -9893,7 +9893,7 @@ L_E6274:
     3633:6282  [E6282]  03d8            add     bx, ax
     3633:6284  [E6284]  fe0f            dec     byte ptr [bx]
     3633:6286  [E6286]  80270f          and     byte ptr [bx], 0xf
-    3633:6289  [E6289]  eab6000be6      ljmp    SUB_E6166  ; 0xe60b:0xb6
+    3633:6289  [E6289]  eab6000be6      ljmp    switch_to_next_task  ; 0xe60b:0xb6
 
 SUB_E62EE:
     3633:62EE  [E62EE]  55              push    bp
@@ -10694,7 +10694,7 @@ L_E6B71:
     3633:6BA2  [E6BA2]  a2911a          mov     byte ptr [0x1a91], al
 L_E6BA5:
     3633:6BA5  [E6BA5]  9a4301d1e5      lcall   SUB_E5E53  ; 0xe5d1, 0x143
-    3633:6BAA  [E6BAA]  9ab6000be6      lcall   SUB_E6166  ; 0xe60b, 0xb6
+    3633:6BAA  [E6BAA]  9ab6000be6      lcall   switch_to_next_task  ; 0xe60b, 0xb6
     3633:6BAF  [E6BAF]  8be5            mov     sp, bp
     3633:6BB1  [E6BB1]  5d              pop     bp
     3633:6BB2  [E6BB2]  cb              retf    

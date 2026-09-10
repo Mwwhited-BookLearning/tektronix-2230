@@ -76,6 +76,9 @@ in `disasm/NOTES.md`.
 | `0xE2AB0` | `selftest_init_channel_hw` **(renamed)** | Calls `clear_selftest_status_flags` and `read_channel1_status`, then writes a short command sequence (`0x1D`, `9`, `0x1D`) combined with the caller's channel-select bits to a fixed far-pointer hardware register at `[0x1D20]` - looks like a front-end/ADC initialization sequence | Mechanism confirmed; hardware identity (which peripheral `[0x1D20]` addresses) not confirmed |
 | `0xE5D2D` | `enable_interrupts` **(renamed)** | `sti; retf` - one instruction | Confirmed |
 | `0xE5D2F` | `disable_interrupts` **(renamed)** | `cli; retf` - one instruction | Confirmed |
+| `0xE3599` | `init_print_region_home` **(renamed)** | `build_print_record` wrapper: fixed `0x10x0x10` cell size, position override `= [0x45E]` (a saved copy of the readout buffer's own base pointer `[0x1CC4]`) - starts a print record at the readout's "home" position | Confirmed |
+| `0xE35C2` | `build_print_region` **(renamed)** | `build_print_record` wrapper passing all 4 position/size arguments straight through - the general form behind `init_print_region`'s fixed-size convenience wrapper; used by `print_selftest_report_line` for its computed per-row position | Confirmed |
+| `0xE6166` | `switch_to_next_task` **(renamed)** | Loads `SP`/`SS` from a per-task context table at `[0x1A9D + idx*4]` (`idx = [0x1ACD]`) and resumes it via the standard register-pop + `iret` epilogue - the "switch in" half of a small preemptive task-switcher driven by `INT2_HANDLER_LATE`. See `disasm/NOTES.md` "A small task scheduler" | Confirmed mechanism; how many tasks exist and what each does not confirmed |
 
 ### The ~14 self-test subroutines are NOT yet identified by name
 

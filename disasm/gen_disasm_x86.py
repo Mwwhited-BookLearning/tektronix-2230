@@ -379,6 +379,38 @@ FUNCTIONAL_NAMES = {
                                                # instruction, trivial
     0xE5D2F: "disable_interrupts",            # cli; retf - one
                                                # instruction, trivial
+    0xE3599: "init_print_region_home",        # build_print_record
+                                               # wrapper: fixed 0x10x0x10
+                                               # cell size, position
+                                               # override = [0x45E] (a
+                                               # saved copy of the
+                                               # readout buffer's own
+                                               # base pointer, [0x1CC4])
+                                               # - starts a print record
+                                               # at the readout "home"
+                                               # position
+    0xE35C2: "build_print_region",            # build_print_record
+                                               # wrapper passing all 4
+                                               # position/size args
+                                               # through unchanged - the
+                                               # general form behind
+                                               # init_print_region's
+                                               # fixed-size convenience
+                                               # wrapper; used by
+                                               # print_selftest_report_
+                                               # line for its computed
+                                               # per-row position
+    0xE6166: "switch_to_next_task",           # loads SP/SS from the
+                                               # per-task context table
+                                               # at [0x1A9D + idx*4]
+                                               # (idx = [0x1ACD]) and
+                                               # resumes it via iret -
+                                               # the "switch in" half of
+                                               # a small preemptive
+                                               # task-switcher driven by
+                                               # INT2_HANDLER_LATE - see
+                                               # NOTES.md "A small task
+                                               # scheduler"
     0xE6D2F: "seg_off_to_linear",             # (offset, segment) ->
                                                # offset + segment*16 -
                                                # the same seg:off -> flat

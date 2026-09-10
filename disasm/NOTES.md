@@ -635,6 +635,46 @@ diagnostic/POST mode vs. normal-run mode) with different NMI/software-
 interrupt handling per state - worth confirming once
 `INT255_HANDLER_EARLY`/`_LATE` and `INT2_HANDLER_LATE` are read closely.
 
+## A small task scheduler, driven by INT2_HANDLER_LATE
+
+Read `INT2_HANDLER_LATE` closely this session (while renaming
+functions in its immediate neighborhood) - it's more than a generic
+NMI handler, it implements a **small task/context switcher**:
+
+1. Saves the interrupted context's `SP`/`SS` into a per-task table at
+   `[0x1A9D + idx*4]`, where `idx` is the current task index at
+   `[0x1ACD]`.
+2. Checks the *new* `SP` against a stack-limit table (indexed the same
+   way, at a fixed table based at `ES=0xE628`) or a constant `0x7C4`
+   for task 0 - if the stack has grown past its limit, jumps to
+   `L_E5E99` (in the boot-adjacent `0xE5D1` segment) - **a per-task
+   stack-overflow guard**.
+3. Sets a "ready" flag bit (`0x40`) for the current task in a flags
+   table at `[0x1A91 + idx]`, calls `SUB_E6524` (not yet examined -
+   very likely "pick the next task to run" or "signal work
+   available"), then falls into `switch_to_next_task` (`0xE6166`).
+4. `switch_to_next_task` re-reads `[0x1ACD]` (now presumably updated by
+   `SUB_E6524` to the *next* task's index), checks that task's ready
+   flag - if set, loads *that* task's saved `SP`/`SS` from the same
+   `[0x1A9D + idx*4]` table and resumes it (the standard 9-register
+   pop + `iret` epilogue, now running on the new task's stack); if not
+   ready, falls through to a different dispatch via a table at
+   `ES=0xE628` indexed the same way (likely a default/idle handler per
+   task slot).
+
+This is genuinely a **small preemptive (interrupt-driven) multitasking
+kernel** with independent per-task stacks and overflow protection, not
+just a generic interrupt handler - a significant piece of this
+firmware's overall architecture. Confirms the earlier speculation
+above ("the firmware switches between distinct operating states").
+
+**Not yet confirmed**: how many tasks exist, what each one does (the
+self-test/UI/acquisition-refresh loop are plausible candidates given
+everything else found so far), what triggers INT2 (a periodic timer is
+the obvious guess but not confirmed), and what `SUB_E6524` actually
+does to pick the next task. Good next target: trace `[0x1ACD]`'s other
+writers to find where tasks get created/registered.
+
 ## Validation status
 
 Ran the recursive-descent output (13,510 decoded instructions - main

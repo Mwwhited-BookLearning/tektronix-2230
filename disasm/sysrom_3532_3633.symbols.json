@@ -4151,17 +4151,17 @@
     "notes": null
   },
   "E3599": {
-    "name": "SUB_E3599",
+    "name": "init_print_region_home",
     "kind": "sub",
     "ref_count": 6,
-    "functional_name": null,
+    "functional_name": "init_print_region_home",
     "notes": null
   },
   "E35C2": {
-    "name": "SUB_E35C2",
+    "name": "build_print_region",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "build_print_region",
     "notes": null
   },
   "E35EF": {
@@ -5670,10 +5670,10 @@
     "notes": null
   },
   "E6166": {
-    "name": "SUB_E6166",
+    "name": "switch_to_next_task",
     "kind": "sub",
     "ref_count": 6,
-    "functional_name": null,
+    "functional_name": "switch_to_next_task",
     "notes": null
   },
   "E61A7": {

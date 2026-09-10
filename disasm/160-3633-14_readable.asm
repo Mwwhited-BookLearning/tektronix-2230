@@ -4324,7 +4324,7 @@ init_print_region:
     mov sp, bp                               ; 3593: mov sp, bp
     pop bp                                   ; 3595: pop bp
     retf 4                                   ; 3596: retf 4
-SUB_E3599:
+init_print_region_home:
     push bp                                  ; 3599: push bp
     mov bp, sp                               ; 359A: mov bp, sp
     sub sp, 6                                ; 359C: sub sp, 6
@@ -4346,7 +4346,7 @@ SUB_E3599:
     mov sp, bp                               ; 35BC: mov sp, bp
     pop bp                                   ; 35BE: pop bp
     retf 4                                   ; 35BF: retf 4
-SUB_E35C2:
+build_print_region:
     push bp                                  ; 35C2: push bp
     mov bp, sp                               ; 35C3: mov bp, sp
     sub sp, 6                                ; 35C5: sub sp, 6
@@ -7255,7 +7255,7 @@ L_E6157:
     pop bx                                   ; 6163: pop bx
     pop ax                                   ; 6164: pop ax
     iret                                     ; 6165: iret 
-SUB_E6166:
+switch_to_next_task:
     call 0xe5c6:0x0005                       ; 6166: lcall 0xe5c6, 5
     mov bx, 0x1a91                           ; 616B: mov bx, 0x1a91
     mov ax, word [0x1acd]                    ; 616E: mov ax, word ptr [0x1acd]
