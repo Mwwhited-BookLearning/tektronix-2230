@@ -734,7 +734,7 @@ L_E0AE9:
     mov sp, bp                               ; 0AF1: mov sp, bp
     pop bp                                   ; 0AF3: pop bp
     retf                                     ; 0AF4: retf 
-SUB_E0AF5:
+print_string_far:
     push bp                                  ; 0AF5: push bp
     mov bp, sp                               ; 0AF6: mov bp, sp
     sub sp, 6                                ; 0AF8: sub sp, 6
@@ -757,7 +757,7 @@ L_E0B24:
     mov sp, bp                               ; 0B24: mov sp, bp
     pop bp                                   ; 0B26: pop bp
     retf 4                                   ; 0B27: retf 4
-SUB_E0B2A:
+print_char:
     push bp                                  ; 0B2A: push bp
     mov bp, sp                               ; 0B2B: mov bp, sp
     sub sp, 6                                ; 0B2D: sub sp, 6
@@ -776,7 +776,7 @@ SUB_E0B41:
     mov sp, bp                               ; 0B4C: mov sp, bp
     pop bp                                   ; 0B4E: pop bp
     retf                                     ; 0B4F: retf 
-SUB_E0B50:
+write_readout_port_byte:
     push bp                                  ; 0B50: push bp
     mov bp, sp                               ; 0B51: mov bp, sp
     sub sp, 6                                ; 0B53: sub sp, 6
@@ -4729,7 +4729,7 @@ L_E39C2:
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xa1, 0xf8, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb, 0x55, 0x8b, 0xec  ; 39C8
     db 0x83, 0xec, 0x06, 0xa1, 0xfa, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06  ; 39D8
     db 0xc4, 0x1e, 0xf4, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb  ; 39E8
-SUB_E39F0:
+append_readout_char:
     push bp                                  ; 39F0: push bp
     mov bp, sp                               ; 39F1: mov bp, sp
     sub sp, 6                                ; 39F3: sub sp, 6
@@ -5338,7 +5338,7 @@ L_E416B:
     mov sp, bp                               ; 416B: mov sp, bp
     pop bp                                   ; 416D: pop bp
     retf                                     ; 416E: retf 
-self_test_dispatcher:
+print_selftest_banner:
     push bp                                  ; 416F: push bp
     mov bp, sp                               ; 4170: mov bp, sp
     sub sp, 6                                ; 4172: sub sp, 6
@@ -5424,7 +5424,7 @@ SUB_E4217:
     mov sp, bp                               ; 423E: mov sp, bp
     pop bp                                   ; 4240: pop bp
     retf 4                                   ; 4241: retf 4
-SUB_E4244:
+self_test_dispatcher:
     push bp                                  ; 4244: push bp
     mov bp, sp                               ; 4245: mov bp, sp
     sub sp, 0xa                              ; 4247: sub sp, 0xa

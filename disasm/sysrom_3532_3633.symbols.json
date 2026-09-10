@@ -2520,10 +2520,10 @@
     "notes": null
   },
   "E0AF5": {
-    "name": "SUB_E0AF5",
+    "name": "print_string_far",
     "kind": "sub",
     "ref_count": 17,
-    "functional_name": null,
+    "functional_name": "print_string_far",
     "notes": null
   },
   "E0B05": {
@@ -2548,10 +2548,10 @@
     "notes": null
   },
   "E0B2A": {
-    "name": "SUB_E0B2A",
+    "name": "print_char",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "print_char",
     "notes": null
   },
   "E0B41": {
@@ -2562,10 +2562,10 @@
     "notes": null
   },
   "E0B50": {
-    "name": "SUB_E0B50",
+    "name": "write_readout_port_byte",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "write_readout_port_byte",
     "notes": null
   },
   "E0B6C": {
@@ -4354,10 +4354,10 @@
     "notes": null
   },
   "E39F0": {
-    "name": "SUB_E39F0",
+    "name": "append_readout_char",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "append_readout_char",
     "notes": null
   },
   "E3B12": {
@@ -4718,10 +4718,10 @@
     "notes": null
   },
   "E416F": {
-    "name": "self_test_dispatcher",
+    "name": "print_selftest_banner",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "self_test_dispatcher",
+    "functional_name": "print_selftest_banner",
     "notes": null
   },
   "E4217": {
@@ -4732,10 +4732,10 @@
     "notes": null
   },
   "E4244": {
-    "name": "SUB_E4244",
+    "name": "self_test_dispatcher",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "self_test_dispatcher",
     "notes": null
   },
   "E4277": {

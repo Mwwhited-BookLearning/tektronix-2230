@@ -380,49 +380,141 @@ of this project.
 
 ## Found: the self-test dispatcher
 
-`check_comm_option_installed` (above) isn't called on its own - it's one of a long chain
-of calls inside `self_test_dispatcher` (`160-3633`), which is a **self-test
-dispatcher**: roughly 25+ calls to individual subsystem-test
-subroutines in a row, most immediately followed by `or word [bp-0xA],
-ax` (folding that test's return code into an accumulating result
-word) and `mov word [0x1B18], 1` (a status/progress flag, exact
-meaning tbd). `check_comm_option_installed`'s option-detection call is one link in this
-chain but notably does NOT get OR'd into the same accumulator the way
-its neighbors do - consistent with "is an option installed" being
-informational rather than a pass/fail test that could error out.
+**CORRECTION (this session): `self_test_dispatcher` was misnamed.**
+Tracing what actually calls `SUB_E094B` (see next section) led to
+reading `0xE416F` (`160-3633`) end-to-end for the first time instead
+of just skimming its call list, and it turned out to contain **zero**
+OR-fold test calls - it's entirely print/banner setup: `SUB_E3567`
+(clear/init a line buffer region), `SUB_E3930`, `SUB_E3854`, a helper
+that prints two far-pointer strings (`SUB_E4217`, itself calling
+`SUB_E3821` then `print_string_far` twice), then the mirror-image
+sequence again, ending with `mov word [0x1B10], 3` and `retf`. This
+routine is now renamed `print_selftest_banner`.
 
-`self_test_dispatcher` is itself gated: called from `160-3633:0x07F8`, guarded by
-`cmp word [0x1B10], 0 / jne <skip>` - so it only runs when some flag at
-`0x1B10` is zero (candidate meanings: "self-test not yet run this
-power-cycle," or "not in some other mode" - not yet confirmed).
+The *actual* self-test dispatcher - the one with the ~14-call
+OR-fold-into-`[bp-0xA]` pattern originally described here - is the
+**next function**, `0xE4244`, called from a completely different
+place (`160-3633:0x3DEE`, not from `print_selftest_banner` at all).
+It's now renamed `self_test_dispatcher` (taking over the name from the
+routine above). `check_comm_option_installed`'s option-detection call
+is one link in this chain but notably does NOT get OR'd into the same
+accumulator the way its neighbors do - consistent with "is an option
+installed" being informational rather than a pass/fail test that
+could error out. One test (`SUB_E252A`) is conditionally skipped based
+on `[0x1B83]==0x1E` - the same "comm option RAM/IO confirmed" config
+byte `check_comm_option_installed` checks, so this dispatcher already
+adapts its own test list based on what `check_comm_option_installed`
+found.
 
-The sibling test subroutines called from `self_test_dispatcher` (in call order,
-not yet individually identified - good next targets, since matching
-each to a real peripheral would meaningfully advance the "what
-peripheral do these I/O ports belong to" question in `MEMORY_MAP.md`):
-`SUB_E374E`, `SUB_E3821`, `SUB_E0AF5` (called twice), `SUB_E3F2C`,
-`SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`, `SUB_E252A`, `SUB_E0ADD`,
-`SUB_E0DCC`, `SUB_E0E56`, `SUB_E28FE`, `SUB_E227E`, `SUB_E26D6`,
-`SUB_E286C`, `SUB_E2CEC`, `SUB_E0FD0`, **`check_comm_option_installed`** (comm/GPIB
-option detect, now identified), `SUB_E16EA`, `SUB_E1E3E`, `SUB_E1D28`,
-`SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18`, then a few calls to `SUB_E553B`
-and `SUB_E6D2F`/`SUB_E4429` that look like they might be outside the
-main per-subsystem-test loop (end-of-sequence cleanup/reporting?).
+`self_test_dispatcher` (`0xE4244`) is called unconditionally from
+`0xE3DEE`; there's no `[0x1B10]==0` gate directly on it (that gate is
+on the OLD, differently-purposed `print_selftest_banner` call site at
+`0x07F8`, which is a sibling/neighbor call in the same outer routine,
+not this dispatcher's caller).
+
+The sibling test subroutines called from `self_test_dispatcher` (in
+call order, not yet individually identified - good next targets,
+since matching each to a real peripheral would meaningfully advance
+the "what peripheral do these I/O ports belong to" question in
+`MEMORY_MAP.md`): `SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`,
+`SUB_E252A` (conditional, see above), `SUB_E0FD0`,
+**`check_comm_option_installed`** (comm/GPIB option detect, already
+identified), `SUB_E16EA`, `SUB_E1E3E`, `SUB_E1D28`, `SUB_E1DB3`,
+`SUB_E1E90`, `SUB_E1F18`, then `SUB_E0ADD`/`SUB_E0DCC`/`SUB_E0E56`/
+`SUB_E28FE`/`SUB_E227E`/`SUB_E26D6`/`SUB_E286C`/`SUB_E2CEC` interleaved
+with the report-printing logic in the surrounding caller (`SUB_E07B4`,
+see below) rather than being test calls themselves.
+
+`SUB_E374E`, `SUB_E3821`, and `SUB_E0AF5` (now `print_string_far`) -
+previously listed here as unidentified sibling test subroutines - are
+**not tests at all**. They're display/print primitives, found by
+tracing the actual bytes each is called with (far pointers into a
+fixed string-table segment, `0xFF7B:xxxx`, landing in `160-3532`) - see
+"The readout/CRT display memory" below. This was the actual
+correction that triggered re-examining `self_test_dispatcher` in the
+first place.
 
 Variables seen so far associated with this self-test machinery (roles
 inferred from usage, not confirmed):
-- `[0x1B10]` - gates whether `self_test_dispatcher` (the whole dispatcher) runs at
-  all this call.
-- `[0x1B18]` - written `1` after nearly every individual test call;
-  exact role (progress indicator? "last test index"? always the
-  literal `1`, so maybe not an index) not yet confirmed.
-- `[bp-0xA]` (a caller-local, not a fixed address) - accumulates OR'd
-  return codes from each test into an overall self-test result.
+- `[0x1B10]` - gates whether `print_selftest_banner` runs at all this
+  call (0 → run + print pre-test banner; >0xF → skip both banner and
+  everything through label `L_E0894`); also used as a countdown/index
+  in a `imul 0x32` calculation in the surrounding caller, role there
+  still unclear.
+- `[0x1B18]` - written `1` immediately before nearly every individual
+  test call inside `self_test_dispatcher`; exact role (progress
+  indicator? "last test index"? always the literal `1`, so maybe not
+  an index) not yet confirmed.
+- `[bp-0xA]` (a caller-local, not a fixed address, inside
+  `self_test_dispatcher`) - accumulates OR'd return codes from each
+  test into an overall self-test result, returned in `ax`.
 - `[0x1BF9]` - the option-board-presence/RAM status byte set by
   `check_comm_option_installed` specifically (bit 1 = valid header found, bit 2 = also
   RAM/IO-backed).
-- `[0x1B83]` - a config byte `check_comm_option_installed` checks equals `0x1E` as part
-  of confirming the RAM/IO result; role otherwise unconfirmed.
+- `[0x1B83]` - a config byte both `check_comm_option_installed` and
+  `self_test_dispatcher` check against `0x1E`/`0x14` respectively as
+  part of confirming/gating the comm-option RAM/IO result; role
+  otherwise unconfirmed.
+
+## The readout/CRT display memory (physical 0x40000-0x4FFFF)
+
+Found while tracing `SUB_E07B4` (`160-3633`, the report-printing
+routine that wraps `print_selftest_banner`/`self_test_dispatcher` -
+see above) down through its print-primitive call chain:
+`print_string_far` (`0xE0AF5`) loops over a far-pointer nul-terminated
+string byte-by-byte, calling `print_char` (`0xE0B2A`) per byte, which
+calls `write_readout_port_byte` (`0xE0B50`). That last routine does
+exactly one thing: writes the passed byte to the **fixed** physical
+address `0x40000+0x6F0` (`es=0x4000, di=0x6F0`, never incremented). A
+fixed destination address for every character of a string being
+"printed" strongly suggests a hardware port (a character-generator
+chip with its own internal cursor/position state), not plain RAM -
+this is very likely the front-panel/CRT **readout character
+generator**, matching this scope's known "readout" text overlay
+system (channel/volts/time labels drawn on the CRT alongside the
+analog trace).
+
+A related routine, `SUB_E0B6C`/`SUB_E0B41`, writes a short run of
+*different* literal bytes to *consecutive* offsets from that same
+base (`0x40000+0x6F1`, `+0x6F2`, `+0x6F3` = `0x29`, `0x23`, `0x06`) -
+consistent with a small fixed command/parameter block (position,
+character code, attribute) latched together rather than a text
+stream.
+
+Separately, `append_readout_char` (`0xE39F0`) - called from a
+different context (a running-output-line buffer at `[0x1AF4]`, not
+this fixed port) - appends a byte at the buffer's current write
+pointer, then **also** writes a second byte (from `AL`, computed
+differently by its caller than the first byte in `DL`) to the *same*
+pointer offset by a fixed `+0x8000`. Given `[0x1AF4]`'s segment traces
+back to `[0x1CC4]` (also `0x4000`-segment in every call site checked
+so far), this looks like a **dual-plane buffer inside the same 64KB
+window**: a "character" plane at `0x40000-0x47FFF` and a second plane
+(attribute? inverse-video? a shadow copy?) at `0x48000-0x4FFFF`,
+`0x8000` higher. `SUB_E0BA3` separately reads raw bytes back out of a pointer
+initialized to exactly `0x48000` (`[0x31E:0x320]`) and passes each one
+directly to `append_readout_char` (`0xE39F0`) - i.e. it's re-printing
+bytes it just read from that second plane, consistent with echoing
+raw diagnostic/calibration values that were previously stashed there.
+
+Also found in this neighborhood: two single-byte **read**-only fixed
+addresses, `0x41000` (`SUB_E4429`) and `0x42000` (`SUB_E440A`) - not
+yet renamed (purpose unconfirmed - candidates: front-panel
+switch/encoder status, or CRT controller status), but very likely
+more of the same memory-mapped I/O window given their proximity to
+the confirmed readout port. Added to `MEMORY_MAP.md` as candidate I/O.
+
+**Not yet confirmed, worth revisiting**: whether `0x40000-0x4FFFF` is
+read *as RAM* anywhere from the CPU's normal address space, or whether
+it's exclusively accessed through this handful of fixed-offset
+read/write primitives (which would make it much more clearly a
+dedicated peripheral window rather than general video RAM the CPU
+treats as memory). Also unconfirmed: the exact meaning of the `0x6F0`
+port's "position" - nothing observed yet writes an X/Y coordinate
+before writing a character, so either the coordinate is set elsewhere
+(not yet found) or the hardware auto-advances a cursor per write
+(more likely, given how `print_string_far`'s loop uses it - just a
+tight byte-at-a-time write loop with no addressing logic at all).
 
 ## The 0x90000+ region: fully resolved (see above)
 

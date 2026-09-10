@@ -163,49 +163,82 @@ void boot_init(void) {
 }
 ```
 
-## self_test_dispatcher (0xE416F, in 160-3633) - partial
+## print_selftest_banner (0xE416F, in 160-3633) - CORRECTED, was misnamed self_test_dispatcher
 
-Called from `0xE07F8`, guarded by `[0x1B10] == 0`. Runs ~25 subsystem
+**Correction this session**: this routine was previously documented as
+`self_test_dispatcher` running ~25 subsystem tests. Reading it fully
+(prompted by tracing what calls `SUB_E094B`) found it contains **no
+test calls at all** - only banner-printing. The real dispatcher is a
+different function, `0xE4244` (below), which now carries the
+`self_test_dispatcher` name. See `disasm/NOTES.md` "self_test_dispatcher
+was misnamed".
+
+```c
+void print_selftest_banner(void) {
+    // Called from 0xE07F8, guarded by [0x1B10]==0.
+    // "Before" banner:
+    print_line_setup(far_ptr_from(0x1DDC) + 0x20A, 0xFA, 0x339);  // SUB_E3567
+    print_line_setup2(0, 0, 0);                                  // SUB_E3930
+    print_line_setup3(0x20);                                     // SUB_E3854
+    print_two_strings(far_str_at(0xFF7B, 0x53E));                 // SUB_E4217 -> print_string_far x2
+    print_string_far(far_ptr_from(0x1DDC) + 0x20A);               // SUB_E374E
+
+    // "After" banner (same shape, different offsets):
+    print_line_setup(far_ptr_from(0x1DDC) + 0x213, 0x7D, 0x307);
+    print_line_setup2(0, 0, 0);
+    print_line_setup3(0x20);
+    print_two_strings(far_str_at(0xFF7B, 0x550));
+    print_string_far(far_ptr_from(0x1DDC) + 0x213);
+
+    [0x1B10] = 3;
+}
+```
+
+Its caller (the outer routine `SUB_E07B4`, not this function itself)
+immediately far-calls `SUB_E094B` next, unconditionally:
+
+```c
+void SUB_E094B(void) {  // not yet renamed
+    // Loads a far pointer from [0x1C80] into [0x1B56]/[0x1B58], then
+    // writes a fixed 3-byte record at it: byte0=3, byte1=2, byte2=0.
+    // No test result is available at this call site (it's called
+    // unconditionally right after the banner, not after any test),
+    // so this looks like initializing a small counter/record
+    // structure rather than logging a specific result.
+}
+```
+
+## self_test_dispatcher (0xE4244, in 160-3633) - partial
+
+**This is the real dispatcher** (took over the name from `0xE416F`
+above). Called unconditionally from `0xE3DEE` - a different, unrelated
+call site from `print_selftest_banner`'s. Runs ~14 subsystem
 self-tests in sequence and returns an accumulated result. See
 `disasm/NOTES.md` "Found: the self-test dispatcher" for the full
 address list this summarizes.
 
 ```c
 unsigned int self_test_dispatcher(void) {
-    // Setup calls before the test loop starts - likely clearing/
-    // preparing a results-display area, not yet individually traced:
-    //   SUB_E3567(some_far_ptr_from(0x1DDC) + 0x20A, 0xFA, 0x339)
-    //   SUB_E3930(0, 0, 0)
-    //   SUB_E3854(0x20)
-    //   ... a few more like this
-
     unsigned int result = 0;  // [bp-0xA] in the real code
 
-    // ~20 of these - each one folds its subsystem test's return code
+    // ~14 of these - each one folds its subsystem test's return code
     // into `result`, and writes a literal 1 into [0x1B18] (role
     // unconfirmed - maybe a "test in progress" flag, maybe unused-
     // as-an-index despite the name suggesting one). None of these
     // subroutines have been individually identified yet - see
-    // FUNCTIONS.md "The ~20 self-test subroutines are NOT yet
+    // FUNCTIONS.md "The ~14 self-test subroutines are NOT yet
     // identified by name" for why (searched for direct references to
-    // the diagnostic strings in STRINGS.md; found none).
-    result |= subsystem_test_0x374E();
-    result |= subsystem_test_0x3821();
-    result |= subsystem_test_0x0AF5();
-    result |= subsystem_test_0x0AF5();  // called twice
+    // the diagnostic strings in STRINGS.md; found none). CORRECTED:
+    // three routines previously listed among these (0x374E, 0x3821,
+    // 0x0AF5) turned out to be display/print primitives, not tests -
+    // removed from this list, see FUNCTIONS.md.
     result |= subsystem_test_0x3F2C();
     result |= subsystem_test_0x3F99();
     result |= subsystem_test_0x2FC8();
     result |= subsystem_test_0x1B16();
-    result |= subsystem_test_0x252A();
-    result |= subsystem_test_0x0ADD();
-    result |= subsystem_test_0x0DCC();
-    result |= subsystem_test_0x0E56();
-    result |= subsystem_test_0x28FE();
-    result |= subsystem_test_0x227E();
-    result |= subsystem_test_0x26D6();
-    result |= subsystem_test_0x286C();
-    result |= subsystem_test_0x2CEC();
+    if ([0x1B83] == 0x1E) {
+        result |= subsystem_test_0x252A();  // conditional, unlike its neighbors
+    }
     result |= subsystem_test_0x0FD0();
 
     // NOT folded into `result` like its neighbors - informational,
@@ -219,16 +252,6 @@ unsigned int self_test_dispatcher(void) {
     result |= subsystem_test_0x1E90();
     result |= subsystem_test_0x1F18();
 
-    // A few more calls here (0xE553B x3, 0xE6D2F, 0xE4429 x2) that
-    // look like they're outside the main per-subsystem loop - guessed
-    // as end-of-sequence cleanup/reporting, not confirmed.
-
     return result;
 }
 ```
-
-Its caller immediately far-calls another routine (not yet renamed,
-see `FUNCTIONS.md`'s `0xE094B` entry) with the result, which writes a
-small 3-byte record into a buffer rather than printing anything
-directly — the likely reason none of the ~20 test subroutines
-reference a diagnostic message string themselves.

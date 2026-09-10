@@ -82,7 +82,7 @@ L_E00FE:
     mov word [es:si], bx                     ; 010C: mov word ptr es:[si], bx
     jmp 0xe5d1:0x00b4                        ; 010F: ljmp 0xe5d1:0xb4
 L_E0114:
-    xchg di, si                              ; 0114: xchg di, si
+    db 0x87, 0xf7  ; 0114: xchg di, si (not byte-exact via NASM - see NOTES.md)
 L_E0116:
     mov ax, 0xfd                             ; 0116: mov ax, 0xfd
     pop cx                                   ; 0119: pop cx
@@ -736,7 +736,7 @@ L_E0AE9:
     db 0x8b, 0xe5  ; 0AF1: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0AF3: pop bp
     retf                                     ; 0AF4: retf 
-SUB_E0AF5:
+print_string_far:
     push bp                                  ; 0AF5: push bp
     db 0x8b, 0xec  ; 0AF6: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0AF8: sub sp, 6
@@ -759,7 +759,7 @@ L_E0B24:
     db 0x8b, 0xe5  ; 0B24: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0B26: pop bp
     retf 4                                   ; 0B27: retf 4
-SUB_E0B2A:
+print_char:
     push bp                                  ; 0B2A: push bp
     db 0x8b, 0xec  ; 0B2B: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0B2D: sub sp, 6
@@ -778,7 +778,7 @@ SUB_E0B41:
     db 0x8b, 0xe5  ; 0B4C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0B4E: pop bp
     retf                                     ; 0B4F: retf 
-SUB_E0B50:
+write_readout_port_byte:
     push bp                                  ; 0B50: push bp
     db 0x8b, 0xec  ; 0B51: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0B53: sub sp, 6
@@ -4731,7 +4731,7 @@ L_E39C2:
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xa1, 0xf8, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb, 0x55, 0x8b, 0xec  ; 39C8
     db 0x83, 0xec, 0x06, 0xa1, 0xfa, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06  ; 39D8
     db 0xc4, 0x1e, 0xf4, 0x1a, 0x8b, 0xe5, 0x5d, 0xcb  ; 39E8
-SUB_E39F0:
+append_readout_char:
     push bp                                  ; 39F0: push bp
     db 0x8b, 0xec  ; 39F1: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 39F3: sub sp, 6
@@ -5340,7 +5340,7 @@ L_E416B:
     db 0x8b, 0xe5  ; 416B: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 416D: pop bp
     retf                                     ; 416E: retf 
-self_test_dispatcher:
+print_selftest_banner:
     push bp                                  ; 416F: push bp
     db 0x8b, 0xec  ; 4170: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 4172: sub sp, 6
@@ -5426,7 +5426,7 @@ SUB_E4217:
     db 0x8b, 0xe5  ; 423E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4240: pop bp
     retf 4                                   ; 4241: retf 4
-SUB_E4244:
+self_test_dispatcher:
     push bp                                  ; 4244: push bp
     db 0x8b, 0xec  ; 4245: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 4247: sub sp, 0xa

@@ -36,20 +36,48 @@
       but reaching it via pure fallthrough with no owning label means
       there's a real function boundary nearby the recursive descent
       doesn't know about - worth finding for a cleaner listing.
-- [ ] **Identify the ~20 not-yet-named subsystem-test subroutines**
-      called from `self_test_dispatcher` (see `disasm/NOTES.md` "Found:
-      the self-test dispatcher" for the full call list). Already tried
-      matching them directly to the diagnostic message strings in
-      `STRINGS.md` (`HS_ACQ`, `COMM_ROM`, `SYS_RAM`, etc.) by searching
-      for code references - found none; they likely return a status
-      code that `SUB_E094B` logs rather than printing a message
-      directly (see `FUNCTIONS.md`). Next: find where `SUB_E094B`'s
-      logged results actually get displayed/printed - that routine is
-      more likely to hold the string-to-test mapping. This is probably
-      the single best lever for matching the I/O ports in
-      `MEMORY_MAP.md` to real peripherals. Add a `FUNCTIONS.md` entry
-      (and wire a name into `gen_disasm_x86.FUNCTIONAL_NAMES`) for each
-      as it's identified.
+- [x] ~~Follow `SUB_E094B` to find where self-test results get
+      displayed~~ — traced it, and found something more valuable: it's
+      called from `print_selftest_banner` (`0xE416F` - renamed;
+      **CORRECTED, this was wrongly named `self_test_dispatcher`
+      before** - it contains zero test calls, only banner-printing).
+      The real OR-fold dispatcher is a different function, `0xE4244`
+      (now carries the `self_test_dispatcher` name). Tracing
+      `print_selftest_banner`'s print-primitive call chain
+      (`print_string_far` → `print_char` → `write_readout_port_byte`)
+      also found a new confirmed hardware region: physical
+      `0x40000+0x6F0` is a fixed-address readout/CRT character-
+      generator write port, plus two more candidate read ports at
+      `0x41000`/`0x42000` and a dual-plane display buffer at
+      `0x40000`/`0x48000`. See `disasm/NOTES.md` "self_test_dispatcher
+      was misnamed" and "The readout/CRT display memory",
+      `MEMORY_MAP.md`, `FUNCTIONS.md`.
+- [ ] **Identify the ~14 not-yet-named subsystem-test subroutines**
+      called from the *real* `self_test_dispatcher` (`0xE4244` - see
+      `disasm/NOTES.md` "Found: the self-test dispatcher" for the full
+      call list; 3 routines previously counted here were display
+      primitives, not tests - corrected). Already tried matching them
+      directly to the diagnostic message strings in `STRINGS.md`
+      (`HS_ACQ`, `COMM_ROM`, `SYS_RAM`, etc.) by searching for code
+      references - found none. `SUB_E094B` is a dead end for this (it's
+      called from the *other*, unrelated banner-printing routine, not
+      from the dispatcher or any test) - the string-to-test mapping
+      still needs a different lead. Next candidate: work backward from
+      the confirmed `0x41000`/`0x42000` read ports and the `0x40000`
+      readout window - if any of the ~14 test subroutines touch those
+      same addresses, that's a much stronger link than call order. Add
+      a `FUNCTIONS.md` entry (and wire a name into
+      `gen_disasm_x86.FUNCTIONAL_NAMES`) for each as it's identified.
+- [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
+      ports, found this session near the confirmed readout/CRT write
+      port) actually are - front-panel switch/encoder status and CRT
+      controller status are both plausible; check the service manual's
+      I/O map when available. See `MEMORY_MAP.md`.
+- [ ] Confirm whether the `0x48000-0x4FFFF` "second plane" found this
+      session (written by `append_readout_char`, read back by
+      `SUB_E0BA3`) is an attribute/inverse-video plane, a shadow copy,
+      or per-channel diagnostic scratch space - see `disasm/NOTES.md`
+      "The readout/CRT display memory".
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.

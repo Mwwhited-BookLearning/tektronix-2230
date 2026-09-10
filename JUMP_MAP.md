@@ -75,31 +75,52 @@ stop
 
 ## Level 1 detail: self-test dispatcher
 
+**Corrected this session**: `0xE416F` was misnamed `self_test_dispatcher`
+- it actually contains zero test calls, just banner-printing. Renamed
+to `print_selftest_banner`. The real OR-fold test dispatcher is
+`0xE4244`, called from an unrelated site (`0xE3DEE`). Both routines
+happen to be called near each other inside the same outer
+report-printing function (`SUB_E07B4`), which is what caused the
+original mix-up. See `disasm/NOTES.md` "self_test_dispatcher was
+misnamed".
+
 ```plantuml
 @startuml
 start
-:Called from 0xE07F8,\nguarded by [0x1B10]==0;
+partition "print_selftest_banner (0xE416F)" {
+  :Called from 0xE07F8,\nguarded by [0x1B10]==0;
+  :Print "before" banner text\n(SUB_E3567, SUB_E3930, SUB_E3854,\nSUB_E4217 -> print_string_far x2);
+  :Print "after" banner text\n(SUB_E374E, SUB_E3930, SUB_E3854,\nSUB_E4217 again);
+  :mov [0x1B10], 3;
+  note right: NO test calls at all -\npreviously misattributed here.\nSUB_E374E/SUB_E3821/print_string_far\nare display primitives, not tests\n(see MEMORY_MAP.md readout/CRT entry)
+}
+:Caller far-calls SUB_E094B next\n(same outer routine, unconditional);
+partition "SUB_E094B (not yet renamed)" {
+  :Load far pointer from [0x1C80]\ninto [0x1B56]/[0x1B58];
+  :Write a fixed 3-byte record (3, 2, 0) there;
+  note right: looks like initializing a\nsmall counter/record structure, not\nlogging a specific test result - this\ncall site has no test result available\n\nSUB_E097B (companion, 1 call site) then\npacks/dedups nibble values into the\nsame structure
+}
+stop
+@enduml
+```
 
-partition "self_test_dispatcher (0xE416F)" {
-  :Call subsystem test #1 (0xE374E);
-  :Call subsystem test #2 (0xE3821);
-  :Call subsystem test (0xE0AF5) - twice;
-  :Call subsystem tests at 0xE3F2C,\n0xE3F99, 0xE2FC8, 0xE1B16, 0xE252A,\n0xE0ADD, 0xE0DCC, 0xE0E56, 0xE28FE,\n0xE227E, 0xE26D6, 0xE286C, 0xE2CEC,\n0xE0FD0;
-  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"\n\nNone of these ~20 subroutines directly\nreference the diagnostic strings in\nSTRINGS.md (checked) - see FUNCTIONS.md,\nstill unidentified by name
+```plantuml
+@startuml
+start
+:Called unconditionally from 0xE3DEE\n(a different, unrelated call site);
+
+partition "self_test_dispatcher (0xE4244, renamed - was SUB_E4244)" {
+  :Call subsystem tests at 0xE3F2C,\n0xE3F99, 0xE2FC8, 0xE1B16;
+  :Call subsystem test 0xE252A\n(conditional: only if [0x1B83]==0x1E);
+  :Call subsystem test 0xE0FD0;
+  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"\n\nNone of these ~14 subroutines directly\nreference the diagnostic strings in\nSTRINGS.md (checked) - see FUNCTIONS.md,\nstill unidentified by name
 
   :Call check_comm_option_installed\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
   note right: notably NOT OR'd into\nthe [bp-0xA] accumulator like its\nneighbors - informational, not a\npass/fail test
 
   :Call subsystem tests at 0xE16EA,\n0xE1E3E, 0xE1D28, 0xE1DB3, 0xE1E90,\n0xE1F18;
-  :Call SUB_E553B (x3), SUB_E6D2F,\nSUB_E4429 (x2)\n(guess: end-of-sequence cleanup/\nreporting, outside the main\nper-subsystem loop);
 }
-:retf, result in accumulator\nat caller's [bp-0xA];
-:Caller far-calls SUB_E094B next;
-partition "SUB_E094B (not yet renamed)" {
-  :Load far pointer from [0x1C80]\ninto [0x1B56]/[0x1B58];
-  :Write a 3-byte record (3, 2, 0) there;
-  note right: looks like logging the\ntest run into a small record/event\nbuffer, not printing directly - may\nexplain why no test subroutine\nreferences a message string itself
-}
+:retf, result in\naccumulator [bp-0xA] -> ax;
 stop
 @enduml
 ```

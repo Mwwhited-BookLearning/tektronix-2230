@@ -82,8 +82,18 @@ ENTRY_POINTS = [
 FUNCTIONAL_NAMES = {
     0xE00B1: "boot_init",                    # RESET's target: cli, clear
                                               # RAM, first stack setup
-    0xE416F: "self_test_dispatcher",         # ~25 calls to per-subsystem
-                                              # test routines - see NOTES.md
+    0xE416F: "print_selftest_banner",        # CORRECTED (was misnamed
+                                              # self_test_dispatcher): only
+                                              # prints the "before"/"after"
+                                              # banner lines and sets
+                                              # [0x1B10]=3 - no OR-fold test
+                                              # calls at all. See NOTES.md
+                                              # "self_test_dispatcher was
+                                              # misnamed"
+    0xE4244: "self_test_dispatcher",         # the REAL dispatcher: ~14
+                                              # calls to per-subsystem test
+                                              # routines, each OR-folded into
+                                              # [bp-0xA] - see NOTES.md
                                               # "Found: the self-test
                                               # dispatcher"
     0xE44F1: "check_comm_option_installed",  # ROM-header-checksum +
@@ -91,6 +101,25 @@ FUNCTIONAL_NAMES = {
                                               # see NOTES.md "Found: the
                                               # option-board presence/
                                               # RAM-detection routine"
+    0xE0AF5: "print_string_far",             # loops a far-pointer
+                                              # nul-terminated string,
+                                              # print_char per byte - see
+                                              # NOTES.md "The readout/CRT
+                                              # display memory"
+    0xE0B2A: "print_char",                   # thin wrapper: unpacks one
+                                              # byte arg, calls
+                                              # write_readout_port_byte
+    0xE0B50: "write_readout_port_byte",      # writes the passed byte to
+                                              # the fixed physical address
+                                              # 0x40000+0x6F0 - see NOTES.md
+                                              # "The readout/CRT display
+                                              # memory"
+    0xE39F0: "append_readout_char",          # appends a (char, attribute)
+                                              # byte pair into the readout
+                                              # line buffer at [0x1AF4],
+                                              # duplicating into a second
+                                              # plane 0x8000 higher in the
+                                              # same segment - see NOTES.md
     0xFBC09: "memcpy_far",                   # generic far-pointer block
                                               # copy: (dest, src, len)
 }
