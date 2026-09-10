@@ -72,6 +72,10 @@ in `disasm/NOTES.md`.
 | `0xE4429` | `read_channel1_status` **(renamed)** | Reads one fixed byte from physical `0x41000` - called alternately with `read_channel2_status` in a self-test loop that takes repeated readings, spaced by `wait_readout_tick` delays. "Channel 1" inferred from the 2-channel-scope context | Mechanism confirmed; channel identity is a plausible but unconfirmed inference |
 | `0xE440A` | `read_channel2_status` **(renamed)** | Reads one fixed byte from physical `0x42000` - see `read_channel1_status` | Same confidence caveat |
 | `0xE5B34` | `selftest_display_result_mode` **(renamed)** | `idx==1`/`2` toggle the *same* `[0x1B5E]` flag `selftest_measure_mode` uses (a shared "measurement active" flag?); `idx==3`/`4` fall through to positioning + printing a result via `set_position_record`/`SUB_E2DC9` | Mechanism confirmed; relationship to `selftest_measure_mode`'s flag not fully resolved |
+| `0xE06B6` | `update_menu_position` **(renamed)** | `(min, max, op_nibble)` - a bounded index/cursor tracker at `[0x1B50]` with clamping and wraparound between `min`/`max`. The op nibble selects init/cancel/increment variants; the increment path reads two front-panel button-state bytes (`[0x4E7]`/`[0x4E8]`, bit 7) and accelerates if both are set simultaneously. A menu/parameter-selection cursor - see `VARIABLES.md` | Confirmed mechanism; exact op-code meanings and which physical control feeds `[0x4E7]`/`[0x4E8]` not confirmed |
+| `0xE2AB0` | `selftest_init_channel_hw` **(renamed)** | Calls `clear_selftest_status_flags` and `read_channel1_status`, then writes a short command sequence (`0x1D`, `9`, `0x1D`) combined with the caller's channel-select bits to a fixed far-pointer hardware register at `[0x1D20]` - looks like a front-end/ADC initialization sequence | Mechanism confirmed; hardware identity (which peripheral `[0x1D20]` addresses) not confirmed |
+| `0xE5D2D` | `enable_interrupts` **(renamed)** | `sti; retf` - one instruction | Confirmed |
+| `0xE5D2F` | `disable_interrupts` **(renamed)** | `cli; retf` - one instruction | Confirmed |
 
 ### The ~14 self-test subroutines are NOT yet identified by name
 

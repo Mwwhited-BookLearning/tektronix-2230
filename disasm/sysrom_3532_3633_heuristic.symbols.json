@@ -553,10 +553,10 @@
     "notes": null
   },
   "E06B6": {
-    "name": "SUB_E06B6",
+    "name": "update_menu_position",
     "kind": "sub",
     "ref_count": 9,
-    "functional_name": null,
+    "functional_name": "update_menu_position",
     "notes": null
   },
   "E06BF": {
@@ -2569,10 +2569,10 @@
     "notes": null
   },
   "E2AB0": {
-    "name": "SUB_E2AB0",
+    "name": "selftest_init_channel_hw",
     "kind": "sub",
     "ref_count": 7,
-    "functional_name": null,
+    "functional_name": "selftest_init_channel_hw",
     "notes": null
   },
   "E2AD8": {
@@ -4949,17 +4949,17 @@
     "notes": null
   },
   "E5D2D": {
-    "name": "SUB_E5D2D",
+    "name": "enable_interrupts",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "enable_interrupts",
     "notes": null
   },
   "E5D2F": {
-    "name": "SUB_E5D2F",
+    "name": "disable_interrupts",
     "kind": "sub",
     "ref_count": 24,
-    "functional_name": null,
+    "functional_name": "disable_interrupts",
     "notes": null
   },
   "E5D31": {

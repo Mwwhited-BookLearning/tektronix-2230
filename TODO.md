@@ -134,15 +134,30 @@
 - [ ] Narrow down what peripheral the I/O ports actually seen in code
       (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to —
       see `MEMORY_MAP.md` "I/O ports actually seen in code".
-- [ ] Keep renaming routines as they're understood: add the address to
+- [ ] **In progress: renaming EVERY identifiable routine, not just
+      opportunistically** (explicit user request: "keep going, don't
+      stop until everything is renamed"). Working through the
+      proven-only set (`sysrom_3532_3633.symbols.json`) ordered by
+      reference count, highest first - 32 renamed as of the last
+      session, ~234 left in the proven set alone (see
+      `disasm/NOTES.md`'s dated session entries for the running list
+      and confidence notes). The heuristic-only layer (tens of
+      thousands more, across all 3 ROMs) is a much lower-confidence,
+      much larger tail - realistic goal is "every proven-reachable
+      routine named," not literally every heuristic placeholder.
+      Mechanically: add `{address: "name"}` to
       `gen_disasm_x86.FUNCTIONAL_NAMES` (this is what actually makes
       the name show up in the `.lst`/`.asm`/`.symbols.json` outputs -
       editing `.symbols.json` directly gets overwritten on the next
-      regenerate) and add the matching entry to `FUNCTIONS.md`. Next
-      candidate: `SUB_E06B6` looks like a small dispatch/switch
-      function keyed on a low nibble, touching memory locations
-      `0x1B50`/`0x1B51`/`0x1B18` — needs those locations' purpose
-      confirmed first.
+      regenerate), add the matching `FUNCTIONS.md` entry, then
+      regenerate everything (`gen_disasm_x86.py`,
+      `gen_disasm_mainrom_heuristic.py`, `gen_source.py`,
+      `gen_source_readable.py`) and re-verify byte-identical/length-
+      matching before committing.
+      ~~`SUB_E06B6`~~ - **done**: it's `update_menu_position`, a
+      bounded index/cursor tracker for menu navigation that reads two
+      front-panel button-state bytes (`[0x4E7]`/`[0x4E8]`) - see
+      `FUNCTIONS.md`.
 - [ ] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
       real 8087 math coprocessor in the design (plausible for a scope
       doing voltage/time calculations) — check against the service

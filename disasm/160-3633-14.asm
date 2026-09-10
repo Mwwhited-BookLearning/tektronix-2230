@@ -343,7 +343,7 @@ L_E06AF:
     db 0x8b, 0xe5  ; 06B2: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 06B4: pop bp
     retf                                     ; 06B5: retf 
-SUB_E06B6:
+update_menu_position:
     push bp                                  ; 06B6: push bp
     db 0x8b, 0xec  ; 06B7: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 06B9: sub sp, 6
@@ -3404,7 +3404,7 @@ L_E2AA9:
     db 0x8b, 0xe5  ; 2AAC: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2AAE: pop bp
     retf                                     ; 2AAF: retf 
-SUB_E2AB0:
+selftest_init_channel_hw:
     push bp                                  ; 2AB0: push bp
     db 0x8b, 0xec  ; 2AB1: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 2AB3: sub sp, 0xc
@@ -6949,10 +6949,10 @@ L_E5D10:
     db 0x60, 0x07, 0xcb  ; 5D25
 SUB_E5D28:
     call 0xfdb3:0x0143                       ; 5D28: lcall 0xfdb3, 0x143
-SUB_E5D2D:
+enable_interrupts:
     sti                                      ; 5D2D: sti 
     retf                                     ; 5D2E: retf 
-SUB_E5D2F:
+disable_interrupts:
     cli                                      ; 5D2F: cli 
     retf                                     ; 5D30: retf 
 SUB_E5D31:

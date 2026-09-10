@@ -350,6 +350,35 @@ FUNCTIONAL_NAMES = {
                                                # result via
                                                # set_position_record/
                                                # SUB_E2DC9
+    0xE06B6: "update_menu_position",          # (min, max, op_nibble) -
+                                               # bounded index tracker
+                                               # with clamping/wraparound
+                                               # at [0x1B50]; op codes
+                                               # select init/cancel/
+                                               # increment variants,
+                                               # reads two front-panel
+                                               # button-state bytes
+                                               # ([0x4E7]/[0x4E8], bit 7)
+                                               # for a "both held"
+                                               # accelerate case - a
+                                               # menu-navigation cursor
+    0xE2AB0: "selftest_init_channel_hw",      # calls clear_selftest_
+                                               # status_flags and
+                                               # read_channel1_status,
+                                               # then writes a short
+                                               # sequence of command
+                                               # codes (0x1D, 9, 0x1D)
+                                               # combined with the
+                                               # caller's channel-select
+                                               # bits to a fixed far-
+                                               # pointer register at
+                                               # [0x1D20] - looks like a
+                                               # front-end/ADC init
+                                               # sequence, not confirmed
+    0xE5D2D: "enable_interrupts",             # sti; retf - one
+                                               # instruction, trivial
+    0xE5D2F: "disable_interrupts",            # cli; retf - one
+                                               # instruction, trivial
     0xE6D2F: "seg_off_to_linear",             # (offset, segment) ->
                                                # offset + segment*16 -
                                                # the same seg:off -> flat
