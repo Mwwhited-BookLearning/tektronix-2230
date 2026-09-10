@@ -3332,10 +3332,10 @@
     "notes": null
   },
   "E37B1": {
-    "name": "SUB_E37B1",
+    "name": "plot_readout_point_scaled",
     "kind": "sub",
     "ref_count": 11,
-    "functional_name": null,
+    "functional_name": "plot_readout_point_scaled",
     "notes": null
   },
   "E37C4": {
@@ -26411,17 +26411,17 @@
     "notes": null
   },
   "F9FEE": {
-    "name": "SUB_F9FEE",
+    "name": "clear_channel2_status",
     "kind": "sub",
     "ref_count": 7,
-    "functional_name": null,
+    "functional_name": "clear_channel2_status",
     "notes": null
   },
   "FA00C": {
-    "name": "SUB_FA00C",
+    "name": "clear_channel1_status",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "clear_channel1_status",
     "notes": null
   },
   "FA02A": {

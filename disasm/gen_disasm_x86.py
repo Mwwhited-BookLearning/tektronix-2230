@@ -126,6 +126,28 @@ FUNCTIONAL_NAMES = {
     # --- Renamed during the "rename everything" pass (session:
     # keep going until everything is renamed) - see NOTES.md "The
     # readout vector display list" and FUNCTIONS.md for evidence. ---
+    0x9605A: "checksum_bytes",                # (far ptr, count) - sums
+                                               # `count` bytes starting
+                                               # at the pointer into a
+                                               # byte accumulator
+                                               # (wrapping), returns it -
+                                               # a plain byte checksum
+    0x96087: "memset_far",                    # (far ptr, fill_byte,
+                                               # count) - writes
+                                               # fill_byte to `count`
+                                               # consecutive bytes
+    0xF9FEE: "clear_channel2_status",         # writes 0 to physical
+                                               # 0x42000 - the SAME
+                                               # fixed address
+                                               # read_channel2_status
+                                               # reads, confirming it's
+                                               # a real read/write
+                                               # hardware register, not
+                                               # just a coincidental ROM
+                                               # address
+    0xFA00C: "clear_channel1_status",         # writes 0 to physical
+                                               # 0x41000 - see
+                                               # clear_channel2_status
     0x9470E: "set_ds_return_old",             # push ds; mov ds,[bp+6];
                                                # pop ax - swaps DS to the
                                                # caller-given segment,
@@ -400,6 +422,15 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    0xE37B1: "plot_readout_point_scaled",     # divides both coordinate
+                                               # args by a local count
+                                               # (hardcoded to 1 in this
+                                               # build - a no-op divide,
+                                               # vestige of generic code
+                                               # supporting a count > 1)
+                                               # and calls
+                                               # plot_readout_point_
+                                               # relative
     0xE6166: "switch_to_next_task",           # loads SP/SS from the
                                                # per-task context table
                                                # at [0x1A9D + idx*4]

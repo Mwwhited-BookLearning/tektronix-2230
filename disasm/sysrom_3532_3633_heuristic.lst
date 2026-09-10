@@ -5744,7 +5744,7 @@ FUNC_3633_379E:
     3633:37AB  [E37AB]  8be5            mov     sp, bp
     3633:37AD  [E37AD]  5d              pop     bp
     3633:37AE  [E37AE]  ca0200          retf    2
-SUB_E37B1:
+plot_readout_point_scaled:
     3633:37B1  [E37B1]  55              push    bp
     3633:37B2  [E37B2]  8bec            mov     bp, sp
     3633:37B4  [E37B4]  83ec0a          sub     sp, 0xa
@@ -6393,7 +6393,7 @@ L_E3ECA:
     3633:3ED2  [E3ED2]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:3ED5  [E3ED5]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:3ED9  [E3ED9]  57              push    di
-    3633:3EDA  [E3EDA]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:3EDA  [E3EDA]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:3EDF  [E3EDF]  83c402          add     sp, 2
     3633:3EE2  [E3EE2]  ff46f8          inc     word ptr [bp - 8]
 L_E3EE5:
@@ -6409,7 +6409,7 @@ L_E3EF4:
     3633:3EFF  [E3EFF]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:3F02  [E3F02]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:3F06  [E3F06]  57              push    di
-    3633:3F07  [E3F07]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:3F07  [E3F07]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:3F0C  [E3F0C]  83c402          add     sp, 2
     3633:3F0F  [E3F0F]  ff46f8          inc     word ptr [bp - 8]
 L_E3F12:
@@ -6499,7 +6499,7 @@ SUB_E3F99:
     3633:3FFE  [E3FFE]  bf6400          mov     di, 0x64
     3633:4001  [E4001]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:4005  [E4005]  57              push    di
-    3633:4006  [E4006]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:4006  [E4006]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:400B  [E400B]  83c402          add     sp, 2
     3633:400E  [E400E]  c43edc1d        les     di, ptr [0x1ddc]
     3633:4012  [E4012]  8d95f801        lea     dx, [di + 0x1f8]
@@ -8888,7 +8888,7 @@ L_E571E:
     3633:5726  [E5726]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:5729  [E5729]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:572D  [E572D]  57              push    di
-    3633:572E  [E572E]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:572E  [E572E]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:5733  [E5733]  83c402          add     sp, 2
     3633:5736  [E5736]  8346f606        add     word ptr [bp - 0xa], 6
 L_E573A:
@@ -8911,7 +8911,7 @@ L_E575C:
     3633:5764  [E5764]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:5767  [E5767]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:576B  [E576B]  57              push    di
-    3633:576C  [E576C]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:576C  [E576C]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:5771  [E5771]  83c402          add     sp, 2
     3633:5774  [E5774]  8346f806        add     word ptr [bp - 8], 6
 L_E5778:
@@ -8949,7 +8949,7 @@ L_E57BD:
     3633:57C5  [E57C5]  bf3200          mov     di, 0x32
     3633:57C8  [E57C8]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:57CC  [E57CC]  57              push    di
-    3633:57CD  [E57CD]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:57CD  [E57CD]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:57D2  [E57D2]  83c402          add     sp, 2
     3633:57D5  [E57D5]  bfaf00          mov     di, 0xaf
     3633:57D8  [E57D8]  2b3efa1a        sub     di, word ptr [0x1afa]
@@ -8957,7 +8957,7 @@ L_E57BD:
     3633:57DD  [E57DD]  bfc800          mov     di, 0xc8
     3633:57E0  [E57E0]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:57E4  [E57E4]  57              push    di
-    3633:57E5  [E57E5]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:57E5  [E57E5]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:57EA  [E57EA]  83c402          add     sp, 2
     3633:57ED  [E57ED]  bf4b00          mov     di, 0x4b
     3633:57F0  [E57F0]  2b3efa1a        sub     di, word ptr [0x1afa]
@@ -8965,7 +8965,7 @@ L_E57BD:
     3633:57F5  [E57F5]  bfc800          mov     di, 0xc8
     3633:57F8  [E57F8]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:57FC  [E57FC]  57              push    di
-    3633:57FD  [E57FD]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:57FD  [E57FD]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:5802  [E5802]  83c402          add     sp, 2
     3633:5805  [E5805]  bf4b00          mov     di, 0x4b
     3633:5808  [E5808]  2b3efa1a        sub     di, word ptr [0x1afa]
@@ -8973,7 +8973,7 @@ L_E57BD:
     3633:580D  [E580D]  bf3200          mov     di, 0x32
     3633:5810  [E5810]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:5814  [E5814]  57              push    di
-    3633:5815  [E5815]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:5815  [E5815]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:581A  [E581A]  83c402          add     sp, 2
     3633:581D  [E581D]  ff46f8          inc     word ptr [bp - 8]
 L_E5820:
@@ -9052,7 +9052,7 @@ L_E58CF:
     3633:58D7  [E58D7]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:58DA  [E58DA]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:58DE  [E58DE]  57              push    di
-    3633:58DF  [E58DF]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:58DF  [E58DF]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:58E4  [E58E4]  83c402          add     sp, 2
     3633:58E7  [E58E7]  8b7e0e          mov     di, word ptr [bp + 0xe]
     3633:58EA  [E58EA]  017ef8          add     word ptr [bp - 8], di
@@ -9150,7 +9150,7 @@ L_E59C6:
     3633:59CE  [E59CE]  8b7ef4          mov     di, word ptr [bp - 0xc]
     3633:59D1  [E59D1]  2b3ef81a        sub     di, word ptr [0x1af8]
     3633:59D5  [E59D5]  57              push    di
-    3633:59D6  [E59D6]  9a910252e3      lcall   SUB_E37B1  ; 0xe352, 0x291
+    3633:59D6  [E59D6]  9a910252e3      lcall   plot_readout_point_scaled  ; 0xe352, 0x291
     3633:59DB  [E59DB]  83c402          add     sp, 2
     3633:59DE  [E59DE]  ff46f4          inc     word ptr [bp - 0xc]
 L_E59E1:
@@ -10047,7 +10047,7 @@ L_E643C:
 L_E646D:
     3633:646D  [E646D]  803e950700      cmp     byte ptr [0x795], 0
     3633:6472  [E6472]  7548            jne     L_E64BC  ; 0x1dc
-    3633:6474  [E6474]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
+    3633:6474  [E6474]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
     3633:6479  [E6479]  c606630700      mov     byte ptr [0x763], 0
     3633:647E  [E647E]  803ef71b00      cmp     byte ptr [0x1bf7], 0
     3633:6483  [E6483]  750e            jne     L_E6493  ; 0x1b3
@@ -10282,8 +10282,8 @@ L_E66F2:
     3633:6708  [E6708]  7429            je      L_E6733  ; 0x213
     3633:670A  [E670A]  803e620700      cmp     byte ptr [0x762], 0
     3633:670F  [E670F]  7428            je      L_E6739  ; 0x219
-    3633:6711  [E6711]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:6716  [E6716]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:6711  [E6711]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:6716  [E6716]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:671B  [E671B]  eb03            jmp     L_E6720  ; 0x200
 L_E671D:
     3633:671D  [E671D]  e93c00          jmp     L_E675C  ; 0x23c
@@ -10300,7 +10300,7 @@ L_E6739:
     3633:6740  [E6740]  9a0c009bed      lcall   SUB_ED9BC  ; 0xed9b, 0xc
     3633:6745  [E6745]  3d0000          cmp     ax, 0
     3633:6748  [E6748]  740f            je      L_E6759  ; 0x239
-    3633:674A  [E674A]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:674A  [E674A]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:674F  [E674F]  c606630701      mov     byte ptr [0x763], 1
     3633:6754  [E6754]  c606620700      mov     byte ptr [0x762], 0
 L_E6759:
@@ -10312,8 +10312,8 @@ L_E675C:
     3633:6767  [E6767]  7e21            jle     L_E678A  ; 0x26a
     3633:6769  [E6769]  803e620700      cmp     byte ptr [0x762], 0
     3633:676E  [E676E]  741a            je      L_E678A  ; 0x26a
-    3633:6770  [E6770]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:6775  [E6775]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:6770  [E6770]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:6775  [E6775]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:677A  [E677A]  c606630701      mov     byte ptr [0x763], 1
     3633:677F  [E677F]  c70654070000    mov     word ptr [0x754], 0
     3633:6785  [E6785]  c606620700      mov     byte ptr [0x762], 0
@@ -10365,8 +10365,8 @@ L_E680C:
 L_E680F:
     3633:680F  [E680F]  c43ee01d        les     di, ptr [0x1de0]
     3633:6813  [E6813]  268905          mov     word ptr es:[di], ax
-    3633:6816  [E6816]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:681B  [E681B]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:6816  [E6816]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:681B  [E681B]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:6820  [E6820]  c606630701      mov     byte ptr [0x763], 1
     3633:6825  [E6825]  fe06971a        inc     byte ptr [0x1a97]
     3633:6829  [E6829]  a0971a          mov     al, byte ptr [0x1a97]
@@ -10395,8 +10395,8 @@ SUB_E6844:
     3633:685C  [E685C]  fe069b1a        inc     byte ptr [0x1a9b]
     3633:6860  [E6860]  c606b00700      mov     byte ptr [0x7b0], 0
 L_E6865:
-    3633:6865  [E6865]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:686A  [E686A]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:6865  [E6865]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:686A  [E686A]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:686F  [E686F]  c606630701      mov     byte ptr [0x763], 1
     3633:6874  [E6874]  c70654070000    mov     word ptr [0x754], 0
     3633:687A  [E687A]  c606620700      mov     byte ptr [0x762], 0
@@ -10644,7 +10644,7 @@ L_E6AEE:
     3633:6AEE  [E6AEE]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:6AF2  [E6AF2]  7cec            jl      L_E6AE0  ; 0x60
     3633:6AF4  [E6AF4]  9a0e00b3fd      lcall   SUB_FDB3E  ; 0xfdb3, 0xe
-    3633:6AF9  [E6AF9]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
+    3633:6AF9  [E6AF9]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
     3633:6AFE  [E6AFE]  9acd02a8e6      lcall   SUB_E6D4D  ; 0xe6a8, 0x2cd
     3633:6B03  [E6B03]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
     3633:6B08  [E6B08]  c746f80000      mov     word ptr [bp - 8], 0
@@ -11616,8 +11616,8 @@ L_E7587:
     3633:75AA  [E75AA]  c43ee01d        les     di, ptr [0x1de0]
     3633:75AE  [E75AE]  268905          mov     word ptr es:[di], ax
 L_E75B1:
-    3633:75B1  [E75B1]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:75B6  [E75B6]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:75B1  [E75B1]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:75B6  [E75B6]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
 L_E75BB:
     3633:75BB  [E75BB]  8be5            mov     sp, bp
     3633:75BD  [E75BD]  5d              pop     bp
@@ -12594,8 +12594,8 @@ SUB_E7F03:
     3633:7F10  [E7F10]  ff062807        inc     word ptr [0x728]
     3633:7F14  [E7F14]  813e2807f401    cmp     word ptr [0x728], 0x1f4
     3633:7F1A  [E7F1A]  7e10            jle     L_E7F2C  ; 0x2c
-    3633:7F1C  [E7F1C]  9a2c00fef9      lcall   SUB_FA00C  ; 0xf9fe, 0x2c
-    3633:7F21  [E7F21]  9a0e00fef9      lcall   SUB_F9FEE  ; 0xf9fe, 0xe
+    3633:7F1C  [E7F1C]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:7F21  [E7F21]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
     3633:7F26  [E7F26]  c70628070000    mov     word ptr [0x728], 0
 L_E7F2C:
     3633:7F2C  [E7F2C]  b80100          mov     ax, 1
@@ -39459,7 +39459,7 @@ L_F9FE8:
     3532:9FE8  [F9FE8]  8be5            mov     sp, bp
     3532:9FEA  [F9FEA]  5d              pop     bp
     3532:9FEB  [F9FEB]  ca0200          retf    2
-SUB_F9FEE:
+clear_channel2_status:
     3532:9FEE  [F9FEE]  55              push    bp
     3532:9FEF  [F9FEF]  8bec            mov     bp, sp
     3532:9FF1  [F9FF1]  83ec0a          sub     sp, 0xa
@@ -39473,7 +39473,7 @@ SUB_F9FEE:
     3532:A008  [FA008]  8be5            mov     sp, bp
     3532:A00A  [FA00A]  5d              pop     bp
     3532:A00B  [FA00B]  cb              retf    
-SUB_FA00C:
+clear_channel1_status:
     3532:A00C  [FA00C]  55              push    bp
     3532:A00D  [FA00D]  8bec            mov     bp, sp
     3532:A00F  [FA00F]  83ec0a          sub     sp, 0xa

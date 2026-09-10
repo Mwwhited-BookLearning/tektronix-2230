@@ -3833,7 +3833,7 @@ SUB_F911C:
     db 0x8b, 0x7e, 0x06, 0xd1, 0xe7, 0xd1, 0xe7, 0x8b, 0x95, 0x98, 0x00, 0x89, 0x56, 0xf8, 0xc4, 0x5e  ; 9FC1
     db 0x08, 0x26, 0x39, 0x17, 0x7e, 0x03, 0x26, 0x89, 0x17, 0x8b, 0x7e, 0xf8, 0xc4, 0x5e, 0x0c, 0x26  ; 9FD1
     db 0x39, 0x3f, 0x7e, 0x03, 0x26, 0x89, 0x3f, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 9FE1
-SUB_F9FEE:
+clear_channel2_status:
     push bp                                  ; 9FEE: push bp
     mov bp, sp                               ; 9FEF: mov bp, sp
     sub sp, 0xa                              ; 9FF1: sub sp, 0xa
@@ -3847,7 +3847,7 @@ SUB_F9FEE:
     mov sp, bp                               ; A008: mov sp, bp
     pop bp                                   ; A00A: pop bp
     retf                                     ; A00B: retf 
-SUB_FA00C:
+clear_channel1_status:
     push bp                                  ; A00C: push bp
     mov bp, sp                               ; A00D: mov bp, sp
     sub sp, 0xa                              ; A00F: sub sp, 0xa
