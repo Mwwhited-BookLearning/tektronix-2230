@@ -888,6 +888,41 @@ re-deriving encoding equivalence every time this comes up), but this
 is a methodology choice, not a fully-vetted one - flagged in `TODO.md`
 to review again once the rest of the analysis is further along.
 
+## Possible waveform acquisition buffer init
+
+Found while renaming `160-3532:0x03F4`/`0x0414`/`0x0446` (all three
+converge, via a tiny stub or a short print-then-fall-through, on the
+same shared tail block at `L_F0678`). That block initializes **8
+separate buffer-size variables to the identical value `0x800`
+(2048 bytes)**: `[0x6F8]`, `[0x6F6]`, `[0x6F4]`, `[0x6F2]`, `[0x6E8]`,
+`[0x6E6]`, `[0x6B4]`, `[0x6B2]`, plus a handful of other fixed values
+(`[0x6FA]`-based byte `=0xD5`, `[0x700]`/`[0x702]=0`, `[0x704]=0x14`,
+`[0x70E]=0`) and a call to `SUB_E7D7D(0x200, 0x200)`.
+
+Working hypothesis (not confirmed): this is the **waveform acquisition
+buffer size/pointer table**. `0x800` = 2048 bytes is a plausible record
+length for an early-1980s 2-channel DSO (the Tek 2230 is documented as
+having a digital acquisition system in `CONTEXT.md`), and having 8
+identical buffer-size slots fits something like 4 buffers x 2 channels
+(e.g. an active acquisition buffer + a reference/saved buffer per
+channel, doubled for some other reason) or a similar small multiple.
+`divide_scale`/`divide_scale_default` (`0xF0086`/`0xF0078`, named the
+same session) live right next to this code and reference an
+overlapping set of variables (`[0x6D2]`, `[0x6D4]`, `[0x6D6]`,
+`[0x6CC]`) - possibly the sample-rate-to-time or ADC-count-to-voltage
+scaling math that goes along with these buffers, but not confirmed to
+be called *from* the buffer-init path itself (checked: it isn't,
+directly - they're neighbors in the file, not a call relationship).
+
+**Not confirmed**: the exact number/purpose of the 8 buffers, what
+`SUB_E7D7D` does with its `(0x200, 0x200)` arguments, or whether this
+is acquisition memory at all rather than something else entirely (a
+GPIB/plot output buffer set, for instance - the comm ROM code is
+physically adjacent in the address space story but this is the MAIN
+ROM, so that's less likely). Revisit if the self-test subroutines or
+menu-string cross-referencing work ever turns up a direct link to
+"record length" or a channel-buffer concept.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to

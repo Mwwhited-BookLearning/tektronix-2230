@@ -1533,10 +1533,10 @@
     "notes": null
   },
   "96B68": {
-    "name": "SUB_96B68",
+    "name": "serial_tx_buffer_put",
     "kind": "sub",
     "ref_count": 10,
-    "functional_name": null,
+    "functional_name": "serial_tx_buffer_put",
     "notes": null
   },
   "96B7D": {
@@ -1995,10 +1995,10 @@
     "notes": null
   },
   "97B94": {
-    "name": "SUB_97B94",
+    "name": "set_comm_critical_flag",
     "kind": "sub",
     "ref_count": 9,
-    "functional_name": null,
+    "functional_name": "set_comm_critical_flag",
     "notes": null
   },
   "97BD6": {
@@ -7931,31 +7931,31 @@
     "notes": null
   },
   "F0078": {
-    "name": "SUB_F0078",
+    "name": "divide_scale_default",
     "kind": "sub",
     "ref_count": 9,
-    "functional_name": null,
+    "functional_name": "divide_scale_default",
     "notes": null
   },
   "F0086": {
-    "name": "SUB_F0086",
+    "name": "divide_scale",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "divide_scale",
     "notes": null
   },
   "F03F4": {
-    "name": "SUB_F03F4",
+    "name": "reset_acq_buffers_stub",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "reset_acq_buffers_stub",
     "notes": null
   },
   "F0414": {
-    "name": "SUB_F0414",
+    "name": "print_and_reset_acq_buffers",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "print_and_reset_acq_buffers",
     "notes": null
   },
   "F0446": {

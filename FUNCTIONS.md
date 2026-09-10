@@ -65,6 +65,10 @@ in `disasm/NOTES.md`.
 | `0xE0FD0` | `selftest_measure_and_report` **(renamed)** | One of `self_test_dispatcher`'s ~14 test calls, identified this session: enable/run/disable pattern via 3 calls to `selftest_measure_mode` with idx `1, 3, 2`. Which peripheral it measures isn't confirmed | Confirmed mechanism (enable/run/disable shape); peripheral identity not confirmed |
 | `0xE0FF5` | `selftest_measure_mode` **(renamed)** | `idx==1`: enable a measurement mode (`[0x1B5E]=1`); `idx==2`: disable (complementary reset); else (incl. `idx==3`): run the actual measurement (calls `SUB_E296E` + `SUB_E0C3D`) and return its result code in `ax` | Confirmed |
 | `0xE6D2F` | `seg_off_to_linear` **(renamed)** | `(offset, segment) -> offset + segment*16` - a compiled-in runtime helper for exactly the seg:off-to-flat-address math this project's own disassembly tooling uses, called 16x | Confirmed |
+| `0xF0078` | `divide_scale_default` **(renamed)** | Pre-loads `dx:ax` from the global default divisor at `[0x6D2]`, then falls through into `divide_scale` below - a "use the default divisor" entry point | Confirmed mechanism; what the divisor represents physically not confirmed |
+| `0xF0086` | `divide_scale` **(renamed)** | `(dividend dx:ax, divisor [bp+8])` - 32-bit divide (`SUB_E777D`) then scale (`SUB_E7764`) then a 3rd call (`SUB_E7F39`) updating `[0x6E6]`/`[0x6E8]` - a general fixed-point scale/convert utility, reachable directly or via `divide_scale_default` | Confirmed mechanism; the physical quantity being scaled (timebase? voltage?) not confirmed |
+| `0xF03F4` | `reset_acq_buffers_stub` **(renamed)** | A tiny stub that reaches a shared tail block initializing **8 separate buffer-size variables to `0x800` (2048 bytes) each**, plus a handful of other fixed setup values - see `disasm/NOTES.md` "Possible waveform acquisition buffer init" | Mechanism confirmed; the "acquisition buffer" interpretation is a plausible but unconfirmed inference from the buffer count/size |
+| `0xF0414` | `print_and_reset_acq_buffers` **(renamed)** | Prints a status string (`0xFF7B:0x362`) and does a scale computation, then falls through into the same shared buffer-init tail as `reset_acq_buffers_stub` | Same confidence caveat as `reset_acq_buffers_stub` |
 
 ### The ~14 self-test subroutines are NOT yet identified by name
 
@@ -94,9 +98,15 @@ the order their names are printed in.
 
 ## Comm/GPIB ROM (160-2998)
 
-Nothing individually identified yet. The ~400 heuristically-found
-functions (`FUNC_2998_XXXX` in `disasm/160-2998-14.lst`) are candidates
-once specific ones are traced from a known caller.
+| Address | Label | Purpose | Confidence |
+|---|---|---|---|
+| `0x9470E` | `set_ds_return_old` **(renamed)** | `push ds; mov ds,[bp+6]; pop ax` - swaps `DS` to the caller-given segment word, returns the *old* `DS` in `ax` so a later call with that saved value restores it. Called 40x; every checked call site pairs a "swap in" with a matching "swap back" | Confirmed |
+| `0x96B68` | `serial_tx_buffer_put` **(renamed)** | Writes a byte into a ring buffer at `[0x44C]`, wrapping at a fixed boundary (`0x433` bytes); the byte's source depends on mode flags `[0x459]`/`[0x629]` - likely the GPIB/RS-232 transmit buffer | Confirmed mechanism (ring buffer + wraparound); "transmit buffer" identity inferred from context, not confirmed against a schematic |
+| `0x97B94` | `set_comm_critical_flag` **(renamed)** | Sets a critical-section-style flag `[0x5A3]` to the given value; on the "leaving" edge (new value `0`, old value nonzero, `[0x5A1]` set), swaps `DS` to the main ROM's low-RAM segment (`0x41`, via `set_ds_return_old`) and calls a main-ROM routine before swapping back - a cross-ROM notify-on-unlock pattern | Confirmed mechanism; the specific main-ROM callback's purpose not traced |
+
+The remaining ~400 heuristically-found functions (`FUNC_2998_XXXX` in
+`disasm/160-2998-14.lst`) are candidates once specific ones are traced
+from a known caller.
 
 ## Variables
 

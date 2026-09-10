@@ -270,6 +270,64 @@ FUNCTIONAL_NAMES = {
                                                # measurement (SUB_E296E +
                                                # SUB_E0C3D) and return its
                                                # result code in ax
+    0x96B68: "serial_tx_buffer_put",          # comm ROM: writes a byte
+                                               # into a ring buffer at
+                                               # [0x44C] with wraparound
+                                               # at a fixed boundary
+                                               # (0x433 bytes); byte
+                                               # source depends on mode
+                                               # flags [0x459]/[0x629] -
+                                               # likely the GPIB/RS-232
+                                               # transmit buffer
+    0x97B94: "set_comm_critical_flag",        # comm ROM: sets critical-
+                                               # section flag [0x5A3] to
+                                               # the given value; on the
+                                               # "leaving" edge (new
+                                               # value 0, old value
+                                               # nonzero, [0x5A1] set),
+                                               # swaps DS to the main
+                                               # ROM's low-RAM segment
+                                               # (0x41, via set_ds_
+                                               # return_old) and calls a
+                                               # main-ROM routine before
+                                               # swapping back - a cross-
+                                               # ROM notify-on-unlock
+                                               # pattern
+    0xF0078: "divide_scale_default",          # (value at [bp+8]) - pre-
+                                               # loads dx:ax from the
+                                               # global default divisor
+                                               # at [0x6D2] then falls
+                                               # into divide_scale;
+                                               # shares its body with a
+                                               # 2nd, explicit-divisor
+                                               # entry point at 0xF0086
+    0xF0086: "divide_scale",                  # (dividend dx:ax, divisor
+                                               # [bp+8]) - 32-bit divide
+                                               # (SUB_E777D) + scale
+                                               # (SUB_E7764) + a 3rd call
+                                               # (SUB_E7F39) updating
+                                               # [0x6E6]/[0x6E8]; called
+                                               # directly or via divide_
+                                               # scale_default above
+    0xF03F4: "reset_acq_buffers_stub",        # tiny stub (one
+                                               # computation then a
+                                               # shared-tail jump) that
+                                               # reaches the acquisition-
+                                               # buffer-size init block
+                                               # (8 buffers set to 0x800
+                                               # = 2048 bytes each - a
+                                               # plausible DSO record
+                                               # length) - see NOTES.md
+                                               # "Possible waveform
+                                               # acquisition buffer init"
+    0xF0414: "print_and_reset_acq_buffers",   # prints a status string
+                                               # (0xFF7B:0x362) and does
+                                               # a scale computation,
+                                               # then falls through into
+                                               # the same shared
+                                               # acquisition-buffer-init
+                                               # tail as reset_acq_
+                                               # buffers_stub
     0xE6D2F: "seg_off_to_linear",             # (offset, segment) ->
                                                # offset + segment*16 -
                                                # the same seg:off -> flat
