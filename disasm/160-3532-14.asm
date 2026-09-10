@@ -19,14 +19,14 @@ ORG 0
     db 0x00, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x12, 0xa1, 0xd0, 0x06, 0x99, 0x52, 0x50, 0x8b, 0x46, 0x06  ; 004E
     db 0x99, 0x9a, 0x5d, 0x00, 0x72, 0xe7, 0x89, 0x46, 0xf2, 0x89, 0x56, 0xf4, 0x2b, 0xff, 0x57, 0xba  ; 005E
     db 0x0c, 0x00, 0x52, 0x8b, 0x46, 0xf2, 0x8b, 0x56, 0xf4, 0x9a  ; 006E
-divide_scale_default:
+scale_and_plot_point_default:
     inc sp                                   ; 0078: inc sp
     add byte [bp + si - 0x19], dh            ; 0079: add byte ptr [bp + si - 0x19], dh
     mov word [bp - 0xe], ax                  ; 007C: mov word ptr [bp - 0xe], ax
     mov word [bp - 0xc], dx                  ; 007F: mov word ptr [bp - 0xc], dx
     mov ax, word [0x6d2]                     ; 0082: mov ax, word ptr [0x6d2]
     cwd                                      ; 0085: cdq 
-divide_scale:
+scale_and_plot_point:
     push dx                                  ; 0086: push dx
     push ax                                  ; 0087: push ax
     mov ax, word [bp + 8]                    ; 0088: mov ax, word ptr [bp + 8]

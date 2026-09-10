@@ -6741,10 +6741,10 @@
     "notes": null
   },
   "E7764": {
-    "name": "SUB_E7764",
+    "name": "ashr32",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "ashr32",
     "notes": null
   },
   "E7776": {
@@ -6755,17 +6755,17 @@
     "notes": null
   },
   "E777D": {
-    "name": "SUB_E777D",
+    "name": "mul32",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "mul32",
     "notes": null
   },
   "E77AE": {
-    "name": "SUB_E77AE",
+    "name": "sdiv32",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "sdiv32",
     "notes": null
   },
   "E77CA": {
@@ -7350,10 +7350,10 @@
     "notes": null
   },
   "E7F39": {
-    "name": "SUB_E7F39",
+    "name": "plot_scaled_point",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "plot_scaled_point",
     "notes": null
   },
   "E7F5A": {
@@ -16387,17 +16387,17 @@
     "notes": null
   },
   "F0078": {
-    "name": "divide_scale_default",
+    "name": "scale_and_plot_point_default",
     "kind": "sub",
     "ref_count": 15,
-    "functional_name": "divide_scale_default",
+    "functional_name": "scale_and_plot_point_default",
     "notes": null
   },
   "F0086": {
-    "name": "divide_scale",
+    "name": "scale_and_plot_point",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": "divide_scale",
+    "functional_name": "scale_and_plot_point",
     "notes": null
   },
   "F00E4": {

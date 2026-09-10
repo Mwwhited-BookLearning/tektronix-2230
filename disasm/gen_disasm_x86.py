@@ -353,22 +353,39 @@ FUNCTIONAL_NAMES = {
                                                # swapping back - a cross-
                                                # ROM notify-on-unlock
                                                # pattern
-    0xF0078: "divide_scale_default",          # (value at [bp+8]) - pre-
-                                               # loads dx:ax from the
-                                               # global default divisor
-                                               # at [0x6D2] then falls
-                                               # into divide_scale;
+    0xF0078: "scale_and_plot_point_default",  # (value at [bp+8]) - pre-
+                                               # loads dx:ax from a
+                                               # global default
+                                               # reciprocal constant at
+                                               # [0x6D2] then falls into
+                                               # scale_and_plot_point;
                                                # shares its body with a
-                                               # 2nd, explicit-divisor
-                                               # entry point at 0xF0086
-    0xF0086: "divide_scale",                  # (dividend dx:ax, divisor
-                                               # [bp+8]) - 32-bit divide
-                                               # (SUB_E777D) + scale
-                                               # (SUB_E7764) + a 3rd call
-                                               # (SUB_E7F39) updating
-                                               # [0x6E6]/[0x6E8]; called
-                                               # directly or via divide_
-                                               # scale_default above
+                                               # 2nd, explicit-reciprocal
+                                               # entry point at 0xF0086.
+                                               # CORRECTED (was wrongly
+                                               # named divide_scale[_
+                                               # default] - the actual
+                                               # math is multiply-by-
+                                               # reciprocal-then-shift,
+                                               # not divide, see NOTES.md
+    0xF0086: "scale_and_plot_point",          # (raw_value dx:ax,
+                                               # reciprocal [bp+8]) -
+                                               # fixed-point scale via
+                                               # mul32 + ashr32 (NOT a
+                                               # real divide - multiply
+                                               # by a precomputed
+                                               # reciprocal constant,
+                                               # then shift right), then
+                                               # calls plot_scaled_point
+                                               # to draw the scaled
+                                               # value and cache it in
+                                               # [0x6E6]/[0x6E8] for the
+                                               # next line segment - the
+                                               # per-sample step of an
+                                               # acquisition-to-plotter
+                                               # rendering pipeline.
+                                               # CORRECTED (was wrongly
+                                               # named divide_scale)
     0xF03F4: "reset_acq_buffers_stub",        # tiny stub (one
                                                # computation then a
                                                # shared-tail jump) that
@@ -619,6 +636,47 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE777D: "mul32",                         # 32-bit x 32-bit -> 32-bit
+                                               # (truncated) multiply,
+                                               # classic 3-partial-
+                                               # product algorithm.
+                                               # Called by scale_and_
+                                               # plot_point - previously
+                                               # miscalled a "divide" in
+                                               # an earlier session's
+                                               # comment; corrected
+    0xE7764: "ashr32",                        # 32-bit arithmetic right
+                                               # shift by CX bits
+                                               # (sar+rcr loop). Called
+                                               # by scale_and_plot_point
+                                               # right after mul32 - the
+                                               # pair together implement
+                                               # "multiply by a fixed-
+                                               # point reciprocal, then
+                                               # shift" fast scaling
+    0xE77AE: "sdiv32",                        # the REAL signed 32-bit
+                                               # divide (sign via XOR of
+                                               # the high words, abs()
+                                               # both operands, call the
+                                               # unsigned core, reapply
+                                               # sign) - found while
+                                               # correcting mul32/ashr32
+                                               # above; not currently
+                                               # known to be called from
+                                               # anywhere in the proven
+                                               # set
+    0xE7F39: "plot_scaled_point",             # conditionally plots a
+                                               # scaled acquisition point
+                                               # via SUB_E90A5 (mode 0
+                                               # gated on [0x70E]/[0x6CA]
+                                               # matching the HPGL PU/PD
+                                               # mode variable), then
+                                               # unconditionally plots it
+                                               # again as the new "from"
+                                               # point (mode 1) and
+                                               # caches it in [0x70A]/
+                                               # [0x70C] for the next
+                                               # line segment
     0xE7416: "refresh_display_position_cache", # skips recomputation if
                                                # [0x1BF7] is clear and 3
                                                # cached config values

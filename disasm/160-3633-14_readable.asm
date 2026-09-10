@@ -8672,7 +8672,7 @@ L_E7621:
     db 0x56, 0x08, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00, 0x55, 0x8b, 0xec, 0x03, 0x46, 0x06, 0x13, 0x56  ; 7735
     db 0x08, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00, 0x85, 0xc0, 0x75, 0x02, 0x85, 0xd2, 0xcb, 0x55, 0x8b  ; 7745
     db 0xec, 0x39, 0x56, 0x08, 0x75, 0x03, 0x39, 0x46, 0x06, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00  ; 7755
-SUB_E7764:
+ashr32:
     push bp                                  ; 7764: push bp
     push cx                                  ; 7765: push cx
     mov bp, sp                               ; 7766: mov bp, sp
@@ -8687,7 +8687,7 @@ L_E7776:
     pop cx                                   ; 7778: pop cx
     pop bp                                   ; 7779: pop bp
     retf 4                                   ; 777A: retf 4
-SUB_E777D:
+mul32:
     push bp                                  ; 777D: push bp
     mov bp, sp                               ; 777E: mov bp, sp
     sub sp, 4                                ; 7780: sub sp, 4
@@ -8711,7 +8711,7 @@ SUB_E777D:
     mov sp, bp                               ; 77A8: mov sp, bp
     pop bp                                   ; 77AA: pop bp
     retf 4                                   ; 77AB: retf 4
-SUB_E77AE:
+sdiv32:
     push bp                                  ; 77AE: push bp
     push bx                                  ; 77AF: push bx
     push cx                                  ; 77B0: push cx
@@ -9180,7 +9180,7 @@ L_E7F34:
     pop bp                                   ; 7F36: pop bp
     retf                                     ; 7F37: retf 
     db 0xff  ; 7F38
-SUB_E7F39:
+plot_scaled_point:
     push bp                                  ; 7F39: push bp
     mov bp, sp                               ; 7F3A: mov bp, sp
     sub sp, 6                                ; 7F3C: sub sp, 6
