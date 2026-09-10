@@ -57,6 +57,22 @@
   comparison), and diffs against the original ROM bytes. Requires a
   NASM executable path as its one argument (NASM isn't vendored in the
   repo - see "Validation status" below for how to get one).
+- `gen_source.py` — emits the actual committed disassembly:
+  `160-3633-14.asm` and `160-3532-14.asm`, one real buildable NASM
+  source file per chip. Decoded instructions proven byte-exact by
+  `validate_nasm.py` are written as real instructions; everything else
+  (alt-encoding-only matches, unconverted instructions, and every
+  byte the recursive descent hasn't reached yet) is emitted as raw
+  `db` bytes grouped 16-per-line, with the original mnemonic in a
+  comment where known. This means **the .asm files always reassemble
+  byte-identical to the original .bin** regardless of how much is
+  understood yet - `gen_source.py` verifies this itself on every run
+  (assembles its own output and diffs against the source .bin). ASCII
+  string runs get a comment showing the decoded text. Also takes a
+  NASM executable path as its one argument. These .asm files are the
+  ones to open when reading or editing "the disassembly" - `.lst` is
+  a secondary diagnostic view with extra formatting `.asm` doesn't
+  have (physical addresses, chip:offset pairs).
 
 ## Validation status
 

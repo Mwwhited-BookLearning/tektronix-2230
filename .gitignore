@@ -3,3 +3,6 @@ _validate_*.asm
 _validate_*.bin
 _tmp*.asm
 _tmp*.bin
+_src_check_*.asm
+_src_check_*.bin
+_final_check_*.bin
