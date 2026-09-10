@@ -5560,7 +5560,7 @@ SUB_E43F2:
     db 0x8b, 0xe5  ; 4406: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4408: pop bp
     retf                                     ; 4409: retf 
-SUB_E440A:
+read_channel2_status:
     push bp                                  ; 440A: push bp
     db 0x8b, 0xec  ; 440B: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 440D: sub sp, 8
@@ -5574,7 +5574,7 @@ SUB_E440A:
     db 0x8b, 0xe5  ; 4425: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4427: pop bp
     retf                                     ; 4428: retf 
-SUB_E4429:
+read_channel1_status:
     push bp                                  ; 4429: push bp
     db 0x8b, 0xec  ; 442A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 442C: sub sp, 8
@@ -6766,7 +6766,7 @@ L_E5B2E:
     db 0x8b, 0xe5  ; 5B2E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 5B30: pop bp
     retf 2                                   ; 5B31: retf 2
-SUB_E5B34:
+selftest_display_result_mode:
     push bp                                  ; 5B34: push bp
     db 0x8b, 0xec  ; 5B35: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 5B37: sub sp, 0xc

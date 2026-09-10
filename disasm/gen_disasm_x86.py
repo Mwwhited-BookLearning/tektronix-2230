@@ -328,6 +328,28 @@ FUNCTIONAL_NAMES = {
                                                # acquisition-buffer-init
                                                # tail as reset_acq_
                                                # buffers_stub
+    0xE4429: "read_channel1_status",          # reads one fixed byte
+                                               # from physical 0x41000 -
+                                               # called alternately with
+                                               # read_channel2_status in
+                                               # a self-test loop that
+                                               # takes repeated readings;
+                                               # "channel1" is inferred
+                                               # from the 2-channel-scope
+                                               # context, not confirmed
+    0xE440A: "read_channel2_status",          # reads one fixed byte
+                                               # from physical 0x42000 -
+                                               # see read_channel1_status
+    0xE5B34: "selftest_display_result_mode",  # idx==1/2 toggle the SAME
+                                               # [0x1B5E] flag selftest_
+                                               # measure_mode uses
+                                               # (shared "measurement
+                                               # active" flag?); idx==3/4
+                                               # fall through to
+                                               # positioning + printing a
+                                               # result via
+                                               # set_position_record/
+                                               # SUB_E2DC9
     0xE6D2F: "seg_off_to_linear",             # (offset, segment) ->
                                                # offset + segment*16 -
                                                # the same seg:off -> flat

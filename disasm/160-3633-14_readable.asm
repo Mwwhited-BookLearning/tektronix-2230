@@ -5558,7 +5558,7 @@ SUB_E43F2:
     mov sp, bp                               ; 4406: mov sp, bp
     pop bp                                   ; 4408: pop bp
     retf                                     ; 4409: retf 
-SUB_E440A:
+read_channel2_status:
     push bp                                  ; 440A: push bp
     mov bp, sp                               ; 440B: mov bp, sp
     sub sp, 8                                ; 440D: sub sp, 8
@@ -5572,7 +5572,7 @@ SUB_E440A:
     mov sp, bp                               ; 4425: mov sp, bp
     pop bp                                   ; 4427: pop bp
     retf                                     ; 4428: retf 
-SUB_E4429:
+read_channel1_status:
     push bp                                  ; 4429: push bp
     mov bp, sp                               ; 442A: mov bp, sp
     sub sp, 8                                ; 442C: sub sp, 8
@@ -6764,7 +6764,7 @@ L_E5B2E:
     mov sp, bp                               ; 5B2E: mov sp, bp
     pop bp                                   ; 5B30: pop bp
     retf 2                                   ; 5B31: retf 2
-SUB_E5B34:
+selftest_display_result_mode:
     push bp                                  ; 5B34: push bp
     mov bp, sp                               ; 5B35: mov bp, sp
     sub sp, 0xc                              ; 5B37: sub sp, 0xc

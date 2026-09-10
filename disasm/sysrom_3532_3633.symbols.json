@@ -4788,17 +4788,17 @@
     "notes": null
   },
   "E440A": {
-    "name": "SUB_E440A",
+    "name": "read_channel2_status",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "read_channel2_status",
     "notes": null
   },
   "E4429": {
-    "name": "SUB_E4429",
+    "name": "read_channel1_status",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "read_channel1_status",
     "notes": null
   },
   "E4443": {
@@ -5397,10 +5397,10 @@
     "notes": null
   },
   "E5B34": {
-    "name": "SUB_E5B34",
+    "name": "selftest_display_result_mode",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "selftest_display_result_mode",
     "notes": null
   },
   "E5B4D": {
