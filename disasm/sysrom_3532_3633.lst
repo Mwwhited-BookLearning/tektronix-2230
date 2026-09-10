@@ -12014,7 +12014,7 @@ SUB_E9255:
     3633:9266  [E9266]  bf0b00          mov     di, 0xb
     3633:9269  [E9269]  57              push    di
     3633:926A  [E926A]  50              push    ax
-    3633:926B  [E926B]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:926B  [E926B]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:9270  [E9270]  83c402          add     sp, 2
     3633:9273  [E9273]  8946f8          mov     word ptr [bp - 8], ax
     3633:9276  [E9276]  bf9d00          mov     di, 0x9d
@@ -12024,7 +12024,7 @@ SUB_E9255:
     3633:9282  [E9282]  bf0c00          mov     di, 0xc
     3633:9285  [E9285]  57              push    di
     3633:9286  [E9286]  50              push    ax
-    3633:9287  [E9287]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:9287  [E9287]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:928C  [E928C]  83c402          add     sp, 2
     3633:928F  [E928F]  0946f8          or      word ptr [bp - 8], ax
     3633:9292  [E9292]  bf9f00          mov     di, 0x9f
@@ -12034,7 +12034,7 @@ SUB_E9255:
     3633:929E  [E929E]  bf0200          mov     di, 2
     3633:92A1  [E92A1]  57              push    di
     3633:92A2  [E92A2]  50              push    ax
-    3633:92A3  [E92A3]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:92A3  [E92A3]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:92A8  [E92A8]  83c402          add     sp, 2
     3633:92AB  [E92AB]  0946f8          or      word ptr [bp - 8], ax
     3633:92AE  [E92AE]  bfbf00          mov     di, 0xbf
@@ -12052,7 +12052,7 @@ SUB_E92B0:
     3633:92BA  [E92BA]  bf0300          mov     di, 3
     3633:92BD  [E92BD]  57              push    di
     3633:92BE  [E92BE]  50              push    ax
-    3633:92BF  [E92BF]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:92BF  [E92BF]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:92C4  [E92C4]  83c402          add     sp, 2
     3633:92C7  [E92C7]  0946f8          or      word ptr [bp - 8], ax
     3633:92CA  [E92CA]  8b46f8          mov     ax, word ptr [bp - 8]
@@ -13197,7 +13197,7 @@ L_F15C2:
     3532:15C4  [F15C4]  5d              pop     bp
     3532:15C5  [F15C5]  ca0400          retf    4
 
-SUB_F1611:
+halt_cpu:
     3532:1611  [F1611]  f4              hlt     
 
 SUB_F4150:
@@ -14382,14 +14382,14 @@ SUB_F8E66:
     3532:8E74  [F8E74]  ba0100          mov     dx, 1
     3532:8E77  [F8E77]  52              push    dx
     3532:8E78  [F8E78]  57              push    di
-    3532:8E79  [F8E79]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8E79  [F8E79]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8E7E  [F8E7E]  83c402          add     sp, 2
     3532:8E81  [F8E81]  bf0100          mov     di, 1
     3532:8E84  [F8E84]  57              push    di
     3532:8E85  [F8E85]  8b56f8          mov     dx, word ptr [bp - 8]
     3532:8E88  [F8E88]  42              inc     dx
     3532:8E89  [F8E89]  52              push    dx
-    3532:8E8A  [F8E8A]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8E8A  [F8E8A]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8E8F  [F8E8F]  83c402          add     sp, 2
     3532:8E92  [F8E92]  8be5            mov     sp, bp
     3532:8E94  [F8E94]  5d              pop     bp
@@ -14404,19 +14404,19 @@ SUB_F8E98:
     3532:8EA6  [F8EA6]  2bd2            sub     dx, dx
     3532:8EA8  [F8EA8]  52              push    dx
     3532:8EA9  [F8EA9]  57              push    di
-    3532:8EAA  [F8EAA]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8EAA  [F8EAA]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8EAF  [F8EAF]  83c402          add     sp, 2
     3532:8EB2  [F8EB2]  2bff            sub     di, di
     3532:8EB4  [F8EB4]  57              push    di
     3532:8EB5  [F8EB5]  8b56f8          mov     dx, word ptr [bp - 8]
     3532:8EB8  [F8EB8]  42              inc     dx
     3532:8EB9  [F8EB9]  52              push    dx
-    3532:8EBA  [F8EBA]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8EBA  [F8EBA]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8EBF  [F8EBF]  83c402          add     sp, 2
     3532:8EC2  [F8EC2]  8be5            mov     sp, bp
     3532:8EC4  [F8EC4]  5d              pop     bp
     3532:8EC5  [F8EC5]  ca0200          retf    2
-SUB_F8EC8:
+set_item_active_flag:
     3532:8EC8  [F8EC8]  55              push    bp
     3532:8EC9  [F8EC9]  8bec            mov     bp, sp
     3532:8ECB  [F8ECB]  83ec06          sub     sp, 6

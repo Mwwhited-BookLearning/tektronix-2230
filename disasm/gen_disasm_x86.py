@@ -564,6 +564,19 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xF1611: "halt_cpu",                      # a single hlt instruction
+    0xF8EC8: "set_item_active_flag",          # (item_index, set_flag) -
+                                               # sets or clears a bit in
+                                               # a byte-per-item flag
+                                               # array (at
+                                               # [item_index+0x1BE2])
+                                               # and the matching field
+                                               # in a parallel 20-byte-
+                                               # per-item record array
+                                               # (offsets 0xA6/0xB0) -
+                                               # exact item type (menu
+                                               # entry? channel?) not
+                                               # confirmed
     0xF0C81: "reset_plot_home_or_acq",        # checks [0x6C0] bit 0x80:
                                                # if set, calls update_
                                                # plot_position(0,0) - a

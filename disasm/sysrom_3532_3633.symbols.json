@@ -8092,10 +8092,10 @@
     "notes": null
   },
   "F1611": {
-    "name": "SUB_F1611",
+    "name": "halt_cpu",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "halt_cpu",
     "notes": null
   },
   "F4150": {
@@ -8806,10 +8806,10 @@
     "notes": null
   },
   "F8EC8": {
-    "name": "SUB_F8EC8",
+    "name": "set_item_active_flag",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "set_item_active_flag",
     "notes": null
   },
   "F8EF9": {

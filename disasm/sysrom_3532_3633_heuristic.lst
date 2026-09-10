@@ -13718,7 +13718,7 @@ L_E902C:
     3633:9038  [E9038]  2bff            sub     di, di
     3633:903A  [E903A]  57              push    di
     3633:903B  [E903B]  50              push    ax
-    3633:903C  [E903C]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:903C  [E903C]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:9041  [E9041]  83c402          add     sp, 2
     3633:9044  [E9044]  8946f8          mov     word ptr [bp - 8], ax
     3633:9047  [E9047]  bffd00          mov     di, 0xfd
@@ -13728,7 +13728,7 @@ L_E902C:
     3633:9053  [E9053]  bf0100          mov     di, 1
     3633:9056  [E9056]  57              push    di
     3633:9057  [E9057]  50              push    ax
-    3633:9058  [E9058]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:9058  [E9058]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:905D  [E905D]  83c402          add     sp, 2
     3633:9060  [E9060]  0946f8          or      word ptr [bp - 8], ax
     3633:9063  [E9063]  e9e501          jmp     L_E924B  ; 0x924b
@@ -13740,7 +13740,7 @@ L_E9066:
     3633:9072  [E9072]  bf0200          mov     di, 2
     3633:9075  [E9075]  57              push    di
     3633:9076  [E9076]  50              push    ax
-    3633:9077  [E9077]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:9077  [E9077]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:907C  [E907C]  83c402          add     sp, 2
     3633:907F  [E907F]  8946f8          mov     word ptr [bp - 8], ax
     3633:9082  [E9082]  e9c601          jmp     L_E924B  ; 0x924b
@@ -13752,7 +13752,7 @@ L_E9085:
     3633:9091  [E9091]  bf0300          mov     di, 3
     3633:9094  [E9094]  57              push    di
     3633:9095  [E9095]  50              push    ax
-    3633:9096  [E9096]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:9096  [E9096]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:909B  [E909B]  83c402          add     sp, 2
     3633:909E  [E909E]  8946f8          mov     word ptr [bp - 8], ax
     3633:90A1  [E90A1]  e9a701          jmp     L_E924B  ; 0x924b
@@ -13773,7 +13773,7 @@ SUB_E90A5:
     3633:90B0  [E90B0]  bf0400          mov     di, 4
     3633:90B3  [E90B3]  57              push    di
     3633:90B4  [E90B4]  50              push    ax
-    3633:90B5  [E90B5]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:90B5  [E90B5]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:90BA  [E90BA]  83c402          add     sp, 2
     3633:90BD  [E90BD]  8946f8          mov     word ptr [bp - 8], ax
     3633:90C0  [E90C0]  e98801          jmp     L_E924B  ; 0x924b
@@ -13860,7 +13860,7 @@ SUB_E9255:
     3633:9266  [E9266]  bf0b00          mov     di, 0xb
     3633:9269  [E9269]  57              push    di
     3633:926A  [E926A]  50              push    ax
-    3633:926B  [E926B]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:926B  [E926B]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:9270  [E9270]  83c402          add     sp, 2
     3633:9273  [E9273]  8946f8          mov     word ptr [bp - 8], ax
     3633:9276  [E9276]  bf9d00          mov     di, 0x9d
@@ -13870,7 +13870,7 @@ SUB_E9255:
     3633:9282  [E9282]  bf0c00          mov     di, 0xc
     3633:9285  [E9285]  57              push    di
     3633:9286  [E9286]  50              push    ax
-    3633:9287  [E9287]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:9287  [E9287]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:928C  [E928C]  83c402          add     sp, 2
     3633:928F  [E928F]  0946f8          or      word ptr [bp - 8], ax
     3633:9292  [E9292]  bf9f00          mov     di, 0x9f
@@ -13880,7 +13880,7 @@ SUB_E9255:
     3633:929E  [E929E]  bf0200          mov     di, 2
     3633:92A1  [E92A1]  57              push    di
     3633:92A2  [E92A2]  50              push    ax
-    3633:92A3  [E92A3]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:92A3  [E92A3]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:92A8  [E92A8]  83c402          add     sp, 2
     3633:92AB  [E92AB]  0946f8          or      word ptr [bp - 8], ax
     3633:92AE  [E92AE]  bfbf00          mov     di, 0xbf
@@ -13899,7 +13899,7 @@ SUB_E92B0:
     3633:92BD  [E92BD]  57              push    di
     3633:92BE  [E92BE]  50              push    ax
 SUB_E92BF:
-    3633:92BF  [E92BF]  9a010061f1      lcall   SUB_F1611  ; 0xf161, 1
+    3633:92BF  [E92BF]  9a010061f1      lcall   halt_cpu  ; 0xf161, 1
     3633:92C4  [E92C4]  83c402          add     sp, 2
     3633:92C7  [E92C7]  0946f8          or      word ptr [bp - 8], ax
     3633:92CA  [E92CA]  8b46f8          mov     ax, word ptr [bp - 8]
@@ -23007,7 +23007,7 @@ L_EF25E:
     3633:F25E  [EF25E]  2bff            sub     di, di
     3633:F260  [EF260]  57              push    di
     3633:F261  [EF261]  ff76f0          push    word ptr [bp - 0x10]
-    3633:F264  [EF264]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3633:F264  [EF264]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3633:F269  [EF269]  83c402          add     sp, 2
     3633:F26C  [EF26C]  8b7ef0          mov     di, word ptr [bp - 0x10]
     3633:F26F  [EF26F]  80a5e21bfd      and     byte ptr [di + 0x1be2], 0xfd
@@ -26322,7 +26322,7 @@ L_F160C:
     3532:160C  [F160C]  c47ef4          les     di, ptr [bp - 0xc]
     3532:160F  [F160F]  ff46f4          inc     word ptr [bp - 0xc]
 
-SUB_F1611:
+halt_cpu:
     3532:1611  [F1611]  f4              hlt     
     3532:1612  [F1612]  268a15          mov     dl, byte ptr es:[di]
     3532:1615  [F1615]  8856f9          mov     byte ptr [bp - 7], dl
@@ -37808,14 +37808,14 @@ SUB_F8E66:
     3532:8E74  [F8E74]  ba0100          mov     dx, 1
     3532:8E77  [F8E77]  52              push    dx
     3532:8E78  [F8E78]  57              push    di
-    3532:8E79  [F8E79]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8E79  [F8E79]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8E7E  [F8E7E]  83c402          add     sp, 2
     3532:8E81  [F8E81]  bf0100          mov     di, 1
     3532:8E84  [F8E84]  57              push    di
     3532:8E85  [F8E85]  8b56f8          mov     dx, word ptr [bp - 8]
     3532:8E88  [F8E88]  42              inc     dx
     3532:8E89  [F8E89]  52              push    dx
-    3532:8E8A  [F8E8A]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8E8A  [F8E8A]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8E8F  [F8E8F]  83c402          add     sp, 2
     3532:8E92  [F8E92]  8be5            mov     sp, bp
     3532:8E94  [F8E94]  5d              pop     bp
@@ -37830,19 +37830,19 @@ SUB_F8E98:
     3532:8EA6  [F8EA6]  2bd2            sub     dx, dx
     3532:8EA8  [F8EA8]  52              push    dx
     3532:8EA9  [F8EA9]  57              push    di
-    3532:8EAA  [F8EAA]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8EAA  [F8EAA]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8EAF  [F8EAF]  83c402          add     sp, 2
     3532:8EB2  [F8EB2]  2bff            sub     di, di
     3532:8EB4  [F8EB4]  57              push    di
     3532:8EB5  [F8EB5]  8b56f8          mov     dx, word ptr [bp - 8]
     3532:8EB8  [F8EB8]  42              inc     dx
     3532:8EB9  [F8EB9]  52              push    dx
-    3532:8EBA  [F8EBA]  9a6800e6f8      lcall   SUB_F8EC8  ; 0xf8e6, 0x68
+    3532:8EBA  [F8EBA]  9a6800e6f8      lcall   set_item_active_flag  ; 0xf8e6, 0x68
     3532:8EBF  [F8EBF]  83c402          add     sp, 2
     3532:8EC2  [F8EC2]  8be5            mov     sp, bp
     3532:8EC4  [F8EC4]  5d              pop     bp
     3532:8EC5  [F8EC5]  ca0200          retf    2
-SUB_F8EC8:
+set_item_active_flag:
     3532:8EC8  [F8EC8]  55              push    bp
     3532:8EC9  [F8EC9]  8bec            mov     bp, sp
     3532:8ECB  [F8ECB]  83ec06          sub     sp, 6
