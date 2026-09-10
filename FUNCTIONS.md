@@ -153,6 +153,7 @@ range-scan tests corresponds to.
 | `0xE30B5` | `verify_adc_calibration` **(renamed)** | Compares the 12-bit value field of status register `[0x322]` against a caller-given expected value; on mismatch, builds an `ACQ_AB ... uncaled : min=<hex>` error message | Confirmed |
 | `0xE40CE` | `print_boot_rom_id_banner` **(renamed)** | Gated on `[0x1B48]!=0`; prints `2230/2220 boot : 160-` plus ROM ID/revision bytes from `[0x1DD4]+2/+3/+4` (via `format_byte_hex`) and "POWER UP FAILURES"-area text, all via `print_string_far` (to the CRT readout) | Confirmed |
 | `0xE1116` | `verify_pattern_with_report` **(renamed)** | Compares a byte from the `[0x31E]`-based (physical `0x48000`) scratch buffer against an expected value in a loop; on mismatch builds a detailed error message (offset + a captured value) rather than a plain pass/fail | Mechanism confirmed; exact subsystem (likely acquisition-memory related) not confirmed |
+| `0xE260A` | `verify_timebase_prc` **(renamed)** | Configures the shared measurement hardware register cluster, reads back a 12-bit value from `[0x332]`, compares against an expected value, and reports `PRC ... read-back <hex>` on mismatch. References sweep-speed divider names (`hs/2`, `ps/2`...) suggesting "PRC" is a timebase/reference-clock counter | Mechanism confirmed; "PRC"'s exact meaning and peripheral not confirmed |
 
 ## Comm/GPIB ROM (160-2998)
 

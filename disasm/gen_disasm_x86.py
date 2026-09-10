@@ -515,6 +515,22 @@ FUNCTIONAL_NAMES = {
                                                # different word counts
                                                # for what look like
                                                # different delay lengths
+    0xE260A: "verify_timebase_prc",           # configures the shared
+                                               # measurement hardware
+                                               # register cluster
+                                               # ([0x32E]/[0x336]/
+                                               # [0x33A]), reads back a
+                                               # 12-bit value from
+                                               # [0x332], compares
+                                               # against an expected
+                                               # value, and reports
+                                               # "PRC ... read-back
+                                               # <hex>" on mismatch -
+                                               # references sweep-speed
+                                               # divider names (hs/2,
+                                               # ps/2...) suggesting PRC
+                                               # is a timebase/reference-
+                                               # clock counter
     0xE1116: "verify_pattern_with_report",    # compares a byte from the
                                                # [0x31E]-based (physical
                                                # 0x48000) scratch buffer

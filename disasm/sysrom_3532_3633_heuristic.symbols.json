@@ -2415,10 +2415,10 @@
     "notes": null
   },
   "E260A": {
-    "name": "SUB_E260A",
+    "name": "verify_timebase_prc",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "verify_timebase_prc",
     "notes": null
   },
   "E26CD": {

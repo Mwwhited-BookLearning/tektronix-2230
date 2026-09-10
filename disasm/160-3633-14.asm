@@ -2909,7 +2909,7 @@ L_E2600:
     db 0x8b, 0xe5  ; 2604: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2606: pop bp
     retf 2                                   ; 2607: retf 2
-SUB_E260A:
+verify_timebase_prc:
     push bp                                  ; 260A: push bp
     db 0x8b, 0xec  ; 260B: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x32                             ; 260D: sub sp, 0x32

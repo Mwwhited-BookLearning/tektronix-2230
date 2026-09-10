@@ -5745,7 +5745,7 @@ L_E25A9:
     3633:25A9  [E25A9]  897ef6          mov     word ptr [bp - 0xa], di
     3633:25AC  [E25AC]  8166f6ff0f      and     word ptr [bp - 0xa], 0xfff
     3633:25B1  [E25B1]  ff76f6          push    word ptr [bp - 0xa]
-    3633:25B4  [E25B4]  9a8a0148e2      lcall   SUB_E260A  ; 0xe248, 0x18a
+    3633:25B4  [E25B4]  9a8a0148e2      lcall   verify_timebase_prc  ; 0xe248, 0x18a
     3633:25B9  [E25B9]  8946f8          mov     word ptr [bp - 8], ax
     3633:25BC  [E25BC]  bf0a00          mov     di, 0xa
     3633:25BF  [E25BF]  57              push    di
@@ -5781,7 +5781,7 @@ L_E2600:
     3633:2604  [E2604]  8be5            mov     sp, bp
     3633:2606  [E2606]  5d              pop     bp
     3633:2607  [E2607]  ca0200          retf    2
-SUB_E260A:
+verify_timebase_prc:
     3633:260A  [E260A]  55              push    bp
     3633:260B  [E260B]  8bec            mov     bp, sp
     3633:260D  [E260D]  83ec32          sub     sp, 0x32

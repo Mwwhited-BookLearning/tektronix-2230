@@ -2907,7 +2907,7 @@ L_E2600:
     mov sp, bp                               ; 2604: mov sp, bp
     pop bp                                   ; 2606: pop bp
     retf 2                                   ; 2607: retf 2
-SUB_E260A:
+verify_timebase_prc:
     push bp                                  ; 260A: push bp
     mov bp, sp                               ; 260B: mov bp, sp
     sub sp, 0x32                             ; 260D: sub sp, 0x32
