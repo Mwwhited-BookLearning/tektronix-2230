@@ -928,6 +928,41 @@ re-deriving encoding equivalence every time this comes up), but this
 is a methodology choice, not a fully-vetted one - flagged in `TODO.md`
 to review again once the rest of the analysis is further along.
 
+## Possible ADC/measurement self-test hardware
+
+Found while renaming the `SUB_E12F4`/`SUB_E2DC9`/`SUB_E0DCC` cluster
+(`160-3633`) - flagged as a lead at the end of the previous renaming
+session. These three, plus `selftest_init_channel_hw` (`0xE2AB0`) and
+`clear_selftest_status_flags` (`0xE0E56`) from earlier, all read/write
+a shared set of "hardware register" variables via far pointers:
+`[0x322]`, `[0x326]`, `[0x32A]`, `[0x32E]`, `[0x336]`, `[0x33A]`, plus
+the `[0x31E]`-based (physical `0x48000`) scratch buffer used as a
+lookup table.
+
+`configure_measurement_hw` (`0xE0DCC`) writes 5 caller-given parameters
+into this register cluster (including two *reverse-indexed* lookups -
+`0x1000 - param` and `0xFF0 - param` - into the `[0x31E]`/`[0x32E]`
+buffers, suggesting a calibration/reference table addressed from its
+end). `run_adc_selftest` (`0xE12F4`) then polls `[0x322]` for a busy
+bit (`0x8000`) with a timeout, reads a **12-bit result** (mask `0xFFF`)
+once the busy bit clears, and compares it against a reference value -
+classic ADC status/data register shape (busy flag + N-bit result in
+the same word). `wait_stable_measurement` (`0xE2DC9`) is a sibling that
+instead waits for a byte at `[0x32A]` to stop changing across
+consecutive reads (a debounce/settle pattern), then checks two more
+status bits (`0x2000`, `0x4000`) in `[0x322]`.
+
+**Working hypothesis**: this is the firmware's generic **ADC-based
+self-test primitive**, reused across several of `self_test_dispatcher`'s
+still-unidentified subroutines (`SUB_E3F2C`, `SUB_E3F99`, etc. are good
+candidates to check next - if any of them call `configure_measurement_
+hw`/`run_adc_selftest` directly, that would both identify them and
+narrow down which physical measurement each one performs). **Not
+confirmed**: which physical ADC/ADC-mux this addresses, or whether
+`[0x322]`'s bits 13/14 (checked by `wait_stable_measurement`) mean
+"calibration valid"/"lock detected" (plausible for a timebase PLL) or
+something else entirely.
+
 ## Possible waveform acquisition buffer init
 
 Found while renaming `160-3532:0x03F4`/`0x0414`/`0x0446` (all three

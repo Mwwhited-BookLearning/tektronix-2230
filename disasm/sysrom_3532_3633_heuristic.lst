@@ -1441,7 +1441,7 @@ L_E0DC6:
     3633:0DC6  [E0DC6]  8be5            mov     sp, bp
     3633:0DC8  [E0DC8]  5d              pop     bp
     3633:0DC9  [E0DC9]  ca0200          retf    2
-SUB_E0DCC:
+configure_measurement_hw:
     3633:0DCC  [E0DCC]  55              push    bp
     3633:0DCD  [E0DCD]  8bec            mov     bp, sp
     3633:0DCF  [E0DCF]  83ec08          sub     sp, 8
@@ -1937,7 +1937,7 @@ L_E12EA:
     3633:12F0  [E12F0]  8be5            mov     sp, bp
     3633:12F2  [E12F2]  5d              pop     bp
     3633:12F3  [E12F3]  cb              retf    
-SUB_E12F4:
+run_adc_selftest:
     3633:12F4  [E12F4]  55              push    bp
     3633:12F5  [E12F5]  8bec            mov     bp, sp
     3633:12F7  [E12F7]  83ec42          sub     sp, 0x42
@@ -1969,7 +1969,7 @@ L_E133A:
     3633:1348  [E1348]  ff760e          push    word ptr [bp + 0xe]
     3633:134B  [E134B]  ff760c          push    word ptr [bp + 0xc]
     3633:134E  [E134E]  ff760a          push    word ptr [bp + 0xa]
-    3633:1351  [E1351]  9a1c076be0      lcall   SUB_E0DCC  ; 0xe06b, 0x71c
+    3633:1351  [E1351]  9a1c076be0      lcall   configure_measurement_hw  ; 0xe06b, 0x71c
     3633:1356  [E1356]  83c408          add     sp, 8
     3633:1359  [E1359]  e90300          jmp     L_E135F  ; 0x4df
 L_E135C:
@@ -3723,7 +3723,7 @@ SUB_E230B:
     3633:23AF  [E23AF]  8d7eda          lea     di, [bp - 0x26]
     3633:23B2  [E23B2]  16              push    ss
     3633:23B3  [E23B3]  57              push    di
-    3633:23B4  [E23B4]  9a7404e8e0      lcall   SUB_E12F4  ; 0xe0e8, 0x474
+    3633:23B4  [E23B4]  9a7404e8e0      lcall   run_adc_selftest  ; 0xe0e8, 0x474
     3633:23B9  [E23B9]  83c40e          add     sp, 0xe
     3633:23BC  [E23BC]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:23BF  [E23BF]  c746f80200      mov     word ptr [bp - 8], 2
@@ -4034,7 +4034,7 @@ SUB_E26D6:
     3633:2714  [E2714]  52              push    dx
     3633:2715  [E2715]  b82606          mov     ax, 0x626
     3633:2718  [E2718]  50              push    ax
-    3633:2719  [E2719]  9a7404e8e0      lcall   SUB_E12F4  ; 0xe0e8, 0x474
+    3633:2719  [E2719]  9a7404e8e0      lcall   run_adc_selftest  ; 0xe0e8, 0x474
     3633:271E  [E271E]  83c40e          add     sp, 0xe
     3633:2721  [E2721]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:2724  [E2724]  c746f80200      mov     word ptr [bp - 8], 2
@@ -4202,7 +4202,7 @@ SUB_E286C:
     3633:28A5  [E28A5]  53              push    bx
     3633:28A6  [E28A6]  bf4206          mov     di, 0x642
     3633:28A9  [E28A9]  57              push    di
-    3633:28AA  [E28AA]  9a7404e8e0      lcall   SUB_E12F4  ; 0xe0e8, 0x474
+    3633:28AA  [E28AA]  9a7404e8e0      lcall   run_adc_selftest  ; 0xe0e8, 0x474
     3633:28AF  [E28AF]  83c40e          add     sp, 0xe
     3633:28B2  [E28B2]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:28B5  [E28B5]  c746f80200      mov     word ptr [bp - 8], 2
@@ -4259,7 +4259,7 @@ SUB_E28FE:
     3633:292C  [E292C]  50              push    ax
     3633:292D  [E292D]  bf1806          mov     di, 0x618
     3633:2930  [E2930]  57              push    di
-    3633:2931  [E2931]  9a7404e8e0      lcall   SUB_E12F4  ; 0xe0e8, 0x474
+    3633:2931  [E2931]  9a7404e8e0      lcall   run_adc_selftest  ; 0xe0e8, 0x474
     3633:2936  [E2936]  83c40e          add     sp, 0xe
     3633:2939  [E2939]  8946f8          mov     word ptr [bp - 8], ax
     3633:293C  [E293C]  bf0100          mov     di, 1
@@ -4631,14 +4631,14 @@ SUB_E2CFB:
     3633:2D09  [E2D09]  57              push    di
     3633:2D0A  [E2D0A]  ba8f00          mov     dx, 0x8f
     3633:2D0D  [E2D0D]  52              push    dx
-    3633:2D0E  [E2D0E]  9ae900cee2      lcall   SUB_E2DC9  ; 0xe2ce, 0xe9
+    3633:2D0E  [E2D0E]  9ae900cee2      lcall   wait_stable_measurement  ; 0xe2ce, 0xe9
     3633:2D13  [E2D13]  83c402          add     sp, 2
     3633:2D16  [E2D16]  8946f8          mov     word ptr [bp - 8], ax
     3633:2D19  [E2D19]  bf8a00          mov     di, 0x8a
     3633:2D1C  [E2D1C]  57              push    di
     3633:2D1D  [E2D1D]  bf8e00          mov     di, 0x8e
     3633:2D20  [E2D20]  57              push    di
-    3633:2D21  [E2D21]  9ae900cee2      lcall   SUB_E2DC9  ; 0xe2ce, 0xe9
+    3633:2D21  [E2D21]  9ae900cee2      lcall   wait_stable_measurement  ; 0xe2ce, 0xe9
     3633:2D26  [E2D26]  83c402          add     sp, 2
     3633:2D29  [E2D29]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:2D2C  [E2D2C]  8b7ef8          mov     di, word ptr [bp - 8]
@@ -4709,7 +4709,7 @@ FUNC_3633_2DBB:
     3633:2DC3  [E2DC3]  8be5            mov     sp, bp
     3633:2DC5  [E2DC5]  5d              pop     bp
     3633:2DC6  [E2DC6]  ca0200          retf    2
-SUB_E2DC9:
+wait_stable_measurement:
     3633:2DC9  [E2DC9]  55              push    bp
     3633:2DCA  [E2DCA]  8bec            mov     bp, sp
     3633:2DCC  [E2DCC]  83ec0e          sub     sp, 0xe
@@ -6757,7 +6757,7 @@ L_E42A8:
     3633:42BF  [E42BF]  ba0400          mov     dx, 4
     3633:42C2  [E42C2]  52              push    dx
     3633:42C3  [E42C3]  52              push    dx
-    3633:42C4  [E42C4]  9a1c076be0      lcall   SUB_E0DCC  ; 0xe06b, 0x71c
+    3633:42C4  [E42C4]  9a1c076be0      lcall   configure_measurement_hw  ; 0xe06b, 0x71c
     3633:42C9  [E42C9]  83c408          add     sp, 8
 L_E42CC:
     3633:42CC  [E42CC]  c43e2203        les     di, ptr [0x322]
@@ -9344,14 +9344,14 @@ L_E5BC6:
     3633:5BC9  [E5BC9]  57              push    di
     3633:5BCA  [E5BCA]  bf8f00          mov     di, 0x8f
     3633:5BCD  [E5BCD]  57              push    di
-    3633:5BCE  [E5BCE]  9ae900cee2      lcall   SUB_E2DC9  ; 0xe2ce, 0xe9
+    3633:5BCE  [E5BCE]  9ae900cee2      lcall   wait_stable_measurement  ; 0xe2ce, 0xe9
     3633:5BD3  [E5BD3]  83c402          add     sp, 2
     3633:5BD6  [E5BD6]  8946f8          mov     word ptr [bp - 8], ax
     3633:5BD9  [E5BD9]  bf8a00          mov     di, 0x8a
     3633:5BDC  [E5BDC]  57              push    di
     3633:5BDD  [E5BDD]  bf8e00          mov     di, 0x8e
     3633:5BE0  [E5BE0]  57              push    di
-    3633:5BE1  [E5BE1]  9ae900cee2      lcall   SUB_E2DC9  ; 0xe2ce, 0xe9
+    3633:5BE1  [E5BE1]  9ae900cee2      lcall   wait_stable_measurement  ; 0xe2ce, 0xe9
     3633:5BE6  [E5BE6]  83c402          add     sp, 2
     3633:5BE9  [E5BE9]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:5BEC  [E5BEC]  8b7ef8          mov     di, word ptr [bp - 8]

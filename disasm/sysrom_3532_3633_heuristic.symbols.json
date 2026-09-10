@@ -1085,10 +1085,10 @@
     "notes": null
   },
   "E0DCC": {
-    "name": "SUB_E0DCC",
+    "name": "configure_measurement_hw",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "configure_measurement_hw",
     "notes": null
   },
   "E0E56": {
@@ -1407,10 +1407,10 @@
     "notes": null
   },
   "E12F4": {
-    "name": "SUB_E12F4",
+    "name": "run_adc_selftest",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "run_adc_selftest",
     "notes": null
   },
   "E132D": {
@@ -2709,10 +2709,10 @@
     "notes": null
   },
   "E2DC9": {
-    "name": "SUB_E2DC9",
+    "name": "wait_stable_measurement",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "wait_stable_measurement",
     "notes": null
   },
   "E2E51": {

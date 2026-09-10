@@ -422,6 +422,46 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    0xE0DCC: "configure_measurement_hw",      # (5 params) writes them
+                                               # into the shared
+                                               # "hardware register"
+                                               # cluster ([0x326],
+                                               # [0x336], [0x33A],
+                                               # [0x32E], plus a reverse-
+                                               # indexed lookup into the
+                                               # [0x31E]-based scratch
+                                               # buffer) also used by
+                                               # selftest_init_channel_hw/
+                                               # clear_selftest_status_
+                                               # flags - see NOTES.md
+                                               # "Possible ADC/measurement
+                                               # self-test hardware"
+    0xE12F4: "run_adc_selftest",              # clears a lookup-table
+                                               # range, calls configure_
+                                               # measurement_hw, polls a
+                                               # busy bit (0x8000) at
+                                               # far-pointer status
+                                               # register [0x322] with a
+                                               # timeout, reads a 12-bit
+                                               # result (mask 0xFFF),
+                                               # compares to a reference,
+                                               # prints pass/fail via
+                                               # print_selftest_report_
+                                               # line - looks like a
+                                               # 12-bit-ADC-based
+                                               # measurement self-test
+    0xE2DC9: "wait_stable_measurement",       # waits for a byte at far
+                                               # pointer [0x32A] to
+                                               # stabilize across
+                                               # consecutive reads
+                                               # (timeout via [bp-0xC]),
+                                               # then reads status bits
+                                               # 0x2000/0x4000 from
+                                               # [0x322] and reports an
+                                               # error (format_hex_word +
+                                               # print_selftest_report_
+                                               # line) if the expected
+                                               # bit isn't set
     0xE37B1: "plot_readout_point_scaled",     # divides both coordinate
                                                # args by a local count
                                                # (hardcoded to 1 in this

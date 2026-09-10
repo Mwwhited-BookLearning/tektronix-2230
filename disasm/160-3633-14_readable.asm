@@ -1040,7 +1040,7 @@ L_E0DC6:
     mov sp, bp                               ; 0DC6: mov sp, bp
     pop bp                                   ; 0DC8: pop bp
     retf 2                                   ; 0DC9: retf 2
-SUB_E0DCC:
+configure_measurement_hw:
     push bp                                  ; 0DCC: push bp
     mov bp, sp                               ; 0DCD: mov bp, sp
     sub sp, 8                                ; 0DCF: sub sp, 8
@@ -1392,7 +1392,7 @@ L_E12EA:
     mov sp, bp                               ; 12F0: mov sp, bp
     pop bp                                   ; 12F2: pop bp
     retf                                     ; 12F3: retf 
-SUB_E12F4:
+run_adc_selftest:
     push bp                                  ; 12F4: push bp
     mov bp, sp                               ; 12F5: mov bp, sp
     sub sp, 0x42                             ; 12F7: sub sp, 0x42
@@ -3682,7 +3682,7 @@ L_E2DB4:
     pop bp                                   ; 2DB9: pop bp
     retf                                     ; 2DBA: retf 
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x2b, 0xc0, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 2DBB
-SUB_E2DC9:
+wait_stable_measurement:
     push bp                                  ; 2DC9: push bp
     mov bp, sp                               ; 2DCA: mov bp, sp
     sub sp, 0xe                              ; 2DCC: sub sp, 0xe
