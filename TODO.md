@@ -2,6 +2,15 @@
 
 ## Next up
 
+- [ ] Cross-reference the front-panel menu/parameter tree names found
+      in `160-3633` (`ACQ_MODE_SETUP_TABLE`, `SELECT_MODE`, etc. - see
+      `STRINGS.md`) against the code that reads them, to build the
+      actual menu structure for `JUMP_MAP.md`/the "user-facing flows"
+      documentation goal. Also cross-reference the self-test
+      diagnostic message strings found in `160-3532` (`STRINGS.md`)
+      against the still-unidentified subsystem-test subroutines below
+      - the printed text next to each test is a strong hint at what it
+      actually checks.
 - [ ] Widen code coverage beyond the current ~10% (13,510 of 131,072
       main-ROM bytes, now including the resolved comm-ROM alias). Jump
       tables don't appear to be the lever here (0 unresolved indirect
@@ -106,6 +115,11 @@ names but the bigger picture):
 - a function list — started in `FUNCTIONS.md`, one entry per
   identified routine (address, current label, what it does, evidence)
   across all three ROMs
+- a variable list — started in `VARIABLES.md`, same idea for memory
+  locations
+- a strings/constants catalog — started in `STRINGS.md` (curated) with
+  a machine-readable companion in `disasm/strings_<rom>.json`
+  (regenerate via `disasm/gen_strings.py`)
 - peripherals: the A/D converter, front-panel controls, GPIB/RS-232
   hardware, and how the firmware talks to each
 

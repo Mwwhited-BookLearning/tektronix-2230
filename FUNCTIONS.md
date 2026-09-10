@@ -33,12 +33,6 @@ not a routine *in* it). The ~400 heuristically-found functions
 (`FUNC_2998_XXXX` in `disasm/160-2998-14.lst`) are candidates once
 specific ones are traced from a known caller.
 
-## Variables (not functions, but tracked here for now until a better home exists)
+## Variables
 
-| Address | Role | Confidence |
-|---|---|---|
-| `[0x1B10]` | Gates whether the self-test dispatcher (`SUB_E416F`) runs at all | Confirmed usage, exact meaning (mode flag? "already ran"?) unconfirmed |
-| `[0x1B18]` | Written `1` after nearly every self-test call; role (progress marker?) unconfirmed | Usage confirmed, meaning guessed |
-| `[0x1BF9]` | Option-board presence/RAM status byte, set by `SUB_E44F1` | Confirmed |
-| `[0x1B83]` | Config byte `SUB_E44F1` checks equals `0x1E` as part of the RAM/IO result | Usage confirmed, meaning unconfirmed |
-| `[0x0041:...]` (DS=0x41) | Main global/static variable pool, starts right after the IVT | Confirmed region, individual variables mostly unidentified |
+Moved to their own file — see `VARIABLES.md`.

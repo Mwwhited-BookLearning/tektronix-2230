@@ -25,11 +25,17 @@ are already settled and documented there and in `disasm/NOTES.md`.
   **Update/extend this as new call chains or dispatchers are traced**
   (e.g. the self-test dispatcher, boot sequence) — don't let it go
   stale once a diagram's been drawn once.
-- `FUNCTIONS.md` — one entry per identified routine/variable across all
-  three ROMs (address, label, purpose, confidence), the human-readable
+- `FUNCTIONS.md` — one entry per identified routine across all three
+  ROMs (address, label, purpose, confidence), the human-readable
   companion to the `.symbols.json` files. **Add an entry here every
   time a `functional_name` gets filled in** — the two should never
   drift apart.
+- `VARIABLES.md` — same idea as `FUNCTIONS.md` but for memory
+  locations/variables rather than routines.
+- `STRINGS.md` — every printable string found in the raw ROM binaries
+  plus known constants, categorized and curated; machine-readable
+  companion is `disasm/strings_<rom>.json` (regenerate with
+  `disasm/gen_strings.py` if a ROM binary ever changes).
 - `TODO.md` — active/near-term work items.
 - `changes/YYYY-MM-DD.md` — a dated log entry per session of completed
   work, for a human-readable history alongside git log.

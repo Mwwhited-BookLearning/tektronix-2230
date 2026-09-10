@@ -1,0 +1,1112 @@
+[
+  {
+    "offset": "0x000a",
+    "text": "Copyright (C) Tektronix, Inc., 1985, 86, 87, xx. All rights reserved",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x0212",
+    "text": "comm_rom_0 A23 U1243 / A24 U1343",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x3355",
+    "text": "6s1+",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x400a",
+    "text": "Copyright (C) Tektronix, Inc., 1985, 86, 87, xx. All righ",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x80de",
+    "text": "<\" <<",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x80e4",
+    "text": "@<840($ ",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8213",
+    "text": "15625",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8219",
+    "text": "3125",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x821e",
+    "text": "78125",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8231",
+    "text": "8TEK/2230 SYS:0.0,COMM:0.0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8a59",
+    "text": "ABOrt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a5f",
+    "text": "ACCpeak",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a6f",
+    "text": "ASCii",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a75",
+    "text": "ASEcdiv",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a7d",
+    "text": "AUTo",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a82",
+    "text": "AVErage",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8a8b",
+    "text": "BASegain",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a94",
+    "text": "BINary",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8a9b",
+    "text": "BIT/nr",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8aa2",
+    "text": "BN.Fmt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8aa9",
+    "text": "BSEcdiv",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ab1",
+    "text": "BYT/nr",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8ac1",
+    "text": "CHAnnel",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ac9",
+    "text": "CHKsm0",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ad0",
+    "text": "CLKs",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ad5",
+    "text": "COUpling",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ade",
+    "text": "CRVchk",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ae5",
+    "text": "CURRent",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8aed",
+    "text": "CURS1",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8af3",
+    "text": "CURS2",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8afc",
+    "text": "DEFault",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b04",
+    "text": "DISplay",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b0c",
+    "text": "DIVs",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b11",
+    "text": "DONe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b17",
+    "text": "EMPty",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b1d",
+    "text": "ENCdg",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b27",
+    "text": "EPS7",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b2c",
+    "text": "EPS8",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b31",
+    "text": "EXTclk",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b39",
+    "text": "FILl",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b3e",
+    "text": "FORmat",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b45",
+    "text": "FREe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b4e",
+    "text": "GRAt",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b58",
+    "text": "HMAg",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b5d",
+    "text": "HPGl",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b62",
+    "text": "HSRec",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b69",
+    "text": "INVert",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b73",
+    "text": "LOCk",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b78",
+    "text": "LSRec",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b7f",
+    "text": "MODe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b85",
+    "text": "NR.Pt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8b8b",
+    "text": "NUMsweeps",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8b9e",
+    "text": "PEAkdet",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ba6",
+    "text": "PERM",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bab",
+    "text": "POInts",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bb2",
+    "text": "POSition",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bbb",
+    "text": "PROtect",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bc3",
+    "text": "PT.Fmt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bca",
+    "text": "PT.Off",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8bd8",
+    "text": "REPetitive",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8be3",
+    "text": "RESet",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8be9",
+    "text": "ROLl",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bf4",
+    "text": "SAMple",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8bfb",
+    "text": "SAVe",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c00",
+    "text": "SCAn",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c09",
+    "text": "SELect",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c10",
+    "text": "SMOoth",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c17",
+    "text": "SOUrce",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c1e",
+    "text": "SPEed",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c24",
+    "text": "STArt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c2e",
+    "text": "SWPcount",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8c38",
+    "text": "TARget",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c3f",
+    "text": "TJEt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c44",
+    "text": "TRIGCount",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c4e",
+    "text": "TRIGMode",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8c5a",
+    "text": "UNIts",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c60",
+    "text": "UNLock",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8c6a",
+    "text": "VALue",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c70",
+    "text": "VECtors",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c78",
+    "text": "VGAin",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c7e",
+    "text": "VOLts",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c84",
+    "text": "VPOsition",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8c8f",
+    "text": "WEIght",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8c96",
+    "text": "WFId",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8c9c",
+    "text": "XINcr",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ca2",
+    "text": "XMUlt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ca8",
+    "text": "XOFf",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cad",
+    "text": "XUNit",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cb9",
+    "text": "YMUlt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cbf",
+    "text": "YOFf",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cc4",
+    "text": "YUNit",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8cd2",
+    "text": "AINtb",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cdc",
+    "text": "ASWeep",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ce3",
+    "text": "BSWeep",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cea",
+    "text": "CHOp",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cf6",
+    "text": "NORmal",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8cfd",
+    "text": "PERcent",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8d05",
+    "text": "POST",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8d0a",
+    "text": "PPAuto",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8d15",
+    "text": "UNKnown",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8de7",
+    "text": "ACQuisition",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8df3",
+    "text": "ADDress",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8dfb",
+    "text": "ATRigger",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e05",
+    "text": "BYTe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e13",
+    "text": "CURSor",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e1a",
+    "text": "CURVe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e21",
+    "text": "DATa",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e26",
+    "text": "DELAy",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e2c",
+    "text": "DELTAT",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e33",
+    "text": "DELTAV",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e3b",
+    "text": "ERRor",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e41",
+    "text": "EVEnt",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e48",
+    "text": "FLOw",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e4e",
+    "text": "HELp",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e53",
+    "text": "HORizontal",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e62",
+    "text": "INIt",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e6d",
+    "text": "LONg",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e73",
+    "text": "MESsage",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e81",
+    "text": "PLOt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e86",
+    "text": "PROBe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8e8d",
+    "text": "REAdout",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e95",
+    "text": "REFDisp",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8e9d",
+    "text": "REFFrom",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ea5",
+    "text": "REFOrmat",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8eae",
+    "text": "REFProt",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8eb6",
+    "text": "REFStat",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ebe",
+    "text": "REMote",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8eca",
+    "text": "SAVeref",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ed2",
+    "text": "SEGment",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ede",
+    "text": "SGLswp",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ee5",
+    "text": "STAtus",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8eec",
+    "text": "STOP",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8ef1",
+    "text": "STORe",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8ef8",
+    "text": "TRIggerd",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f02",
+    "text": "VMOde",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f09",
+    "text": "WAVfrm",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x8f10",
+    "text": "WFMpre",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f18",
+    "text": "ZZZZ",
+    "length_prefixed": true,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f1e",
+    "text": "Select SOURCE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f2c",
+    "text": "Select DEST",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f38",
+    "text": "Press again to COPY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f4c",
+    "text": "Use CURSOR KNOB / CURSOR_SELECT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f6d",
+    "text": "COPY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f72",
+    "text": "Use CURSOR SEL to perform copy",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8f92",
+    "text": "Use CURSOR KNOB / CURSOR SELECT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8fb3",
+    "text": "DELETE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8fba",
+    "text": "Use CURSOR KNOB / CURSOR SELECT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8fdb",
+    "text": "LOCK / UNLOCK",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8fe9",
+    "text": "FILE IS LOCKED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x8ff8",
+    "text": "FILE IS UNLOCKED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9009",
+    "text": "Free:",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x900f",
+    "text": "Unable to read SOURCE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9026",
+    "text": "Conflict with COMM cmd",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x903e",
+    "text": "Unable to write DEST",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9054",
+    "text": "Error: SOURCE = DEST",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x906a",
+    "text": "Delete failed",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9079",
+    "text": "Error: Ref 2 & 3 must be 1K",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9096",
+    "text": "Lock/Unlock failed",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x90aa",
+    "text": "File locked from COMM port",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x90c6",
+    "text": "Failed, file locked",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x90db",
+    "text": "Failed, memory full",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x90f0",
+    "text": "Failed, COMM conflict",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9107",
+    "text": "Failed: File was empty",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x911f",
+    "text": "Internal error",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9144",
+    "text": "TEK/22",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x914b",
+    "text": ",V81.1,VERS:",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9158",
+    "text": "READY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x915e",
+    "text": "0.0E+0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9165",
+    "text": "0.0E+0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9174",
+    "text": "963036",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x917c",
+    "text": "\"ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9181",
+    "text": "\"REF",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x9193",
+    "text": "SAMPLE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x919a",
+    "text": "PEAKDET",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91a2",
+    "text": "ACCPEAK",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91aa",
+    "text": "AVERAGE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91b2",
+    "text": " - SMOOTH",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91bc",
+    "text": ", CRV# ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91c4",
+    "text": "1.0E+0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91cb",
+    "text": "1.0E+0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x91de",
+    "text": ".0E+0",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xc4e9",
+    "text": "XuO=",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xd586",
+    "text": "Q8u$",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xdabf",
+    "text": "h&+W",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xde0d",
+    "text": "&98u",
+    "length_prefixed": false,
+    "null_terminated": false
+  }
+]

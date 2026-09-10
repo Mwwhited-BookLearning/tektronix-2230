@@ -1,0 +1,1022 @@
+[
+  {
+    "offset": "0x000a",
+    "text": "Copyright (C) Tektronix, Inc., 1985, 86, 87, xx. All rights reserved",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x52b1",
+    "text": "=?tv",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x5666",
+    "text": "=5uv&",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x575e",
+    "text": ".u*&",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x5940",
+    "text": " 3 EMPTY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x594a",
+    "text": " 2 EMPTY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x5954",
+    "text": " 1 EMPTY",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x595e",
+    "text": "SREF  4k (1,2,3 FULL)",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x5974",
+    "text": " 3 FULL",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x597c",
+    "text": " 2 FULL",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x5984",
+    "text": " 1 FULL",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x598c",
+    "text": "#1 - 4k  (FILL  1,2,3)      #2 - 1k  (FILL  1)",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0x93bc",
+    "text": "t-WR&",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0x9fe0",
+    "text": "&9?~",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xa094",
+    "text": "}u9~",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xbd41",
+    "text": "VPSRQ",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xbd7a",
+    "text": "YZ[X^",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xbd8a",
+    "text": "PSQR",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xbe59",
+    "text": "ZY[X",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc284",
+    "text": "G&:%v",
+    "length_prefixed": true,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc2d2",
+    "text": "G:5v",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc31d",
+    "text": ",:-s",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc323",
+    "text": "-G:-v",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc342",
+    "text": "<:=s",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xc348",
+    "text": "=G:=v",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xf7bc",
+    "text": "Press cursor-select button to start.",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf7e2",
+    "text": "This message will disappear.",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf800",
+    "text": "Press button again to end.",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf81c",
+    "text": "AUTO needs XY or talk-only.",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf83a",
+    "text": "No signal acquired",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf84e",
+    "text": "Gain",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf853",
+    "text": "Acquired ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf85d",
+    "text": "Displayed ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf868",
+    "text": "Time/Div ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf876",
+    "text": "ADD ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf87b",
+    "text": "CH1 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf880",
+    "text": "CH2 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf885",
+    "text": "ALT ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf88a",
+    "text": "CHOP ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf894",
+    "text": "Mode ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf89a",
+    "text": "SAMPLE ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8a2",
+    "text": "PEAKDET ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8ab",
+    "text": "ACCPEAK ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8b4",
+    "text": "AVERAGE ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8c0",
+    "text": "ACQ ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8c9",
+    "text": "OFF ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8ce",
+    "text": "Smoothing ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8d9",
+    "text": "Function requires options not",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf8f8",
+    "text": "installed in this instrument.",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf917",
+    "text": "FUNCTION NOT AVAILABLE IN XY MODE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf93a",
+    "text": "SREF  LOCKED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf947",
+    "text": "SREF ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf94d",
+    "text": "SREF ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf953",
+    "text": "1: 4k",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf959",
+    "text": "1: 4k",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf973",
+    "text": "SELECT WAVEFORM ?",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xf9f6",
+    "text": " TEKTRONIX  2220",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfa07",
+    "text": " TEKTRONIX  2230",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfa18",
+    "text": "DLY>=",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfa86",
+    "text": " SAMPLE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfa8e",
+    "text": " AVERAGE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfa97",
+    "text": " PEAKDET",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfaa0",
+    "text": " PEAKDET",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfaa9",
+    "text": " ACCPEAK",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfab2",
+    "text": " ACCPEAK",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfabb",
+    "text": " SAVE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfac1",
+    "text": " LIMIT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfad0",
+    "text": "SP0;",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xfad9",
+    "text": "%c%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfae1",
+    "text": "%c%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfae9",
+    "text": "%c%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfaee",
+    "text": "%c*rB",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfaf8",
+    "text": "SP1;SC0,1023,0,1023;",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb0d",
+    "text": "%c%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb12",
+    "text": "%cC%c%c",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xfb1b",
+    "text": "%cA%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb21",
+    "text": "%cC%c%c",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xfb2a",
+    "text": "%cA%c",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb30",
+    "text": "%cC%c%c",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xfb39",
+    "text": "%c*r640S",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb42",
+    "text": "%c*rA",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb4b",
+    "text": "%c*b%c%c%cW",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb5a",
+    "text": "PU%d,%d;",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb63",
+    "text": "PD%d,%d;",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb6d",
+    "text": " Dig=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb75",
+    "text": " Curs=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb7e",
+    "text": " Ch1=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb86",
+    "text": " Ch2=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb8e",
+    "text": " Asw=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb96",
+    "text": " Bsw=  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfb9e",
+    "text": " gnd= ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfba5",
+    "text": " Acq_Addr_Buf u3427/8",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfbbb",
+    "text": " Clk_Delay_Reg u4230",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfbd0",
+    "text": " b_delay_timer u4123/4",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfbe7",
+    "text": " fp_intstat u6103",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfbf9",
+    "text": " fp_ad_data u6102",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc0b",
+    "text": " comm_stat u1x23",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc1c",
+    "text": " comm_param u1x22",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc39",
+    "text": "ROM/RAM/NMI :",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc47",
+    "text": "2230/2220 Power up tests complete.",
+    "length_prefixed": false,
+    "null_terminated": false
+  },
+  {
+    "offset": "0xfc70",
+    "text": "line stuck high",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc84",
+    "text": "Display controller :",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfc99",
+    "text": " TIMEOUT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfca5",
+    "text": "Display controller :",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfcba",
+    "text": " unable to reset mi",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfcd3",
+    "text": "2230/2220 boot : 160-",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfcee",
+    "text": "POWER UP FAILURES",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd00",
+    "text": "PRESS MENU KEYS TO CONTINUE",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd1f",
+    "text": "not installed",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd2e",
+    "text": "read-back",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd3c",
+    "text": "ACQ_AB",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd48",
+    "text": "uncaled : min =",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd5c",
+    "text": "uncaled : delta =",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd72",
+    "text": "PRE-DETRIG ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd82",
+    "text": "TIME-OUT ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd8c",
+    "text": "cursor :a =",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd98",
+    "text": " & b =",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfd9f",
+    "text": "FP_a2d",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfda6",
+    "text": "gnd =",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdac",
+    "text": "FP_a2d",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdb7",
+    "text": "FP_a2d",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdbe",
+    "text": "TIME-OUT",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdc8",
+    "text": "HS_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdcf",
+    "text": "HS_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdd6",
+    "text": "MM_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfddd",
+    "text": "fill @",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdeb",
+    "text": "MM_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdf2",
+    "text": "XY_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfdf9",
+    "text": "XY_ACQ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe00",
+    "text": "not implemented",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe10",
+    "text": "read-back",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe22",
+    "text": "hs/2 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe28",
+    "text": "ps/2 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe2e",
+    "text": "ps/5 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe34",
+    "text": "ps/10",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe3a",
+    "text": "/10  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe40",
+    "text": "/100 ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe46",
+    "text": "/1K  ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe4c",
+    "text": "/10K ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe52",
+    "text": "/100K",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe58",
+    "text": "TBD ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe5e",
+    "text": "COMM_ROM",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe67",
+    "text": "COMM_RAM",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe71",
+    "text": "CMOS NOT SUPPORTED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe85",
+    "text": "CMOS",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe8a",
+    "text": "reformated",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfe95",
+    "text": "recovered",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfea0",
+    "text": "COMM_LB",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfea8",
+    "text": "FGET NOT SET",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfeb6",
+    "text": "COMM_LB",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfebe",
+    "text": "FGET NOT CLEAR",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfece",
+    "text": "rb(1)=",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfed5",
+    "text": " & rb(0)=",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfedf",
+    "text": "COMM_RB",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfee8",
+    "text": "SYS_RAM",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfef0",
+    "text": "NIB_RAM",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xfef8",
+    "text": "ACQ_RAM even",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff05",
+    "text": "ACQ_RAM odd",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff14",
+    "text": " <> ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff28",
+    "text": "ROMS",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff2d",
+    "text": "MISMATCH",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff38",
+    "text": " <> ",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff3e",
+    "text": "fill @",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff4c",
+    "text": "latent END_OF_RECORD",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff69",
+    "text": "acq_mem cntr",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff8a",
+    "text": "Not installed",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff98",
+    "text": "FAILED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xff9f",
+    "text": "PASSED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xffa6",
+    "text": "UNTESTED",
+    "length_prefixed": false,
+    "null_terminated": true
+  },
+  {
+    "offset": "0xffb0",
+    "text": "w missing codes",
+    "length_prefixed": false,
+    "null_terminated": true
+  }
+]
