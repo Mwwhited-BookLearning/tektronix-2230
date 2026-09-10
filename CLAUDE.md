@@ -84,3 +84,17 @@ are already settled and documented there and in `disasm/NOTES.md`.
   comm ROM's real address and its `0x90000` alias were both found),
   write it down in `disasm/NOTES.md` so it gets reused next time
   instead of rediscovered.
+- **To identify an unnamed function's purpose, check what string it
+  references before anything else.** Don't just grep the function body
+  for the diagnostic-message text directly (an earlier attempt did
+  exactly that and found nothing) — instead find where it loads the
+  fixed string-table segment (`0xFF7B` in the main ROM) paired with an
+  offset, compute the physical address (`0xFF7B0 + offset` for
+  `160-3532`), and read the actual bytes there with a one-off Python
+  snippet. This identified 18 of `self_test_dispatcher`'s sibling
+  subroutines in a single pass (see `disasm/NOTES.md` "Identified
+  self_test_dispatcher's sibling subroutines") after call-order
+  guessing and direct-reference grepping had both failed. When a
+  function has *no* string reference at all, look for a distinctive
+  *shape* instead (e.g. the 3 front-panel-switch tests were identified
+  by their `update_menu_position`-range-scan pattern, not a string).
