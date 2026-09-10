@@ -145,6 +145,8 @@ range-scan tests corresponds to.
 | `0xE591D` | `print_report_frame_mode` **(renamed)** | Same idx-dispatcher shape as `selftest_display_result_mode`: `idx==1` resets; `idx==4` draws a bordered frame (two print regions + a 150-point line via `plot_readout_point_scaled`) | Confirmed mechanism |
 | `0xFDB3E` | `clear_measurement_mode_bit` **(renamed)** | Clears bit `0x10` of `[0x258]` and commits it to the shared hardware register cluster (`[0x336]`) - part of the `configure_measurement_hw` family | Confirmed mechanism |
 | `0xFDC73` | `sync_status_byte_to_hw` **(renamed)** | Writes `[0x258]` into the far-pointer hardware register `[0x336]` - called from `switch_to_next_task`, so likely a general "flush pending status" step rather than measurement-specific | Confirmed mechanism |
+| `0xE5D31` | `delay_read_128w` **(renamed)** | `rep lodsw` x128 words from `0000:0000`, result unused - called right before `install_late_interrupt_vectors`; likely a deliberate timing delay (hardware settling) rather than a memory test, given sibling routines use different word counts | Mechanism confirmed; "why" is an inference |
+| `0xE7D7D` | `update_plot_position` **(renamed)** | `(x, y)` - mode-dispatched on `[0x6CA]`: mode 0 computes a position via `SUB_E80E4`; mode 1 emits the HPGL command `PU%d,%d;` (pen-up move) via `format_string_va` and stores the position; modes 2/3 store directly. Part of the **HPGL plotter output driver** - see `MEMORY_MAP.md` I/O port `0x83` | Confirmed mechanism |
 
 ## Comm/GPIB ROM (160-2998)
 

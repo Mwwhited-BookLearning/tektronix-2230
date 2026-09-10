@@ -6955,7 +6955,7 @@ enable_interrupts:
 disable_interrupts:
     cli                                      ; 5D2F: cli 
     retf                                     ; 5D30: retf 
-SUB_E5D31:
+delay_read_128w:
     cld                                      ; 5D31: cld 
     mov si, 0                                ; 5D32: mov si, 0
     mov es, si                               ; 5D35: mov es, si
@@ -9027,7 +9027,7 @@ L_E7A24:
     db 0x07, 0xa1, 0xc2, 0x06, 0x05, 0x00, 0x80, 0x8b, 0xf8, 0x26, 0x8a, 0x1d, 0x88, 0x1e, 0xc1, 0x06  ; 7D53
     db 0x8b, 0x3e, 0xc2, 0x06, 0xff, 0x06, 0xc2, 0x06, 0x26, 0x8a, 0x1d, 0x2a, 0xff, 0xd1, 0xe3, 0xd1  ; 7D63
     db 0xe3, 0x89, 0x1e, 0x12, 0x07, 0x8b, 0xe5, 0x5d, 0xcb, 0xff  ; 7D73
-SUB_E7D7D:
+update_plot_position:
     push bp                                  ; 7D7D: push bp
     db 0x8b, 0xec  ; 7D7E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 7D80: sub sp, 0xa

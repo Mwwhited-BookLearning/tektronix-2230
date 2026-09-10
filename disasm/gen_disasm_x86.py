@@ -499,6 +499,35 @@ FUNCTIONAL_NAMES = {
                                                # a line-drawing primitive
                                                # for the readout vector
                                                # display
+    0xE5D31: "delay_read_128w",               # cld; ds:si=0:0; rep
+                                               # lodsw x0x80 (128 words)
+                                               # - reads through 256
+                                               # bytes of low memory
+                                               # without using the
+                                               # result; called right
+                                               # before install_late_
+                                               # interrupt_vectors -
+                                               # likely a deliberate
+                                               # timing delay (hardware
+                                               # settling) rather than a
+                                               # memory test, given
+                                               # sibling routines use
+                                               # different word counts
+                                               # for what look like
+                                               # different delay lengths
+    0xE7D7D: "update_plot_position",          # (x, y) - mode-dispatched
+                                               # on [0x6CA]: mode 0
+                                               # computes a position via
+                                               # SUB_E80E4; mode 1 emits
+                                               # the HPGL command
+                                               # "PU%d,%d;" (pen-up
+                                               # move) via format_
+                                               # string_va and stores
+                                               # the position; modes 2/3
+                                               # store directly. Part of
+                                               # the HPGL plotter output
+                                               # driver - see MEMORY_MAP.md
+                                               # "I/O ports" (port 0x83)
     0xE5E53: "install_late_interrupt_vectors", # installs INT255_HANDLER_
                                                # LATE (0x3FC) and INT2_
                                                # HANDLER_LATE (0x008),

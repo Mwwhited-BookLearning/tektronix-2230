@@ -9485,7 +9485,7 @@ enable_interrupts:
 disable_interrupts:
     3633:5D2F  [E5D2F]  fa              cli     
     3633:5D30  [E5D30]  cb              retf    
-SUB_E5D31:
+delay_read_128w:
     3633:5D31  [E5D31]  fc              cld     
     3633:5D32  [E5D32]  be0000          mov     si, 0
     3633:5D35  [E5D35]  8ec6            mov     es, si
@@ -9535,7 +9535,7 @@ SUB_E5D67:
     3633:5D88  [E5D88]  ff065207        inc     word ptr [0x752]
     3633:5D8C  [E5D8C]  a1f21a          mov     ax, word ptr [0x1af2]
     3633:5D8F  [E5D8F]  0906ee1a        or      word ptr [0x1aee], ax
-    3633:5D93  [E5D93]  9a2100d1e5      lcall   SUB_E5D31  ; 0xe5d1, 0x21
+    3633:5D93  [E5D93]  9a2100d1e5      lcall   delay_read_128w  ; 0xe5d1, 0x21
     3633:5D98  [E5D98]  58              pop     ax
     3633:5D99  [E5D99]  5b              pop     bx
     3633:5D9A  [E5D9A]  59              pop     cx
@@ -9622,7 +9622,7 @@ ENTRY_E5D1_C7:
     3633:5E4E  [E5E4E]  ea2b00a8e6      ljmp    L_E6AAB  ; 0xe6a8:0x2b
 install_late_interrupt_vectors:
     3633:5E53  [E5E53]  fa              cli     
-    3633:5E54  [E5E54]  9a2100d1e5      lcall   SUB_E5D31  ; 0xe5d1, 0x21
+    3633:5E54  [E5E54]  9a2100d1e5      lcall   delay_read_128w  ; 0xe5d1, 0x21
     3633:5E59  [E5E59]  ba0040          mov     dx, 0x4000
     3633:5E5C  [E5E5C]  8ec2            mov     es, dx
     3633:5E5E  [E5E5E]  bbfa3f          mov     bx, 0x3ffa
@@ -10145,7 +10145,7 @@ L_E656D:
     3633:6582  [E6582]  803e9c1a02      cmp     byte ptr [0x1a9c], 2
     3633:6587  [E6587]  760a            jbe     L_E6593  ; 0x73
     3633:6589  [E6589]  c6069c1a00      mov     byte ptr [0x1a9c], 0
-    3633:658E  [E658E]  9a2100d1e5      lcall   SUB_E5D31  ; 0xe5d1, 0x21
+    3633:658E  [E658E]  9a2100d1e5      lcall   delay_read_128w  ; 0xe5d1, 0x21
 L_E6593:
     3633:6593  [E6593]  b8fa3f          mov     ax, 0x3ffa
     3633:6596  [E6596]  ba0040          mov     dx, 0x4000
@@ -12116,7 +12116,7 @@ FUNC_3633_7A33:
     3633:7A39  [E7A39]  c606fe0600      mov     byte ptr [0x6fe], 0
     3633:7A3E  [E7A3E]  ff760a          push    word ptr [bp + 0xa]
     3633:7A41  [E7A41]  ff7606          push    word ptr [bp + 6]
-    3633:7A44  [E7A44]  9a0d00d7e7      lcall   SUB_E7D7D  ; 0xe7d7, 0xd
+    3633:7A44  [E7A44]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
     3633:7A49  [E7A49]  83c402          add     sp, 2
     3633:7A4C  [E7A4C]  ff760a          push    word ptr [bp + 0xa]
     3633:7A4F  [E7A4F]  ff7606          push    word ptr [bp + 6]
@@ -12140,7 +12140,7 @@ FUNC_3633_7A33:
     3633:7A8F  [E7A8F]  83c402          add     sp, 2
     3633:7A92  [E7A92]  ff760a          push    word ptr [bp + 0xa]
     3633:7A95  [E7A95]  ff7606          push    word ptr [bp + 6]
-    3633:7A98  [E7A98]  9a0d00d7e7      lcall   SUB_E7D7D  ; 0xe7d7, 0xd
+    3633:7A98  [E7A98]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
     3633:7A9D  [E7A9D]  83c402          add     sp, 2
     3633:7AA0  [E7AA0]  8be5            mov     sp, bp
     3633:7AA2  [E7AA2]  5d              pop     bp
@@ -12431,7 +12431,7 @@ L_E7D78:
     3633:7D7A  [E7D7A]  5d              pop     bp
     3633:7D7B  [E7D7B]  cb              retf    
 
-SUB_E7D7D:
+update_plot_position:
     3633:7D7D  [E7D7D]  55              push    bp
     3633:7D7E  [E7D7E]  8bec            mov     bp, sp
     3633:7D80  [E7D80]  83ec0a          sub     sp, 0xa
@@ -25065,7 +25065,7 @@ L_F0678:
     3532:06C8  [F06C8]  bf0002          mov     di, 0x200
     3532:06CB  [F06CB]  57              push    di
     3532:06CC  [F06CC]  57              push    di
-    3532:06CD  [F06CD]  9a0d00d7e7      lcall   SUB_E7D7D  ; 0xe7d7, 0xd
+    3532:06CD  [F06CD]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
     3532:06D2  [F06D2]  83c402          add     sp, 2
     3532:06D5  [F06D5]  8be5            mov     sp, bp
     3532:06D7  [F06D7]  5d              pop     bp
@@ -25284,7 +25284,7 @@ SUB_F0C2A:
     3532:0C37  [F0C37]  7510            jne     L_F0C49  ; 0x29
     3532:0C39  [F0C39]  ff36be06        push    word ptr [0x6be]
     3532:0C3D  [F0C3D]  ff36bc06        push    word ptr [0x6bc]
-    3532:0C41  [F0C41]  9a0d00d7e7      lcall   SUB_E7D7D  ; 0xe7d7, 0xd
+    3532:0C41  [F0C41]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
     3532:0C46  [F0C46]  83c402          add     sp, 2
 L_F0C49:
     3532:0C49  [F0C49]  ff36be06        push    word ptr [0x6be]
@@ -25317,7 +25317,7 @@ L_F0C8F:
     3532:0C8F  [F0C8F]  2bff            sub     di, di
     3532:0C91  [F0C91]  57              push    di
     3532:0C92  [F0C92]  57              push    di
-    3532:0C93  [F0C93]  9a0d00d7e7      lcall   SUB_E7D7D  ; 0xe7d7, 0xd
+    3532:0C93  [F0C93]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
     3532:0C98  [F0C98]  83c402          add     sp, 2
     3532:0C9B  [F0C9B]  8be5            mov     sp, bp
     3532:0C9D  [F0C9D]  5d              pop     bp

@@ -78,7 +78,7 @@ misnamed" and "The readout/CRT display memory".
 
 | Port | Access | Context |
 |---|---|---|
-| `0x83` | `out 0x83, ax` | `160-3532`, offset `0x0CCF` |
+| `0x83` | `out 0x83, ax` | `160-3532`, offset `0x0CCF` - sits directly in the middle of HPGL plotter command generation code (`update_plot_position` and neighbors emit `PU%d,%d;`/`SP1;SC0,1023,0,1023;`/`ESC*rB`-style HPGL/HP-GL2 commands via `format_string_va` right around this instruction) - candidate: the GPIB/plotter output port, not confirmed |
 | `0xC4` | `out 0xc4, ax` | `160-3633`, offset `0xE143` |
 | `0xD1` | `out 0xd1, ax` (x3) | `160-3633`, offsets `0xE13D/E13F/E141` - written 3x in a row, possibly a multi-register peripheral or a retry/settle pattern |
 | (in DX) | `in al, dx` | `160-3633`, offset `0xDA0A` - port number computed at runtime, not a literal, so this reads from a *range* of ports (a peripheral with multiple addressable registers, or a scan loop) |

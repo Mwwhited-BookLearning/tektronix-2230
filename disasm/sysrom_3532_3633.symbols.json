@@ -5537,10 +5537,10 @@
     "notes": null
   },
   "E5D31": {
-    "name": "SUB_E5D31",
+    "name": "delay_read_128w",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "delay_read_128w",
     "notes": null
   },
   "E5D3D": {
@@ -6839,10 +6839,10 @@
     "notes": null
   },
   "E7D7D": {
-    "name": "SUB_E7D7D",
+    "name": "update_plot_position",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "update_plot_position",
     "notes": null
   },
   "E7D9A": {
