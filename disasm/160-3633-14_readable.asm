@@ -8613,7 +8613,7 @@ L_E75BB:
     pop bp                                   ; 75BD: pop bp
     retf                                     ; 75BE: retf 
     db 0xff  ; 75BF
-SUB_E75C0:
+detect_comm_option_hw:
     push bp                                  ; 75C0: push bp
     mov bp, sp                               ; 75C1: mov bp, sp
     sub sp, 0xe                              ; 75C3: sub sp, 0xe

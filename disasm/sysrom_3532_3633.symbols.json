@@ -6566,10 +6566,10 @@
     "notes": null
   },
   "E75C0": {
-    "name": "SUB_E75C0",
+    "name": "detect_comm_option_hw",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "detect_comm_option_hw",
     "notes": null
   },
   "E75FE": {

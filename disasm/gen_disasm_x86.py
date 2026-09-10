@@ -619,6 +619,32 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE75C0: "detect_comm_option_hw",         # THE source of [0x1B83]
+                                               # (the "comm option" byte
+                                               # checked throughout
+                                               # self_test_dispatcher/
+                                               # check_comm_option_
+                                               # installed). Writes 0 to
+                                               # physical 0x40000+0x7DE,
+                                               # reads bit 0x1000 of a
+                                               # word at 0x40000+0x377E:
+                                               # if already set,
+                                               # [0x1B83]=0x1E; else
+                                               # writes 1 to 0x7DE (a
+                                               # write-then-readback
+                                               # presence probe, same
+                                               # idea as check_comm_
+                                               # option_installed's
+                                               # 0xAA55 test) and re-
+                                               # reads 0x377E - if the
+                                               # bit is now set,
+                                               # [0x1B83]=0x14; if still
+                                               # clear, [0x1B83]=0x1E.
+                                               # Exact semantic meaning
+                                               # of 0x1E vs 0x14 (which
+                                               # specifically means
+                                               # "installed") not fully
+                                               # resolved - see NOTES.md
     0xE61E3: "create_task_b",                 # near-identical duplicate
                                                # of create_task's body
                                                # (same pushf/cli/push-9-

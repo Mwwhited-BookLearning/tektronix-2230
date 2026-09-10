@@ -20,7 +20,7 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 | `[0x1B18]` | Written literal `1` after nearly every individual self-test call inside `self_test_dispatcher` (`0xE4244`) - **also reused outside the self-test context**, by `update_menu_position` (`0xE06B6`), suggesting it's a general "state changed"/"redraw needed" flag rather than something self-test-specific | Usage confirmed; general "changed" flag is the best-fit inference, not confirmed |
 | `[bp-0xA]` (local, not fixed) | Accumulates OR'd return codes from each self-test call into an overall result word, inside `self_test_dispatcher` (`0xE4244`) | Confirmed |
 | `[0x1BF9]` | Option-board presence/RAM status byte, set by `SUB_E44F1`: bit 1 = valid ROM header checksum found at the probed address, bit 2 = that address is also RAM/IO-backed | Confirmed |
-| `[0x1B83]` | Config byte `SUB_E44F1` checks equals `0x1E` as part of confirming the RAM/IO result | Usage confirmed; meaning of the specific value `0x1E` not confirmed |
+| `[0x1B83]` | The comm-option-board detection result. Set by `detect_comm_option_hw` (`0xE75C0`) to `0x1E` or `0x14` based on a write-then-readback hardware probe (bit `0x1000` of a word at physical `0x40000+0x377E`, poked via a write to `0x40000+0x7DE`); checked `==0x1E` by `check_comm_option_installed`, `self_test_dispatcher` (gates one test), and elsewhere | Source function confirmed; which specific value definitively means "installed" vs "not installed" not fully resolved - `0x1E` results from two different branches with opposite-seeming conditions, see `disasm/NOTES.md` |
 
 ## Task scheduler / hardware polling
 

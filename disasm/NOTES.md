@@ -378,6 +378,41 @@ matching the "Function requires options not installed in this
 instrument" message string found in `160-3532` back at the very start
 of this project.
 
+## Found: the actual source of [0x1B83] (detect_comm_option_hw)
+
+`[0x1B83]` has been checked (`==0x1E`) by `check_comm_option_installed`
+and `self_test_dispatcher` since early sessions, but where it got its
+value was never traced - until `detect_comm_option_hw` (`0xE75C0`)
+turned up, called from `run_selftest_sequence`'s setup. It's a
+**second, independent hardware probe** for the comm option board,
+separate from `check_comm_option_installed`'s ROM-header-checksum
+check:
+
+1. Writes `0` to physical `0x40000+0x7DE`.
+2. Reads bit `0x1000` of a word at physical `0x40000+0x377E`. If
+   already set, `[0x1B83] = 0x1E` and done.
+3. Otherwise, writes `1` to `0x40000+0x7DE` (a write-then-readback
+   probe - the same idea as `check_comm_option_installed`'s `0xAA55`
+   test, just at different addresses) and re-reads `0x40000+0x377E`'s
+   bit `0x1000`. If it's now set, `[0x1B83] = 0x14`. If still clear,
+   `[0x1B83] = 0x1E`.
+
+**Not fully resolved**: which value specifically means "installed".
+`0x1E` results from *two* branches with opposite-looking conditions -
+bit already set (no write needed) **or** bit still clear even after
+the write probe - while `0x14` is the one case where the write
+visibly changed the read-back bit. This doesn't fit a simple binary
+"present/absent" flag cleanly. Plausible readings: `0x1E` might be a
+safe default used whenever the probe *doesn't* need the write-trigger
+to succeed (either because the board was already responding, or
+because nothing is there to respond even after trying), while `0x14`
+marks a specific "board present, but only detected via the write
+probe" case - possibly distinguishing a hardware revision or a board
+that needs an explicit initialization poke before it reports itself.
+Worth revisiting once more of what reads `[0x1B83]` (beyond just
+`==0x1E`) is understood - if some code also checks `==0x14`
+specifically, that would clarify the distinction.
+
 ## Found: the self-test dispatcher
 
 **CORRECTION (this session): `self_test_dispatcher` was misnamed.**

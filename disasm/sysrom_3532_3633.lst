@@ -7608,7 +7608,7 @@ run_selftest_sequence:
     3633:3B57  [E3B57]  b80100          mov     ax, 1
     3633:3B5A  [E3B5A]  50              push    ax
     3633:3B5B  [E3B5B]  9a3309b1e3      lcall   SUB_E4443  ; 0xe3b1, 0x933
-    3633:3B60  [E3B60]  9a00005ce7      lcall   SUB_E75C0  ; 0xe75c, 0
+    3633:3B60  [E3B60]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
     3633:3B65  [E3B65]  9a0d04e8e0      lcall   SUB_E128D  ; 0xe0e8, 0x40d
     3633:3B6A  [E3B6A]  a05807          mov     al, byte ptr [0x758]
     3633:3B6D  [E3B6D]  2ae4            sub     ah, ah
@@ -10644,7 +10644,7 @@ L_E6B6B:
     3633:6B6B  [E6B6B]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:6B6F  [E6B6F]  7cef            jl      L_E6B60  ; 0xe0
 L_E6B71:
-    3633:6B71  [E6B71]  9a00005ce7      lcall   SUB_E75C0  ; 0xe75c, 0
+    3633:6B71  [E6B71]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
     3633:6B76  [E6B76]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
     3633:6B7B  [E6B7B]  9a050025e9      lcall   SUB_E9255  ; 0xe925, 5
     3633:6B80  [E6B80]  9a080023e7      lcall   SUB_E7238  ; 0xe723, 8
@@ -11087,7 +11087,7 @@ L_E75BB:
     3633:75BD  [E75BD]  5d              pop     bp
     3633:75BE  [E75BE]  cb              retf    
 
-SUB_E75C0:
+detect_comm_option_hw:
     3633:75C0  [E75C0]  55              push    bp
     3633:75C1  [E75C1]  8bec            mov     bp, sp
     3633:75C3  [E75C3]  83ec0e          sub     sp, 0xe
