@@ -619,6 +619,20 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE7416: "refresh_display_position_cache", # skips recomputation if
+                                               # [0x1BF7] is clear and 3
+                                               # cached config values
+                                               # ([0x72C]/[0x730]/[0x72E]
+                                               # vs current [0x1B7A]/
+                                               # [0x1B78]/[0x686]) still
+                                               # match and [0x79C]==0;
+                                               # otherwise updates the
+                                               # cache and recomputes a
+                                               # display record's linear
+                                               # address via seg_off_to_
+                                               # linear - a change-
+                                               # detection guard avoiding
+                                               # redundant recomputation
     0xE6DC4: "reinit_system_state",           # disables interrupts,
                                                # resets a large group of
                                                # global flags/state

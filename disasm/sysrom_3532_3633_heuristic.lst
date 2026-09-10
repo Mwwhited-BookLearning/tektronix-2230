@@ -10806,7 +10806,7 @@ SUB_E6C85:
     3633:6CA6  [E6CA6]  800e8d1b01      or      byte ptr [0x1b8d], 1
     3633:6CAB  [E6CAB]  9aa002a8e6      lcall   SUB_E6D20  ; 0xe6a8, 0x2a0
     3633:6CB0  [E6CB0]  9a040088e6      lcall   SUB_E6884  ; 0xe688, 4
-    3633:6CB5  [E6CB5]  9a060041e7      lcall   SUB_E7416  ; 0xe741, 6
+    3633:6CB5  [E6CB5]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
     3633:6CBA  [E6CBA]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6CBF  [E6CBF]  800e761b80      or      byte ptr [0x1b76], 0x80
     3633:6CC4  [E6CC4]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
@@ -10924,7 +10924,7 @@ L_E6DF6:
     3633:6DFC  [E6DFC]  8026761bef      and     byte ptr [0x1b76], 0xef
     3633:6E01  [E6E01]  c606620701      mov     byte ptr [0x762], 1
     3633:6E06  [E6E06]  c6069c0701      mov     byte ptr [0x79c], 1
-    3633:6E0B  [E6E0B]  9a060041e7      lcall   SUB_E7416  ; 0xe741, 6
+    3633:6E0B  [E6E0B]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
     3633:6E10  [E6E10]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3633:6E15  [E6E15]  7427            je      L_E6E3E  ; 0x3be
     3633:6E17  [E6E17]  bf808f          mov     di, 0x8f80
@@ -11476,7 +11476,7 @@ L_E7412:
     3633:7412  [E7412]  8be5            mov     sp, bp
     3633:7414  [E7414]  5d              pop     bp
     3633:7415  [E7415]  cb              retf    
-SUB_E7416:
+refresh_display_position_cache:
     3633:7416  [E7416]  55              push    bp
     3633:7417  [E7417]  8bec            mov     bp, sp
     3633:7419  [E7419]  83ec08          sub     sp, 8
@@ -11754,7 +11754,7 @@ L_E7715:
 L_E7718:
     3633:7718  [E7718]  750a            jne     L_E7724  ; 0x7724
     3633:771A  [E771A]  c6069c0701      mov     byte ptr [0x79c], 1
-    3633:771F  [E771F]  9a060041e7      lcall   SUB_E7416  ; 0xe741, 6
+    3633:771F  [E771F]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
 L_E7724:
     3633:7724  [E7724]  e9c0ff          jmp     L_E76E7  ; 0x76e7
 L_E7727:
@@ -35939,7 +35939,7 @@ FUNC_3532_7BA5:
 L_F7BD9:
     3532:7BD9  [F7BD9]  800e761b04      or      byte ptr [0x1b76], 4
 L_F7BDE:
-    3532:7BDE  [F7BDE]  9a060041e7      lcall   SUB_E7416  ; 0xe741, 6
+    3532:7BDE  [F7BDE]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
     3532:7BE3  [F7BE3]  9a0502a8e6      lcall   SUB_E6C85  ; 0xe6a8, 0x205
     3532:7BE8  [F7BE8]  9a0c00f5e6      lcall   FUNC_3633_6F5C  ; 0xe6f5, 0xc
     3532:7BED  [F7BED]  c606e20373      mov     byte ptr [0x3e2], 0x73
