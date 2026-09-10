@@ -112,13 +112,20 @@
       board - both correct, as two stages of one probe. See
       `disasm/NOTES.md` "Found: the option-board presence/RAM-detection
       routine".
-- [ ] Handle the instruction kinds currently excluded from NASM
-      conversion (safe raw-`db` fallback, not a correctness problem,
-      just lower fidelity in the buildable `.asm` sources): x87 FPU
+- [x] ~~Handle `insb`/`insw`/`outsb`/`outsw`~~ — done. Confirmed each
+      assembles to the plain expected single opcode byte with no
+      unwanted prefix; `insb`/`insw` treated like `stosb`/`stosw` (no
+      possible segment override), `outsb`/`outsw` like `movsb`/`movsw`.
+      Also fixed `xchg`'s reg/rm-swap ambiguity (needed its own
+      `alt_xchg_encoding()` - same opcode, swapped ModRM subfields,
+      not the direction-bit-flip pattern used for ALU ops/MOV). See
+      `disasm/NOTES.md` "Validation status". Still excluded (and
+      likely to stay that way - see NOTES.md for why): x87 FPU
       instructions (`fdiv` etc. - capstone's `st(N)` operand syntax
-      needs translating for NASM) and the rare `insw`/`outsw`/`outsd`/
-      `bound` instructions. See `disasm/NOTES.md` "Comm ROM
-      disassembly" for where these showed up.
+      needs translating for NASM), and `insd`/`outsd`/`bound` (require
+      CPU features - a `0x66` prefix, or 80186+ - that can't be real
+      on this 8086/8088, so any occurrence is far more likely decode
+      drift than genuine code worth handling).
 - [ ] Investigate the 2 `push` instructions with a stray `0x67` prefix
       that `validate_2998.py` flagged as real mismatches, landing right
       at the start of page 1's header/copyright text - almost certainly
@@ -140,10 +147,18 @@
       real 8087 math coprocessor in the design (plausible for a scope
       doing voltage/time calculations) — check against the service
       manual's parts list.
-- [ ] Revisit the 4 backward loop/jmp branches flagged by
+- [ ] Revisit the 3 backward loop/jmp branches flagged by
       `validate_nasm.py` as landing outside the mapped ROM window when
-      resolved through their segment — likely a sign this specific
-      code area is misaligned/misdecoded (walked into data).
+      resolved through their segment. **Narrowed down this session,
+      not yet fully resolved**: it's a genuine 8086 IP-wraparound
+      behavior (relative branch target wraps mod 0x10000 while CS
+      stays fixed, and since these specific `seg` values aren't
+      16-aligned, the wraparound lands 0x10000 away from the naive
+      physical target) - not a tooling bug. Still open: whether the
+      ROM genuinely intends a cross-chip/into-RAM branch here, or
+      whether our recursive descent is reaching this code via the
+      "wrong" (though byte-valid) `(seg,off)` pair to begin with. See
+      `disasm/NOTES.md` "IP-wraparound branches".
 
 ## Ongoing documentation goal
 

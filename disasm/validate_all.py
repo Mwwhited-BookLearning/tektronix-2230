@@ -68,6 +68,11 @@ def main(nasm_exe):
                 alt_encoding += 1
                 chip_alt += 1
                 continue
+            alt5 = v.alt_xchg_encoding(got[:size])
+            if alt5 is not None and alt5 == orig:
+                alt_encoding += 1
+                chip_alt += 1
+                continue
             chip_mismatch += 1
             real_mismatch.append((name, addr, mnem, op, nasm_line, orig, got))
 

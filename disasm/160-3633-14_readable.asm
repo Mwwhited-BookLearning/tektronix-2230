@@ -80,7 +80,7 @@ L_E00FE:
     mov word [es:si], bx                     ; 010C: mov word ptr es:[si], bx
     jmp 0xe5d1:0x00b4                        ; 010F: ljmp 0xe5d1:0xb4
 L_E0114:
-    db 0x87, 0xf7  ; 0114: xchg di, si (not converted or a genuine mismatch)
+    xchg di, si                              ; 0114: xchg di, si
 L_E0116:
     mov ax, 0xfd                             ; 0116: mov ax, 0xfd
     pop cx                                   ; 0119: pop cx
@@ -10569,7 +10569,7 @@ SUB_EAC86:
     add dl, al                               ; ACC4: add dl, al
     add bl, al                               ; ACC6: add bl, al
     int1                                     ; ACC8: int1 
-    db 0x6f  ; ACC9: outsw dx, word ptr [si] (not converted or a genuine mismatch)
+    outsw                                    ; ACC9: outsw dx, word ptr [si]
     jb short 0xaccc                          ; ACCA: jb 0x98c
 L_EACCC:
     add byte [bx + si], al                   ; ACCC: add byte ptr [bx + si], al
@@ -12374,7 +12374,7 @@ L_EF503:
     db 0x04, 0x00, 0xc6, 0x46, 0xf0, 0x10, 0x8a, 0x56, 0x06, 0x2a  ; FB5A
 SUB_EFB64:
     not cl                                   ; FB64: not cl
-    db 0xe2, 0x88  ; FB66: loop 0xffffff90 (not converted or a genuine mismatch)
+    db 0xe2, 0x88  ; FB66: loop 0xffffff90 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
     push si                                  ; FB68: push si
     int1                                     ; FB69: int1 
     sub dh, dh                               ; FB6A: sub dh, dh

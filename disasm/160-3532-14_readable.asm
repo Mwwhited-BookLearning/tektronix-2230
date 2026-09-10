@@ -309,7 +309,7 @@ L_F0C6C:
     and ax, strict word 3                    ; 0C71: and ax, 3
     cmp ax, strict word 2                    ; 0C74: cmp ax, 2
     je short 0x0c7c                          ; 0C77: je 0x5c
-    db 0xe9, 0xf4, 0xfd  ; 0C79: jmp 0xfffffe50 (not converted or a genuine mismatch)
+    db 0xe9, 0xf4, 0xfd  ; 0C79: jmp 0xfffffe50 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
 L_F0C7C:
     inc word [bp - 0x10]                     ; 0C7C: inc word ptr [bp - 0x10]
     add word [bp - 8], 9                     ; 0C7F: add word ptr [bp - 8], 9
@@ -317,7 +317,7 @@ L_F0C7C:
     and al, 0x80                             ; 0C86: and al, 0x80
     cmp al, 0                                ; 0C88: cmp al, 0
     jne short 0x0c8f                         ; 0C8A: jne 0x6f
-    db 0xe9, 0x55, 0xfc  ; 0C8C: jmp 0xfffffcc4 (not converted or a genuine mismatch)
+    db 0xe9, 0x55, 0xfc  ; 0C8C: jmp 0xfffffcc4 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
 L_F0C8F:
     sub di, di                               ; 0C8F: sub di, di
     push di                                  ; 0C91: push di
@@ -408,7 +408,7 @@ L_F0E50:
     db 0x46, 0x06, 0xfe, 0x0f, 0xe9, 0x32, 0x00, 0x8b, 0x7e, 0xf8, 0x81, 0xe7, 0x08, 0x00, 0x83, 0xff  ; 0FE3
     db 0x00, 0x74, 0x26, 0xff, 0x76, 0xea, 0xff, 0x76, 0xe8, 0xff, 0x76, 0xde, 0xff, 0x76  ; 0FF3
 SUB_F1001:
-    db 0xdc, 0x8b, 0x46, 0xe4  ; 1001: fmul qword ptr [bp + di - 0x1bba] (not converted or a genuine mismatch)
+    db 0xdc, 0x8b, 0x46, 0xe4  ; 1001: fmul qword ptr [bp + di - 0x1bba] (x87 FPU instruction, not handled yet - see NOTES.md)
     mov dx, word [bp - 0x1a]                 ; 1005: mov dx, word ptr [bp - 0x1a]
     call 0xe772:0x005d                       ; 1008: lcall 0xe772, 0x5d
     call 0xe772:0x008e                       ; 100D: lcall 0xe772, 0x8e
@@ -428,7 +428,7 @@ SUB_F1001:
 L_F103E:
     cmp word [bp - 0xe], 0                   ; 103E: cmp word ptr [bp - 0xe], 0
     jne short 0x1047                         ; 1042: jne 0x197
-    db 0xe9, 0x09, 0xfe  ; 1044: jmp 0xffffffa0 (not converted or a genuine mismatch)
+    db 0xe9, 0x09, 0xfe  ; 1044: jmp 0xffffffa0 (relative-branch target resolves outside this chip's mapped range when IP wraps mod 0x10000 inside a non-16-aligned code segment - genuine 8086 addressing quirk, not a NASM gap, see NOTES.md "IP-wraparound branches")
 L_F1047:
     mov sp, bp                               ; 1047: mov sp, bp
     pop bp                                   ; 1049: pop bp

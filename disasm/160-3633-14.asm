@@ -10571,7 +10571,7 @@ SUB_EAC86:
     add dl, al                               ; ACC4: add dl, al
     db 0x02, 0xd8  ; ACC6: add bl, al (not byte-exact via NASM - see NOTES.md)
     int1                                     ; ACC8: int1 
-    db 0x6f  ; ACC9: outsw dx, word ptr [si] (not byte-exact via NASM - see NOTES.md)
+    outsw                                    ; ACC9: outsw dx, word ptr [si]
     jb short 0xaccc                          ; ACCA: jb 0x98c
 L_EACCC:
     add byte [bx + si], al                   ; ACCC: add byte ptr [bx + si], al

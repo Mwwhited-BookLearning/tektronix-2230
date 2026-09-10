@@ -567,12 +567,14 @@ interrupt handling per state - worth confirming once
 
 ## Validation status
 
-Ran the recursive-descent output (10,488 decoded instructions - main
-ROM plus the 99 comm-ROM instructions now proven reachable once
-`160-2998` was registered at its confirmed real address, `0x80000`)
-through `validate_nasm.py`: **9,480 byte-exact, 1,003 provably-
-equivalent alternate encodings, 0 real mismatches, 5 not independently
-checked.**
+Ran the recursive-descent output (13,510 decoded instructions - main
+ROM plus the comm-ROM instructions proven reachable, including the
+`0x90000` alias) through `validate_nasm.py`: **12,130 byte-exact,
+1,375 provably-equivalent alternate encodings, 0 real mismatches, 5
+not independently checked** (down from a larger unconverted count
+earlier this session - `xchg`'s reg/rm-swap ambiguity and the
+`outsb`/`outsw`/`insb`/`insw` string-I/O mnemonics are now both
+handled, see below).
 This is strong evidence the x86 decode itself (mnemonic, operands,
 instruction length) is correct throughout what's been reached so far —
 it does NOT validate the code-vs-data classification (whether a given
@@ -587,6 +589,15 @@ doesn't always pick the same one this ROM's original assembler did:
   either way (e.g. `mov bp,sp` as `8B EC` or as `89 E5`) for the same
   effect - detected by flipping the direction bit and reg/rm subfields
   in Python and re-comparing, rather than trusting NASM to reproduce it.
+- `xchg` between two registers: no separate direction bit (unlike the
+  ALU ops/MOV above) - the *same* opcode (`0x86`/`0x87`) with reg/rm
+  simply swapped in the ModRM byte expresses the identical operation,
+  since xchg is symmetric (e.g. `xchg di,si` as `87 F7` or `xchg si,di`
+  as `87 FE`). Needed its own `alt_xchg_encoding()` (found via one
+  instance in `160-3633` at chip offset `0114`) rather than reusing the
+  direction-bit flip, since XOR-ing the opcode by `0x02` (what the ALU/
+  MOV case does) turns `0x87` into `0x85` (`test`), a different
+  instruction entirely.
 - immediate width: `cmp ax, 1` can be the 3-byte AX-specific opcode
   (`3D 01 00`, always 16-bit immediate) or the generic group-1 form
   sign-extended from a byte (`83 F8 01`) - NASM defaults to the
@@ -603,18 +614,81 @@ doesn't always pick the same one this ROM's original assembler did:
   under `BITS 16` that makes NASM add a spurious `0x66` operand-size
   prefix, so the converter renames them back to the 16-bit mnemonics.
 
-The 4 not-independently-checked instructions are backward `loop`/`jmp`
-branches whose capstone-reported target, once resolved through the
-current segment, lands outside either chip's mapped 64K window - a
-signal that these specific spots may be misaligned/misdecoded (walked
-into data) rather than a validator limitation, so they're deliberately
-left unverified rather than force-converted. Worth revisiting if code
-coverage expands into that area.
+`outsb`/`outsw`/`insb`/`insw` (the 8-/16-bit string I/O instructions)
+were previously excluded pending verification; confirmed this session
+that NASM encodes each as the plain expected single opcode byte
+(`6E`/`6F`/`6C`/`6D`) with no unwanted prefix, and that `outsb`/`outsw`
+follow the same "source(SI) is the *second* op_str operand" shape as
+`movsb`/`movsw` for segment-override purposes while `insb`/`insw`'s
+sole operand is the fixed, unoverridable `ES:DI` side, like `stosb`/
+`stosw`. `insd`/`outsd`/`bound` remain excluded - `insd`/`outsd`
+require a `0x66` operand-size prefix that never legitimately appears
+on this 8086/8088, and `bound` is an 80186+ instruction that can't be
+real on this CPU either, so any occurrence of either is far more
+likely decode drift than genuine code (none appear in the proven-only
+listing at all, only in the heuristic layer's known-noisy tail).
+
+**The 5 not-independently-checked instructions have two different,
+now-understood causes** (previously this section spec­ulated they
+might be simple decode/alignment errors - narrowed down since):
+- **1 x87 FPU instruction** (`fmul`, `160-3532`) - capstone's `st(N)`
+  operand syntax isn't translated to NASM syntax yet; unrelated to the
+  other 4, see `TODO.md`.
+- **3 IP-wraparound branches** (1 `loop` at `160-3633:FB66`, 2 `jmp`
+  at `160-3532:0C79`/`0x1044`) - see "IP-wraparound branches" below.
+
+## IP-wraparound branches (genuine 8086 quirk, not a decode error)
+
+Investigated the 3 remaining backward `loop`/`jmp` instructions whose
+capstone-reported target lands outside the current chip's mapped 64KB
+window (`160-3633:FB66` = `loop`, `160-3532:0C79`/`0x1044` = `jmp`).
+Previously assumed this meant "walked into data, possibly
+misaligned" - narrowed down further this session by inspecting the
+actual `(seg, off)` pair each instruction was reached with:
+
+| Instruction | seg | off | disp |
+|---|---|---|---|
+| `160-3633:FB66 loop` | `0xEFB6` | `0x0006` | `-0x78` |
+| `160-3532:0C79 jmp` | `0xF0C2` | `0x0059` | `-0x20C` |
+| `160-3532:0x1044 jmp` | `0xF0EB` | `0x0194` | `-0x1F7` |
+
+In every case, `seg` is **not** 16-aligned (its low nibble is nonzero)
+and `off` is small enough that `off + size + disp` goes negative. On
+real 8086/8088 hardware, a relative branch's target IP wraps modulo
+`0x10000` while CS stays fixed - this is the well-known 8086
+"segment-relative IP wraparound" behavior, not a bug in our tooling.
+Because these particular `seg` values aren't 16-aligned, the
+wraparound lands the *physical* target a full `0x10000` away from
+where naive `physical - |disp|` arithmetic would suggest, outside the
+64KB region we've been treating as "this chip." Computed precisely for
+all 3 (`(seg<<4 + ((off+size+disp) & 0xFFFF)) & 0xFFFFF`):
+`0xFFAF0` (`160-3633`'s loop - lands in the *other* main-ROM chip's
+address range), `0x00A70` and `0x00E50` (both `160-3532`'s jmps - land
+in low RAM, physical `0x00400+`, nowhere near either ROM chip).
+
+None of the three land on an already-known label in the target
+location, so this remains **not fully resolved**: it's now clear
+*why* the arithmetic produces an out-of-chip result (a real, well-
+documented 8086 CPU behavior, not a tooling bug), but not yet clear
+whether the ROM's authors actually intended a genuine cross-chip/
+into-RAM branch (deliberately exploiting segment overlap - unusual for
+a `loop`/`jmp` but not impossible) or whether the `seg` value our own
+recursive descent is using to reach this code in the first place is
+itself wrong (e.g., if the ROM reaches this code in real life via a
+*different*, larger `off` under a more conventional `0xE000`/`0xF000`-
+aligned segment, the same backward branch would resolve to a
+perfectly ordinary in-chip target with no wraparound at all - both
+interpretations are consistent with everything checked so far). Left
+unconverted (raw `db`, comment updated to explain this) in both
+`gen_source.py` and `gen_source_readable.py`'s output pending that
+answer. Revisit if code coverage or entry-point tracing ever reaches
+this same code via a different path that disambiguates it.
 
 ## Current coverage
 
-**Proven-only** (official, what `sysrom_3532_3633.lst` shows): 10,488
-instruction-start bytes (~8% of the 128KB main-ROM pair), from 8 seed
+**Proven-only** (official, what `sysrom_3532_3633.lst` shows): 13,510
+instruction-start bytes (~10% of the 128KB main-ROM pair, including
+the comm ROM's `0x90000` alias region), from 8 seed
 entry points (reset vector, 2 discovered while tracing the reset path,
 4 interrupt handlers found via IVT-write tracing, and the comm-ROM
 boot-stub target). Zero unresolved indirect jmp/call instructions
@@ -633,12 +707,17 @@ total mapped bytes (85.6%)** across all four mapped regions
 `3532` both 90.6%, `2998` 91.8%, the `0x90000` alias 53.3% (lower
 because it only reflects the *upper half* of the comm ROM, and only
 what's reachable from entries seeded in that same half). NASM-validated
-end to end (`validate_all.py`): 61,771 exact + 6,790 alt-encoding + 174
-not-converted + only 41 real mismatches, all traced to genuine decode
+end to end (`validate_all.py`): 61,870 exact + 6,799 alt-encoding + 53
+not-converted + 54 real mismatches, all traced to genuine decode
 drift into non-code bytes (see "The main ROM has a heuristic layer
 too" below) - none of them affect the buildable `.asm`'s correctness,
 since the generator only ever trusts exact-match bytes for real
-conversion.
+conversion. (The mismatch count rose from 41 to 54 this session after
+`insb`/`outsb`/`outsw` were newly handled - inside the drift cluster
+below, these now get *attempted* and correctly flagged as mismatches
+against garbage bytes, instead of being silently skipped as
+"unconverted" the way they were before; this is the validator working
+as intended, not a new problem.)
 
 The former "12 call targets resolve to addresses in the 0x80000-0x97000
 range" open item is resolved - see "The comm ROM is NOT bank-switched"

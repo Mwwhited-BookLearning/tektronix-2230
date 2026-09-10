@@ -26,7 +26,8 @@ SLOT = 16  # bytes reserved per instruction; x86-16 instructions here are <= ~8
 
 STRING_MNEMONICS = {
     "movsb", "movsw", "stosb", "stosw", "lodsb", "lodsw",
-    "cmpsb", "cmpsw", "scasb", "scasw",
+    "cmpsb", "cmpsw", "scasb", "scasw", "outsb", "outsw",
+    "insb", "insw",
 }
 NO_OPERAND_MNEMONICS = {
     "cdq", "cwde", "cbw", "cwd", "clc", "cld", "cli", "cmc", "hlt",
@@ -34,16 +35,15 @@ NO_OPERAND_MNEMONICS = {
     "nop", "cmpsb", "movsb", "stosb", "lodsb", "movsw", "stosw",
     "lodsw", "cmpsw", "scasb", "scasw",
 }
-COMMUTATIVE_REGREG_MNEMONICS = {
-    "mov", "add", "sub", "and", "or", "xor", "cmp", "test", "adc", "sbb",
-}
 # Rare instructions encountered while expanding coverage that haven't been
-# individually verified for correct NASM round-tripping yet (string I/O
-# ports, array-bounds check) - conservatively fall back to raw db rather
-# than risk a silently-wrong conversion. Revisit if they turn out to be
-# common enough to be worth handling properly.
+# individually verified for correct NASM round-tripping yet (32-bit-sized
+# string I/O - needs a 0x66 prefix that never legitimately appears on this
+# 8086/8088, so any occurrence is likely decode drift rather than real
+# code; array-bounds check, an 80186+ instruction that can't be real on
+# this CPU either) - conservatively fall back to raw db rather than risk
+# a silently-wrong conversion.
 NOT_YET_HANDLED_MNEMONICS = {
-    "insb", "insw", "insd", "outsb", "outsw", "outsd", "bound",
+    "insd", "outsd", "bound",
 }
 
 SEG_OVERRIDE_RE = re.compile(r"\b(cs|ds|es|ss):")
@@ -128,8 +128,10 @@ def string_segment_prefix(mnem, op):
     byte - and lodsb/lodsw have only a source operand. Get this wrong
     (as an earlier version of this script did) and e.g. `es lodsb`
     silently loses its real 0x26 override prefix byte."""
-    if mnem in ("stosb", "stosw", "scasb", "scasw"):
+    if mnem in ("stosb", "stosw", "scasb", "scasw", "insb", "insw"):
         return ""  # only operand is the fixed ES:DI destination
+        # (insb/insw: capstone prints "byte/word ptr es:[di], dx" -
+        # the ES:DI side is exactly as fixed/unoverridable as stos's)
     if mnem in ("lodsb", "lodsw"):
         m = SEG_OVERRIDE_RE.search(op)  # sole operand is the source (SI)
         seg = m.group(1) if m else "ds"
@@ -139,6 +141,8 @@ def string_segment_prefix(mnem, op):
         # cmpsb/cmpsw: capstone reverses this - "source(SI), dest(DI,
         # fixed-ES)" - source is 1st. Get this backwards and a real
         # cmpsb/cmpsw override prefix byte gets silently dropped.
+        # outsb/outsw: "dx, byte/word ptr [si]" - source (SI) is 2nd,
+        # same shape as movsb/movsw, falls through to that case below.
         if mnem in ("cmpsb", "cmpsw"):
             source_text = parts[0] if parts else ""
         else:
@@ -289,6 +293,25 @@ def alt_direction_encoding(raw):
     return bytes([alt_opcode, alt_modrm])
 
 
+def alt_xchg_encoding(raw):
+    """xchg's two register-direct operands are symmetric - `xchg di,si`
+    and `xchg si,di` are the identical operation, encoded with the
+    SAME opcode (0x86/0x87) and just reg/rm swapped in the ModRM byte.
+    Unlike alt_direction_encoding's ALU/MOV opcodes, there's no
+    separate 'd' direction bit to flip here."""
+    if len(raw) != 2:
+        return None
+    opcode, modrm = raw[0], raw[1]
+    if opcode not in (0x86, 0x87):
+        return None
+    if (modrm & 0xC0) != 0xC0:
+        return None  # not register-direct addressing
+    reg = (modrm >> 3) & 0x7
+    rm = modrm & 0x7
+    alt_modrm = 0xC0 | (rm << 3) | reg
+    return bytes([opcode, alt_modrm])
+
+
 def split_seg_prefix(orig):
     """Return (prefix_bytes, rest) - prefix_bytes is the leading
     segment-override byte (0x26/0x2E/0x36/0x3E) as a 1-length bytes
@@ -436,6 +459,10 @@ def main():
                 continue
             alt4 = alt_zero_displacement_encoding(orig)
             if alt4 is not None and got[:len(alt4)] == alt4:
+                alt_encoding += 1
+                continue
+            alt5 = alt_xchg_encoding(got[:size])
+            if alt5 is not None and alt5 == orig:
                 alt_encoding += 1
                 continue
             real_mismatch.append((name, addr, mnem, op, nasm_line, orig, got))

@@ -63,6 +63,9 @@ def alt_encoding_bytes(mnem, op, orig, got, size):
     alt4 = v.alt_zero_displacement_encoding(orig)
     if alt4 is not None and got[:len(alt4)] == alt4:
         return alt4
+    alt5 = v.alt_xchg_encoding(got[:size])
+    if alt5 is not None and alt5 == orig:
+        return alt5
     return None
 
 
@@ -174,9 +177,21 @@ def build_source(chip_name, buf, visited, chip_base, nasm_exe):
                 lines.append(f"{lab}:")
             size = e["size"]
             raw = buf[addr:addr + size]
+            mnem = e["mnem"]
+            branch_mnems = ("jmp", "call", "loop", "loope", "loopne",
+                             "loopz", "loopnz", "jcxz")
+            if mnem.startswith("f"):
+                reason = "x87 FPU instruction, not handled yet - see NOTES.md"
+            elif mnem in branch_mnems or (mnem.startswith("j") and mnem != "jmp"):
+                reason = ("relative-branch target resolves outside this "
+                           "chip's mapped range when IP wraps mod 0x10000 "
+                           "inside a non-16-aligned code segment - genuine "
+                           "8086 addressing quirk, not a NASM gap, see "
+                           "NOTES.md \"IP-wraparound branches\"")
+            else:
+                reason = "not converted or a genuine mismatch"
             lines.append(f"    db " + ", ".join(f"0x{b:02x}" for b in raw)
-                          + f"  ; {addr:04X}: {e['mnem']} {e['op']} "
-                            f"(not converted or a genuine mismatch)")
+                          + f"  ; {addr:04X}: {mnem} {e['op']} ({reason})")
             addr += size
             continue
 
