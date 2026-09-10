@@ -5593,10 +5593,10 @@
     "notes": null
   },
   "E5E53": {
-    "name": "SUB_E5E53",
+    "name": "install_late_interrupt_vectors",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "install_late_interrupt_vectors",
     "notes": null
   },
   "E5E99": {
@@ -8666,10 +8666,10 @@
     "notes": null
   },
   "F8272": {
-    "name": "SUB_F8272",
+    "name": "build_print_record_3532",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "build_print_record_3532",
     "notes": null
   },
   "F830E": {
@@ -8925,31 +8925,31 @@
     "notes": null
   },
   "FBC2F": {
-    "name": "SUB_FBC2F",
+    "name": "array_index_16",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "array_index_16",
     "notes": null
   },
   "FBC4D": {
-    "name": "SUB_FBC4D",
+    "name": "copy_word_far",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "copy_word_far",
     "notes": null
   },
   "FBC69": {
-    "name": "SUB_FBC69",
+    "name": "pack_low5_bits",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "pack_low5_bits",
     "notes": null
   },
   "FBC84": {
-    "name": "SUB_FBC84",
+    "name": "set_position_record_3532",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "set_position_record_3532",
     "notes": null
   },
   "FBCCF": {

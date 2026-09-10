@@ -3038,7 +3038,7 @@ SUB_F8234:
     db 0x8b, 0xe5  ; 826E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 8270: pop bp
     retf                                     ; 8271: retf 
-SUB_F8272:
+build_print_record_3532:
     push bp                                  ; 8272: push bp
     db 0x8b, 0xec  ; 8273: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 8275: sub sp, 8
@@ -4389,7 +4389,7 @@ memcpy_far:
     db 0x8b, 0xe5  ; BC29: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; BC2B: pop bp
     retf 4                                   ; BC2C: retf 4
-SUB_FBC2F:
+array_index_16:
     push bp                                  ; BC2F: push bp
     db 0x8b, 0xec  ; BC30: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; BC32: sub sp, 6
@@ -4404,7 +4404,7 @@ SUB_FBC2F:
     db 0x8b, 0xe5  ; BC47: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; BC49: pop bp
     retf 4                                   ; BC4A: retf 4
-SUB_FBC4D:
+copy_word_far:
     push bp                                  ; BC4D: push bp
     db 0x8b, 0xec  ; BC4E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; BC50: sub sp, 6
@@ -4417,7 +4417,7 @@ SUB_FBC4D:
     db 0x8b, 0xe5  ; BC63: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; BC65: pop bp
     retf 4                                   ; BC66: retf 4
-SUB_FBC69:
+pack_low5_bits:
     push bp                                  ; BC69: push bp
     db 0x8b, 0xec  ; BC6A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; BC6C: sub sp, 6
@@ -4429,7 +4429,7 @@ SUB_FBC69:
     db 0x8b, 0xe5  ; BC7E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; BC80: pop bp
     retf 4                                   ; BC81: retf 4
-SUB_FBC84:
+set_position_record_3532:
     push bp                                  ; BC84: push bp
     db 0x8b, 0xec  ; BC85: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; BC87: sub sp, 6

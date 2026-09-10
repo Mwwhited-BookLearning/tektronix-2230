@@ -9699,7 +9699,7 @@ ENTRY_E5D1_C7:
     3633:5E46  [E5E46]  268b37          mov     si, word ptr es:[bx]
     3633:5E49  [E5E49]  9a5700d1e5      lcall   SUB_E5D67  ; 0xe5d1, 0x57
     3633:5E4E  [E5E4E]  ea2b00a8e6      ljmp    L_E6AAB  ; 0xe6a8:0x2b
-SUB_E5E53:
+install_late_interrupt_vectors:
     3633:5E53  [E5E53]  fa              cli     
     3633:5E54  [E5E54]  9a2100d1e5      lcall   SUB_E5D31  ; 0xe5d1, 0x21
     3633:5E59  [E5E59]  ba0040          mov     dx, 0x4000
@@ -10162,7 +10162,7 @@ COMM_ROM_BOOTSTUB_TARGET:
     3633:64CB  [E64CB]  bf4100          mov     di, 0x41
     3633:64CE  [E64CE]  57              push    di
     3633:64CF  [E64CF]  9a080007f0      lcall   divide_scale_default  ; 0xf007, 8
-    3633:64D4  [E64D4]  9a4301d1e5      lcall   SUB_E5E53  ; 0xe5d1, 0x143
+    3633:64D4  [E64D4]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:64D9  [E64D9]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
     3633:64DE  [E64DE]  9a0e00b3fd      lcall   SUB_FDB3E  ; 0xfdb3, 0xe
     3633:64E3  [E64E3]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
@@ -10177,7 +10177,7 @@ L_E64FB:
     3633:64FF  [E64FF]  7cef            jl      L_E64F0  ; 0x30
     3633:6501  [E6501]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
     3633:6506  [E6506]  9a050025e9      lcall   SUB_E9255  ; 0xe925, 5
-    3633:650B  [E650B]  9a4301d1e5      lcall   SUB_E5E53  ; 0xe5d1, 0x143
+    3633:650B  [E650B]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:6510  [E6510]  b80000          mov     ax, 0
     3633:6513  [E6513]  baffff          mov     dx, 0xffff
     3633:6516  [E6516]  8946f4          mov     word ptr [bp - 0xc], ax
@@ -10660,7 +10660,7 @@ L_E6B71:
     3633:6BA0  [E6BA0]  fec0            inc     al
     3633:6BA2  [E6BA2]  a2911a          mov     byte ptr [0x1a91], al
 L_E6BA5:
-    3633:6BA5  [E6BA5]  9a4301d1e5      lcall   SUB_E5E53  ; 0xe5d1, 0x143
+    3633:6BA5  [E6BA5]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:6BAA  [E6BAA]  9ab6000be6      lcall   switch_to_next_task  ; 0xe60b, 0xb6
     3633:6BAF  [E6BAF]  8be5            mov     sp, bp
     3633:6BB1  [E6BB1]  5d              pop     bp
@@ -12939,7 +12939,7 @@ SUB_EFB64:
     3633:FB9C  [EFB9C]  83c30d          add     bx, 0xd
     3633:FB9F  [EFB9F]  06              push    es
     3633:FBA0  [EFBA0]  53              push    bx
-    3633:FBA1  [EFBA1]  9a4900c2fb      lcall   SUB_FBC69  ; 0xfbc2, 0x49
+    3633:FBA1  [EFBA1]  9a4900c2fb      lcall   pack_low5_bits  ; 0xfbc2, 0x49
 
 SUB_EFBA5:
     3633:FBA5  [EFBA5]  fb              sti     
@@ -12964,7 +12964,7 @@ L_EFBB0:
     3633:FBD5  [EFBD5]  83c20d          add     dx, 0xd
     3633:FBD8  [EFBD8]  06              push    es
     3633:FBD9  [EFBD9]  52              push    dx
-    3633:FBDA  [EFBDA]  9a4900c2fb      lcall   SUB_FBC69  ; 0xfbc2, 0x49
+    3633:FBDA  [EFBDA]  9a4900c2fb      lcall   pack_low5_bits  ; 0xfbc2, 0x49
     3633:FBDF  [EFBDF]  83c402          add     sp, 2
     3633:FBE2  [EFBE2]  c47ef6          les     di, ptr [bp - 0xa]
     3633:FBE5  [EFBE5]  26800d04        or      byte ptr es:[di], 4
@@ -13934,7 +13934,7 @@ SUB_F80A6:
     3532:80CC  [F80CC]  c45ef6          les     bx, ptr [bp - 0xa]
     3532:80CF  [F80CF]  06              push    es
     3532:80D0  [F80D0]  53              push    bx
-    3532:80D1  [F80D1]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:80D1  [F80D1]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:80D6  [F80D6]  83c40e          add     sp, 0xe
     3532:80D9  [F80D9]  8346f609        add     word ptr [bp - 0xa], 9
     3532:80DD  [F80DD]  bf1000          mov     di, 0x10
@@ -13953,7 +13953,7 @@ SUB_F80A6:
     3532:80F5  [F80F5]  c45ef6          les     bx, ptr [bp - 0xa]
     3532:80F8  [F80F8]  06              push    es
     3532:80F9  [F80F9]  53              push    bx
-    3532:80FA  [F80FA]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:80FA  [F80FA]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:80FF  [F80FF]  83c40e          add     sp, 0xe
     3532:8102  [F8102]  8346f609        add     word ptr [bp - 0xa], 9
     3532:8106  [F8106]  bf1000          mov     di, 0x10
@@ -13970,7 +13970,7 @@ SUB_F80A6:
     3532:8119  [F8119]  c45ef6          les     bx, ptr [bp - 0xa]
     3532:811C  [F811C]  06              push    es
     3532:811D  [F811D]  53              push    bx
-    3532:811E  [F811E]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:811E  [F811E]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:8123  [F8123]  83c40e          add     sp, 0xe
     3532:8126  [F8126]  8346f609        add     word ptr [bp - 0xa], 9
     3532:812A  [F812A]  bf1000          mov     di, 0x10
@@ -13989,7 +13989,7 @@ SUB_F80A6:
     3532:8142  [F8142]  c45ef6          les     bx, ptr [bp - 0xa]
     3532:8145  [F8145]  06              push    es
     3532:8146  [F8146]  53              push    bx
-    3532:8147  [F8147]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:8147  [F8147]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:814C  [F814C]  83c40e          add     sp, 0xe
     3532:814F  [F814F]  c746f2f101      mov     word ptr [bp - 0xe], 0x1f1
     3532:8154  [F8154]  8c5ef4          mov     word ptr [bp - 0xc], ds
@@ -14033,7 +14033,7 @@ L_F8182:
     3532:81AD  [F81AD]  c456f6          les     dx, ptr [bp - 0xa]
     3532:81B0  [F81B0]  06              push    es
     3532:81B1  [F81B1]  52              push    dx
-    3532:81B2  [F81B2]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:81B2  [F81B2]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:81B7  [F81B7]  83c40e          add     sp, 0xe
     3532:81BA  [F81BA]  8346f609        add     word ptr [bp - 0xa], 9
     3532:81BE  [F81BE]  bf1000          mov     di, 0x10
@@ -14051,7 +14051,7 @@ L_F8182:
     3532:81D4  [F81D4]  c446f6          les     ax, ptr [bp - 0xa]
     3532:81D7  [F81D7]  06              push    es
     3532:81D8  [F81D8]  50              push    ax
-    3532:81D9  [F81D9]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:81D9  [F81D9]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:81DE  [F81DE]  83c40e          add     sp, 0xe
     3532:81E1  [F81E1]  8346f609        add     word ptr [bp - 0xa], 9
     3532:81E5  [F81E5]  bf1000          mov     di, 0x10
@@ -14069,7 +14069,7 @@ L_F8182:
     3532:81FB  [F81FB]  c446f6          les     ax, ptr [bp - 0xa]
     3532:81FE  [F81FE]  06              push    es
     3532:81FF  [F81FF]  50              push    ax
-    3532:8200  [F8200]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:8200  [F8200]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:8205  [F8205]  83c40e          add     sp, 0xe
     3532:8208  [F8208]  8346f609        add     word ptr [bp - 0xa], 9
     3532:820C  [F820C]  bf1000          mov     di, 0x10
@@ -14087,7 +14087,7 @@ L_F8182:
     3532:8223  [F8223]  c446f6          les     ax, ptr [bp - 0xa]
     3532:8226  [F8226]  06              push    es
     3532:8227  [F8227]  50              push    ax
-    3532:8228  [F8228]  9ad2010af8      lcall   SUB_F8272  ; 0xf80a, 0x1d2
+    3532:8228  [F8228]  9ad2010af8      lcall   build_print_record_3532  ; 0xf80a, 0x1d2
     3532:822D  [F822D]  83c40e          add     sp, 0xe
     3532:8230  [F8230]  8be5            mov     sp, bp
     3532:8232  [F8232]  5d              pop     bp
@@ -14119,7 +14119,7 @@ SUB_F8234:
     3532:826E  [F826E]  8be5            mov     sp, bp
     3532:8270  [F8270]  5d              pop     bp
     3532:8271  [F8271]  cb              retf    
-SUB_F8272:
+build_print_record_3532:
     3532:8272  [F8272]  55              push    bp
     3532:8273  [F8273]  8bec            mov     bp, sp
     3532:8275  [F8275]  83ec08          sub     sp, 8
@@ -14132,7 +14132,7 @@ SUB_F8272:
     3532:8287  [F8287]  8d4501          lea     ax, [di + 1]
     3532:828A  [F828A]  06              push    es
     3532:828B  [F828B]  50              push    ax
-    3532:828C  [F828C]  9a4900c2fb      lcall   SUB_FBC69  ; 0xfbc2, 0x49
+    3532:828C  [F828C]  9a4900c2fb      lcall   pack_low5_bits  ; 0xfbc2, 0x49
     3532:8291  [F8291]  83c402          add     sp, 2
     3532:8294  [F8294]  8a5614          mov     dl, byte ptr [bp + 0x14]
     3532:8297  [F8297]  2af6            sub     dh, dh
@@ -14141,26 +14141,26 @@ SUB_F8272:
     3532:829D  [F829D]  8d5d03          lea     bx, [di + 3]
     3532:82A0  [F82A0]  06              push    es
     3532:82A1  [F82A1]  53              push    bx
-    3532:82A2  [F82A2]  9a4900c2fb      lcall   SUB_FBC69  ; 0xfbc2, 0x49
+    3532:82A2  [F82A2]  9a4900c2fb      lcall   pack_low5_bits  ; 0xfbc2, 0x49
     3532:82A7  [F82A7]  83c402          add     sp, 2
     3532:82AA  [F82AA]  ff7610          push    word ptr [bp + 0x10]
     3532:82AD  [F82AD]  c47e06          les     di, ptr [bp + 6]
     3532:82B0  [F82B0]  8d5504          lea     dx, [di + 4]
     3532:82B3  [F82B3]  06              push    es
     3532:82B4  [F82B4]  52              push    dx
-    3532:82B5  [F82B5]  9a6400c2fb      lcall   SUB_FBC84  ; 0xfbc2, 0x64
+    3532:82B5  [F82B5]  9a6400c2fb      lcall   set_position_record_3532  ; 0xfbc2, 0x64
     3532:82BA  [F82BA]  83c402          add     sp, 2
     3532:82BD  [F82BD]  ff7612          push    word ptr [bp + 0x12]
     3532:82C0  [F82C0]  c47e06          les     di, ptr [bp + 6]
     3532:82C3  [F82C3]  8d5502          lea     dx, [di + 2]
     3532:82C6  [F82C6]  06              push    es
     3532:82C7  [F82C7]  52              push    dx
-    3532:82C8  [F82C8]  9a6400c2fb      lcall   SUB_FBC84  ; 0xfbc2, 0x64
+    3532:82C8  [F82C8]  9a6400c2fb      lcall   set_position_record_3532  ; 0xfbc2, 0x64
     3532:82CD  [F82CD]  83c402          add     sp, 2
     3532:82D0  [F82D0]  c47e0a          les     di, ptr [bp + 0xa]
     3532:82D3  [F82D3]  06              push    es
     3532:82D4  [F82D4]  57              push    di
-    3532:82D5  [F82D5]  9a0f00c2fb      lcall   SUB_FBC2F  ; 0xfbc2, 0xf
+    3532:82D5  [F82D5]  9a0f00c2fb      lcall   array_index_16  ; 0xfbc2, 0xf
     3532:82DA  [F82DA]  8946f8          mov     word ptr [bp - 8], ax
     3532:82DD  [F82DD]  c47e06          les     di, ptr [bp + 6]
     3532:82E0  [F82E0]  8d5505          lea     dx, [di + 5]
@@ -14169,7 +14169,7 @@ SUB_F8272:
     3532:82E5  [F82E5]  8d5ef8          lea     bx, [bp - 8]
     3532:82E8  [F82E8]  16              push    ss
     3532:82E9  [F82E9]  53              push    bx
-    3532:82EA  [F82EA]  9a2d00c2fb      lcall   SUB_FBC4D  ; 0xfbc2, 0x2d
+    3532:82EA  [F82EA]  9a2d00c2fb      lcall   copy_word_far  ; 0xfbc2, 0x2d
     3532:82EF  [F82EF]  83c404          add     sp, 4
     3532:82F2  [F82F2]  c47e06          les     di, ptr [bp + 6]
     3532:82F5  [F82F5]  268a5505        mov     dl, byte ptr es:[di + 5]
@@ -14623,7 +14623,7 @@ memcpy_far:
     3532:BC29  [FBC29]  8be5            mov     sp, bp
     3532:BC2B  [FBC2B]  5d              pop     bp
     3532:BC2C  [FBC2C]  ca0400          retf    4
-SUB_FBC2F:
+array_index_16:
     3532:BC2F  [FBC2F]  55              push    bp
     3532:BC30  [FBC30]  8bec            mov     bp, sp
     3532:BC32  [FBC32]  83ec06          sub     sp, 6
@@ -14638,7 +14638,7 @@ SUB_FBC2F:
     3532:BC47  [FBC47]  8be5            mov     sp, bp
     3532:BC49  [FBC49]  5d              pop     bp
     3532:BC4A  [FBC4A]  ca0400          retf    4
-SUB_FBC4D:
+copy_word_far:
     3532:BC4D  [FBC4D]  55              push    bp
     3532:BC4E  [FBC4E]  8bec            mov     bp, sp
     3532:BC50  [FBC50]  83ec06          sub     sp, 6
@@ -14651,7 +14651,7 @@ SUB_FBC4D:
     3532:BC63  [FBC63]  8be5            mov     sp, bp
     3532:BC65  [FBC65]  5d              pop     bp
     3532:BC66  [FBC66]  ca0400          retf    4
-SUB_FBC69:
+pack_low5_bits:
     3532:BC69  [FBC69]  55              push    bp
     3532:BC6A  [FBC6A]  8bec            mov     bp, sp
     3532:BC6C  [FBC6C]  83ec06          sub     sp, 6
@@ -14663,7 +14663,7 @@ SUB_FBC69:
     3532:BC7E  [FBC7E]  8be5            mov     sp, bp
     3532:BC80  [FBC80]  5d              pop     bp
     3532:BC81  [FBC81]  ca0400          retf    4
-SUB_FBC84:
+set_position_record_3532:
     3532:BC84  [FBC84]  55              push    bp
     3532:BC85  [FBC85]  8bec            mov     bp, sp
     3532:BC87  [FBC87]  83ec06          sub     sp, 6

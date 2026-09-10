@@ -130,6 +130,12 @@ range-scan tests corresponds to.
 | `0xE296E` | `selftest_front_panel_adc` **(renamed)** | References `FP_a2d`/`gnd =`/`TIME-OUT` - tests the front-panel A/D converter. Called from `selftest_measure_mode`'s "run" case (`idx==3`), whose result feeds `format_selftest_result_string` | Confirmed via string reference - identifies the peripheral behind `configure_measurement_hw`/`run_adc_selftest`/`selftest_measure_and_report` |
 | `0xE20B0` | `selftest_comm_readback` **(renamed)** | References `COMM_RB`/`rb(1)=`/`rb(0)=` - called as the 2nd phase by `selftest_comm_loopback_a`. Reads/writes physical `0x40000+0x67C`/`0x6F8` (the readout memory window, not the comm ROM's own `0x80000` address) | Mechanism and string reference confirmed; the address choice is surprising and not yet reconciled - see `disasm/NOTES.md` |
 | `0xE1B89` | `ram_pattern_test` **(renamed)** | `(start far ptr, end far ptr, step, mask)` - generic RAM test engine: writes an alternating `0xAA`/`0x55` pattern across the range, then reads back and compares (masked). The shared implementation likely behind the `SYS_RAM`/`NIB_RAM`/`ACQ_RAM`/`COMM_RAM` self-tests | Confirmed from code alone (classic march-pattern RAM test shape) |
+| `0xE5E53` | `install_late_interrupt_vectors` **(renamed)** | Installs `INT255_HANDLER_LATE` (`0x3FC`) and `INT2_HANDLER_LATE` (`0x008`), both into segment `0xE60B` - matches the "late" IVT writes documented in `disasm/NOTES.md` "Interrupt vector table entries" | Confirmed |
+| `0xF8272` | `build_print_record_3532` **(renamed)** | Takes many parameters and packs them into a record via `array_index_16`/`pack_low5_bits`/`set_position_record_3532`/`copy_word_far` - `160-3532`'s parallel implementation of `build_print_record` | Mechanism confirmed |
+| `0xFBC2F` | `array_index_16` **(renamed)** | `(base far ptr, index) -> base + index*16` - 16-byte-record array indexing | Confirmed |
+| `0xFBC4D` | `copy_word_far` **(renamed)** | Copies one word from a far source pointer to a far destination pointer | Confirmed |
+| `0xFBC69` | `pack_low5_bits` **(renamed)** | Packs the low 5 bits of a value into a record byte, preserving its high 3 bits - same pattern as `pack_row_col_bits` but a separate `160-3532` implementation | Confirmed |
+| `0xFBC84` | `set_position_record_3532` **(renamed)** | `value>>3` (character-cell scaling) written across 2 record bytes - same pattern as `set_position_record` but in `160-3532` | Confirmed |
 
 ## Comm/GPIB ROM (160-2998)
 

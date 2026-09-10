@@ -7090,7 +7090,7 @@ ENTRY_E5D1_C7:
     mov si, word [es:bx]                     ; 5E46: mov si, word ptr es:[bx]
     call 0xe5d1:0x0057                       ; 5E49: lcall 0xe5d1, 0x57
     jmp 0xe6a8:0x002b                        ; 5E4E: ljmp 0xe6a8:0x2b
-SUB_E5E53:
+install_late_interrupt_vectors:
     cli                                      ; 5E53: cli 
     call 0xe5d1:0x0021                       ; 5E54: lcall 0xe5d1, 0x21
     mov dx, 0x4000                           ; 5E59: mov dx, 0x4000

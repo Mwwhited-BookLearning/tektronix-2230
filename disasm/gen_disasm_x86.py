@@ -422,6 +422,50 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    0xE5E53: "install_late_interrupt_vectors", # installs INT255_HANDLER_
+                                               # LATE (0x3FC) and INT2_
+                                               # HANDLER_LATE (0x008),
+                                               # both pointing into
+                                               # segment 0xE60B - matches
+                                               # the "late" IVT writes
+                                               # documented in NOTES.md
+                                               # "Interrupt vector table
+                                               # entries"
+    0xFBC2F: "array_index_16",                # (base far ptr, index) ->
+                                               # base + index*16 - 16-
+                                               # byte-record array
+                                               # indexing, used by the
+                                               # F8272 record-builder
+                                               # cluster (160-3532's
+                                               # parallel to build_
+                                               # print_record)
+    0xFBC4D: "copy_word_far",                 # copies one word from a
+                                               # far source ptr to a far
+                                               # dest ptr
+    0xFBC69: "pack_low5_bits",                # packs the low 5 bits of
+                                               # a value into a record
+                                               # byte, preserving its
+                                               # high 3 bits - same
+                                               # pattern as
+                                               # pack_row_col_bits
+                                               # (0xE3662) but a separate
+                                               # implementation in
+                                               # 160-3532
+    0xF8272: "build_print_record_3532",       # takes many params and
+                                               # packs them into a
+                                               # record via array_index_
+                                               # 16/pack_low5_bits/
+                                               # set_position_record_
+                                               # 3532/copy_word_far -
+                                               # 160-3532's parallel to
+                                               # build_print_record
+    0xFBC84: "set_position_record_3532",      # value>>3 (character-
+                                               # cell scaling) written
+                                               # across 2 record bytes -
+                                               # same pattern as
+                                               # set_position_record
+                                               # (0xE36A5) but in
+                                               # 160-3532
     0xE0C3D: "format_selftest_result_string", # (status_bits) - builds a
                                                # PASSED/FAILED/UNTESTED/
                                                # "Not installed" text
