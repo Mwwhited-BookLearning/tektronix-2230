@@ -813,7 +813,7 @@ SUB_E0B6C:
     db 0x8b, 0xe5  ; 0B9F: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0BA1: pop bp
     retf                                     ; 0BA2: retf 
-SUB_E0BA3:
+print_scratch_buffer_range:
     push bp                                  ; 0BA3: push bp
     db 0x8b, 0xec  ; 0BA4: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 0BA6: sub sp, 8

@@ -1212,7 +1212,7 @@ SUB_E0B6C:
     3633:0B9F  [E0B9F]  8be5            mov     sp, bp
     3633:0BA1  [E0BA1]  5d              pop     bp
     3633:0BA2  [E0BA2]  cb              retf    
-SUB_E0BA3:
+print_scratch_buffer_range:
     3633:0BA3  [E0BA3]  55              push    bp
     3633:0BA4  [E0BA4]  8bec            mov     bp, sp
     3633:0BA6  [E0BA6]  83ec08          sub     sp, 8
@@ -1894,7 +1894,7 @@ L_E1256:
     3633:1275  [E1275]  50              push    ax
     3633:1276  [E1276]  ff7610          push    word ptr [bp + 0x10]
     3633:1279  [E1279]  ff760c          push    word ptr [bp + 0xc]
-    3633:127C  [E127C]  9af3046be0      lcall   SUB_E0BA3  ; 0xe06b, 0x4f3
+    3633:127C  [E127C]  9af3046be0      lcall   print_scratch_buffer_range  ; 0xe06b, 0x4f3
     3633:1281  [E1281]  83c40a          add     sp, 0xa
 L_E1284:
     3633:1284  [E1284]  8b46f8          mov     ax, word ptr [bp - 8]
@@ -4167,7 +4167,7 @@ L_E2836:
     3633:2856  [E2856]  ba2000          mov     dx, 0x20
     3633:2859  [E2859]  52              push    dx
     3633:285A  [E285A]  ff76f2          push    word ptr [bp - 0xe]
-    3633:285D  [E285D]  9af3046be0      lcall   SUB_E0BA3  ; 0xe06b, 0x4f3
+    3633:285D  [E285D]  9af3046be0      lcall   print_scratch_buffer_range  ; 0xe06b, 0x4f3
     3633:2862  [E2862]  83c40a          add     sp, 0xa
 L_E2865:
     3633:2865  [E2865]  8b46f6          mov     ax, word ptr [bp - 0xa]
@@ -12789,7 +12789,7 @@ L_E817F:
     3633:819A  [E819A]  57              push    di
     3633:819B  [E819B]  2bd2            sub     dx, dx
     3633:819D  [E819D]  52              push    dx
-    3633:819E  [E819E]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:819E  [E819E]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:81A3  [E81A3]  83c404          add     sp, 4
     3633:81A6  [E81A6]  bf0200          mov     di, 2
     3633:81A9  [E81A9]  57              push    di
@@ -12815,7 +12815,7 @@ L_E81C6:
     3633:81D3  [E81D3]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
     3633:81D8  [E81D8]  bf0100          mov     di, 1
     3633:81DB  [E81DB]  57              push    di
-    3633:81DC  [E81DC]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:81DC  [E81DC]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E81E1:
     3633:81E1  [E81E1]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
     3633:81E6  [E81E6]  e9c601          jmp     L_E83AF  ; 0x36f
@@ -12830,11 +12830,11 @@ L_E81E9:
     3633:81FB  [E81FB]  57              push    di
     3633:81FC  [E81FC]  2bff            sub     di, di
     3633:81FE  [E81FE]  57              push    di
-    3633:81FF  [E81FF]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:81FF  [E81FF]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:8204  [E8204]  83c404          add     sp, 4
     3633:8207  [E8207]  bf0100          mov     di, 1
     3633:820A  [E820A]  57              push    di
-    3633:820B  [E820B]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:820B  [E820B]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E8210:
     3633:8210  [E8210]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
     3633:8215  [E8215]  e99701          jmp     L_E83AF  ; 0x36f
@@ -12857,11 +12857,11 @@ L_E8218:
     3633:8245  [E8245]  57              push    di
     3633:8246  [E8246]  2bff            sub     di, di
     3633:8248  [E8248]  57              push    di
-    3633:8249  [E8249]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:8249  [E8249]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:824E  [E824E]  83c404          add     sp, 4
     3633:8251  [E8251]  bf0100          mov     di, 1
     3633:8254  [E8254]  57              push    di
-    3633:8255  [E8255]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:8255  [E8255]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E825A:
     3633:825A  [E825A]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
     3633:825F  [E825F]  e93200          jmp     L_E8294  ; 0x254
@@ -12876,11 +12876,11 @@ L_E8262:
     3633:8274  [E8274]  57              push    di
     3633:8275  [E8275]  2bff            sub     di, di
     3633:8277  [E8277]  57              push    di
-    3633:8278  [E8278]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:8278  [E8278]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:827D  [E827D]  83c404          add     sp, 4
     3633:8280  [E8280]  bf0100          mov     di, 1
     3633:8283  [E8283]  57              push    di
-    3633:8284  [E8284]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:8284  [E8284]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E8289:
     3633:8289  [E8289]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
     3633:828E  [E828E]  c7064c050000    mov     word ptr [0x54c], 0
@@ -12905,11 +12905,11 @@ L_E829A:
     3633:82C0  [E82C0]  57              push    di
     3633:82C1  [E82C1]  2bd2            sub     dx, dx
     3633:82C3  [E82C3]  52              push    dx
-    3633:82C4  [E82C4]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:82C4  [E82C4]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:82C9  [E82C9]  83c404          add     sp, 4
     3633:82CC  [E82CC]  bf0100          mov     di, 1
     3633:82CF  [E82CF]  57              push    di
-    3633:82D0  [E82D0]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:82D0  [E82D0]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E82D5:
     3633:82D5  [E82D5]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
 L_E82DA:
@@ -13162,7 +13162,7 @@ L_E8567:
     3633:856E  [E856E]  57              push    di
     3633:856F  [E856F]  2bd2            sub     dx, dx
     3633:8571  [E8571]  52              push    dx
-    3633:8572  [E8572]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:8572  [E8572]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:8577  [E8577]  83c404          add     sp, 4
     3633:857A  [E857A]  bf0200          mov     di, 2
     3633:857D  [E857D]  57              push    di
@@ -13188,7 +13188,7 @@ L_E85AA:
     3633:85AD  [E85AD]  57              push    di
     3633:85AE  [E85AE]  2bff            sub     di, di
     3633:85B0  [E85B0]  57              push    di
-    3633:85B1  [E85B1]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:85B1  [E85B1]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:85B6  [E85B6]  83c404          add     sp, 4
     3633:85B9  [E85B9]  a08c01          mov     al, byte ptr [0x18c]
     3633:85BC  [E85BC]  8846f5          mov     byte ptr [bp - 0xb], al
@@ -13218,7 +13218,7 @@ L_E85F1:
     3633:85F8  [E85F8]  52              push    dx
     3633:85F9  [E85F9]  2bd2            sub     dx, dx
     3633:85FB  [E85FB]  52              push    dx
-    3633:85FC  [E85FC]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3633:85FC  [E85FC]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3633:8601  [E8601]  83c404          add     sp, 4
     3633:8604  [E8604]  8a56f5          mov     dl, byte ptr [bp - 0xb]
     3633:8607  [E8607]  88168c01        mov     byte ptr [0x18c], dl
@@ -13226,7 +13226,7 @@ L_E85F1:
     3633:860E  [E860E]  881e2000        mov     byte ptr [0x20], bl
     3633:8612  [E8612]  bf0100          mov     di, 1
     3633:8615  [E8615]  57              push    di
-    3633:8616  [E8616]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:8616  [E8616]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E861B:
     3633:861B  [E861B]  9a740308f0      lcall   reset_acq_buffers_stub  ; 0xf008, 0x374
     3633:8620  [E8620]  e94700          jmp     L_E866A  ; 0x866a
@@ -13254,7 +13254,7 @@ L_E8623:
     3633:865C  [E865C]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
     3633:8661  [E8661]  bf0100          mov     di, 1
     3633:8664  [E8664]  57              push    di
-    3633:8665  [E8665]  9a6100c2f0      lcall   SUB_F0C81  ; 0xf0c2, 0x61
+    3633:8665  [E8665]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
 L_E866A:
     3633:866A  [E866A]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:866D  [E866D]  237ef6          and     di, word ptr [bp - 0xa]
@@ -25304,7 +25304,7 @@ L_F0C7C:
     3532:0C7C  [F0C7C]  ff46f0          inc     word ptr [bp - 0x10]
     3532:0C7F  [F0C7F]  8346f809        add     word ptr [bp - 8], 9
 
-SUB_F0C81:
+reset_plot_home_or_acq:
     3532:0C81  [F0C81]  f8              clc     
     3532:0C82  [F0C82]  09a0c006        or      word ptr [bx + si + 0x6c0], sp
 
@@ -34803,10 +34803,10 @@ FUNC_3532_7045:
     3532:705C  [F705C]  8b7ef8          mov     di, word ptr [bp - 8]
     3532:705F  [F705F]  81e70400        and     di, 4
     3532:7063  [F7063]  83ff00          cmp     di, 0
-    3532:7066  [F7066]  7406            je      SUB_F706E  ; 0x706e
+    3532:7066  [F7066]  7406            je      update_display_mode_flags  ; 0x706e
     3532:7068  [F7068]  bf1000          mov     di, 0x10
     3532:706B  [F706B]  e90200          jmp     L_F7070  ; 0x7070
-SUB_F706E:
+update_display_mode_flags:
     3532:706E  [F706E]  2bff            sub     di, di
 L_F7070:
     3532:7070  [F7070]  5a              pop     dx
@@ -38774,7 +38774,7 @@ FUNC_3532_9812:
     3532:98BD  [F98BD]  53              push    bx
     3532:98BE  [F98BE]  2bd2            sub     dx, dx
     3532:98C0  [F98C0]  52              push    dx
-    3532:98C1  [F98C1]  9a0e0006f7      lcall   SUB_F706E  ; 0xf706, 0xe
+    3532:98C1  [F98C1]  9a0e0006f7      lcall   update_display_mode_flags  ; 0xf706, 0xe
     3532:98C6  [F98C6]  83c404          add     sp, 4
     3532:98C9  [F98C9]  bf0400          mov     di, 4
     3532:98CC  [F98CC]  57              push    di

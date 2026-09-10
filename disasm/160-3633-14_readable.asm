@@ -811,7 +811,7 @@ SUB_E0B6C:
     mov sp, bp                               ; 0B9F: mov sp, bp
     pop bp                                   ; 0BA1: pop bp
     retf                                     ; 0BA2: retf 
-SUB_E0BA3:
+print_scratch_buffer_range:
     push bp                                  ; 0BA3: push bp
     mov bp, sp                               ; 0BA4: mov bp, sp
     sub sp, 8                                ; 0BA6: sub sp, 8

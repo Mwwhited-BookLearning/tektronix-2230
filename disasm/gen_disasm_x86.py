@@ -564,6 +564,39 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xF0C81: "reset_plot_home_or_acq",        # checks [0x6C0] bit 0x80:
+                                               # if set, calls update_
+                                               # plot_position(0,0) - a
+                                               # "home the pen" reset;
+                                               # if clear, falls through
+                                               # to a shared acquisition-
+                                               # buffer-reset tail
+                                               # (matching reset_acq_
+                                               # buffers_stub's target)
+    0xF706E: "update_display_mode_flags",     # packs several bit-flags
+                                               # from a caller-given word
+                                               # into a combined status
+                                               # byte, stores it to
+                                               # [0x1B72] if changed
+                                               # (setting a "changed"
+                                               # flag at [0x53A]), then
+                                               # does mode-specific
+                                               # follow-up based on
+                                               # [0x4FC]
+    0xE0BA3: "print_scratch_buffer_range",    # opens a print region
+                                               # (build_print_region),
+                                               # then loops appending
+                                               # bytes read from the
+                                               # [0x31E]-based (physical
+                                               # 0x48000) scratch buffer
+                                               # to the readout via
+                                               # append_readout_char,
+                                               # closes with close_print_
+                                               # record_b - prints a
+                                               # range of the
+                                               # acquisition/diagnostic
+                                               # scratch buffer to the
+                                               # readout display
     0xE1116: "verify_pattern_with_report",    # compares a byte from the
                                                # [0x31E]-based (physical
                                                # 0x48000) scratch buffer

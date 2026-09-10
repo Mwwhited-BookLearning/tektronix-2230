@@ -2576,10 +2576,10 @@
     "notes": null
   },
   "E0BA3": {
-    "name": "SUB_E0BA3",
+    "name": "print_scratch_buffer_range",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "print_scratch_buffer_range",
     "notes": null
   },
   "E0BFA": {
@@ -8015,10 +8015,10 @@
     "notes": null
   },
   "F0C81": {
-    "name": "SUB_F0C81",
+    "name": "reset_plot_home_or_acq",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "reset_plot_home_or_acq",
     "notes": null
   },
   "F0C8F": {
@@ -8316,10 +8316,10 @@
     "notes": null
   },
   "F706E": {
-    "name": "SUB_F706E",
+    "name": "update_display_mode_flags",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "update_display_mode_flags",
     "notes": null
   },
   "F7086": {
