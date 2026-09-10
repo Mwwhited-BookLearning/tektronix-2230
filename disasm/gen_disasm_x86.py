@@ -619,6 +619,41 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE6DC4: "reinit_system_state",           # disables interrupts,
+                                               # resets a large group of
+                                               # global flags/state
+                                               # ([0x1BF7], [0x78E],
+                                               # [0x548], bit 0x10 of
+                                               # [0x1B76], [0x762],
+                                               # [0x79C], [0x1A97]),
+                                               # conditionally notifies
+                                               # the comm ROM if the
+                                               # option is installed
+                                               # ([0x1BF9]), calls
+                                               # divide_scale_default
+                                               # for both the comm-ROM
+                                               # (0x8F80) and main-ROM
+                                               # (0x41) segments, then
+                                               # re-enables interrupts -
+                                               # a system reinit/reset-
+                                               # to-known-state routine,
+                                               # exact trigger (boot?
+                                               # mode change?) not
+                                               # confirmed
+    0xE6EE0: "notify_comm_rom_a",             # if comm option installed
+                                               # ([0x1BF9]) and [0x1BFA]
+                                               # clear, calls a comm-ROM
+                                               # handler (SUB_96F0D) -
+                                               # a conditional cross-ROM
+                                               # notification, twin to
+                                               # notify_comm_rom_b
+    0xE6EFD: "notify_comm_rom_b",             # same gating as notify_
+                                               # comm_rom_a plus an
+                                               # additional check
+                                               # ([0x1ACD]==0xA, task
+                                               # index 10), calls a
+                                               # different comm-ROM
+                                               # handler (SUB_96EC6)
     0xE75C0: "detect_comm_option_hw",         # THE source of [0x1B83]
                                                # (the "comm option" byte
                                                # checked throughout

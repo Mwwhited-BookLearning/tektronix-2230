@@ -10799,7 +10799,7 @@ SUB_E6C85:
     3633:6C88  [E6C88]  83ec06          sub     sp, 6
     3633:6C8B  [E6C8B]  803e660700      cmp     byte ptr [0x766], 0
     3633:6C90  [E6C90]  7452            je      L_E6CE4  ; 0x264
-    3633:6C92  [E6C92]  9a6004a8e6      lcall   SUB_E6EE0  ; 0xe6a8, 0x460
+    3633:6C92  [E6C92]  9a6004a8e6      lcall   notify_comm_rom_a  ; 0xe6a8, 0x460
     3633:6C97  [E6C97]  8026761bbf      and     byte ptr [0x1b76], 0xbf
     3633:6C9C  [E6C9C]  c606600700      mov     byte ptr [0x760], 0
     3633:6CA1  [E6CA1]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
@@ -10812,10 +10812,10 @@ SUB_E6C85:
     3633:6CC4  [E6CC4]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
     3633:6CC9  [E6CC9]  9af20023e7      lcall   SUB_E7322  ; 0xe723, 0xf2
     3633:6CCE  [E6CCE]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
-    3633:6CD3  [E6CD3]  9a7d04a8e6      lcall   SUB_E6EFD  ; 0xe6a8, 0x47d
+    3633:6CD3  [E6CD3]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
     3633:6CD8  [E6CD8]  803ef71b00      cmp     byte ptr [0x1bf7], 0
     3633:6CDD  [E6CDD]  7405            je      L_E6CE4  ; 0x264
-    3633:6CDF  [E6CDF]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:6CDF  [E6CDF]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
 L_E6CE4:
     3633:6CE4  [E6CE4]  8be5            mov     sp, bp
     3633:6CE6  [E6CE6]  5d              pop     bp
@@ -10905,11 +10905,11 @@ L_E6DC0:
     3633:6DC0  [E6DC0]  8be5            mov     sp, bp
     3633:6DC2  [E6DC2]  5d              pop     bp
     3633:6DC3  [E6DC3]  cb              retf    
-SUB_E6DC4:
+reinit_system_state:
     3633:6DC4  [E6DC4]  55              push    bp
     3633:6DC5  [E6DC5]  8bec            mov     bp, sp
     3633:6DC7  [E6DC7]  83ec06          sub     sp, 6
-    3633:6DCA  [E6DCA]  9a6004a8e6      lcall   SUB_E6EE0  ; 0xe6a8, 0x460
+    3633:6DCA  [E6DCA]  9a6004a8e6      lcall   notify_comm_rom_a  ; 0xe6a8, 0x460
     3633:6DCF  [E6DCF]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
     3633:6DD4  [E6DD4]  c606f71b00      mov     byte ptr [0x1bf7], 0
     3633:6DD9  [E6DD9]  c6068e0700      mov     byte ptr [0x78e], 0
@@ -10946,7 +10946,7 @@ L_E6E3E:
     3633:6E48  [E6E48]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
     3633:6E4D  [E6E4D]  c606971a00      mov     byte ptr [0x1a97], 0
     3633:6E52  [E6E52]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
-    3633:6E57  [E6E57]  9a7d04a8e6      lcall   SUB_E6EFD  ; 0xe6a8, 0x47d
+    3633:6E57  [E6E57]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
     3633:6E5C  [E6E5C]  8be5            mov     sp, bp
     3633:6E5E  [E6E5E]  5d              pop     bp
     3633:6E5F  [E6E5F]  cb              retf    
@@ -10954,7 +10954,7 @@ FUNC_3633_6E60:
     3633:6E60  [E6E60]  55              push    bp
     3633:6E61  [E6E61]  8bec            mov     bp, sp
     3633:6E63  [E6E63]  83ec06          sub     sp, 6
-    3633:6E66  [E6E66]  9a6004a8e6      lcall   SUB_E6EE0  ; 0xe6a8, 0x460
+    3633:6E66  [E6E66]  9a6004a8e6      lcall   notify_comm_rom_a  ; 0xe6a8, 0x460
     3633:6E6B  [E6E6B]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
     3633:6E70  [E6E70]  a12202          mov     ax, word ptr [0x222]
     3633:6E73  [E6E73]  250100          and     ax, 1
@@ -10981,7 +10981,7 @@ L_E6E8C:
     3633:6EAF  [E6EAF]  a2991a          mov     byte ptr [0x1a99], al
 L_E6EB2:
     3633:6EB2  [E6EB2]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
-    3633:6EB7  [E6EB7]  9a7d04a8e6      lcall   SUB_E6EFD  ; 0xe6a8, 0x47d
+    3633:6EB7  [E6EB7]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
     3633:6EBC  [E6EBC]  8be5            mov     sp, bp
     3633:6EBE  [E6EBE]  5d              pop     bp
     3633:6EBF  [E6EBF]  cb              retf    
@@ -10996,7 +10996,7 @@ FUNC_3633_6EC0:
     3633:6EDC  [E6EDC]  8be5            mov     sp, bp
     3633:6EDE  [E6EDE]  5d              pop     bp
     3633:6EDF  [E6EDF]  cb              retf    
-SUB_E6EE0:
+notify_comm_rom_a:
     3633:6EE0  [E6EE0]  55              push    bp
     3633:6EE1  [E6EE1]  8bec            mov     bp, sp
     3633:6EE3  [E6EE3]  83ec06          sub     sp, 6
@@ -11009,7 +11009,7 @@ L_E6EF9:
     3633:6EF9  [E6EF9]  8be5            mov     sp, bp
     3633:6EFB  [E6EFB]  5d              pop     bp
     3633:6EFC  [E6EFC]  cb              retf    
-SUB_E6EFD:
+notify_comm_rom_b:
     3633:6EFD  [E6EFD]  55              push    bp
     3633:6EFE  [E6EFE]  8bec            mov     bp, sp
     3633:6F00  [E6F00]  83ec06          sub     sp, 6
@@ -11129,7 +11129,7 @@ L_E7075:
     3633:7079  [E7079]  26808de60180    or      byte ptr es:[di + 0x1e6], 0x80
     3633:707F  [E707F]  c41edc1d        les     bx, ptr [0x1ddc]
     3633:7083  [E7083]  2680a7ef017e    and     byte ptr es:[bx + 0x1ef], 0x7e
-    3633:7089  [E7089]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:7089  [E7089]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
     3633:708E  [E708E]  c7064805ffff    mov     word ptr [0x548], 0xffff
     3633:7094  [E7094]  8be5            mov     sp, bp
     3633:7096  [E7096]  5d              pop     bp
@@ -18663,14 +18663,14 @@ SUB_EC8A0:
     3633:C8C7  [EC8C7]  c606f71b01      mov     byte ptr [0x1bf7], 1
     3633:C8CC  [EC8CC]  e90500          jmp     L_EC8D4  ; 0x1bd4
 L_EC8CF:
-    3633:C8CF  [EC8CF]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:C8CF  [EC8CF]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
 L_EC8D4:
     3633:C8D4  [EC8D4]  e92a00          jmp     L_EC901  ; 0x1c01
 L_EC8D7:
-    3633:C8D7  [EC8D7]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:C8D7  [EC8D7]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
     3633:C8DC  [EC8DC]  e92200          jmp     L_EC901  ; 0xc901
 L_EC8DF:
-    3633:C8DF  [EC8DF]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:C8DF  [EC8DF]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
     3633:C8E4  [EC8E4]  e91a00          jmp     L_EC901  ; 0xc901
 L_EC8E7:
     3633:C8E7  [EC8E7]  8b4606          mov     ax, word ptr [bp + 6]
@@ -18713,7 +18713,7 @@ L_EC949:
     3633:C949  [EC949]  fe060607        inc     byte ptr [0x706]
     3633:C94D  [EC94D]  803e060703      cmp     byte ptr [0x706], 3
     3633:C952  [EC952]  7205            jb      L_EC959  ; 0xc959
-    3633:C954  [EC954]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:C954  [EC954]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
 L_EC959:
     3633:C959  [EC959]  e97e00          jmp     L_EC9DA  ; 0xc9da
 L_EC95C:
@@ -18786,10 +18786,10 @@ L_EC9DD:
     3633:CA05  [ECA05]  c6066a0400      mov     byte ptr [0x46a], 0
     3633:CA0A  [ECA0A]  e93300          jmp     L_ECA40  ; 0xca40
 L_ECA0D:
-    3633:CA0D  [ECA0D]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:CA0D  [ECA0D]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
     3633:CA12  [ECA12]  e92b00          jmp     L_ECA40  ; 0xca40
 L_ECA15:
-    3633:CA15  [ECA15]  9a4403a8e6      lcall   SUB_E6DC4  ; 0xe6a8, 0x344
+    3633:CA15  [ECA15]  9a4403a8e6      lcall   reinit_system_state  ; 0xe6a8, 0x344
     3633:CA1A  [ECA1A]  e92300          jmp     L_ECA40  ; 0xca40
 L_ECA1D:
     3633:CA1D  [ECA1D]  8b4606          mov     ax, word ptr [bp + 6]

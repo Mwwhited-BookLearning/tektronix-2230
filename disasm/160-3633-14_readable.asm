@@ -8234,7 +8234,7 @@ L_E6DC0:
     mov sp, bp                               ; 6DC0: mov sp, bp
     pop bp                                   ; 6DC2: pop bp
     retf                                     ; 6DC3: retf 
-SUB_E6DC4:
+reinit_system_state:
     push bp                                  ; 6DC4: push bp
     mov bp, sp                               ; 6DC5: mov bp, sp
     sub sp, 6                                ; 6DC7: sub sp, 6
@@ -8287,7 +8287,7 @@ L_E6E3E:
     db 0x99, 0x1a, 0x9a, 0x18, 0x00, 0xd1, 0xe5, 0x9a, 0x7d, 0x04, 0xa8, 0xe6, 0x8b, 0xe5, 0x5d, 0xcb  ; 6EB0
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x9a, 0x0c, 0x00, 0xe4, 0xf5, 0xc7, 0x06, 0xf0, 0x1b, 0x00  ; 6EC0
     db 0x00, 0x9a, 0x04, 0x00, 0x34, 0xea, 0xc7, 0x06, 0xb4, 0x07, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xcb  ; 6ED0
-SUB_E6EE0:
+notify_comm_rom_a:
     push bp                                  ; 6EE0: push bp
     mov bp, sp                               ; 6EE1: mov bp, sp
     sub sp, 6                                ; 6EE3: sub sp, 6
@@ -8300,7 +8300,7 @@ L_E6EF9:
     mov sp, bp                               ; 6EF9: mov sp, bp
     pop bp                                   ; 6EFB: pop bp
     retf                                     ; 6EFC: retf 
-SUB_E6EFD:
+notify_comm_rom_b:
     push bp                                  ; 6EFD: push bp
     mov bp, sp                               ; 6EFE: mov bp, sp
     sub sp, 6                                ; 6F00: sub sp, 6

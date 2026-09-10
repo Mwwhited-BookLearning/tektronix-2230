@@ -6328,10 +6328,10 @@
     "notes": null
   },
   "E6DC4": {
-    "name": "SUB_E6DC4",
+    "name": "reinit_system_state",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "reinit_system_state",
     "notes": null
   },
   "E6DF6": {
@@ -6356,10 +6356,10 @@
     "notes": null
   },
   "E6EE0": {
-    "name": "SUB_E6EE0",
+    "name": "notify_comm_rom_a",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "notify_comm_rom_a",
     "notes": null
   },
   "E6EF9": {
@@ -6370,10 +6370,10 @@
     "notes": null
   },
   "E6EFD": {
-    "name": "SUB_E6EFD",
+    "name": "notify_comm_rom_b",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "notify_comm_rom_b",
     "notes": null
   },
   "E6F27": {
