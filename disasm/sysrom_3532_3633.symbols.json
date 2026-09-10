@@ -5544,24 +5544,24 @@
     "notes": null
   },
   "E5D3D": {
-    "name": "SUB_E5D3D",
+    "name": "scan_low_ram_chunk0",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scan_low_ram_chunk0",
     "notes": null
   },
   "E5D49": {
-    "name": "SUB_E5D49",
+    "name": "scan_low_ram_chunk1",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scan_low_ram_chunk1",
     "notes": null
   },
   "E5D58": {
-    "name": "SUB_E5D58",
+    "name": "scan_low_ram_chunk2",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scan_low_ram_chunk2",
     "notes": null
   },
   "E5D67": {

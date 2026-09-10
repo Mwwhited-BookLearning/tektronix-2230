@@ -6962,14 +6962,14 @@ delay_read_128w:
     mov cx, 0x80                             ; 5D37: mov cx, 0x80
     rep lodsw                                ; 5D3A: rep lodsw ax, word ptr [si]
     retf                                     ; 5D3C: retf 
-SUB_E5D3D:
+scan_low_ram_chunk0:
     cld                                      ; 5D3D: cld 
     mov si, 0                                ; 5D3E: mov si, 0
     mov es, si                               ; 5D41: mov es, si
     mov cx, 0x30                             ; 5D43: mov cx, 0x30
     rep lodsw                                ; 5D46: rep lodsw ax, word ptr [si]
     retf                                     ; 5D48: retf 
-SUB_E5D49:
+scan_low_ram_chunk1:
     cld                                      ; 5D49: cld 
     mov si, 0                                ; 5D4A: mov si, 0
     mov es, si                               ; 5D4D: mov es, si
@@ -6977,7 +6977,7 @@ SUB_E5D49:
     mov cx, 0x30                             ; 5D52: mov cx, 0x30
     rep lodsw                                ; 5D55: rep lodsw ax, word ptr [si]
     retf                                     ; 5D57: retf 
-SUB_E5D58:
+scan_low_ram_chunk2:
     cld                                      ; 5D58: cld 
     mov si, 0                                ; 5D59: mov si, 0
     mov es, si                               ; 5D5C: mov es, si

@@ -696,9 +696,19 @@ tick, this runs every time. It:
 - Cycles through a few debounce/periodic-maintenance steps gated by
   `[0x1A94]`/`[0x1A95]`/`[0x756]` vs. a threshold at `[0x764]`, and
   (via the `[0x7B2]` 0/1/2 rotation in the code just before it's
-  called) rotates between three variants of the memory-delay routines
-  (`delay_read_128w` and two unread siblings, `SUB_E5D3D`/`SUB_E5D49`/
-  `SUB_E5D58`).
+  called) rotates between `scan_low_ram_chunk0`/`chunk1`/`chunk2`
+  (`0xE5D3D`/`0xE5D49`/`0xE5D58`) - **a genuine background low-memory
+  watchdog scan, not a timing delay** as first guessed for the
+  similar-shaped `delay_read_128w`. Each reads through a different,
+  non-overlapping slice of physical `0000:0000+` via `rep lodsw`
+  (`0x00-0x5F`, `0x60-0xBF`, `0xC0-0xFF` respectively) - together they
+  cover exactly the **first 256 bytes**, a quarter of the interrupt
+  vector table, split across 3 ticks so no single tick blocks for the
+  whole scan. This reframes `delay_read_128w` too: it's likely the
+  SAME kind of integrity check (of the first 256 bytes in one shot)
+  rather than a deliberate delay, though it's called once at startup
+  rather than tick-rotated, so the "delay" name was kept for it
+  specifically.
 
 This resolves "what triggers INT2" indirectly: INT2 itself is still
 presumed to be a periodic hardware timer (not confirmed which), but

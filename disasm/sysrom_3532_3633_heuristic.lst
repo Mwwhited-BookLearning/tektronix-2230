@@ -9492,14 +9492,14 @@ delay_read_128w:
     3633:5D37  [E5D37]  b98000          mov     cx, 0x80
     3633:5D3A  [E5D3A]  f3ad            rep lodsw ax, word ptr [si]
     3633:5D3C  [E5D3C]  cb              retf    
-SUB_E5D3D:
+scan_low_ram_chunk0:
     3633:5D3D  [E5D3D]  fc              cld     
     3633:5D3E  [E5D3E]  be0000          mov     si, 0
     3633:5D41  [E5D41]  8ec6            mov     es, si
     3633:5D43  [E5D43]  b93000          mov     cx, 0x30
     3633:5D46  [E5D46]  f3ad            rep lodsw ax, word ptr [si]
     3633:5D48  [E5D48]  cb              retf    
-SUB_E5D49:
+scan_low_ram_chunk1:
     3633:5D49  [E5D49]  fc              cld     
     3633:5D4A  [E5D4A]  be0000          mov     si, 0
     3633:5D4D  [E5D4D]  8ec6            mov     es, si
@@ -9507,7 +9507,7 @@ SUB_E5D49:
     3633:5D52  [E5D52]  b93000          mov     cx, 0x30
     3633:5D55  [E5D55]  f3ad            rep lodsw ax, word ptr [si]
     3633:5D57  [E5D57]  cb              retf    
-SUB_E5D58:
+scan_low_ram_chunk2:
     3633:5D58  [E5D58]  fc              cld     
     3633:5D59  [E5D59]  be0000          mov     si, 0
     3633:5D5C  [E5D5C]  8ec6            mov     es, si
@@ -10119,13 +10119,13 @@ scheduler_tick_service:
 L_E6538:
     3633:6538  [E6538]  e91e00          jmp     L_E6559  ; 0x39
 L_E653B:
-    3633:653B  [E653B]  9a2d00d1e5      lcall   SUB_E5D3D  ; 0xe5d1, 0x2d
+    3633:653B  [E653B]  9a2d00d1e5      lcall   scan_low_ram_chunk0  ; 0xe5d1, 0x2d
     3633:6540  [E6540]  e95000          jmp     L_E6593  ; 0x73
 L_E6543:
-    3633:6543  [E6543]  9a3900d1e5      lcall   SUB_E5D49  ; 0xe5d1, 0x39
+    3633:6543  [E6543]  9a3900d1e5      lcall   scan_low_ram_chunk1  ; 0xe5d1, 0x39
     3633:6548  [E6548]  e94800          jmp     L_E6593  ; 0x73
 L_E654B:
-    3633:654B  [E654B]  9a4800d1e5      lcall   SUB_E5D58  ; 0xe5d1, 0x48
+    3633:654B  [E654B]  9a4800d1e5      lcall   scan_low_ram_chunk2  ; 0xe5d1, 0x48
     3633:6550  [E6550]  c706b2070000    mov     word ptr [0x7b2], 0
     3633:6556  [E6556]  e93a00          jmp     L_E6593  ; 0x73
 L_E6559:

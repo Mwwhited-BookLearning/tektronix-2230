@@ -544,15 +544,28 @@ FUNCTIONAL_NAMES = {
                                                # without using the
                                                # result; called right
                                                # before install_late_
-                                               # interrupt_vectors -
-                                               # likely a deliberate
-                                               # timing delay (hardware
-                                               # settling) rather than a
-                                               # memory test, given
-                                               # sibling routines use
-                                               # different word counts
-                                               # for what look like
-                                               # different delay lengths
+                                               # interrupt_vectors. NOTE:
+                                               # a later find (scan_low_
+                                               # ram_chunk0/1/2) shows 3
+                                               # SIMILAR-shaped functions
+                                               # are a genuine rotating
+                                               # low-memory watchdog scan
+                                               # (each covering a
+                                               # DIFFERENT, non-
+                                               # overlapping chunk), not
+                                               # a delay - this one might
+                                               # be the SAME kind of
+                                               # integrity check (of the
+                                               # first 256 bytes) rather
+                                               # than a timing delay,
+                                               # though it's called once
+                                               # at startup, not tick-
+                                               # rotated - name kept
+                                               # since "delay" is still
+                                               # plausible for THIS
+                                               # specific one-time
+                                               # startup call; see
+                                               # NOTES.md
     0xEE13B: "write_hw_shift_register",       # writes ax to port 0xD1
                                                # three times (each
                                                # preceded by shl di,1)
@@ -585,6 +598,27 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xE5D3D: "scan_low_ram_chunk0",           # rep lodsw x0x30 words
+                                               # from 0000:0x00 (bytes
+                                               # 0x00-0x5F) - result
+                                               # unused; part of a 3-way
+                                               # rotation (chunk0/1/2)
+                                               # covering 0000:0x00-0xFF
+                                               # (the first quarter of
+                                               # the IVT) across 3
+                                               # scheduler ticks - a
+                                               # background low-memory
+                                               # watchdog/integrity scan,
+                                               # not a timing delay (see
+                                               # scheduler_tick_service)
+    0xE5D49: "scan_low_ram_chunk1",           # rep lodsw x0x30 words
+                                               # from 0000:0x60 (bytes
+                                               # 0x60-0xBF) - see
+                                               # scan_low_ram_chunk0
+    0xE5D58: "scan_low_ram_chunk2",           # rep lodsw x0x20 words
+                                               # from 0000:0xC0 (bytes
+                                               # 0xC0-0xFF) - see
+                                               # scan_low_ram_chunk0
     0xE6524: "scheduler_tick_service",        # called unconditionally
                                                # from BOTH paths inside
                                                # INT2_HANDLER_LATE (every
