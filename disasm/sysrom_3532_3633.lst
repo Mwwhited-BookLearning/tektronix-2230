@@ -9556,7 +9556,7 @@ L_E5D10:
     3633:5D13  [E5D13]  5d              pop     bp
     3633:5D14  [E5D14]  cb              retf    
 
-SUB_E5D28:
+sync_and_enable_interrupts:
     3633:5D28  [E5D28]  9a4301b3fd      lcall   sync_status_byte_to_hw  ; 0xfdb3, 0x143
 enable_interrupts:
     3633:5D2D  [E5D2D]  fb              sti     
@@ -10684,7 +10684,7 @@ SUB_E6C85:
     3633:6CBF  [E6CBF]  800e761b80      or      byte ptr [0x1b76], 0x80
     3633:6CC4  [E6CC4]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
     3633:6CC9  [E6CC9]  9af20023e7      lcall   SUB_E7322  ; 0xe723, 0xf2
-    3633:6CCE  [E6CCE]  9a1800d1e5      lcall   SUB_E5D28  ; 0xe5d1, 0x18
+    3633:6CCE  [E6CCE]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6CD3  [E6CD3]  9a7d04a8e6      lcall   SUB_E6EFD  ; 0xe6a8, 0x47d
     3633:6CD8  [E6CD8]  803ef71b00      cmp     byte ptr [0x1bf7], 0
     3633:6CDD  [E6CDD]  7405            je      L_E6CE4  ; 0x264
@@ -10818,7 +10818,7 @@ L_E6E3E:
     3633:6E43  [E6E43]  c6068d0701      mov     byte ptr [0x78d], 1
     3633:6E48  [E6E48]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
     3633:6E4D  [E6E4D]  c606971a00      mov     byte ptr [0x1a97], 0
-    3633:6E52  [E6E52]  9a1800d1e5      lcall   SUB_E5D28  ; 0xe5d1, 0x18
+    3633:6E52  [E6E52]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6E57  [E6E57]  9a7d04a8e6      lcall   SUB_E6EFD  ; 0xe6a8, 0x47d
     3633:6E5C  [E6E5C]  8be5            mov     sp, bp
     3633:6E5E  [E6E5E]  5d              pop     bp
@@ -10935,7 +10935,7 @@ L_E7338:
 L_E7363:
     3633:7363  [E7363]  c606a50700      mov     byte ptr [0x7a5], 0
 L_E7368:
-    3633:7368  [E7368]  9a1800d1e5      lcall   SUB_E5D28  ; 0xe5d1, 0x18
+    3633:7368  [E7368]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:736D  [E736D]  8be5            mov     sp, bp
     3633:736F  [E736F]  5d              pop     bp
     3633:7370  [E7370]  cb              retf    
@@ -11845,7 +11845,7 @@ L_E830E:
 L_E831A:
     3633:831A  [E831A]  bf0100          mov     di, 1
     3633:831D  [E831D]  57              push    di
-    3633:831E  [E831E]  9a0600e6f8      lcall   SUB_F8E66  ; 0xf8e6, 6
+    3633:831E  [E831E]  9a0600e6f8      lcall   set_item_pair_active  ; 0xf8e6, 6
 L_E8323:
     3633:8323  [E8323]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:8326  [E8326]  81e72000        and     di, 0x20
@@ -11872,7 +11872,7 @@ L_E8354:
 L_E8360:
     3633:8360  [E8360]  bf0200          mov     di, 2
     3633:8363  [E8363]  57              push    di
-    3633:8364  [E8364]  9a0600e6f8      lcall   SUB_F8E66  ; 0xf8e6, 6
+    3633:8364  [E8364]  9a0600e6f8      lcall   set_item_pair_active  ; 0xf8e6, 6
 L_E8369:
     3633:8369  [E8369]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:836C  [E836C]  81e70100        and     di, 1
@@ -11899,7 +11899,7 @@ L_E839A:
 L_E83A6:
     3633:83A6  [E83A6]  bf0300          mov     di, 3
     3633:83A9  [E83A9]  57              push    di
-    3633:83AA  [E83AA]  9a0600e6f8      lcall   SUB_F8E66  ; 0xf8e6, 6
+    3633:83AA  [E83AA]  9a0600e6f8      lcall   set_item_pair_active  ; 0xf8e6, 6
 L_E83AF:
     3633:83AF  [E83AF]  833e4a0501      cmp     word ptr [0x54a], 1
     3633:83B4  [E83B4]  7e3a            jle     L_E83F0  ; 0x3b0
@@ -14372,7 +14372,7 @@ L_F84DB:
     3532:84DE  [F84DE]  5d              pop     bp
     3532:84DF  [F84DF]  ca0400          retf    4
 
-SUB_F8E66:
+set_item_pair_active:
     3532:8E66  [F8E66]  55              push    bp
     3532:8E67  [F8E67]  8bec            mov     bp, sp
     3532:8E69  [F8E69]  83ec08          sub     sp, 8

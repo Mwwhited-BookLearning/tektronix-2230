@@ -5516,10 +5516,10 @@
     "notes": null
   },
   "E5D28": {
-    "name": "SUB_E5D28",
+    "name": "sync_and_enable_interrupts",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "sync_and_enable_interrupts",
     "notes": null
   },
   "E5D2D": {
@@ -8792,10 +8792,10 @@
     "notes": null
   },
   "F8E66": {
-    "name": "SUB_F8E66",
+    "name": "set_item_pair_active",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "set_item_pair_active",
     "notes": null
   },
   "F8E98": {

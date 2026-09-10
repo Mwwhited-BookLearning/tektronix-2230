@@ -585,6 +585,20 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xE5D28: "sync_and_enable_interrupts",    # calls sync_status_byte_
+                                               # to_hw, then falls
+                                               # through into enable_
+                                               # interrupts (sti; retf) -
+                                               # a "leave critical
+                                               # section" combo: flush
+                                               # pending status, then
+                                               # re-enable interrupts
+    0xF8E66: "set_item_pair_active",          # (pair_index) - activates
+                                               # both items in a pair
+                                               # (indices pair_index*2
+                                               # and pair_index*2+1) via
+                                               # two calls to
+                                               # set_item_active_flag
     0xE0AAA: "write_measurement_channel_reg", # writes the byte argument
                                                # into the shared hardware
                                                # register [0x33A] - a
