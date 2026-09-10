@@ -52,22 +52,23 @@
       `0x40000`/`0x48000`. See `disasm/NOTES.md` "self_test_dispatcher
       was misnamed" and "The readout/CRT display memory",
       `MEMORY_MAP.md`, `FUNCTIONS.md`.
-- [ ] **Identify the ~14 not-yet-named subsystem-test subroutines**
-      called from the *real* `self_test_dispatcher` (`0xE4244` - see
-      `disasm/NOTES.md` "Found: the self-test dispatcher" for the full
-      call list; 3 routines previously counted here were display
-      primitives, not tests - corrected). Already tried matching them
-      directly to the diagnostic message strings in `STRINGS.md`
-      (`HS_ACQ`, `COMM_ROM`, `SYS_RAM`, etc.) by searching for code
-      references - found none. `SUB_E094B` is a dead end for this (it's
-      called from the *other*, unrelated banner-printing routine, not
-      from the dispatcher or any test) - the string-to-test mapping
-      still needs a different lead. Next candidate: work backward from
-      the confirmed `0x41000`/`0x42000` read ports and the `0x40000`
-      readout window - if any of the ~14 test subroutines touch those
-      same addresses, that's a much stronger link than call order. Add
-      a `FUNCTIONS.md` entry (and wire a name into
-      `gen_disasm_x86.FUNCTIONAL_NAMES`) for each as it's identified.
+- [x] ~~Identify the ~14 not-yet-named subsystem-test subroutines
+      called from `self_test_dispatcher`~~ — **done, all identified**.
+      The lever that worked: search each subroutine's body for a load
+      of the fixed string-table segment (`0xFF7B`) + offset, then read
+      the actual bytes at that physical address - nearly every one
+      references a diagnostic label already in `STRINGS.md` (`HS_ACQ`,
+      `MM_ACQ`, `XY_ACQ`, `ACQ_RAM`, `ROMS`/`MISMATCH`, `COMM_ROM`,
+      `COMM_RAM`, `CMOS`, `COMM_LB`, `CDT`). Also fixed a documentation
+      error: a full re-read of `self_test_dispatcher` found it actually
+      calls `SUB_E28FE`/`SUB_E227E`/`SUB_E26D6`/`SUB_E286C`/`SUB_E2CEC`
+      directly (earlier notes had wrongly placed them in the
+      surrounding caller instead). See `disasm/NOTES.md` "Identified
+      self_test_dispatcher's sibling subroutines" and `FUNCTIONS.md`.
+      Three tests (2 front-panel-switch scans + 1 comm-option-switch
+      scan) don't reference a string - identified by their distinctive
+      `update_menu_position`-range-scan shape instead; which physical
+      control each corresponds to is still open (see next item).
 - [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
       ports, found this session near the confirmed readout/CRT write
       port) actually are - front-panel switch/encoder status and CRT

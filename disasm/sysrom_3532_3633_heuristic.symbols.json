@@ -1617,10 +1617,10 @@
     "notes": null
   },
   "E16EA": {
-    "name": "SUB_E16EA",
+    "name": "selftest_rom_checksum",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_rom_checksum",
     "notes": null
   },
   "E1732": {
@@ -1785,10 +1785,10 @@
     "notes": null
   },
   "E1B16": {
-    "name": "SUB_E1B16",
+    "name": "selftest_acq_ram",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_acq_ram",
     "notes": null
   },
   "E1B89": {
@@ -1911,10 +1911,10 @@
     "notes": null
   },
   "E1D28": {
-    "name": "SUB_E1D28",
+    "name": "selftest_comm_loopback_a",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_comm_loopback_a",
     "notes": null
   },
   "E1D3E": {
@@ -1967,10 +1967,10 @@
     "notes": null
   },
   "E1DB3": {
-    "name": "SUB_E1DB3",
+    "name": "selftest_comm_loopback_b",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_comm_loopback_b",
     "notes": null
   },
   "E1DC9": {
@@ -2023,10 +2023,10 @@
     "notes": null
   },
   "E1E3E": {
-    "name": "SUB_E1E3E",
+    "name": "selftest_comm_rom",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_comm_rom",
     "notes": null
   },
   "E1E54": {
@@ -2044,10 +2044,10 @@
     "notes": null
   },
   "E1E90": {
-    "name": "SUB_E1E90",
+    "name": "selftest_comm_ram",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_comm_ram",
     "notes": null
   },
   "E1EA6": {
@@ -2079,10 +2079,10 @@
     "notes": null
   },
   "E1F18": {
-    "name": "SUB_E1F18",
+    "name": "selftest_cmos",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_cmos",
     "notes": null
   },
   "E1F34": {
@@ -2275,10 +2275,10 @@
     "notes": null
   },
   "E227E": {
-    "name": "SUB_E227E",
+    "name": "selftest_front_panel_switch_a",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_front_panel_switch_a",
     "notes": null
   },
   "E2297": {
@@ -2359,10 +2359,10 @@
     "notes": null
   },
   "E252A": {
-    "name": "SUB_E252A",
+    "name": "selftest_comm_option_switch",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_comm_option_switch",
     "notes": null
   },
   "E2543": {
@@ -2429,10 +2429,10 @@
     "notes": null
   },
   "E26D6": {
-    "name": "SUB_E26D6",
+    "name": "selftest_mm_acq",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_mm_acq",
     "notes": null
   },
   "E272C": {
@@ -2485,17 +2485,17 @@
     "notes": null
   },
   "E286C": {
-    "name": "SUB_E286C",
+    "name": "selftest_xy_acq",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_xy_acq",
     "notes": null
   },
   "E28FE": {
-    "name": "SUB_E28FE",
+    "name": "selftest_hs_acq",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "selftest_hs_acq",
     "notes": null
   },
   "E296E": {
@@ -2646,17 +2646,17 @@
     "notes": null
   },
   "E2CEC": {
-    "name": "SUB_E2CEC",
+    "name": "selftest_cursor_delta_time",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_cursor_delta_time",
     "notes": null
   },
   "E2CFB": {
-    "name": "SUB_E2CFB",
+    "name": "measure_cursor_delta_time",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "measure_cursor_delta_time",
     "notes": null
   },
   "E2D3F": {
@@ -2814,10 +2814,10 @@
     "notes": null
   },
   "E2FC8": {
-    "name": "SUB_E2FC8",
+    "name": "selftest_front_panel_switch_b",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_front_panel_switch_b",
     "notes": null
   },
   "E2FE1": {
@@ -3801,10 +3801,10 @@
     "notes": null
   },
   "E3F2C": {
-    "name": "SUB_E3F2C",
+    "name": "selftest_display_irq_idle",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_display_irq_idle",
     "notes": null
   },
   "E3F92": {
@@ -3815,10 +3815,10 @@
     "notes": null
   },
   "E3F99": {
-    "name": "SUB_E3F99",
+    "name": "selftest_display_irq_active",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_display_irq_active",
     "notes": null
   },
   "E4039": {
@@ -3997,10 +3997,10 @@
     "notes": null
   },
   "E4571": {
-    "name": "SUB_E4571",
+    "name": "check_comm_installed_gate",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "check_comm_installed_gate",
     "notes": null
   },
   "E4585": {

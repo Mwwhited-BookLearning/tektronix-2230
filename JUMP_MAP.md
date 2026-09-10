@@ -110,15 +110,43 @@ start
 :Called unconditionally from 0xE3DEE\n(a different, unrelated call site);
 
 partition "self_test_dispatcher (0xE4244, renamed - was SUB_E4244)" {
-  :Call subsystem tests at 0xE3F2C,\n0xE3F99, 0xE2FC8, 0xE1B16;
-  :Call subsystem test 0xE252A\n(conditional: only if [0x1B83]==0x1E);
-  :Call subsystem test 0xE0FD0;
-  note right: each call above is followed\nby "or [bp-0xA], ax" - folding a\nreturn code into an accumulating\nresult word - and "mov [0x1B18], 1"\n\nNone of these ~14 subroutines directly\nreference the diagnostic strings in\nSTRINGS.md (checked) - see FUNCTIONS.md,\nstill unidentified by name
+  if ([0x1B7A]==1?) then (yes)
+  else (no)
+    :selftest_display_irq_idle\n(MI/line stuck high);
+    :selftest_display_irq_active\n(Display controller/TIMEOUT);
+  endif
+  note right: CORRECTED - an earlier\nread of this function missed this\nchunk of its body entirely and\nwrongly attributed several LATER\ncalls to the surrounding caller\ninstead of here
 
-  :Call check_comm_option_installed\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
-  note right: notably NOT OR'd into\nthe [bp-0xA] accumulator like its\nneighbors - informational, not a\npass/fail test
+  :selftest_front_panel_switch_b\n(range 0-0x15, control not confirmed);
+  :selftest_acq_ram\n(ACQ_RAM even/odd);
 
-  :Call subsystem tests at 0xE16EA,\n0xE1E3E, 0xE1D28, 0xE1DB3, 0xE1E90,\n0xE1F18;
+  if ([0x1B83]==0x1E?) then (yes)
+    :selftest_comm_option_switch\n(range 0-0x18, comm-board control);
+  endif
+
+  if ([0x1B7A]!=1?) then (yes)
+    :inline: configure_measurement_hw\n+ poll [0x322] busy bit + clear_\nselftest_status_flags;
+    note right: NOT OR-folded -\ninformational, like check_comm_\noption_installed
+  endif
+
+  :selftest_hs_acq (HS_ACQ);
+  :selftest_front_panel_switch_a\n(range 0-8, control not confirmed);
+  :selftest_mm_acq (MM_ACQ);
+  :selftest_xy_acq (XY_ACQ);
+  :selftest_cursor_delta_time (CDT);
+  :selftest_measure_and_report\n(peripheral not confirmed);
+  note right: each OR-folded call is\nfollowed by "or [bp-0xA], ax" and\n"mov [0x1B18], 1" - EXCEPT the two\ninformational blocks noted above.\nAll identified via string cross-\nreference or distinctive shape -\nsee NOTES.md/FUNCTIONS.md
+
+  :check_comm_option_installed\n(comm/GPIB option presence + RAM/IO\ncheck - see FUNCTIONS.md);
+  note right: also NOT OR'd -\ninformational, not pass/fail
+
+  :selftest_rom_checksum (ROMS/MISMATCH);
+  :selftest_comm_rom (COMM_ROM checksum);
+  :selftest_comm_loopback_a (COMM_LB);
+  :selftest_comm_loopback_b\n(COMM_LB/FGET NOT SET/CLEAR);
+  :selftest_comm_ram (COMM_RAM);
+  :selftest_cmos (CMOS/reformated/recovered);
+  note right: last 5 gated by\ncheck_comm_installed_gate\n(0xE4571) where applicable
 }
 :retf, result in\naccumulator [bp-0xA] -> ax;
 stop

@@ -412,29 +412,20 @@ on the OLD, differently-purposed `print_selftest_banner` call site at
 `0x07F8`, which is a sibling/neighbor call in the same outer routine,
 not this dispatcher's caller).
 
-The sibling test subroutines called from `self_test_dispatcher` (in
-call order): `SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`, `SUB_E1B16`,
-`SUB_E252A` (conditional, see above), **`selftest_measure_and_report`**
-(`0xE0FD0` - identified this session: an enable/run/disable pattern via
-3 calls to `selftest_measure_mode` with idx 1, 3, 2; the specific
-peripheral it measures isn't confirmed yet, but the *shape* of the
-test - not just a pass/fail probe but a captured measurement copied
-into a report buffer - is), **`check_comm_option_installed`** (comm/
-GPIB option detect, already identified), `SUB_E16EA`, `SUB_E1E3E`,
-`SUB_E1D28`, `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18` - still not
-individually identified, good next targets since matching each to a
-real peripheral would meaningfully advance the "what peripheral do
-these I/O ports belong to" question in `MEMORY_MAP.md`. `SUB_E28FE`/
-`SUB_E227E`/`SUB_E26D6`/`SUB_E286C`/`SUB_E2CEC` are interleaved with
-the report-printing logic in the surrounding caller
-(`print_selftest_report_line`, `0xE07B4` - identified this session as
-the routine that wraps `print_selftest_banner` and prints one report
-line per self-test cycle) rather than being test calls themselves;
-`wait_readout_tick` (`0xE0ADD`, also identified this session) throttles
-`print_string_far`'s character-output loop to the readout hardware's
-actual pace, and `clear_selftest_status_flags` (`0xE0E56`) resets a
-small group of status bytes tied to the far-pointer table
-`SUB_E4443` sets up.
+**Update: all ~19 sibling test calls now individually identified** (a
+later session re-read `self_test_dispatcher`'s body end-to-end more
+carefully than the first pass here, which had actually missed a chunk
+- see "Identified self_test_dispatcher's sibling subroutines" below
+for the full corrected list and how each was found). The earlier text
+in this section claiming `SUB_E28FE`/`SUB_E227E`/`SUB_E26D6`/
+`SUB_E286C`/`SUB_E2CEC` were *not* test calls, but part of the
+surrounding caller instead, **was wrong** - they are genuine direct
+test calls inside `self_test_dispatcher`, confirmed by a full re-read.
+
+`wait_readout_tick` (`0xE0ADD`) throttles `print_string_far`'s
+character-output loop to the readout hardware's actual pace, and
+`clear_selftest_status_flags` (`0xE0E56`) resets a small group of
+status bytes tied to the far-pointer table `SUB_E4443` sets up.
 
 `SUB_E374E`, `SUB_E3821`, and `SUB_E0AF5` (now `print_string_far`) -
 previously listed here as unidentified sibling test subroutines - are
@@ -927,6 +918,74 @@ README.md`. Adopted as the reference binary for *future* checks
 re-deriving encoding equivalence every time this comes up), but this
 is a methodology choice, not a fully-vetted one - flagged in `TODO.md`
 to review again once the rest of the analysis is further along.
+
+## Identified self_test_dispatcher's sibling subroutines
+
+**The single biggest lever this project has had for matching self-test
+subroutines to real peripherals**: rather than guessing from call
+order, went back through each of `self_test_dispatcher`'s ~19 sibling
+calls and searched its body for a `mov <reg>, 0xFF7B` (the fixed
+string-table segment) paired with an offset, then read the actual
+bytes at that physical address (`0xFF7B0 + offset` in `160-3532`).
+Nearly every one directly references one of the diagnostic labels
+already catalogued in `STRINGS.md` - a much stronger identification
+than call-order proximity ever gave. Also corrected: the earlier read
+of `self_test_dispatcher` (documented just above) had missed a whole
+chunk of its body, wrongly attributing 5 of its real test calls to the
+surrounding caller instead - a full re-read fixed this.
+
+Full corrected call list, all now renamed in `gen_disasm_x86.
+FUNCTIONAL_NAMES`:
+
+| Call | String found | Test |
+|---|---|---|
+| `selftest_hs_acq` (`0xE28FE`) | `HS_ACQ` | High-speed acquisition mode |
+| `selftest_front_panel_switch_a` (`0xE227E`) | (none - see below) | Front-panel control, range 0-8 |
+| `selftest_mm_acq` (`0xE26D6`) | `MM_ACQ` | Min-max acquisition mode |
+| `selftest_xy_acq` (`0xE286C`) | `XY_ACQ` | X-Y acquisition mode |
+| `selftest_cursor_delta_time` (`0xE2CEC`) | `CDT` / `PRE-DETRIG` / `TIME-OUT` | Cursor delta-time measurement |
+| `selftest_front_panel_switch_b` (`0xE2FC8`) | (none) | Front-panel control, range 0-0x15 |
+| an **inline block** (no separate sub) | (none) | Runs `configure_measurement_hw`+poll+`clear_selftest_status_flags` directly in `self_test_dispatcher`'s own body, gated on `[0x1B7A]!=1` - result NOT OR-folded (informational, like `check_comm_option_installed`) |
+| `selftest_comm_option_switch` (`0xE252A`, conditional) | (none) | Front-panel/comm-board control, range 0-0x18, only tested if comm option's RAM/IO confirmed |
+| `selftest_measure_and_report` (`0xE0FD0`) | (none) | Enable/run/disable measurement (identified previous session) |
+| `check_comm_option_installed` (`0xE44F1`) | (n/a, not OR-folded) | Comm/GPIB option detect |
+| `selftest_rom_checksum` (`0xE16EA`) | `ROMS` / `MISMATCH` | Main ROM checksum |
+| `selftest_comm_rom` (`0xE1E3E`) | `COMM_ROM` | Comm ROM checksum (both its `0x80000` real address and `0x90000` alias) |
+| `selftest_comm_loopback_a` (`0xE1D28`) | `COMM_LB` (via `SUB_E20B0`) | Comm-board loopback, phase A |
+| `selftest_comm_loopback_b` (`0xE1DB3`) | `COMM_LB` / `FGET NOT SET` / `FGET NOT CLEAR` (via `SUB_E1FBC`) | Comm-board loopback, phase B |
+| `selftest_comm_ram` (`0xE1E90`) | `COMM_RAM` / `CMOS NOT SUPPORTED` | Comm-board RAM |
+| `selftest_cmos` (`0xE1F18`) | `CMOS` / `reformated` / `recovered` | CMOS/NVRAM (with recovery) |
+
+(Table order above is by identification method, not call order - see
+the raw disassembly for the exact sequence, documented in
+`gen_disasm_x86.FUNCTIONAL_NAMES`'s comments.)
+
+The three front-panel-control tests (`selftest_front_panel_switch_a`/
+`_b`/`selftest_comm_option_switch`) don't reference a diagnostic string
+directly - identified instead by their distinctive shape: each scans
+`update_menu_position` across a fixed range (0-8, 0-0x15, 0-0x18
+respectively) via a small step-helper, exactly the same mechanism the
+real menu-navigation cursor uses (see "Menu navigation" in
+`VARIABLES.md`). This means they're testing actual front-panel
+controls (knobs/switches) by sweeping them through their full range,
+not reading a fixed diagnostic ID - very plausibly the VOLTS/DIV,
+TIME/DIV, and (for the comm-gated one) a GPIB-address or baud-rate
+selector specific to the comm option board. Not confirmed which
+control is which.
+
+The `selftest_display_irq_idle`/`selftest_display_irq_active`
+(`0xE3F2C`/`0xE3F99`) pair - referenced from a *different* part of the
+self-test flow, not `self_test_dispatcher`'s main OR-fold list, but
+found during the same string cross-reference sweep - test the readout/
+CRT display controller's interrupt line (see "The readout vector
+display list" above): idle-state check (`line stuck high`) and an
+active check after drawing a shape and expecting an interrupt within a
+timeout (`TIMEOUT`/`unable to reset`).
+
+**Remaining unidentified in this whole self-test area**: which
+specific ADC(s)/status registers the `configure_measurement_hw`/
+`run_adc_selftest` cluster addresses (see below), and which physical
+front-panel control each of the 3 range-scan tests corresponds to.
 
 ## Possible ADC/measurement self-test hardware
 

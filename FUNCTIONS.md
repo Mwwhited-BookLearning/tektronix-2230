@@ -86,31 +86,45 @@ in `disasm/NOTES.md`.
 | `0xE35C2` | `build_print_region` **(renamed)** | `build_print_record` wrapper passing all 4 position/size arguments straight through - the general form behind `init_print_region`'s fixed-size convenience wrapper; used by `print_selftest_report_line` for its computed per-row position | Confirmed |
 | `0xE6166` | `switch_to_next_task` **(renamed)** | Loads `SP`/`SS` from a per-task context table at `[0x1A9D + idx*4]` (`idx = [0x1ACD]`) and resumes it via the standard register-pop + `iret` epilogue - the "switch in" half of a small preemptive task-switcher driven by `INT2_HANDLER_LATE`. See `disasm/NOTES.md` "A small task scheduler" | Confirmed mechanism; how many tasks exist and what each does not confirmed |
 
-### The ~14 self-test subroutines are NOT yet identified by name
+### self_test_dispatcher's sibling subroutines - ALL identified
 
-Tried to match `self_test_dispatcher`'s (`0xE4244`) ~14 still-unnamed
-subsystem-test calls (`SUB_E3F2C`, `SUB_E3F99`, `SUB_E2FC8`,
-`SUB_E1B16`, `SUB_E252A`, `selftest_measure_and_report`, `SUB_E16EA`,
-`SUB_E1E3E`, `SUB_E1D28`, `SUB_E1DB3`, `SUB_E1E90`, `SUB_E1F18` - full
-list in `disasm/NOTES.md` "Found: the self-test dispatcher") to the
-diagnostic
-message strings in `STRINGS.md` (`HS_ACQ`, `MM_ACQ`, `COMM_ROM`,
-`SYS_RAM`, etc.) by searching all decoded code for direct references
-(immediate operands matching each string's address) - **found zero
-direct references**, from any of these subroutines. Each one does
-have substantial real code (100-200+ instructions), so they're not
-stubs. **Correction this session**: three routines previously counted
-in this unidentified list (`SUB_E374E`, `SUB_E3821`, and
-`SUB_E0AF5`/now `print_string_far`) turned out to be display/print
-primitives, not tests at all - found by tracing the literal arguments
-they're called with. The remaining ~14 most likely return a status
-code that gets OR-folded by `self_test_dispatcher` itself (not
-`SUB_E094B`, which is called from the *other*, differently-purposed
-routine - see above), with the actual message printing happening
-elsewhere (a separate results-display routine, not yet found). **Don't
-guess names for these from string proximity/call order alone without
-that missing link** - the order tests run in isn't confirmed to match
-the order their names are printed in.
+**Resolved this session** (previously ~14 of these were unidentified,
+and a documentation error had even mis-attributed several to the wrong
+function - see `disasm/NOTES.md` "Identified self_test_dispatcher's
+sibling subroutines" for the full story). The lever that worked:
+search each subroutine's body for a load of the fixed string-table
+segment (`0xFF7B`) paired with an offset, then read the actual bytes
+at that address - nearly every one directly references a diagnostic
+label already catalogued in `STRINGS.md`.
+
+| Address | Label | Test | Confidence |
+|---|---|---|---|
+| `0xE28FE` | `selftest_hs_acq` **(renamed)** | High-speed acquisition mode (`HS_ACQ`) | Confirmed via string reference |
+| `0xE26D6` | `selftest_mm_acq` **(renamed)** | Min-max acquisition mode (`MM_ACQ`) | Confirmed via string reference |
+| `0xE286C` | `selftest_xy_acq` **(renamed)** | X-Y acquisition mode (`XY_ACQ`) | Confirmed via string reference |
+| `0xE1B16` | `selftest_acq_ram` **(renamed)** | Acquisition RAM, even/odd banks (`ACQ_RAM even`/`ACQ_RAM odd`) | Confirmed via string reference |
+| `0xE16EA` | `selftest_rom_checksum` **(renamed)** | Main ROM checksum (`ROMS`/`MISMATCH`) | Confirmed via string reference |
+| `0xE1E3E` | `selftest_comm_rom` **(renamed)** | Comm ROM checksum, both its real address and `0x90000` alias (`COMM_ROM`) | Confirmed via string reference |
+| `0xE1E90` | `selftest_comm_ram` **(renamed)** | Comm-board RAM (`COMM_RAM`/`CMOS NOT SUPPORTED`) | Confirmed via string reference |
+| `0xE1F18` | `selftest_cmos` **(renamed)** | CMOS/NVRAM, with recovery (`CMOS`/`reformated`/`recovered`) | Confirmed via string reference |
+| `0xE1D28` | `selftest_comm_loopback_a` **(renamed)** | Comm-board loopback, phase A (via `SUB_E20B0`, `COMM_LB`) | Confirmed via string reference |
+| `0xE1DB3` | `selftest_comm_loopback_b` **(renamed)** | Comm-board loopback, phase B (via `SUB_E1FBC`, `COMM_LB`/`FGET NOT SET`/`FGET NOT CLEAR`) | Confirmed via string reference |
+| `0xE4571` | `check_comm_installed_gate` **(renamed)** | Checks `[0x1BF9]&1`; gates the 3 comm-board tests above, copying a "not installed" message and returning skip if the option isn't present | Confirmed |
+| `0xE2CEC` | `selftest_cursor_delta_time` **(renamed)** | Cursor delta-time measurement (`CDT`/`PRE-DETRIG`/`TIME-OUT`, via `measure_cursor_delta_time`) | Confirmed via string reference |
+| `0xE2CFB` | `measure_cursor_delta_time` **(renamed)** | Implementation for `selftest_cursor_delta_time` - calls `wait_stable_measurement` twice | Confirmed |
+| `0xE227E` | `selftest_front_panel_switch_a` **(renamed)** | Front-panel control test, scans `update_menu_position` over range 0-8 | Mechanism confirmed; which physical control not confirmed |
+| `0xE2FC8` | `selftest_front_panel_switch_b` **(renamed)** | Front-panel control test, scans `update_menu_position` over range 0-0x15 | Mechanism confirmed; which physical control not confirmed |
+| `0xE252A` | `selftest_comm_option_switch` **(renamed)** | Conditional on `[0x1B83]==0x1E`; scans `update_menu_position` over range 0-0x18 - likely a comm-board-specific control (GPIB address/baud rate?) | Mechanism confirmed; peripheral not confirmed |
+| `0xE0FD0` | `selftest_measure_and_report` **(renamed, previous session)** | Enable/run/disable measurement pattern | Mechanism confirmed; peripheral not confirmed |
+| `0xE44F1` | `check_comm_option_installed` **(renamed, earlier session)** | Comm/GPIB option detect - not OR-folded (informational) | Confirmed |
+| an inline block inside `self_test_dispatcher` itself (no separate address) | (unnamed - not a function) | Runs `configure_measurement_hw` + poll + `clear_selftest_status_flags` directly, gated on `[0x1B7A]!=1`; not OR-folded (informational) | Confirmed |
+| `0xE3F2C` | `selftest_display_irq_idle` **(renamed)** | Readout/CRT display controller interrupt line, idle-state check (`MI`/`line stuck high`/`Display controller`) | Confirmed via string reference |
+| `0xE3F99` | `selftest_display_irq_active` **(renamed)** | Readout/CRT display controller interrupt line, active check after drawing a test shape (`Display controller`/`TIMEOUT`/`unable to reset`) | Confirmed via string reference |
+
+**Still open**: which specific ADC/status-register hardware
+`configure_measurement_hw`/`run_adc_selftest`/`selftest_measure_and_
+report` address, and which physical front-panel control each of the 3
+range-scan tests corresponds to.
 
 ## Comm/GPIB ROM (160-2998)
 

@@ -1652,7 +1652,7 @@ L_E153B:
     db 0x03, 0x75, 0x18, 0x9a, 0xaa, 0x01, 0x54, 0xe1, 0x89, 0x46, 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50  ; 16C4
     db 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05, 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00  ; 16D4
     db 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 16E4
-SUB_E16EA:
+selftest_rom_checksum:
     push bp                                  ; 16EA: push bp
     db 0x8b, 0xec  ; 16EB: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x34                             ; 16ED: sub sp, 0x34
@@ -1961,7 +1961,7 @@ L_E1970:
     db 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x18, 0x9a, 0xa6, 0x01, 0x97, 0xe1, 0x89  ; 1AE9
     db 0x46, 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9  ; 1AF9
     db 0x05, 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 1B09
-SUB_E1B16:
+selftest_acq_ram:
     push bp                                  ; 1B16: push bp
     db 0x8b, 0xec  ; 1B17: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 1B19: sub sp, 8
@@ -2156,7 +2156,7 @@ L_E1CB1:
     db 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x18, 0x9a, 0x78, 0x00, 0xcb, 0xe1, 0x89, 0x46  ; 1CFC
     db 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05  ; 1D0C
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 1D1C
-SUB_E1D28:
+selftest_comm_loopback_a:
     push bp                                  ; 1D28: push bp
     db 0x8b, 0xec  ; 1D29: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 1D2B: sub sp, 6
@@ -2178,7 +2178,7 @@ L_E1D43:
     db 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x18, 0x9a, 0x03, 0x01, 0xcb, 0xe1, 0x89, 0x46  ; 1D87
     db 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05  ; 1D97
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 1DA7
-SUB_E1DB3:
+selftest_comm_loopback_b:
     push bp                                  ; 1DB3: push bp
     db 0x8b, 0xec  ; 1DB4: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 1DB6: sub sp, 6
@@ -2200,7 +2200,7 @@ L_E1DCE:
     db 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x18, 0x9a, 0x8e, 0x01, 0xcb, 0xe1, 0x89, 0x46  ; 1E12
     db 0xf8, 0x8b, 0x7e, 0xf6, 0x57, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0x5f, 0x0b, 0xc7, 0xe9, 0x05  ; 1E22
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 1E32
-SUB_E1E3E:
+selftest_comm_rom:
     push bp                                  ; 1E3E: push bp
     db 0x8b, 0xec  ; 1E3F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 1E41: sub sp, 6
@@ -2240,7 +2240,7 @@ L_E1E8C:
     db 0x8b, 0xe5  ; 1E8C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1E8E: pop bp
     retf                                     ; 1E8F: retf 
-SUB_E1E90:
+selftest_comm_ram:
     push bp                                  ; 1E90: push bp
     db 0x8b, 0xec  ; 1E91: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x10                             ; 1E93: sub sp, 0x10
@@ -2298,7 +2298,7 @@ L_E1F14:
     db 0x8b, 0xe5  ; 1F14: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1F16: pop bp
     retf                                     ; 1F17: retf 
-SUB_E1F18:
+selftest_cmos:
     push bp                                  ; 1F18: push bp
     db 0x8b, 0xec  ; 1F19: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x2e                             ; 1F1B: sub sp, 0x2e
@@ -2629,7 +2629,7 @@ L_E21FB:
     db 0x00, 0xc7, 0x06, 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x14, 0xff, 0x76, 0x06  ; 2252
     db 0x9a, 0xaf, 0x00, 0x20, 0xe2, 0x89, 0x46, 0xf8, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0xe9, 0x05  ; 2262
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 2272
-SUB_E227E:
+selftest_front_panel_switch_a:
     push bp                                  ; 227E: push bp
     db 0x8b, 0xec  ; 227F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 2281: sub sp, 8
@@ -2813,7 +2813,7 @@ SUB_E230B:
     db 0x00, 0xc7, 0x06, 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x14, 0xff, 0x76, 0x06  ; 24FE
     db 0x9a, 0xde, 0x00, 0x48, 0xe2, 0x89, 0x46, 0xf8, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0xe9, 0x05  ; 250E
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 251E
-SUB_E252A:
+selftest_comm_option_switch:
     push bp                                  ; 252A: push bp
     db 0x8b, 0xec  ; 252B: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 252D: sub sp, 8
@@ -2987,7 +2987,7 @@ L_E26CD:
     db 0x8b, 0xe5  ; 26D0: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 26D2: pop bp
     retf 2                                   ; 26D3: retf 2
-SUB_E26D6:
+selftest_mm_acq:
     push bp                                  ; 26D6: push bp
     db 0x8b, 0xec  ; 26D7: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x3a                             ; 26D9: sub sp, 0x3a
@@ -3156,7 +3156,7 @@ L_E2865:
     db 0x8b, 0xe5  ; 2868: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 286A: pop bp
     retf                                     ; 286B: retf 
-SUB_E286C:
+selftest_xy_acq:
     push bp                                  ; 286C: push bp
     db 0x8b, 0xec  ; 286D: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x12                             ; 286F: sub sp, 0x12
@@ -3217,7 +3217,7 @@ SUB_E286C:
     pop bp                                   ; 28FB: pop bp
     retf                                     ; 28FC: retf 
     db 0xff  ; 28FD
-SUB_E28FE:
+selftest_hs_acq:
     push bp                                  ; 28FE: push bp
     db 0x8b, 0xec  ; 28FF: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 2901: sub sp, 0xc
@@ -3596,7 +3596,7 @@ SUB_E2CD3:
     pop bp                                   ; 2CE9: pop bp
     retf                                     ; 2CEA: retf 
     db 0xff  ; 2CEB
-SUB_E2CEC:
+selftest_cursor_delta_time:
     push bp                                  ; 2CEC: push bp
     db 0x8b, 0xec  ; 2CED: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 2CEF: sub sp, 6
@@ -3604,7 +3604,7 @@ SUB_E2CEC:
     db 0x8b, 0xe5  ; 2CF7: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2CF9: pop bp
     retf                                     ; 2CFA: retf 
-SUB_E2CFB:
+measure_cursor_delta_time:
     push bp                                  ; 2CFB: push bp
     db 0x8b, 0xec  ; 2CFC: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xe                              ; 2CFE: sub sp, 0xe
@@ -3823,7 +3823,7 @@ L_E2F42:
     db 0x00, 0x00, 0xc7, 0x06, 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x14, 0xff, 0x76  ; 2F9B
     db 0x06, 0x9a, 0xbc, 0x00, 0xf4, 0xe2, 0x89, 0x46, 0xf8, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0xe9  ; 2FAB
     db 0x05, 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 2FBB
-SUB_E2FC8:
+selftest_front_panel_switch_b:
     push bp                                  ; 2FC8: push bp
     db 0x8b, 0xec  ; 2FC9: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 2FCB: sub sp, 8
@@ -5131,7 +5131,7 @@ L_E3F12:
     db 0x8b, 0xe5  ; 3F28: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3F2A: pop bp
     retf                                     ; 3F2B: retf 
-SUB_E3F2C:
+selftest_display_irq_idle:
     push bp                                  ; 3F2C: push bp
     db 0x8b, 0xec  ; 3F2D: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 3F2F: sub sp, 8
@@ -5168,7 +5168,7 @@ L_E3F92:
     db 0x8b, 0xe5  ; 3F95: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3F97: pop bp
     retf                                     ; 3F98: retf 
-SUB_E3F99:
+selftest_display_irq_active:
     push bp                                  ; 3F99: push bp
     db 0x8b, 0xec  ; 3F9A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 3F9C: sub sp, 0xa
@@ -5693,7 +5693,7 @@ L_E456B:
     db 0x8b, 0xe5  ; 456D: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 456F: pop bp
     retf                                     ; 4570: retf 
-SUB_E4571:
+check_comm_installed_gate:
     push bp                                  ; 4571: push bp
     db 0x8b, 0xec  ; 4572: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 4574: sub sp, 6

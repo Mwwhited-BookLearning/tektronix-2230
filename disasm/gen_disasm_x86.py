@@ -422,6 +422,95 @@ FUNCTIONAL_NAMES = {
                                                # print_selftest_report_
                                                # line for its computed
                                                # per-row position
+    # --- self_test_dispatcher's sibling subroutines, identified by
+    # cross-referencing the diagnostic-message strings each one
+    # actually references against STRINGS.md's known self-test labels
+    # (HS_ACQ/MM_ACQ/XY_ACQ, ACQ_RAM, ROMS/MISMATCH, COMM_ROM/COMM_RAM/
+    # CMOS, COMM_LB, CDT, front-panel controls) - see NOTES.md
+    # "Identified self_test_dispatcher's sibling subroutines". ---
+    0xE26D6: "selftest_mm_acq",               # references string
+                                               # "MM_ACQ" (0xFF7B:0x626)
+    0xE28FE: "selftest_hs_acq",               # references "HS_ACQ"
+                                               # (0xFF7B:0x618)
+    0xE286C: "selftest_xy_acq",               # references "XY_ACQ"
+                                               # (0xFF7B:0x642)
+    0xE1B16: "selftest_acq_ram",              # references "ACQ_RAM
+                                               # even"/"ACQ_RAM odd"
+                                               # (0xFF7B:0x748)
+    0xE16EA: "selftest_rom_checksum",         # references "ROMS"/
+                                               # "MISMATCH" (0xFF7B:0x772)
+    0xE1E3E: "selftest_comm_rom",             # references "COMM_ROM"
+                                               # (0xFF7B:0x6ae); checksums
+                                               # both the comm ROM's real
+                                               # address (0x80000) and its
+                                               # 0x90000 alias range
+    0xE1E90: "selftest_comm_ram",             # references "COMM_RAM"/
+                                               # "CMOS NOT SUPPORTED"
+                                               # (0xFF7B:0x6b7)
+    0xE1F18: "selftest_cmos",                 # references "CMOS"/
+                                               # "reformated"/"recovered"
+                                               # (0xFF7B:0x6d4)
+    0xE1D28: "selftest_comm_loopback_a",      # gated by
+                                               # check_comm_installed_gate,
+                                               # calls SUB_E20B0 which
+                                               # references "COMM_LB"
+    0xE1DB3: "selftest_comm_loopback_b",      # gated by
+                                               # check_comm_installed_gate,
+                                               # calls SUB_E1FBC which
+                                               # references "COMM_LB"/
+                                               # "FGET NOT SET"/"FGET NOT
+                                               # CLEAR"
+    0xE4571: "check_comm_installed_gate",     # checks [0x1BF9]&1 (set
+                                               # by check_comm_option_
+                                               # installed); if clear,
+                                               # copies a "not installed"
+                                               # string and returns 1
+                                               # (skip), else returns 0
+    0xE3F2C: "selftest_display_irq_idle",     # references "MI"/"line
+                                               # stuck high"/"Display
+                                               # controller" (0xFF7B:0x4bd)
+                                               # - checks the display
+                                               # controller's interrupt
+                                               # line before any operation
+    0xE3F99: "selftest_display_irq_active",   # references "Display
+                                               # controller"/"TIMEOUT"/
+                                               # "unable to reset"
+                                               # (0xFF7B:0x4d1) - draws a
+                                               # test shape via
+                                               # plot_readout_point then
+                                               # verifies the interrupt
+                                               # fires
+    0xE2CEC: "selftest_cursor_delta_time",    # wrapper; its sole
+                                               # implementation
+                                               # (measure_cursor_delta_
+                                               # time) references "CDT"/
+                                               # "PRE-DETRIG"/"TIME-OUT"
+                                               # (0xFF7B:0x5a8)
+    0xE2CFB: "measure_cursor_delta_time",     # implementation for
+                                               # selftest_cursor_delta_
+                                               # time - calls wait_
+                                               # stable_measurement twice
+    0xE227E: "selftest_front_panel_switch_a", # wrapper: scans
+                                               # update_menu_position
+                                               # over range 0-8 (9
+                                               # positions) via its step
+                                               # helper (0xE22AF)
+    0xE2FC8: "selftest_front_panel_switch_b", # wrapper: scans
+                                               # update_menu_position
+                                               # over range 0-0x15 (21
+                                               # positions) via its step
+                                               # helper (0xE2FFC)
+    0xE252A: "selftest_comm_option_switch",   # conditional on
+                                               # [0x1B83]==0x1E (comm
+                                               # option RAM/IO
+                                               # confirmed); scans
+                                               # update_menu_position
+                                               # over range 0-0x18 (24
+                                               # positions) via its step
+                                               # helper (0xE255E) -
+                                               # likely a comm-board-
+                                               # specific switch (GPIB
+                                               # address/baud rate?)
     0xE0DCC: "configure_measurement_hw",      # (5 params) writes them
                                                # into the shared
                                                # "hardware register"
