@@ -1778,10 +1778,10 @@
     "notes": null
   },
   "97431": {
-    "name": "SUB_97431",
+    "name": "service_comm_rx_queue",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "service_comm_rx_queue",
     "notes": null
   },
   "9746A": {
@@ -1834,10 +1834,10 @@
     "notes": null
   },
   "974E1": {
-    "name": "SUB_974E1",
+    "name": "enqueue_comm_char",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "enqueue_comm_char",
     "notes": null
   },
   "974FD": {
@@ -1848,10 +1848,10 @@
     "notes": null
   },
   "9751A": {
-    "name": "SUB_9751A",
+    "name": "get_xon_xoff_byte",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "get_xon_xoff_byte",
     "notes": null
   },
   "97533": {

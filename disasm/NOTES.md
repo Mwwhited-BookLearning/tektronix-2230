@@ -1268,6 +1268,22 @@ non-drifted floating-point instruction in the middle of otherwise
 completely ordinary compiled-C integer code, not part of any known
 decode-drift cluster).
 
+## Found: RS-232 software flow control (XON/XOFF) in the comm ROM
+
+`get_xon_xoff_byte` (`0x9751A`, `160-2998`) is a small, unambiguous
+match for standard RS-232 software flow control: it checks two request
+bits in `[0x460]` and returns the ASCII control code for XOFF (`0x13`,
+DC3) or XON (`0x11`, DC1), clearing the corresponding request bit as
+it does. It's called from `service_comm_rx_queue` (`0x97431`), which
+services a wrap-around rx ring buffer (`[0x448]`/`[0x44A]` read
+pointer, `[0x44C]` write pointer, base `0xAF` size `0x384`) and
+forwards either a pending flow-control byte or the next queued data
+byte to `enqueue_comm_char` (`0x974E1`), which also implements
+space/mark parity handling based on a `[0x4ED]` mode byte (0 = no
+parity adjustment, else strip bit 7, and for mode `3` specifically
+force bit 7 back on). This is a solid, concrete confirmation of the
+RS-232 (not just GPIB) personality of the comm ROM's serial path.
+
 ## Found: the acquisition mode-change dispatcher (handle_acq_mode_change)
 
 `SUB_E80E4` takes a single "what changed" flags word (arg at `[bp-8]`)

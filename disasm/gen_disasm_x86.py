@@ -636,6 +636,39 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0x9751A: "get_xon_xoff_byte",              # comm ROM: checks [0x460]
+                                               # flow-control-request
+                                               # bits - bit 2 -> clears
+                                               # it, returns AL=0x13
+                                               # (XOFF/DC3); else bit 1
+                                               # -> clears it, returns
+                                               # AL=0x11 (XON/DC1); else
+                                               # returns AL=0 (nothing
+                                               # pending)
+    0x974E1: "enqueue_comm_char",              # comm ROM: applies the
+                                               # parity mode in [0x4ED]
+                                               # to the arg byte (0=no
+                                               # change, else strip bit
+                                               # 7, and if ==3 force bit
+                                               # 7 set - space/mark
+                                               # parity), stores it into
+                                               # the tx queue at [0x6D6],
+                                               # clears [0x45A], and
+                                               # calls SUB_800FC(0)
+    0x97431: "service_comm_rx_queue",          # comm ROM: pulls one byte
+                                               # from the rx ring buffer
+                                               # ([0x448]/[0x44A], base
+                                               # 0xAF, size 0x384,
+                                               # wrapping), forwards a
+                                               # pending XON/XOFF byte
+                                               # (get_xon_xoff_byte) or
+                                               # the next queued data
+                                               # byte via enqueue_comm_
+                                               # char, and sets [0x455]
+                                               # (queue-empty flag) once
+                                               # the read pointer catches
+                                               # up to the write pointer
+                                               # [0x44C]
     0xE6C85: "reset_display_and_notify_comm", # if [0x766] set: notifies
                                                # comm ROM (notify_comm_
                                                # rom_a), clears [0x1B76]

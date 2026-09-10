@@ -2562,7 +2562,7 @@ L_96C3A:
 L_96C3D:
     2998_alias_90000:6C3D  [96C3D]  e90500          jmp     L_96C45  ; 0x3d5
 L_96C40:
-    2998_alias_90000:6C40  [96C40]  9ae104f596      lcall   SUB_97431  ; 0x96f5, 0x4e1
+    2998_alias_90000:6C40  [96C40]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
 L_96C45:
     2998_alias_90000:6C45  [96C45]  e90500          jmp     L_96C4D  ; 0x3dd
 L_96C48:
@@ -2740,7 +2740,7 @@ L_96F50:
     2998_alias_90000:6F52  [96F52]  5d              pop     bp
     2998_alias_90000:6F53  [96F53]  cb              retf    
 
-SUB_97431:
+service_comm_rx_queue:
     2998_alias_90000:7431  [97431]  55              push    bp
     2998_alias_90000:7432  [97432]  8bec            mov     bp, sp
     2998_alias_90000:7434  [97434]  83ec0a          sub     sp, 0xa
@@ -2754,10 +2754,10 @@ SUB_97431:
     2998_alias_90000:7451  [97451]  7463            je      L_974B6  ; 0x566
     2998_alias_90000:7453  [97453]  803e600400      cmp     byte ptr [0x460], 0
     2998_alias_90000:7458  [97458]  7410            je      L_9746A  ; 0x51a
-    2998_alias_90000:745A  [9745A]  9aca05f596      lcall   SUB_9751A  ; 0x96f5, 0x5ca
+    2998_alias_90000:745A  [9745A]  9aca05f596      lcall   get_xon_xoff_byte  ; 0x96f5, 0x5ca
     2998_alias_90000:745F  [9745F]  2ae4            sub     ah, ah
     2998_alias_90000:7461  [97461]  50              push    ax
-    2998_alias_90000:7462  [97462]  9a9105f596      lcall   SUB_974E1  ; 0x96f5, 0x591
+    2998_alias_90000:7462  [97462]  9a9105f596      lcall   enqueue_comm_char  ; 0x96f5, 0x591
     2998_alias_90000:7467  [97467]  e97300          jmp     L_974DD  ; 0x58d
 L_9746A:
     2998_alias_90000:746A  [9746A]  803e550400      cmp     byte ptr [0x455], 0
@@ -2773,7 +2773,7 @@ L_97485:
     2998_alias_90000:7489  [97489]  268a15          mov     dl, byte ptr es:[di]
     2998_alias_90000:748C  [9748C]  2af6            sub     dh, dh
     2998_alias_90000:748E  [9748E]  52              push    dx
-    2998_alias_90000:748F  [9748F]  9a9105f596      lcall   SUB_974E1  ; 0x96f5, 0x591
+    2998_alias_90000:748F  [9748F]  9a9105f596      lcall   enqueue_comm_char  ; 0x96f5, 0x591
     2998_alias_90000:7494  [97494]  c43e4804        les     di, ptr [0x448]
     2998_alias_90000:7498  [97498]  8d5501          lea     dx, [di + 1]
     2998_alias_90000:749B  [9749B]  8956f6          mov     word ptr [bp - 0xa], dx
@@ -2807,7 +2807,7 @@ L_974DD:
     2998_alias_90000:74DD  [974DD]  8be5            mov     sp, bp
     2998_alias_90000:74DF  [974DF]  5d              pop     bp
     2998_alias_90000:74E0  [974E0]  cb              retf    
-SUB_974E1:
+enqueue_comm_char:
     2998_alias_90000:74E1  [974E1]  55              push    bp
     2998_alias_90000:74E2  [974E2]  8bec            mov     bp, sp
     2998_alias_90000:74E4  [974E4]  83ec06          sub     sp, 6
@@ -2828,7 +2828,7 @@ L_974FD:
     2998_alias_90000:7514  [97514]  8be5            mov     sp, bp
     2998_alias_90000:7516  [97516]  5d              pop     bp
     2998_alias_90000:7517  [97517]  ca0200          retf    2
-SUB_9751A:
+get_xon_xoff_byte:
     2998_alias_90000:751A  [9751A]  55              push    bp
     2998_alias_90000:751B  [9751B]  8bec            mov     bp, sp
     2998_alias_90000:751D  [9751D]  83ec06          sub     sp, 6
@@ -3049,7 +3049,7 @@ SUB_97BE6:
     2998_alias_90000:7C0A  [97C0A]  800e600402      or      byte ptr [0x460], 2
     2998_alias_90000:7C0F  [97C0F]  803e5a0400      cmp     byte ptr [0x45a], 0
     2998_alias_90000:7C14  [97C14]  7405            je      L_97C1B  ; 0xccb
-    2998_alias_90000:7C16  [97C16]  9ae104f596      lcall   SUB_97431  ; 0x96f5, 0x4e1
+    2998_alias_90000:7C16  [97C16]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
 L_97C1B:
     2998_alias_90000:7C1B  [97C1B]  8a5606          mov     dl, byte ptr [bp + 6]
     2998_alias_90000:7C1E  [97C1E]  08165c04        or      byte ptr [0x45c], dl
@@ -3075,7 +3075,7 @@ SUB_97C28:
     2998_alias_90000:7C57  [97C57]  800e600401      or      byte ptr [0x460], 1
     2998_alias_90000:7C5C  [97C5C]  803e5a0400      cmp     byte ptr [0x45a], 0
     2998_alias_90000:7C61  [97C61]  7405            je      L_97C68  ; 0xd18
-    2998_alias_90000:7C63  [97C63]  9ae104f596      lcall   SUB_97431  ; 0x96f5, 0x4e1
+    2998_alias_90000:7C63  [97C63]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
 L_97C68:
     2998_alias_90000:7C68  [97C68]  8be5            mov     sp, bp
     2998_alias_90000:7C6A  [97C6A]  5d              pop     bp
