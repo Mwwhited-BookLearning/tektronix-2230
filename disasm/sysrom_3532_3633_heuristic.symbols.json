@@ -2870,10 +2870,10 @@
     "notes": null
   },
   "E30B5": {
-    "name": "SUB_E30B5",
+    "name": "verify_adc_calibration",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "verify_adc_calibration",
     "notes": null
   },
   "E315E": {
@@ -3521,10 +3521,10 @@
     "notes": null
   },
   "E3B12": {
-    "name": "SUB_E3B12",
+    "name": "run_selftest_sequence",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "run_selftest_sequence",
     "notes": null
   },
   "E3B84": {
@@ -3934,10 +3934,10 @@
     "notes": null
   },
   "E43A0": {
-    "name": "SUB_E43A0",
+    "name": "init_selftest_report_screen",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_selftest_report_screen",
     "notes": null
   },
   "E43F2": {
@@ -7245,10 +7245,10 @@
     "notes": null
   },
   "E7E0D": {
-    "name": "SUB_E7E0D",
+    "name": "plot_line_to",
     "kind": "sub",
     "ref_count": 6,
-    "functional_name": null,
+    "functional_name": "plot_line_to",
     "notes": null
   },
   "E7E2A": {

@@ -3922,7 +3922,7 @@ L_E30AB:
     db 0x8b, 0xe5  ; 30AF: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 30B1: pop bp
     retf 2                                   ; 30B2: retf 2
-SUB_E30B5:
+verify_adc_calibration:
     push bp                                  ; 30B5: push bp
     db 0x8b, 0xec  ; 30B6: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x34                             ; 30B8: sub sp, 0x34
@@ -4763,7 +4763,7 @@ append_readout_char:
     db 0x12, 0x00, 0x90, 0x01, 0x19, 0x00, 0x28, 0x00, 0x90, 0xe8, 0x14, 0x00, 0x20, 0x03, 0x0c, 0x00  ; 3AEA
     db 0x24, 0x00, 0xa8, 0xe4, 0x1a, 0x00, 0xe8, 0x03, 0x0a, 0x00, 0x23, 0x00, 0xae, 0xe3, 0x1c, 0x00  ; 3AFA
     db 0xd0, 0x07, 0x05, 0x00, 0x22, 0x00, 0xb4, 0xe2  ; 3B0A
-SUB_E3B12:
+run_selftest_sequence:
     push bp                                  ; 3B12: push bp
     db 0x8b, 0xec  ; 3B13: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x16                             ; 3B15: sub sp, 0x16
@@ -5521,7 +5521,7 @@ L_E42EC:
     db 0x8b, 0xe5  ; 439C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 439E: pop bp
     retf                                     ; 439F: retf 
-SUB_E43A0:
+init_selftest_report_screen:
     push bp                                  ; 43A0: push bp
     db 0x8b, 0xec  ; 43A1: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 43A3: sub sp, 6
@@ -9086,7 +9086,7 @@ L_E7E07:
     db 0x8b, 0xe5  ; 7E07: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 7E09: pop bp
     retf 2                                   ; 7E0A: retf 2
-SUB_E7E0D:
+plot_line_to:
     push bp                                  ; 7E0D: push bp
     db 0x8b, 0xec  ; 7E0E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 7E10: sub sp, 0xa

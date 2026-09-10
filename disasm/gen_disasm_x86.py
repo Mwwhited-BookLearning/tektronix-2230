@@ -515,6 +515,52 @@ FUNCTIONAL_NAMES = {
                                                # different word counts
                                                # for what look like
                                                # different delay lengths
+    0xE43A0: "init_selftest_report_screen",   # saves the readout
+                                               # buffer's base pointer
+                                               # ([0x1CC4]) to [0x45E]/
+                                               # [0x460] (used by
+                                               # init_print_region_home's
+                                               # default position),
+                                               # calls report_screen_mode
+                                               # with idx 1 then 4
+                                               # (reset, then init title/
+                                               # frame), sets a flag bit,
+                                               # and stores the report
+                                               # area's linear address
+                                               # via seg_off_to_linear.
+                                               # Called from
+                                               # run_selftest_sequence
+    0xE3B12: "run_selftest_sequence",         # THE top-level self-test
+                                               # orchestrator: writes a
+                                               # marker byte at physical
+                                               # 0x00000, initializes the
+                                               # readout display-list
+                                               # buffer, calls SUB_E4443/
+                                               # SUB_E75C0/SUB_E128D
+                                               # setup, decides a test-
+                                               # mode byte [0x1B48] from
+                                               # [0x758], calls
+                                               # init_selftest_report_
+                                               # screen (SUB_E43A0), then
+                                               # print_selftest_report_
+                                               # line ONCE followed
+                                               # immediately by
+                                               # self_test_dispatcher -
+                                               # ties together every
+                                               # self-test finding from
+                                               # this whole investigation
+    0xE7E0D: "plot_line_to",                  # HPGL "PD%d,%d;" (pen-
+                                               # down draw) counterpart
+                                               # to update_plot_position's
+                                               # "PU" (pen-up move)
+    0xE30B5: "verify_adc_calibration",        # compares the 12-bit
+                                               # value field of status
+                                               # register [0x322]
+                                               # against a caller-given
+                                               # expected value; on
+                                               # mismatch, builds an
+                                               # "ACQ_AB ... uncaled :
+                                               # min=<hex>" error message
     0xE7D7D: "update_plot_position",          # (x, y) - mode-dispatched
                                                # on [0x6CA]: mode 0
                                                # computes a position via

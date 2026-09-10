@@ -4952,7 +4952,7 @@ L_E3054:
     3633:3054  [E3054]  897ef6          mov     word ptr [bp - 0xa], di
     3633:3057  [E3057]  8166f6fe0f      and     word ptr [bp - 0xa], 0xffe
     3633:305C  [E305C]  ff76f6          push    word ptr [bp - 0xa]
-    3633:305F  [E305F]  9a7501f4e2      lcall   SUB_E30B5  ; 0xe2f4, 0x175
+    3633:305F  [E305F]  9a7501f4e2      lcall   verify_adc_calibration  ; 0xe2f4, 0x175
     3633:3064  [E3064]  8946f8          mov     word ptr [bp - 8], ax
     3633:3067  [E3067]  bf0a00          mov     di, 0xa
     3633:306A  [E306A]  57              push    di
@@ -4988,7 +4988,7 @@ L_E30AB:
     3633:30AF  [E30AF]  8be5            mov     sp, bp
     3633:30B1  [E30B1]  5d              pop     bp
     3633:30B2  [E30B2]  ca0200          retf    2
-SUB_E30B5:
+verify_adc_calibration:
     3633:30B5  [E30B5]  55              push    bp
     3633:30B6  [E30B6]  8bec            mov     bp, sp
     3633:30B8  [E30B8]  83ec34          sub     sp, 0x34
@@ -6055,7 +6055,7 @@ FUNC_3633_3A63:
     3633:3A96  [E3A96]  5d              pop     bp
     3633:3A97  [E3A97]  ca0400          retf    4
 
-SUB_E3B12:
+run_selftest_sequence:
     3633:3B12  [E3B12]  55              push    bp
     3633:3B13  [E3B13]  8bec            mov     bp, sp
     3633:3B15  [E3B15]  83ec16          sub     sp, 0x16
@@ -6108,7 +6108,7 @@ L_E3BAE:
     3633:3BB2  [E3BB2]  7512            jne     L_E3BC6  ; 0xb6
     3633:3BB4  [E3BB4]  ff76f4          push    word ptr [bp - 0xc]
     3633:3BB7  [E3BB7]  9ab0005de4      lcall   SUB_E4680  ; 0xe45d, 0xb0
-    3633:3BBC  [E3BBC]  9a9008b1e3      lcall   SUB_E43A0  ; 0xe3b1, 0x890
+    3633:3BBC  [E3BBC]  9a9008b1e3      lcall   init_selftest_report_screen  ; 0xe3b1, 0x890
     3633:3BC1  [E3BC1]  c746f40300      mov     word ptr [bp - 0xc], 3
 L_E3BC6:
     3633:3BC6  [E3BC6]  8b7ef6          mov     di, word ptr [bp - 0xa]
@@ -6813,7 +6813,7 @@ L_E42EC:
     3633:439C  [E439C]  8be5            mov     sp, bp
     3633:439E  [E439E]  5d              pop     bp
     3633:439F  [E439F]  cb              retf    
-SUB_E43A0:
+init_selftest_report_screen:
     3633:43A0  [E43A0]  55              push    bp
     3633:43A1  [E43A1]  8bec            mov     bp, sp
     3633:43A3  [E43A3]  83ec06          sub     sp, 6
@@ -10631,7 +10631,7 @@ L_E6AAB:
     3633:6AC8  [E6AC8]  5f              pop     di
     3633:6AC9  [E6AC9]  2bc7            sub     ax, di
     3633:6ACB  [E6ACB]  a3021c          mov     word ptr [0x1c02], ax
-    3633:6ACE  [E6ACE]  9a0200b1e3      lcall   SUB_E3B12  ; 0xe3b1, 2
+    3633:6ACE  [E6ACE]  9a0200b1e3      lcall   run_selftest_sequence  ; 0xe3b1, 2
     3633:6AD3  [E6AD3]  c606660700      mov     byte ptr [0x766], 0
     3633:6AD8  [E6AD8]  c746f80000      mov     word ptr [bp - 8], 0
     3633:6ADD  [E6ADD]  e90e00          jmp     L_E6AEE  ; 0x6e
@@ -12120,23 +12120,23 @@ FUNC_3633_7A33:
     3633:7A49  [E7A49]  83c402          add     sp, 2
     3633:7A4C  [E7A4C]  ff760a          push    word ptr [bp + 0xa]
     3633:7A4F  [E7A4F]  ff7606          push    word ptr [bp + 6]
-    3633:7A52  [E7A52]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3633:7A52  [E7A52]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3633:7A57  [E7A57]  83c402          add     sp, 2
     3633:7A5A  [E7A5A]  ff760c          push    word ptr [bp + 0xc]
     3633:7A5D  [E7A5D]  ff7606          push    word ptr [bp + 6]
-    3633:7A60  [E7A60]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3633:7A60  [E7A60]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3633:7A65  [E7A65]  83c402          add     sp, 2
     3633:7A68  [E7A68]  ff760c          push    word ptr [bp + 0xc]
     3633:7A6B  [E7A6B]  ff7608          push    word ptr [bp + 8]
-    3633:7A6E  [E7A6E]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3633:7A6E  [E7A6E]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3633:7A73  [E7A73]  83c402          add     sp, 2
     3633:7A76  [E7A76]  ff760a          push    word ptr [bp + 0xa]
     3633:7A79  [E7A79]  ff7608          push    word ptr [bp + 8]
-    3633:7A7C  [E7A7C]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3633:7A7C  [E7A7C]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3633:7A81  [E7A81]  83c402          add     sp, 2
     3633:7A84  [E7A84]  ff760a          push    word ptr [bp + 0xa]
     3633:7A87  [E7A87]  ff7606          push    word ptr [bp + 6]
-    3633:7A8A  [E7A8A]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3633:7A8A  [E7A8A]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3633:7A8F  [E7A8F]  83c402          add     sp, 2
     3633:7A92  [E7A92]  ff760a          push    word ptr [bp + 0xa]
     3633:7A95  [E7A95]  ff7606          push    word ptr [bp + 6]
@@ -12490,7 +12490,7 @@ L_E7E07:
     3633:7E07  [E7E07]  8be5            mov     sp, bp
     3633:7E09  [E7E09]  5d              pop     bp
     3633:7E0A  [E7E0A]  ca0200          retf    2
-SUB_E7E0D:
+plot_line_to:
     3633:7E0D  [E7E0D]  55              push    bp
     3633:7E0E  [E7E0E]  8bec            mov     bp, sp
     3633:7E10  [E7E10]  83ec0a          sub     sp, 0xa
@@ -25289,7 +25289,7 @@ SUB_F0C2A:
 L_F0C49:
     3532:0C49  [F0C49]  ff36be06        push    word ptr [0x6be]
     3532:0C4D  [F0C4D]  ff36bc06        push    word ptr [0x6bc]
-    3532:0C51  [F0C51]  9a9d00d7e7      lcall   SUB_E7E0D  ; 0xe7d7, 0x9d
+    3532:0C51  [F0C51]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3532:0C56  [F0C56]  83c402          add     sp, 2
     3532:0C59  [F0C59]  e91000          jmp     L_F0C6C  ; 0x4c
 

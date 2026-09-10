@@ -933,6 +933,35 @@ re-deriving encoding equivalence every time this comes up), but this
 is a methodology choice, not a fully-vetted one - flagged in `TODO.md`
 to review again once the rest of the analysis is further along.
 
+## Found the top-level self-test orchestrator
+
+`run_selftest_sequence` (`0xE3B12`) ties together nearly everything
+this project has learned about the self-test subsystem across
+multiple sessions, in one function: it writes a marker byte at
+physical `0x00000` (plausibly an `iret`/iret-like opcode planted at
+address 0 to make an accidental null-pointer call harmlessly return,
+a common embedded-firmware defensive trick), initializes the readout
+vector display-list buffer (`[0x1AF4]`/`[0x1AF6]` from `[0x1CC4]`,
+`[0x1C02]=0x8000` - the dual-plane offset), runs setup via `SUB_E4443`/
+`SUB_E75C0`/`SUB_E128D`, picks a test-mode byte `[0x1B48]` based on
+`[0x758]`, calls `init_selftest_report_screen`, and then calls
+`print_selftest_report_line` exactly once immediately followed by
+`self_test_dispatcher` itself. This is the actual entry point that
+starts a self-test run - found by tracing print_selftest_report_line's
+callers, which had been an open thread since it was first identified.
+
+Also found this session: the HPGL plotter output driver
+(`update_plot_position`/`plot_line_to`, emitting `PU%d,%d;`/
+`PD%d,%d;` via `format_string_va`, plus `SP1;SC0,1023,0,1023;` and
+`ESC*rB`-style HP-GL2 escape sequences seen nearby) sits directly
+around the already-documented I/O port `0x83` write in `160-3532` -
+a strong candidate for that port being the GPIB/plotter output,
+though not confirmed against a schematic. And `verify_adc_calibration`
+(`0xE30B5`) is a calibration-check sibling to `run_adc_selftest`,
+comparing the `[0x322]` status register's 12-bit value field against
+an expected reference and reporting an "uncaled" error in hex if it
+doesn't match.
+
 ## Identified self_test_dispatcher's sibling subroutines
 
 **The single biggest lever this project has had for matching self-test
