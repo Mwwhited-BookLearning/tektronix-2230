@@ -133,9 +133,16 @@ def string_segment_prefix(mnem, op):
     if mnem in ("lodsb", "lodsw"):
         m = SEG_OVERRIDE_RE.search(op)  # sole operand is the source (SI)
         seg = m.group(1) if m else "ds"
-    else:  # movsb/movsw/cmpsb/cmpsw: "dest(DI,fixed-ES), source(SI)"
+    else:
         parts = op.split(",", 1)
-        source_text = parts[1] if len(parts) == 2 else ""
+        # movsb/movsw: "dest(DI,fixed-ES), source(SI)" - source is 2nd.
+        # cmpsb/cmpsw: capstone reverses this - "source(SI), dest(DI,
+        # fixed-ES)" - source is 1st. Get this backwards and a real
+        # cmpsb/cmpsw override prefix byte gets silently dropped.
+        if mnem in ("cmpsb", "cmpsw"):
+            source_text = parts[0] if parts else ""
+        else:
+            source_text = parts[1] if len(parts) == 2 else ""
         m = SEG_OVERRIDE_RE.search(source_text)
         seg = m.group(1) if m else "ds"
     return "" if seg == "ds" else f"{seg} "
@@ -148,6 +155,14 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
         if not (chip_base <= phys < chip_base + 0x10000):
             return None
         return phys - chip_base
+
+    if orig_bytes and orig_bytes[0] in (0xF2, 0xF3) and not mnem.startswith("rep"):
+        # A stray REP/REPNE prefix byte (0xF2/0xF3) in front of a non-
+        # string instruction. Legal on real 8086 hardware (the CPU just
+        # ignores it there) but there's no NASM syntax for "prefix X in
+        # front of a plain non-string mnemonic" - safe raw-db fallback
+        # rather than silently dropping the prefix byte.
+        return None
 
     if mnem.startswith("f"):
         # x87 FPU instructions (fadd/fdiv/fld/fst/...) - no x86 integer
@@ -197,6 +212,14 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
             return None
         kw = "short " if size == 2 and mnem == "jmp" else ""
         return f"{mnem} {kw}0x{target:04x}"
+
+    if mnem == "jcxz" and NEAR_HEX_RE.match(op):
+        # jcxz has only ever had one (short) encoding, unlike the other
+        # jcc mnemonics below - NASM errors if "short" is given anyway.
+        target = near_target_addr(op)
+        if target is None:
+            return None
+        return f"{mnem} 0x{target:04x}"
 
     if mnem.startswith("j") and mnem not in ("jmp",) and NEAR_HEX_RE.match(op):
         # 8086/8088 has no near-conditional-jump encoding (that's 386+) -
@@ -266,6 +289,41 @@ def alt_direction_encoding(raw):
     return bytes([alt_opcode, alt_modrm])
 
 
+def split_seg_prefix(orig):
+    """Return (prefix_bytes, rest) - prefix_bytes is the leading
+    segment-override byte (0x26/0x2E/0x36/0x3E) as a 1-length bytes
+    object, or empty if there isn't one. Every alt_*_encoding helper
+    below needs this: they look at "the opcode byte" and "the ModRM
+    byte" by position, and a leading override prefix shifts both over
+    by one - miss this and they silently misinterpret the prefix byte
+    itself as the opcode."""
+    if orig and orig[0] in SEGMENT_PREFIX_BYTES:
+        return orig[:1], orig[1:]
+    return b"", orig
+
+
+def alt_zero_displacement_encoding(orig):
+    """A mod=01 (disp8) or mod=10 (disp16) addressing form whose
+    displacement is exactly 0 can also be encoded as mod=00 (no
+    displacement byte at all) for the identical effective address -
+    NASM prefers the shorter form. Excludes rm==0b110, which at mod=00
+    is reserved as "direct address, no base register" (a completely
+    different addressing mode), so `[bp+0]` has no 2-byte encoding."""
+    prefix, rest = split_seg_prefix(orig)
+    if len(rest) < 2:
+        return None
+    opcode, modrm = rest[0], rest[1]
+    mod = (modrm >> 6) & 0x3
+    rm = modrm & 0x7
+    if rm == 0x6:
+        return None
+    if mod == 0x1 and len(rest) >= 3 and rest[2] == 0x00:
+        return prefix + bytes([opcode, modrm & 0x3F]) + rest[3:]
+    if mod == 0x2 and len(rest) >= 4 and rest[2] == 0x00 and rest[3] == 0x00:
+        return prefix + bytes([opcode, modrm & 0x3F]) + rest[4:]
+    return None
+
+
 def alt_duplicate_opcode(orig):
     """0x82 is an undocumented exact duplicate of 0x80 (group-1 Eb,Ib -
     byte-sized add/or/adc/.../cmp with an imm8; the 's' sign-extend bit
@@ -274,9 +332,10 @@ def alt_duplicate_opcode(orig):
     NASM always emits 0x80; if the ROM used 0x82, treat it as the same
     already-recognized equivalence class as the other opcode-choice
     ambiguities rather than a real mismatch."""
-    if not orig or orig[0] != 0x82:
+    prefix, rest = split_seg_prefix(orig)
+    if not rest or rest[0] != 0x82:
         return None
-    return bytes([0x80]) + orig[1:]
+    return prefix + bytes([0x80]) + rest[1:]
 
 
 def alt_displacement_encoding(orig):
@@ -286,18 +345,19 @@ def alt_displacement_encoding(orig):
     the ORIGINAL (disp16) bytes, return what NASM's preferred (disp8)
     encoding of the identical effective address would look like, so it
     can be compared directly against NASM's actual output."""
-    if len(orig) < 4:
+    prefix, rest = split_seg_prefix(orig)
+    if len(rest) < 4:
         return None
-    opcode, modrm = orig[0], orig[1]
+    opcode, modrm = rest[0], rest[1]
     mod = (modrm >> 6) & 0x3
     if mod != 0x02:
         return None
-    disp = orig[2] | (orig[3] << 8)
+    disp = rest[2] | (rest[3] << 8)
     fits_signed_byte = disp <= 0x7F or disp >= 0xFF80
     if not fits_signed_byte:
         return None
     alt_modrm = (0x01 << 6) | (modrm & 0x3F)
-    return bytes([opcode, alt_modrm, orig[2]]) + orig[4:]
+    return prefix + bytes([opcode, alt_modrm, rest[2]]) + rest[4:]
 
 
 def build_batch(chip_name, buf, visited, chip_base):
@@ -372,6 +432,10 @@ def main():
                 continue
             alt3 = alt_duplicate_opcode(orig)
             if alt3 is not None and got[:len(alt3)] == alt3:
+                alt_encoding += 1
+                continue
+            alt4 = alt_zero_displacement_encoding(orig)
+            if alt4 is not None and got[:len(alt4)] == alt4:
                 alt_encoding += 1
                 continue
             real_mismatch.append((name, addr, mnem, op, nasm_line, orig, got))

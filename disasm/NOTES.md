@@ -521,23 +521,90 @@ coverage expands into that area.
 
 ## Current coverage
 
-10,488 instruction-start bytes reached out of 131,072 total main-ROM
-bytes (~8%), from 8 seed entry points (reset vector, 2 discovered
-while tracing the reset path, 4 interrupt handlers found via IVT-write
-tracing, and the comm-ROM boot-stub target - see above). This is
-expected to still be a small fraction —
-most unreached bytes are either (a) code only reachable via computed/
-indirect jumps we can't resolve statically (e.g. jump tables - though
-notably **zero unresolved indirect jmp/call instructions exist in the
-code reached so far**, suggesting this codebase may prefer cmp+je
-dispatch chains over jump tables, at least in what's been seen), or
-(b) data (string tables, bitmaps, constant tables) that hasn't been
-identified yet.
+**Proven-only** (official, what `sysrom_3532_3633.lst` shows): 10,488
+instruction-start bytes (~8% of the 128KB main-ROM pair), from 8 seed
+entry points (reset vector, 2 discovered while tracing the reset path,
+4 interrupt handlers found via IVT-write tracing, and the comm-ROM
+boot-stub target). Zero unresolved indirect jmp/call instructions
+exist anywhere in the reached code - this codebase appears to prefer
+cmp+je dispatch chains over jump tables, at least in what's been seen,
+so that's confirmed *not* to be the lever for growing this further;
+finding more independent entry points (the way the interrupt handlers
+were found) is.
 
-12 call targets resolve to addresses in the 0x80000-0x97000 range, well
-below the mapped ROM window (0xE0000+) — likely calls into RAM-resident
-overlay code we don't have a dump of, or the comm-board's address space.
-Not yet investigated.
+**With the heuristic layer** (both ROMs' `55 8B EC` push-bp/mov-bp,sp
+signature scan, plus the confirmed real address-decode alias -
+combining `gen_disasm_2998.py` and the new `gen_disasm_mainrom_
+heuristic.py`, see below): **68,776 instructions, 196,372 of 229,376
+total mapped bytes (85.6%)** across all four mapped regions
+(`3633`/`3532`/`2998`/`2998_alias_90000`). Individually: `3633` and
+`3532` both 90.6%, `2998` 91.8%, the `0x90000` alias 53.3% (lower
+because it only reflects the *upper half* of the comm ROM, and only
+what's reachable from entries seeded in that same half). NASM-validated
+end to end (`validate_all.py`): 61,771 exact + 6,790 alt-encoding + 174
+not-converted + only 41 real mismatches, all traced to genuine decode
+drift into non-code bytes (see "The main ROM has a heuristic layer
+too" below) - none of them affect the buildable `.asm`'s correctness,
+since the generator only ever trusts exact-match bytes for real
+conversion.
+
+The former "12 call targets resolve to addresses in the 0x80000-0x97000
+range" open item is resolved - see "The comm ROM is NOT bank-switched"
+and "The 0x90000-0x97FFF region is fully resolved" above.
+
+## The main ROM has a heuristic layer too
+
+Applied the same technique that worked well for the comm ROM to the
+main ROM pair: scanned `160-3633`/`160-3532` for the `55 8B EC`
+prologue not already proven-reachable. Found **216** in `3633` and
+**209** in `3532` - a lot of real compiled functions the proven-only
+recursive descent simply had no path to yet. Seeding them
+(`gen_disasm_mainrom_heuristic.py`, output in
+`sysrom_3532_3633_heuristic.lst` - a SEPARATE file, the official
+`sysrom_3532_3633.lst` stays proven-only) took both halves' coverage
+from ~14-41% to **90.6% each**.
+
+Same lower-confidence caveat as the comm ROM's heuristic layer applies
+(a prologue match is a strong signal, not proof of reachability). NASM
+validation found a real cluster of ~39 genuinely bad decodes around
+physical `0xEA1A0-0xEA615` in `3633` - 386-only features (`fs`/`gs`
+segment prefixes, `popal`/`popaw`, the `esi` register) that literally
+cannot be real instructions on this confirmed 8086/8088 system, so
+that narrow range is decode drift into non-code bytes. Traced its
+origin: these addresses have **no label at all** (not a jump/call
+target, not a heuristic entry) - they were reached by pure sequential
+fallthrough from whatever real instruction happened to precede them,
+walking straight across a code/data boundary with no jump in between.
+This is a real, if narrow, limitation of linear-descent-by-default:
+recursive descent has no way to know a data region starts at a given
+byte unless something tells it to stop there. Left as-is rather than
+patched around, since the validator's exact-match-only trust model
+already prevents this from corrupting the buildable `.asm`.
+
+Chasing these mismatches also surfaced (and fixed) several more real
+`validate_nasm.py` bugs, now benefiting every ROM's validation:
+- `jcxz` doesn't accept NASM's `short` qualifier the way other `jcc`
+  mnemonics do (it only ever had one encoding) - was crashing the
+  whole batch assembly for any file containing one.
+- `cmpsb`/`cmpsw` have their source/dest operand order reversed from
+  `movsb`/`movsw` in capstone's output (source first, not second) -
+  the segment-override detection was checking the wrong side.
+- A whole class of alternate-encoding helpers (`alt_displacement_
+  encoding`, `alt_duplicate_opcode`, the new `alt_zero_displacement_
+  encoding`) didn't account for a leading segment-override prefix byte
+  (like `cs:`), so they misread the prefix byte itself as the opcode
+  whenever one was present - added a shared `split_seg_prefix()` used
+  by all three now.
+- New alternate-encoding case: a `mod=01` (disp8) or `mod=10` (disp16)
+  addressing form with a displacement of exactly `0` can also be
+  encoded as `mod=00` (no displacement byte at all) for the identical
+  effective address - NASM prefers the shorter form (except when
+  `rm==0b110`, reserved at `mod=00` for direct addressing, so `[bp+0]`
+  has no 2-byte form).
+- A stray `0xF2`/`0xF3` (REPNE/REP) prefix byte in front of a
+  non-string instruction - legal on real hardware (the CPU just
+  ignores it there) but there's no NASM syntax for it, so it's
+  excluded from conversion rather than silently dropped.
 
 ## Open questions / next steps
 

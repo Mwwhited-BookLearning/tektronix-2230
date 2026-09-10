@@ -11,19 +11,24 @@
       against the still-unidentified subsystem-test subroutines below
       - the printed text next to each test is a strong hint at what it
       actually checks.
-- [ ] Widen code coverage beyond the current ~10% (13,510 of 131,072
-      main-ROM bytes, now including the resolved comm-ROM alias). Jump
-      tables don't appear to be the lever here (0 unresolved indirect
-      jmp/call in reached code) - instead look for more entry points
-      nothing in-graph calls directly, the way the 4 interrupt handlers
-      were found (see disasm/NOTES.md "Interrupt vector table
-      entries"). Candidates: read through `INT1_HANDLER`/
-      `INT255_HANDLER_*`/`INT2_HANDLER_LATE` themselves for further
-      vector installs, and look for other IVT-write patterns (different
-      base registers than `bx`) the current tracer wouldn't catch.
-      - data (string tables, bitmaps, constant tables) not yet
-        identified within the reached regions is the other likely
-        source of "unreached" bytes.
+- [x] ~~Widen code coverage beyond the current ~10%~~ — **big jump: now
+      85.6% combined (68,776 instructions) once a heuristic push-bp
+      signature layer was applied to the main ROM too** (same technique
+      already working well for the comm ROM). `3633`/`3532` both went
+      from ~14-41% to 90.6% each. See `disasm/NOTES.md` "The main ROM
+      has a heuristic layer too". Proven-only coverage is still ~8% and
+      that number's lever is exhausted for now (checked: IVT-tracing
+      with broadened register patterns found only false positives, 0
+      unresolved indirect jmp/call anywhere, 0 unmapped far-call
+      targets left) - growing the *proven* number further needs a new
+      kind of independent entry point, not more of the same technique.
+- [ ] Handle the ~39-instruction decode-drift cluster in `3633` around
+      physical `0xEA1A0-0xEA615` (386-only features that can't be real
+      on this 8086/8088 - see `disasm/NOTES.md`). Doesn't threaten the
+      buildable `.asm`'s correctness (safety net already excludes it),
+      but reaching it via pure fallthrough with no owning label means
+      there's a real function boundary nearby the recursive descent
+      doesn't know about - worth finding for a cleaner listing.
 - [ ] **Identify the ~20 not-yet-named subsystem-test subroutines**
       called from `self_test_dispatcher` (see `disasm/NOTES.md` "Found:
       the self-test dispatcher" for the full call list). Already tried

@@ -56,6 +56,10 @@ def main(nasm_exe):
         if alt3 is not None and got[:len(alt3)] == alt3:
             alt_encoding += 1
             continue
+        alt4 = v.alt_zero_displacement_encoding(orig)
+        if alt4 is not None and got[:len(alt4)] == alt4:
+            alt_encoding += 1
+            continue
         real_mismatch.append((addr, mnem, op, nasm_line, orig, got))
 
     print(f"TOTAL comm-rom instructions: {total}")
