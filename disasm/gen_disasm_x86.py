@@ -438,6 +438,58 @@ FUNCTIONAL_NAMES = {
                                                # STRINGS.md); dispatches
                                                # to format_number-style
                                                # helpers per specifier
+    0xE591D: "print_report_frame_mode",       # idx-based dispatcher,
+                                               # same shape as
+                                               # selftest_display_
+                                               # result_mode: idx==1
+                                               # resets; idx==4 draws a
+                                               # bordered frame (two
+                                               # print regions + a
+                                               # 150-point line via
+                                               # plot_readout_point_
+                                               # scaled) - part of the
+                                               # report-display state
+                                               # machine
+    0xFDB3E: "clear_measurement_mode_bit",    # clears bit 0x10 of
+                                               # [0x258] and commits it
+                                               # to the shared hardware
+                                               # register cluster
+                                               # ([0x336]) - part of the
+                                               # configure_measurement_hw
+                                               # family
+    0xE553B: "report_screen_mode",            # idx-based dispatcher for
+                                               # the self-test report
+                                               # screen: idx==1 resets;
+                                               # idx==2 initializes 8
+                                               # print regions in a loop
+                                               # (init_print_region_home
+                                               # at 9-byte spacing - the
+                                               # report table's 8 rows);
+                                               # idx==4 sets up the
+                                               # title/frame region
+    0xE693C: "restart_current_task",          # if [0x1ACD] (current
+                                               # task index) is nonzero,
+                                               # sets that task's
+                                               # [+0x744] flag and calls
+                                               # create_task again - a
+                                               # task-restart/respawn
+                                               # trigger, part of the
+                                               # task scheduler
+    0xE6A8E: "mark_task_ready",               # (task idx) - clears
+                                               # that task's [+0x744]
+                                               # flag, increments its
+                                               # ready-flags byte
+                                               # ([idx+0x1A91]), then
+                                               # calls SUB_E61E3 - likely
+                                               # a "wake up task" primitive
+    0xFDC73: "sync_status_byte_to_hw",        # writes [0x258] into the
+                                               # far-pointer hardware
+                                               # register [0x336] -
+                                               # called from switch_to_
+                                               # next_task, so likely a
+                                               # general "flush pending
+                                               # status" step, not
+                                               # measurement-specific
     0xE58AD: "draw_readout_line",             # (x1, y1, x_max, y_max,
                                                # dx, dy) - steps from
                                                # (x1,y1) toward (x_max,
@@ -675,6 +727,25 @@ FUNCTIONAL_NAMES = {
                                                # and calls
                                                # plot_readout_point_
                                                # relative
+    0xE6224: "create_task",                   # saves a full register
+                                               # context onto a NEW
+                                               # stack, stores that
+                                               # stack's SP/SS into the
+                                               # per-task table
+                                               # [0x1A9D+idx*4] (the
+                                               # SAME table switch_to_
+                                               # next_task reads), saves
+                                               # an entry-point far
+                                               # pointer to [0x7C0]/
+                                               # [0x7C2], sets the task's
+                                               # ready flag, and jumps
+                                               # directly into switch_to_
+                                               # next_task - the "spawn a
+                                               # task" counterpart to
+                                               # the task scheduler found
+                                               # last session; see
+                                               # NOTES.md "A small task
+                                               # scheduler"
     0xE6166: "switch_to_next_task",           # loads SP/SS from the
                                                # per-task context table
                                                # at [0x1A9D + idx*4]

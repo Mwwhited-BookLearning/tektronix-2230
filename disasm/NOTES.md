@@ -659,12 +659,26 @@ just a generic interrupt handler - a significant piece of this
 firmware's overall architecture. Confirms the earlier speculation
 above ("the firmware switches between distinct operating states").
 
+**Found the other half: task creation.** `create_task` (`0xE6224`)
+saves a brand-new register context (`pushf`/`cli`/push all 9 regs) onto
+a fresh stack, stores that stack's `SP`/`SS` into the *same*
+`[0x1A9D+idx*4]` table `switch_to_next_task` reads from, saves an
+entry-point far pointer to `[0x7C0]`/`[0x7C2]`, sets the new task's
+ready flag, and jumps directly into `switch_to_next_task` to start it
+running. Companions: `restart_current_task` (`0xE693C`, re-spawns the
+current task via `create_task`) and `mark_task_ready` (`0xE6A8E`,
+clears a task's "restarting" flag and bumps its ready-flags byte).
+
+`create_task` is called from all three ROM address spaces (`160-3633`,
+`160-3532`, and the comm ROM at `2998_alias_90000`) - confirming it's
+a shared kernel primitive callable from anywhere via a far call, not
+something private to one subsystem.
+
 **Not yet confirmed**: how many tasks exist, what each one does (the
 self-test/UI/acquisition-refresh loop are plausible candidates given
 everything else found so far), what triggers INT2 (a periodic timer is
-the obvious guess but not confirmed), and what `SUB_E6524` actually
-does to pick the next task. Good next target: trace `[0x1ACD]`'s other
-writers to find where tasks get created/registered.
+the obvious guess but not confirmed), and what `SUB_E6524`/`SUB_E61E3`
+actually do.
 
 ## Validation status
 

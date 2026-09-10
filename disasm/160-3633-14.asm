@@ -6175,7 +6175,7 @@ L_E4872:
     db 0x06, 0x53, 0x9a, 0x01, 0x03, 0x52, 0xe3, 0xc4, 0x7e, 0x0e, 0x26, 0xc4, 0x15, 0x06, 0x52, 0x9a  ; 5513
     db 0x2e, 0x02, 0x52, 0xe3, 0xc4, 0x7e, 0x0e, 0x26, 0x83, 0x05, 0x09, 0xc4, 0x5e, 0x0a, 0x26, 0x83  ; 5523
     db 0x07, 0x9c, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00  ; 5533
-SUB_E553B:
+report_screen_mode:
     push bp                                  ; 553B: push bp
     db 0x8b, 0xec  ; 553C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 553E: sub sp, 8
@@ -6556,7 +6556,7 @@ L_E5903:
     retf 2                                   ; 5906: retf 2
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0xff, 0x76, 0x06, 0x9a, 0x64, 0x15, 0x5d, 0xe4, 0x8b, 0xe5  ; 5909
     db 0x5d, 0xca, 0x02, 0x00  ; 5919
-SUB_E591D:
+print_report_frame_mode:
     push bp                                  ; 591D: push bp
     db 0x8b, 0xec  ; 591E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x10                             ; 5920: sub sp, 0x10
@@ -7347,7 +7347,7 @@ SUB_E61E3:
     db 0x03, 0xd8  ; 621A: add bx, ax (not byte-exact via NASM - see NOTES.md)
     or byte [bx], 0x40                       ; 621C: or byte ptr [bx], 0x40
     jmp 0xe60b:0x00b6                        ; 621F: ljmp 0xe60b:0xb6
-SUB_E6224:
+create_task:
     pushf                                    ; 6224: pushf 
     cli                                      ; 6225: cli 
     push ax                                  ; 6226: push ax
@@ -7983,7 +7983,7 @@ L_E692C:
     pop bp                                   ; 6939: pop bp
     retf                                     ; 693A: retf 
     db 0xff  ; 693B
-SUB_E693C:
+restart_current_task:
     push bp                                  ; 693C: push bp
     db 0x8b, 0xec  ; 693D: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 693F: sub sp, 6
@@ -8016,7 +8016,7 @@ L_E6957:
     db 0x7e, 0xf8, 0x00, 0x74, 0x03, 0xff, 0x4e, 0xf8, 0x8b, 0x7e, 0xf8, 0x83, 0xc7, 0x07, 0x89, 0x3e  ; 6A6B
     db 0x90, 0x07, 0x8b, 0xe5, 0x5d, 0xcb, 0xff, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x2b, 0xc0, 0x8b  ; 6A7B
     db 0xe5, 0x5d, 0xcb  ; 6A8B
-SUB_E6A8E:
+mark_task_ready:
     push bp                                  ; 6A8E: push bp
     db 0x8b, 0xec  ; 6A8F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 6A91: sub sp, 6

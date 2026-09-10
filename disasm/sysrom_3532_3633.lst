@@ -512,7 +512,7 @@ L_9174C:
     2998_alias_90000:175E  [9175E]  c606f61bff      mov     byte ptr [0x1bf6], 0xff
     2998_alias_90000:1763  [91763]  e90500          jmp     L_9176B  ; 0x58b
 L_91766:
-    2998_alias_90000:1766  [91766]  9a0c0093e6      lcall   SUB_E693C  ; 0xe693, 0xc
+    2998_alias_90000:1766  [91766]  9a0c0093e6      lcall   restart_current_task  ; 0xe693, 0xc
 L_9176B:
     2998_alias_90000:176B  [9176B]  833e480500      cmp     word ptr [0x548], 0
     2998_alias_90000:1770  [91770]  75f4            jne     L_91766  ; 0x586
@@ -2472,7 +2472,7 @@ SUB_96872:
     2998_alias_90000:6884  [96884]  8a5606          mov     dl, byte ptr [bp + 6]
     2998_alias_90000:6887  [96887]  8b3ecd1a        mov     di, word ptr [0x1acd]
     2998_alias_90000:688B  [9688B]  88954407        mov     byte ptr [di + 0x744], dl
-    2998_alias_90000:688F  [9688F]  9a74010be6      lcall   SUB_E6224  ; 0xe60b, 0x174
+    2998_alias_90000:688F  [9688F]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
     2998_alias_90000:6894  [96894]  ff76f8          push    word ptr [bp - 8]
     2998_alias_90000:6897  [96897]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998_alias_90000:689C  [9689C]  8be5            mov     sp, bp
@@ -3024,7 +3024,7 @@ set_comm_critical_flag:
     2998_alias_90000:7BC2  [97BC2]  8946f6          mov     word ptr [bp - 0xa], ax
     2998_alias_90000:7BC5  [97BC5]  bf0500          mov     di, 5
     2998_alias_90000:7BC8  [97BC8]  57              push    di
-    2998_alias_90000:7BC9  [97BC9]  9a0e00a8e6      lcall   SUB_E6A8E  ; 0xe6a8, 0xe
+    2998_alias_90000:7BC9  [97BC9]  9a0e00a8e6      lcall   mark_task_ready  ; 0xe6a8, 0xe
     2998_alias_90000:7BCE  [97BCE]  ff76f6          push    word ptr [bp - 0xa]
     2998_alias_90000:7BD1  [97BD1]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
 L_97BD6:
@@ -7748,7 +7748,7 @@ L_E3CAA:
     3633:3CE7  [E3CE7]  c746f60002      mov     word ptr [bp - 0xa], 0x200
     3633:3CEC  [E3CEC]  ba0100          mov     dx, 1
     3633:3CEF  [E3CEF]  52              push    dx
-    3633:3CF0  [E3CF0]  9a4d135de4      lcall   SUB_E591D  ; 0xe45d, 0x134d
+    3633:3CF0  [E3CF0]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
 L_E3CF5:
     3633:3CF5  [E3CF5]  c746f60900      mov     word ptr [bp - 0xa], 9
     3633:3CFA  [E3CFA]  e90800          jmp     L_E3D05  ; 0x1f5
@@ -7785,16 +7785,16 @@ L_E3D38:
 L_E3D4A:
     3633:3D4A  [E3D4A]  bf0300          mov     di, 3
     3633:3D4D  [E3D4D]  57              push    di
-    3633:3D4E  [E3D4E]  9a4d135de4      lcall   SUB_E591D  ; 0xe45d, 0x134d
+    3633:3D4E  [E3D4E]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
     3633:3D53  [E3D53]  bf0400          mov     di, 4
     3633:3D56  [E3D56]  57              push    di
-    3633:3D57  [E3D57]  9a4d135de4      lcall   SUB_E591D  ; 0xe45d, 0x134d
+    3633:3D57  [E3D57]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
     3633:3D5C  [E3D5C]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
     3633:3D61  [E3D61]  e991ff          jmp     L_E3CF5  ; 0x1e5
 L_E3D64:
     3633:3D64  [E3D64]  bf0200          mov     di, 2
     3633:3D67  [E3D67]  57              push    di
-    3633:3D68  [E3D68]  9a4d135de4      lcall   SUB_E591D  ; 0xe45d, 0x134d
+    3633:3D68  [E3D68]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
     3633:3D6D  [E3D6D]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
     3633:3D72  [E3D72]  803e831b15      cmp     byte ptr [0x1b83], 0x15
     3633:3D77  [E3D77]  7505            jne     L_E3D7E  ; 0x26e
@@ -8353,10 +8353,10 @@ SUB_E43A0:
     3633:43AE  [E43AE]  8c066004        mov     word ptr [0x460], es
     3633:43B2  [E43B2]  ba0100          mov     dx, 1
     3633:43B5  [E43B5]  52              push    dx
-    3633:43B6  [E43B6]  9a6b0f5de4      lcall   SUB_E553B  ; 0xe45d, 0xf6b
+    3633:43B6  [E43B6]  9a6b0f5de4      lcall   report_screen_mode  ; 0xe45d, 0xf6b
     3633:43BB  [E43BB]  bf0400          mov     di, 4
     3633:43BE  [E43BE]  57              push    di
-    3633:43BF  [E43BF]  9a6b0f5de4      lcall   SUB_E553B  ; 0xe45d, 0xf6b
+    3633:43BF  [E43BF]  9a6b0f5de4      lcall   report_screen_mode  ; 0xe45d, 0xf6b
     3633:43C4  [E43C4]  c43edc1d        les     di, ptr [0x1ddc]
     3633:43C8  [E43C8]  26808d5b0280    or      byte ptr es:[di + 0x25b], 0x80
     3633:43CE  [E43CE]  c416dc1d        les     dx, ptr [0x1ddc]
@@ -8378,7 +8378,7 @@ SUB_E43F2:
     3633:43F5  [E43F5]  83ec06          sub     sp, 6
     3633:43F8  [E43F8]  bf0200          mov     di, 2
     3633:43FB  [E43FB]  57              push    di
-    3633:43FC  [E43FC]  9a6b0f5de4      lcall   SUB_E553B  ; 0xe45d, 0xf6b
+    3633:43FC  [E43FC]  9a6b0f5de4      lcall   report_screen_mode  ; 0xe45d, 0xf6b
     3633:4401  [E4401]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
     3633:4406  [E4406]  8be5            mov     sp, bp
     3633:4408  [E4408]  5d              pop     bp
@@ -8787,7 +8787,7 @@ L_E4872:
     3633:489F  [E489F]  5d              pop     bp
     3633:48A0  [E48A0]  ca0200          retf    2
 
-SUB_E553B:
+report_screen_mode:
     3633:553B  [E553B]  55              push    bp
     3633:553C  [E553C]  8bec            mov     bp, sp
     3633:553E  [E553E]  83ec08          sub     sp, 8
@@ -9167,7 +9167,7 @@ L_E5903:
     3633:5905  [E5905]  5d              pop     bp
     3633:5906  [E5906]  ca0200          retf    2
 
-SUB_E591D:
+print_report_frame_mode:
     3633:591D  [E591D]  55              push    bp
     3633:591E  [E591E]  8bec            mov     bp, sp
     3633:5920  [E5920]  83ec10          sub     sp, 0x10
@@ -9557,7 +9557,7 @@ L_E5D10:
     3633:5D14  [E5D14]  cb              retf    
 
 SUB_E5D28:
-    3633:5D28  [E5D28]  9a4301b3fd      lcall   SUB_FDC73  ; 0xfdb3, 0x143
+    3633:5D28  [E5D28]  9a4301b3fd      lcall   sync_status_byte_to_hw  ; 0xfdb3, 0x143
 enable_interrupts:
     3633:5D2D  [E5D2D]  fb              sti     
     3633:5D2E  [E5D2E]  cb              retf    
@@ -9857,7 +9857,7 @@ switch_to_next_task:
     3633:6190  [E6190]  8bec            mov     bp, sp
     3633:6192  [E6192]  a18f1a          mov     ax, word ptr [0x1a8f]
     3633:6195  [E6195]  094616          or      word ptr [bp + 0x16], ax
-    3633:6198  [E6198]  9a4301b3fd      lcall   SUB_FDC73  ; 0xfdb3, 0x143
+    3633:6198  [E6198]  9a4301b3fd      lcall   sync_status_byte_to_hw  ; 0xfdb3, 0x143
     3633:619D  [E619D]  07              pop     es
     3633:619E  [E619E]  1f              pop     ds
     3633:619F  [E619F]  5f              pop     di
@@ -9888,7 +9888,7 @@ L_E61A7:
     3633:61D0  [E61D0]  03d8            add     bx, ax
     3633:61D2  [E61D2]  06              push    es
     3633:61D3  [E61D3]  53              push    bx
-    3633:61D4  [E61D4]  9a4301b3fd      lcall   SUB_FDC73  ; 0xfdb3, 0x143
+    3633:61D4  [E61D4]  9a4301b3fd      lcall   sync_status_byte_to_hw  ; 0xfdb3, 0x143
     3633:61D9  [E61D9]  5b              pop     bx
     3633:61DA  [E61DA]  07              pop     es
     3633:61DB  [E61DB]  fb              sti     
@@ -9926,7 +9926,7 @@ SUB_E61E3:
     3633:621A  [E621A]  03d8            add     bx, ax
     3633:621C  [E621C]  800f40          or      byte ptr [bx], 0x40
     3633:621F  [E621F]  eab6000be6      ljmp    switch_to_next_task  ; 0xe60b:0xb6
-SUB_E6224:
+create_task:
     3633:6224  [E6224]  9c              pushf   
     3633:6225  [E6225]  fa              cli     
     3633:6226  [E6226]  50              push    ax
@@ -10164,7 +10164,7 @@ COMM_ROM_BOOTSTUB_TARGET:
     3633:64CF  [E64CF]  9a080007f0      lcall   divide_scale_default  ; 0xf007, 8
     3633:64D4  [E64D4]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:64D9  [E64D9]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
-    3633:64DE  [E64DE]  9a0e00b3fd      lcall   SUB_FDB3E  ; 0xfdb3, 0xe
+    3633:64DE  [E64DE]  9a0e00b3fd      lcall   clear_measurement_mode_bit  ; 0xfdb3, 0xe
     3633:64E3  [E64E3]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
     3633:64E8  [E64E8]  c746f80000      mov     word ptr [bp - 8], 0
     3633:64ED  [E64ED]  e90b00          jmp     L_E64FB  ; 0x3b
@@ -10557,7 +10557,7 @@ L_E692C:
     3633:6939  [E6939]  5d              pop     bp
     3633:693A  [E693A]  cb              retf    
 
-SUB_E693C:
+restart_current_task:
     3633:693C  [E693C]  55              push    bp
     3633:693D  [E693D]  8bec            mov     bp, sp
     3633:693F  [E693F]  83ec06          sub     sp, 6
@@ -10565,13 +10565,13 @@ SUB_E693C:
     3633:6947  [E6947]  740e            je      L_E6957  ; 0x27
     3633:6949  [E6949]  8b3ecd1a        mov     di, word ptr [0x1acd]
     3633:694D  [E694D]  c685440701      mov     byte ptr [di + 0x744], 1
-    3633:6952  [E6952]  9a74010be6      lcall   SUB_E6224  ; 0xe60b, 0x174
+    3633:6952  [E6952]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
 L_E6957:
     3633:6957  [E6957]  8be5            mov     sp, bp
     3633:6959  [E6959]  5d              pop     bp
     3633:695A  [E695A]  cb              retf    
 
-SUB_E6A8E:
+mark_task_ready:
     3633:6A8E  [E6A8E]  55              push    bp
     3633:6A8F  [E6A8F]  8bec            mov     bp, sp
     3633:6A91  [E6A91]  83ec06          sub     sp, 6
@@ -10610,7 +10610,7 @@ L_E6AE0:
 L_E6AEE:
     3633:6AEE  [E6AEE]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:6AF2  [E6AF2]  7cec            jl      L_E6AE0  ; 0x60
-    3633:6AF4  [E6AF4]  9a0e00b3fd      lcall   SUB_FDB3E  ; 0xfdb3, 0xe
+    3633:6AF4  [E6AF4]  9a0e00b3fd      lcall   clear_measurement_mode_bit  ; 0xfdb3, 0xe
     3633:6AF9  [E6AF9]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
     3633:6AFE  [E6AFE]  9acd02a8e6      lcall   SUB_E6D4D  ; 0xe6a8, 0x2cd
     3633:6B03  [E6B03]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
@@ -10723,7 +10723,7 @@ SUB_E6D20:
     3633:6D20  [E6D20]  55              push    bp
     3633:6D21  [E6D21]  8bec            mov     bp, sp
     3633:6D23  [E6D23]  83ec06          sub     sp, 6
-    3633:6D26  [E6D26]  9a0e00b3fd      lcall   SUB_FDB3E  ; 0xfdb3, 0xe
+    3633:6D26  [E6D26]  9a0e00b3fd      lcall   clear_measurement_mode_bit  ; 0xfdb3, 0xe
     3633:6D2B  [E6D2B]  8be5            mov     sp, bp
     3633:6D2D  [E6D2D]  5d              pop     bp
     3633:6D2E  [E6D2E]  cb              retf    
@@ -10848,8 +10848,8 @@ SUB_E6EFD:
     3633:6F11  [E6F11]  9a56068796      lcall   SUB_96EC6  ; 0x9687, 0x656
     3633:6F16  [E6F16]  833ecd1a0a      cmp     word ptr [0x1acd], 0xa
     3633:6F1B  [E6F1B]  740a            je      L_E6F27  ; 0x4a7
-    3633:6F1D  [E6F1D]  9a0c0093e6      lcall   SUB_E693C  ; 0xe693, 0xc
-    3633:6F22  [E6F22]  9a0c0093e6      lcall   SUB_E693C  ; 0xe693, 0xc
+    3633:6F1D  [E6F1D]  9a0c0093e6      lcall   restart_current_task  ; 0xe693, 0xc
+    3633:6F22  [E6F22]  9a0c0093e6      lcall   restart_current_task  ; 0xe693, 0xc
 L_E6F27:
     3633:6F27  [E6F27]  8be5            mov     sp, bp
     3633:6F29  [E6F29]  5d              pop     bp
@@ -13150,7 +13150,7 @@ L_F0DE9:
     3532:0DE9  [F0DE9]  c706ca060000    mov     word ptr [0x6ca], 0
     3532:0DEF  [F0DEF]  c70692076400    mov     word ptr [0x792], 0x64
     3532:0DF5  [F0DF5]  c6068d0701      mov     byte ptr [0x78d], 1
-    3532:0DFA  [F0DFA]  9a74010be6      lcall   SUB_E6224  ; 0xe60b, 0x174
+    3532:0DFA  [F0DFA]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
     3532:0DFF  [F0DFF]  8be5            mov     sp, bp
     3532:0E01  [F0E01]  5d              pop     bp
     3532:0E02  [F0E02]  cb              retf    
@@ -14895,7 +14895,7 @@ L_FDA3C:
     3532:DA3E  [FDA3E]  5d              pop     bp
     3532:DA3F  [FDA3F]  cb              retf    
 
-SUB_FDB3E:
+clear_measurement_mode_bit:
     3532:DB3E  [FDB3E]  55              push    bp
     3532:DB3F  [FDB3F]  8bec            mov     bp, sp
     3532:DB41  [FDB41]  83ec06          sub     sp, 6
@@ -14999,7 +14999,7 @@ L_FDC23:
     3532:DC25  [FDC25]  5d              pop     bp
     3532:DC26  [FDC26]  cb              retf    
 
-SUB_FDC73:
+sync_status_byte_to_hw:
     3532:DC73  [FDC73]  55              push    bp
     3532:DC74  [FDC74]  8bec            mov     bp, sp
     3532:DC76  [FDC76]  83ec06          sub     sp, 6

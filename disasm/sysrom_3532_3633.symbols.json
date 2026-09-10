@@ -5103,10 +5103,10 @@
     "notes": null
   },
   "E553B": {
-    "name": "SUB_E553B",
+    "name": "report_screen_mode",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "report_screen_mode",
     "notes": null
   },
   "E554C": {
@@ -5243,10 +5243,10 @@
     "notes": null
   },
   "E591D": {
-    "name": "SUB_E591D",
+    "name": "print_report_frame_mode",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "print_report_frame_mode",
     "notes": null
   },
   "E5937": {
@@ -5691,10 +5691,10 @@
     "notes": null
   },
   "E6224": {
-    "name": "SUB_E6224",
+    "name": "create_task",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "create_task",
     "notes": null
   },
   "E6274": {
@@ -6160,10 +6160,10 @@
     "notes": null
   },
   "E693C": {
-    "name": "SUB_E693C",
+    "name": "restart_current_task",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "restart_current_task",
     "notes": null
   },
   "E6957": {
@@ -6174,10 +6174,10 @@
     "notes": null
   },
   "E6A8E": {
-    "name": "SUB_E6A8E",
+    "name": "mark_task_ready",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "mark_task_ready",
     "notes": null
   },
   "E6AAB": {
@@ -9121,10 +9121,10 @@
     "notes": null
   },
   "FDB3E": {
-    "name": "SUB_FDB3E",
+    "name": "clear_measurement_mode_bit",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "clear_measurement_mode_bit",
     "notes": null
   },
   "FDB65": {
@@ -9205,10 +9205,10 @@
     "notes": null
   },
   "FDC73": {
-    "name": "SUB_FDC73",
+    "name": "sync_status_byte_to_hw",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "sync_status_byte_to_hw",
     "notes": null
   },
   "FF469": {
