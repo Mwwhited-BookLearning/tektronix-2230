@@ -6244,10 +6244,10 @@
     "notes": null
   },
   "E6C85": {
-    "name": "SUB_E6C85",
+    "name": "reset_display_and_notify_comm",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "reset_display_and_notify_comm",
     "notes": null
   },
   "E6CE4": {
@@ -6258,17 +6258,17 @@
     "notes": null
   },
   "E6CE8": {
-    "name": "SUB_E6CE8",
+    "name": "finish_acq_reset_and_clear_mode",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "finish_acq_reset_and_clear_mode",
     "notes": null
   },
   "E6D04": {
-    "name": "SUB_E6D04",
+    "name": "reset_display_if_idle",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "reset_display_if_idle",
     "notes": null
   },
   "E6D1C": {
@@ -6279,10 +6279,10 @@
     "notes": null
   },
   "E6D20": {
-    "name": "SUB_E6D20",
+    "name": "clear_measurement_mode_relay",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "clear_measurement_mode_relay",
     "notes": null
   },
   "E6D2F": {

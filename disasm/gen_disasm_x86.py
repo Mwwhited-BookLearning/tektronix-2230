@@ -636,6 +636,40 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE6C85: "reset_display_and_notify_comm", # if [0x766] set: notifies
+                                               # comm ROM (notify_comm_
+                                               # rom_a), clears [0x1B76]
+                                               # bit 0x40, disables ints,
+                                               # sets [0x1B8D] flags,
+                                               # clears measurement mode
+                                               # (via SUB_E6D20), calls
+                                               # SUB_E6884 + refresh_
+                                               # display_position_cache,
+                                               # sets [0x1B76] bit 0x80,
+                                               # runs finish_acq_reset_
+                                               # and_clear_mode + SUB_
+                                               # E7322, re-enables ints,
+                                               # notifies comm ROM again
+                                               # (notify_comm_rom_b), and
+                                               # conditionally calls
+                                               # reinit_system_state
+    0xE6D04: "reset_display_if_idle",         # calls reset_display_and_
+                                               # notify_comm only if
+                                               # [0x1B76] masked with
+                                               # 0xDF (all bits but 0x20)
+                                               # is already zero
+    0xE6CE8: "finish_acq_reset_and_clear_mode", # sets [0x761]=1, clears
+                                               # measurement mode (via
+                                               # clear_measurement_mode_
+                                               # relay), then calls
+                                               # SUB_FB8E8(0) - the tail
+                                               # step of reset_display_
+                                               # and_notify_comm, also
+                                               # called directly from
+                                               # handle_acq_mode_change
+    0xE6D20: "clear_measurement_mode_relay",  # thin far-call relay to
+                                               # clear_measurement_mode_
+                                               # bit (no own logic)
     0xE80E4: "handle_acq_mode_change",        # dispatches on bits of a
                                                # "what changed" flags
                                                # word (arg at [bp-8]):

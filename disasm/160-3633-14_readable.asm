@@ -8122,7 +8122,7 @@ L_E6BA5:
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x9a, 0x04, 0x00, 0x70, 0xff, 0x8b, 0xe5, 0x5d, 0xcb, 0x55  ; 6C63
     db 0x8b, 0xec, 0x83, 0xec, 0x06, 0xff, 0x06, 0x7a, 0x07, 0x9a, 0xf7, 0x00, 0xb3, 0xfd, 0x8b, 0xe5  ; 6C73
     db 0x5d, 0xcb  ; 6C83
-SUB_E6C85:
+reset_display_and_notify_comm:
     push bp                                  ; 6C85: push bp
     mov bp, sp                               ; 6C86: mov bp, sp
     sub sp, 6                                ; 6C88: sub sp, 6
@@ -8149,7 +8149,7 @@ L_E6CE4:
     mov sp, bp                               ; 6CE4: mov sp, bp
     pop bp                                   ; 6CE6: pop bp
     retf                                     ; 6CE7: retf 
-SUB_E6CE8:
+finish_acq_reset_and_clear_mode:
     push bp                                  ; 6CE8: push bp
     mov bp, sp                               ; 6CE9: mov bp, sp
     sub sp, 6                                ; 6CEB: sub sp, 6
@@ -8161,7 +8161,7 @@ SUB_E6CE8:
     mov sp, bp                               ; 6D00: mov sp, bp
     pop bp                                   ; 6D02: pop bp
     retf                                     ; 6D03: retf 
-SUB_E6D04:
+reset_display_if_idle:
     push bp                                  ; 6D04: push bp
     mov bp, sp                               ; 6D05: mov bp, sp
     sub sp, 6                                ; 6D07: sub sp, 6
@@ -8175,7 +8175,7 @@ L_E6D1C:
     mov sp, bp                               ; 6D1C: mov sp, bp
     pop bp                                   ; 6D1E: pop bp
     retf                                     ; 6D1F: retf 
-SUB_E6D20:
+clear_measurement_mode_relay:
     push bp                                  ; 6D20: push bp
     mov bp, sp                               ; 6D21: mov bp, sp
     sub sp, 6                                ; 6D23: sub sp, 6

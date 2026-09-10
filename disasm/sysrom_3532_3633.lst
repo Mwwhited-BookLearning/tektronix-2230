@@ -10666,7 +10666,7 @@ L_E6BA5:
     3633:6BB1  [E6BB1]  5d              pop     bp
     3633:6BB2  [E6BB2]  cb              retf    
 
-SUB_E6C85:
+reset_display_and_notify_comm:
     3633:6C85  [E6C85]  55              push    bp
     3633:6C86  [E6C86]  8bec            mov     bp, sp
     3633:6C88  [E6C88]  83ec06          sub     sp, 6
@@ -10677,12 +10677,12 @@ SUB_E6C85:
     3633:6C9C  [E6C9C]  c606600700      mov     byte ptr [0x760], 0
     3633:6CA1  [E6CA1]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
     3633:6CA6  [E6CA6]  800e8d1b01      or      byte ptr [0x1b8d], 1
-    3633:6CAB  [E6CAB]  9aa002a8e6      lcall   SUB_E6D20  ; 0xe6a8, 0x2a0
+    3633:6CAB  [E6CAB]  9aa002a8e6      lcall   clear_measurement_mode_relay  ; 0xe6a8, 0x2a0
     3633:6CB0  [E6CB0]  9a040088e6      lcall   SUB_E6884  ; 0xe688, 4
     3633:6CB5  [E6CB5]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
     3633:6CBA  [E6CBA]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6CBF  [E6CBF]  800e761b80      or      byte ptr [0x1b76], 0x80
-    3633:6CC4  [E6CC4]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
+    3633:6CC4  [E6CC4]  9a6802a8e6      lcall   finish_acq_reset_and_clear_mode  ; 0xe6a8, 0x268
     3633:6CC9  [E6CC9]  9af20023e7      lcall   SUB_E7322  ; 0xe723, 0xf2
     3633:6CCE  [E6CCE]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6CD3  [E6CD3]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
@@ -10693,19 +10693,19 @@ L_E6CE4:
     3633:6CE4  [E6CE4]  8be5            mov     sp, bp
     3633:6CE6  [E6CE6]  5d              pop     bp
     3633:6CE7  [E6CE7]  cb              retf    
-SUB_E6CE8:
+finish_acq_reset_and_clear_mode:
     3633:6CE8  [E6CE8]  55              push    bp
     3633:6CE9  [E6CE9]  8bec            mov     bp, sp
     3633:6CEB  [E6CEB]  83ec06          sub     sp, 6
     3633:6CEE  [E6CEE]  c606610701      mov     byte ptr [0x761], 1
-    3633:6CF3  [E6CF3]  9aa002a8e6      lcall   SUB_E6D20  ; 0xe6a8, 0x2a0
+    3633:6CF3  [E6CF3]  9aa002a8e6      lcall   clear_measurement_mode_relay  ; 0xe6a8, 0x2a0
     3633:6CF8  [E6CF8]  2bff            sub     di, di
     3633:6CFA  [E6CFA]  57              push    di
     3633:6CFB  [E6CFB]  9a580359fb      lcall   SUB_FB8E8  ; 0xfb59, 0x358
     3633:6D00  [E6D00]  8be5            mov     sp, bp
     3633:6D02  [E6D02]  5d              pop     bp
     3633:6D03  [E6D03]  cb              retf    
-SUB_E6D04:
+reset_display_if_idle:
     3633:6D04  [E6D04]  55              push    bp
     3633:6D05  [E6D05]  8bec            mov     bp, sp
     3633:6D07  [E6D07]  83ec06          sub     sp, 6
@@ -10714,12 +10714,12 @@ SUB_E6D04:
     3633:6D0F  [E6D0F]  25df00          and     ax, 0xdf
     3633:6D12  [E6D12]  3d0000          cmp     ax, 0
     3633:6D15  [E6D15]  7505            jne     L_E6D1C  ; 0x29c
-    3633:6D17  [E6D17]  9a0502a8e6      lcall   SUB_E6C85  ; 0xe6a8, 0x205
+    3633:6D17  [E6D17]  9a0502a8e6      lcall   reset_display_and_notify_comm  ; 0xe6a8, 0x205
 L_E6D1C:
     3633:6D1C  [E6D1C]  8be5            mov     sp, bp
     3633:6D1E  [E6D1E]  5d              pop     bp
     3633:6D1F  [E6D1F]  cb              retf    
-SUB_E6D20:
+clear_measurement_mode_relay:
     3633:6D20  [E6D20]  55              push    bp
     3633:6D21  [E6D21]  8bec            mov     bp, sp
     3633:6D23  [E6D23]  83ec06          sub     sp, 6
@@ -10814,7 +10814,7 @@ L_E6E30:
     3633:6E38  [E6E38]  57              push    di
     3633:6E39  [E6E39]  9a080007f0      lcall   scale_and_plot_point_default  ; 0xf007, 8
 L_E6E3E:
-    3633:6E3E  [E6E3E]  9a8402a8e6      lcall   SUB_E6D04  ; 0xe6a8, 0x284
+    3633:6E3E  [E6E3E]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
     3633:6E43  [E6E43]  c6068d0701      mov     byte ptr [0x78d], 1
     3633:6E48  [E6E48]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
     3633:6E4D  [E6E4D]  c606971a00      mov     byte ptr [0x1a97], 0
@@ -11656,7 +11656,7 @@ L_E810C:
     3633:8127  [E8127]  800e761b08      or      byte ptr [0x1b76], 8
     3633:812C  [E812C]  803e761b08      cmp     byte ptr [0x1b76], 8
     3633:8131  [E8131]  7505            jne     L_E8138  ; 0xf8
-    3633:8133  [E8133]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
+    3633:8133  [E8133]  9a6802a8e6      lcall   finish_acq_reset_and_clear_mode  ; 0xe6a8, 0x268
 L_E8138:
     3633:8138  [E8138]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:813B  [E813B]  81e72300        and     di, 0x23
@@ -13687,14 +13687,14 @@ L_F7120:
     3532:712B  [F712B]  803e761b00      cmp     byte ptr [0x1b76], 0
     3532:7130  [F7130]  750d            jne     L_F713F  ; 0xdf
     3532:7132  [F7132]  800e761b02      or      byte ptr [0x1b76], 2
-    3532:7137  [F7137]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
+    3532:7137  [F7137]  9a6802a8e6      lcall   finish_acq_reset_and_clear_mode  ; 0xe6a8, 0x268
     3532:713C  [F713C]  e91200          jmp     L_F7151  ; 0xf1
 L_F713F:
     3532:713F  [F713F]  800e761b02      or      byte ptr [0x1b76], 2
     3532:7144  [F7144]  e90a00          jmp     L_F7151  ; 0xf1
 L_F7147:
     3532:7147  [F7147]  8026761bfd      and     byte ptr [0x1b76], 0xfd
-    3532:714C  [F714C]  9a8402a8e6      lcall   SUB_E6D04  ; 0xe6a8, 0x284
+    3532:714C  [F714C]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
 L_F7151:
     3532:7151  [F7151]  a0fc04          mov     al, byte ptr [0x4fc]
     3532:7154  [F7154]  2480            and     al, 0x80
@@ -13716,14 +13716,14 @@ L_F716F:
     3532:717C  [F717C]  803e761b00      cmp     byte ptr [0x1b76], 0
     3532:7181  [F7181]  750d            jne     L_F7190  ; 0x130
     3532:7183  [F7183]  800e761b01      or      byte ptr [0x1b76], 1
-    3532:7188  [F7188]  9a6802a8e6      lcall   SUB_E6CE8  ; 0xe6a8, 0x268
+    3532:7188  [F7188]  9a6802a8e6      lcall   finish_acq_reset_and_clear_mode  ; 0xe6a8, 0x268
     3532:718D  [F718D]  e91200          jmp     L_F71A2  ; 0x142
 L_F7190:
     3532:7190  [F7190]  800e761b01      or      byte ptr [0x1b76], 1
     3532:7195  [F7195]  e90a00          jmp     L_F71A2  ; 0x142
 L_F7198:
     3532:7198  [F7198]  8026761bfe      and     byte ptr [0x1b76], 0xfe
-    3532:719D  [F719D]  9a8402a8e6      lcall   SUB_E6D04  ; 0xe6a8, 0x284
+    3532:719D  [F719D]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
 L_F71A2:
     3532:71A2  [F71A2]  9a0c00ccf0      lcall   SUB_F0CCC  ; 0xf0cc, 0xc
 L_F71A7:
