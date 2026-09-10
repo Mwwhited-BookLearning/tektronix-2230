@@ -9742,11 +9742,11 @@ L_E6144:
     3633:6147  [E6147]  a1cd1a          mov     ax, word ptr [0x1acd]
     3633:614A  [E614A]  03d8            add     bx, ax
     3633:614C  [E614C]  800f40          or      byte ptr [bx], 0x40
-    3633:614F  [E614F]  9a040052e6      lcall   SUB_E6524  ; 0xe652, 4
+    3633:614F  [E614F]  9a040052e6      lcall   scheduler_tick_service  ; 0xe652, 4
     3633:6154  [E6154]  eb10            jmp     switch_to_next_task  ; 0xb6
 
 L_E6157:
-    3633:6157  [E6157]  9a040052e6      lcall   SUB_E6524  ; 0xe652, 4
+    3633:6157  [E6157]  9a040052e6      lcall   scheduler_tick_service  ; 0xe652, 4
     3633:615C  [E615C]  07              pop     es
     3633:615D  [E615D]  1f              pop     ds
     3633:615E  [E615E]  5f              pop     di
@@ -10108,7 +10108,7 @@ L_E64FB:
     3633:6521  [E6521]  5d              pop     bp
     3633:6522  [E6522]  cb              retf    
 
-SUB_E6524:
+scheduler_tick_service:
     3633:6524  [E6524]  55              push    bp
     3633:6525  [E6525]  8bec            mov     bp, sp
     3633:6527  [E6527]  83ec06          sub     sp, 6

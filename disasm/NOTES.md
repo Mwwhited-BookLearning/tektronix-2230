@@ -674,11 +674,43 @@ clears a task's "restarting" flag and bumps its ready-flags byte).
 a shared kernel primitive callable from anywhere via a far call, not
 something private to one subsystem.
 
-**Not yet confirmed**: how many tasks exist, what each one does (the
-self-test/UI/acquisition-refresh loop are plausible candidates given
-everything else found so far), what triggers INT2 (a periodic timer is
-the obvious guess but not confirmed), and what `SUB_E6524`/`SUB_E61E3`
-actually do.
+**Found the per-tick heartbeat.** `scheduler_tick_service` (`0xE6524`)
+is called *unconditionally* from both paths inside `INT2_HANDLER_LATE`
+- whether or not a task switch actually happens on this particular
+tick, this runs every time. It:
+- Reads two hardware status bytes from **fixed physical addresses
+  `0x403FFA`/`0x403FFB`** into `[0x758]`/`[0x759]` - notably, this is
+  memory-mapped I/O sitting just *above* the boot-time stack's initial
+  top (`SS:SP = 4000:3FFA` at reset, see `boot_init`) - a classic
+  embedded design where the stack is placed immediately below a fixed
+  I/O window to use RAM efficiently. This is the real source of
+  `[0x758]`, previously only known as "some status/mode byte checked
+  around `read_channel1_status`/`read_channel2_status`" - now
+  confirmed to be a genuine hardware status register, polled once per
+  tick.
+- XORs `[0x758]` against a previous snapshot (`[0x7B4]`) - classic
+  edge/change detection on that hardware status.
+- Increments `[0x752]` - **the exact counter `wait_readout_tick`
+  busy-waits on** - confirming `wait_readout_tick`'s delay really is
+  paced by this same timer tick, not an unrelated counter.
+- Cycles through a few debounce/periodic-maintenance steps gated by
+  `[0x1A94]`/`[0x1A95]`/`[0x756]` vs. a threshold at `[0x764]`, and
+  (via the `[0x7B2]` 0/1/2 rotation in the code just before it's
+  called) rotates between three variants of the memory-delay routines
+  (`delay_read_128w` and two unread siblings, `SUB_E5D3D`/`SUB_E5D49`/
+  `SUB_E5D58`).
+
+This resolves "what triggers INT2" indirectly: INT2 itself is still
+presumed to be a periodic hardware timer (not confirmed which), but
+now it's clear *why* a timer interrupt exists at all - it's the
+heartbeat for both task switching AND this hardware status/debounce
+polling, unified in one place.
+
+**Still not confirmed**: how many tasks exist and what each one does
+(the self-test/UI/acquisition-refresh loop are plausible candidates),
+exactly which hardware `0x403FFA`/`0x403FFB` belong to (front-panel
+key/encoder status is the leading candidate, matching where `[0x758]`
+gets used elsewhere), and what `SUB_E61E3` does.
 
 ## Validation status
 

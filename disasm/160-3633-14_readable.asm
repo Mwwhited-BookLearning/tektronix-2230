@@ -7611,7 +7611,7 @@ L_E64FB:
     pop bp                                   ; 6521: pop bp
     retf                                     ; 6522: retf 
     db 0xff  ; 6523
-SUB_E6524:
+scheduler_tick_service:
     push bp                                  ; 6524: push bp
     mov bp, sp                               ; 6525: mov bp, sp
     sub sp, 6                                ; 6527: sub sp, 6

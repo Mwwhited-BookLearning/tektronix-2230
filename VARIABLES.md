@@ -22,6 +22,14 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 | `[0x1BF9]` | Option-board presence/RAM status byte, set by `SUB_E44F1`: bit 1 = valid ROM header checksum found at the probed address, bit 2 = that address is also RAM/IO-backed | Confirmed |
 | `[0x1B83]` | Config byte `SUB_E44F1` checks equals `0x1E` as part of confirming the RAM/IO result | Usage confirmed; meaning of the specific value `0x1E` not confirmed |
 
+## Task scheduler / hardware polling
+
+| Address | Role | Confidence |
+|---|---|---|
+| `[0x752]` | Tick counter, incremented once per `INT2` timer interrupt by `scheduler_tick_service`; `wait_readout_tick` busy-waits for this to change | Confirmed |
+| `[0x758]`, `[0x759]` | Hardware status bytes, read every tick from fixed physical addresses `0x403FFA`/`0x403FFB` by `scheduler_tick_service`. `[0x758]` also checked (masked `&0x63`) around `read_channel1_status`/`read_channel2_status` calls | Source confirmed; which peripheral (front-panel key/encoder is the leading candidate) not confirmed |
+| `[0x7B4]` | Previous snapshot of `[0x758]`, XOR'd against the new read each tick for edge/change detection | Confirmed |
+
 ## Menu navigation
 
 | Address | Role | Confidence |
@@ -45,9 +53,6 @@ These addresses came up during disassembly (e.g. as operands of `mov`/
 role yet. Listed here as known targets for future investigation rather
 than left buried in `.lst` files:
 
-- `[0x758]` — checked (masked `&0x63`) around calls to
-  `read_channel1_status`/`read_channel2_status`; role beyond "some
-  status/mode byte" not yet confirmed.
-  `[0x780]` — referenced early in boot-adjacent code, role unknown.
+- `[0x780]` — referenced early in boot-adjacent code, role unknown.
 - `[0x61A]`, `[0x61B]` — referenced in `SUB_E004F` (one of the first
   functions in the main ROM), a small getter/setter-looking pair.

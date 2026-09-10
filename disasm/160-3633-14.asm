@@ -7613,7 +7613,7 @@ L_E64FB:
     pop bp                                   ; 6521: pop bp
     retf                                     ; 6522: retf 
     db 0xff  ; 6523
-SUB_E6524:
+scheduler_tick_service:
     push bp                                  ; 6524: push bp
     db 0x8b, 0xec  ; 6525: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 6527: sub sp, 6

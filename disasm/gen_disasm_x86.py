@@ -585,6 +585,33 @@ FUNCTIONAL_NAMES = {
                                                # ps/2...) suggesting PRC
                                                # is a timebase/reference-
                                                # clock counter
+    0xE6524: "scheduler_tick_service",        # called unconditionally
+                                               # from BOTH paths inside
+                                               # INT2_HANDLER_LATE (every
+                                               # timer tick, whether or
+                                               # not a task switch
+                                               # happens): reads 2
+                                               # hardware status bytes
+                                               # from fixed physical
+                                               # addresses 0x403FFA/
+                                               # 0x403FFB (memory-mapped
+                                               # I/O sitting just above
+                                               # the boot-time stack's
+                                               # top) into [0x758]/
+                                               # [0x759], XORs [0x758]
+                                               # against a previous
+                                               # snapshot for edge
+                                               # detection, and
+                                               # increments [0x752] -
+                                               # the SAME counter
+                                               # wait_readout_tick polls
+                                               # - plus other periodic
+                                               # debounce/cycling state.
+                                               # THE per-tick hardware-
+                                               # polling heartbeat behind
+                                               # the task scheduler - see
+                                               # NOTES.md "A small task
+                                               # scheduler"
     0xE5D28: "sync_and_enable_interrupts",    # calls sync_status_byte_
                                                # to_hw, then falls
                                                # through into enable_
