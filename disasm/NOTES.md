@@ -1268,6 +1268,57 @@ non-drifted floating-point instruction in the middle of otherwise
 completely ordinary compiled-C integer code, not part of any known
 decode-drift cluster).
 
+## Found: the acquisition mode-change dispatcher (handle_acq_mode_change)
+
+`SUB_E80E4` takes a single "what changed" flags word (arg at `[bp-8]`)
+and dispatches on individual bits, each corresponding to one aspect of
+acquisition/display state that just changed:
+
+- bit `0x40` - acquisition timeout handling. If a countdown at
+  `[0x54A]` has already expired (`<= 0`), calls
+  `reset_acq_buffers_stub`; otherwise arms a fresh timeout by
+  snapshotting the current scheduler tick (`scheduler_tick_service`'s
+  `[0x752]`) into `[0x544]`, computing a deadline `[0x546] =
+  [0x544] + 0x783` (0x783 = 1923 ticks), and setting bit 3 of
+  `[0x1B76]` (the same flags byte `run_selftest_sequence`/
+  `reinit_system_state` touch).
+- bits `0x23`, `2`, `0x20` (and further ones past what's transcribed
+  here) each gate their own small block of calls to
+  `reset_acq_buffers_stub`, `print_and_reset_acq_buffers`,
+  `update_display_mode_flags`, and `reset_plot_home_or_acq`, in
+  different combinations depending on which bit(s) fired and the
+  state of `[0x54C]`.
+
+Renamed to `handle_acq_mode_change`. This is a good caller-side
+confirmation that `[0x752]` (scheduler tick count) doubles as a
+lightweight timebase for non-hardware timeouts elsewhere in the
+firmware, not just the busy-wait use in `wait_readout_tick`.
+
+**Left unresolved: `SUB_E804F`.** One of the two call sites for this
+function's sibling (also reached from the plot-position-cache code
+around `update_plot_position`/`plot_line_to`) is `SUB_E804F`, whose
+first bytes (`1c 1d` = `sbb al, 0x1d`) don't form a recognizable
+prologue, yet the function later executes `pop si` / `mov sp, bp` /
+`pop bp` / `retf 2` - implying a stack frame that was never visibly
+set up. Unlike the `write_hw_shift_register`/`convert_sample_value`
+"shared tail via fallthrough" pattern, this one **can't** be a
+fallthrough-entry function: there's a ~172-byte gap between the
+previous function's `retf` (at `0xE7FA3`) and `SUB_E804F`'s start
+(`0xE804F`) with nothing in the recursive-descent graph reaching
+through it, and both known callers (`160-3633` and `160-3532`) target
+`0xE804F` directly via `lcall`. The body between the odd opening and
+the `retf` is otherwise coherent (looks up an entry in a table
+pointed to by the far pointer at `[0x1D1C]`, indexed by a value
+derived from the caller's argument, and conditionally writes a
+"changed" flag + new value into it, setting global dirty flag
+`[0x532]` if so) - functionally plausible as "update a cached
+coordinate/id table entry and flag it dirty if the value changed,"
+but the un-prologued opening means the register-level details (what's
+really in `ax`/`bx` on entry) aren't trustworthy. Left unrenamed
+pending a closer look; flagged here rather than guessed. Not
+classified as a `SUB_EAC86`-style anomaly since the code past the
+odd opening is coherent, not garbage.
+
 ## A second, more puzzling decode anomaly: SUB_EAC86
 
 Found while renaming: `SUB_EAC86` (`160-3633`, in the *proven*, not

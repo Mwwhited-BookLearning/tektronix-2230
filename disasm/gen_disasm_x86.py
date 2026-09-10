@@ -636,6 +636,23 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE80E4: "handle_acq_mode_change",        # dispatches on bits of a
+                                               # "what changed" flags
+                                               # word (arg at [bp-8]):
+                                               # bit 0x40 -> acq timeout
+                                               # handling (arm/expire a
+                                               # countdown via [0x54A],
+                                               # snapshot scheduler tick
+                                               # [0x752] into a deadline
+                                               # [0x544]/[0x546]=+0x783,
+                                               # flag [0x1B76]); bits
+                                               # 0x23/2/0x20 etc -> calls
+                                               # reset_acq_buffers_stub,
+                                               # print_and_reset_acq_
+                                               # buffers, update_display_
+                                               # mode_flags, reset_plot_
+                                               # home_or_acq per which
+                                               # bit(s) fired
     0xF1001: "convert_sample_value",          # starts with a real x87
                                                # `fmul` (entered via
                                                # fallthrough, no own

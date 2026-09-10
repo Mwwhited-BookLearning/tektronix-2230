@@ -11454,7 +11454,7 @@ L_E7DB3:
 L_E7DC4:
     3633:7DC4  [E7DC4]  ff76f6          push    word ptr [bp - 0xa]
     3633:7DC7  [E7DC7]  ff76f8          push    word ptr [bp - 8]
-    3633:7DCA  [E7DCA]  9aa40004e8      lcall   SUB_E80E4  ; 0xe804, 0xa4
+    3633:7DCA  [E7DCA]  9aa40004e8      lcall   handle_acq_mode_change  ; 0xe804, 0xa4
     3633:7DCF  [E7DCF]  83c402          add     sp, 2
     3633:7DD2  [E7DD2]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:7DD5  [E7DD5]  893eb206        mov     word ptr [0x6b2], di
@@ -11631,7 +11631,7 @@ L_E8071:
     3633:8074  [E8074]  5d              pop     bp
     3633:8075  [E8075]  ca0200          retf    2
 
-SUB_E80E4:
+handle_acq_mode_change:
     3633:80E4  [E80E4]  0e              push    cs
     3633:80E5  [E80E5]  3a05            cmp     al, byte ptr [di]
     3633:80E7  [E80E7]  0002            add     byte ptr [bp + si], al
@@ -13170,7 +13170,7 @@ convert_sample_value:
     3532:1020  [F1020]  751c            jne     L_F103E  ; 0x18e
     3532:1022  [F1022]  ff7608          push    word ptr [bp + 8]
     3532:1025  [F1025]  ff7606          push    word ptr [bp + 6]
-    3532:1028  [F1028]  9aa40004e8      lcall   SUB_E80E4  ; 0xe804, 0xa4
+    3532:1028  [F1028]  9aa40004e8      lcall   handle_acq_mode_change  ; 0xe804, 0xa4
     3532:102D  [F102D]  83c402          add     sp, 2
     3532:1030  [F1030]  ff760c          push    word ptr [bp + 0xc]
     3532:1033  [F1033]  ff760a          push    word ptr [bp + 0xa]

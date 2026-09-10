@@ -7007,10 +7007,10 @@
     "notes": null
   },
   "E80E4": {
-    "name": "SUB_E80E4",
+    "name": "handle_acq_mode_change",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "handle_acq_mode_change",
     "notes": null
   },
   "E810C": {
