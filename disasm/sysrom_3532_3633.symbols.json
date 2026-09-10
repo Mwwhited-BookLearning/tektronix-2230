@@ -6,8 +6,71 @@
     "functional_name": null,
     "notes": null
   },
+  "80143": {
+    "name": "L_80143",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "80151": {
+    "name": "L_80151",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "81404": {
     "name": "SUB_81404",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "81421": {
+    "name": "L_81421",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "8142F": {
+    "name": "SUB_8142F",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "8143D": {
+    "name": "L_8143D",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "82D01": {
+    "name": "SUB_82D01",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "82D0A": {
+    "name": "L_82D0A",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "82D1C": {
+    "name": "L_82D1C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "83241": {
+    "name": "SUB_83241",
     "kind": "sub",
     "ref_count": 1,
     "functional_name": null,
@@ -44,7 +107,7 @@
   "9470E": {
     "name": "SUB_9470E",
     "kind": "sub",
-    "ref_count": 8,
+    "ref_count": 10,
     "functional_name": null,
     "notes": null
   },
@@ -59,6 +122,13 @@
     "name": "SUB_9628C",
     "kind": "sub",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "96B68": {
+    "name": "SUB_96B68",
+    "kind": "sub",
+    "ref_count": 3,
     "functional_name": null,
     "notes": null
   },

@@ -5679,7 +5679,7 @@ SUB_E44F1:
     mov si, word [es:di - 0x6000]            ; 453F: mov si, word ptr es:[di - 0x6000]
     mov word [es:di - 0x6000], 0xaa55        ; 4544: mov word ptr es:[di - 0x6000], 0xaa55
     les di, [bp - 0xa]                       ; 454B: les di, ptr [bp - 0xa]
-    cmp word [es:di - 0x6000], 0xaa55        ; 454E: cmp word ptr es:[di - 0x6000], 0xaa55
+    cmp word [es:di - 0x6000], strict word 0xaa55 ; 454E: cmp word ptr es:[di - 0x6000], 0xaa55
     jne short 0x4563                         ; 4555: jne 0xa53
     cmp byte [0x1b83], 0x1e                  ; 4557: cmp byte ptr [0x1b83], 0x1e
     jne short 0x4563                         ; 455C: jne 0xa53

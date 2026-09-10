@@ -4,6 +4,123 @@
 ; Labels are address-based placeholders; rename to functional
 ; names in the .symbols.json as their purpose is understood.
 
+SUB_80133:
+    2998:0133  [80133]  fc              cld     
+    2998:0134  [80134]  b81380          mov     ax, 0x8013
+    2998:0137  [80137]  8ed8            mov     ds, ax
+    2998:0139  [80139]  be2200          mov     si, 0x22
+    2998:013C  [8013C]  8b04            mov     ax, word ptr [si]
+    2998:013E  [8013E]  8ec0            mov     es, ax
+    2998:0140  [80140]  83c602          add     si, 2
+L_80143:
+    2998:0143  [80143]  8b3c            mov     di, word ptr [si]
+    2998:0145  [80145]  83ffff          cmp     di, -1
+    2998:0148  [80148]  7407            je      L_80151  ; 0x21
+    2998:014A  [8014A]  83c602          add     si, 2
+    2998:014D  [8014D]  a5              movsw   word ptr es:[di], word ptr [si]
+    2998:014E  [8014E]  a5              movsw   word ptr es:[di], word ptr [si]
+    2998:014F  [8014F]  ebf2            jmp     L_80143  ; 0x13
+L_80151:
+    2998:0151  [80151]  cb              retf    
+
+SUB_81404:
+    2998:1404  [81404]  55              push    bp
+    2998:1405  [81405]  8bec            mov     bp, sp
+    2998:1407  [81407]  83ec06          sub     sp, 6
+    2998:140A  [8140A]  837e0600        cmp     word ptr [bp + 6], 0
+    2998:140E  [8140E]  7d11            jge     L_81421  ; 0x1161
+    2998:1410  [81410]  bf2d00          mov     di, 0x2d
+    2998:1413  [81413]  57              push    di
+    2998:1414  [81414]  9ab105c982      lcall   SUB_83241  ; 0x82c9, 0x5b1
+    2998:1419  [81419]  8b7e06          mov     di, word ptr [bp + 6]
+    2998:141C  [8141C]  f7df            neg     di
+    2998:141E  [8141E]  897e06          mov     word ptr [bp + 6], di
+L_81421:
+    2998:1421  [81421]  ff7606          push    word ptr [bp + 6]
+    2998:1424  [81424]  9a6f112c80      lcall   SUB_8142F  ; 0x802c, 0x116f
+    2998:1429  [81429]  8be5            mov     sp, bp
+    2998:142B  [8142B]  5d              pop     bp
+    2998:142C  [8142C]  ca0200          retf    2
+SUB_8142F:
+    2998:142F  [8142F]  55              push    bp
+    2998:1430  [81430]  8bec            mov     bp, sp
+    2998:1432  [81432]  83ec0c          sub     sp, 0xc
+    2998:1435  [81435]  56              push    si
+    2998:1436  [81436]  c646f900        mov     byte ptr [bp - 7], 0
+    2998:143A  [8143A]  be0500          mov     si, 5
+L_8143D:
+    2998:143D  [8143D]  8b4606          mov     ax, word ptr [bp + 6]
+    2998:1440  [81440]  2bd2            sub     dx, dx
+    2998:1442  [81442]  bf0a00          mov     di, 0xa
+    2998:1445  [81445]  f7f7            div     di
+    2998:1447  [81447]  83c230          add     dx, 0x30
+    2998:144A  [8144A]  8bda            mov     bx, dx
+    2998:144C  [8144C]  4e              dec     si
+    2998:144D  [8144D]  885af4          mov     byte ptr [bp + si - 0xc], bl
+    2998:1450  [81450]  8b4606          mov     ax, word ptr [bp + 6]
+    2998:1453  [81453]  2bd2            sub     dx, dx
+    2998:1455  [81455]  f7f7            div     di
+    2998:1457  [81457]  894606          mov     word ptr [bp + 6], ax
+    2998:145A  [8145A]  3d0000          cmp     ax, 0
+    2998:145D  [8145D]  77de            ja      L_8143D  ; 0x117d
+    2998:145F  [8145F]  8d52f4          lea     dx, [bp + si - 0xc]
+    2998:1462  [81462]  16              push    ss
+    2998:1463  [81463]  52              push    dx
+    2998:1464  [81464]  9a7100c982      lcall   SUB_82D01  ; 0x82c9, 0x71
+    2998:1469  [81469]  5e              pop     si
+    2998:146A  [8146A]  8be5            mov     sp, bp
+    2998:146C  [8146C]  5d              pop     bp
+    2998:146D  [8146D]  ca0200          retf    2
+
+SUB_82D01:
+    2998:2D01  [82D01]  55              push    bp
+    2998:2D02  [82D02]  8bec            mov     bp, sp
+    2998:2D04  [82D04]  83ec06          sub     sp, 6
+    2998:2D07  [82D07]  e91200          jmp     L_82D1C  ; 0x8c
+L_82D0A:
+    2998:2D0A  [82D0A]  c47e06          les     di, ptr [bp + 6]
+    2998:2D0D  [82D0D]  ff4606          inc     word ptr [bp + 6]
+    2998:2D10  [82D10]  268a15          mov     dl, byte ptr es:[di]
+    2998:2D13  [82D13]  88160500        mov     byte ptr [5], dl
+    2998:2D17  [82D17]  9af8028796      lcall   SUB_96B68  ; 0x9687, 0x2f8
+L_82D1C:
+    2998:2D1C  [82D1C]  c47e06          les     di, ptr [bp + 6]
+    2998:2D1F  [82D1F]  26803d00        cmp     byte ptr es:[di], 0
+    2998:2D23  [82D23]  75e5            jne     L_82D0A  ; 0x7a
+    2998:2D25  [82D25]  8be5            mov     sp, bp
+    2998:2D27  [82D27]  5d              pop     bp
+    2998:2D28  [82D28]  ca0400          retf    4
+
+SUB_83241:
+    2998:3241  [83241]  55              push    bp
+    2998:3242  [83242]  8bec            mov     bp, sp
+    2998:3244  [83244]  83ec06          sub     sp, 6
+    2998:3247  [83247]  8a5606          mov     dl, byte ptr [bp + 6]
+    2998:324A  [8324A]  88160500        mov     byte ptr [5], dl
+    2998:324E  [8324E]  9af8028796      lcall   SUB_96B68  ; 0x9687, 0x2f8
+    2998:3253  [83253]  8be5            mov     sp, bp
+    2998:3255  [83255]  5d              pop     bp
+    2998:3256  [83256]  ca0200          retf    2
+SUB_83259:
+    2998:3259  [83259]  55              push    bp
+    2998:325A  [8325A]  8bec            mov     bp, sp
+    2998:325C  [8325C]  83ec08          sub     sp, 8
+    2998:325F  [8325F]  bf808f          mov     di, 0x8f80
+    2998:3262  [83262]  57              push    di
+    2998:3263  [83263]  9a0e007094      lcall   SUB_9470E  ; 0x9470, 0xe
+    2998:3268  [83268]  8946f8          mov     word ptr [bp - 8], ax
+    2998:326B  [8326B]  8a5606          mov     dl, byte ptr [bp + 6]
+    2998:326E  [8326E]  88160500        mov     byte ptr [5], dl
+    2998:3272  [83272]  9af8028796      lcall   SUB_96B68  ; 0x9687, 0x2f8
+    2998:3277  [83277]  ff76f8          push    word ptr [bp - 8]
+    2998:327A  [8327A]  9a0e007094      lcall   SUB_9470E  ; 0x9470, 0xe
+    2998:327F  [8327F]  8be5            mov     sp, bp
+    2998:3281  [83281]  5d              pop     bp
+    2998:3282  [83282]  ca0200          retf    2
+
+L_88729:
+    2998:8729  [88729]  ff2b            ljmp    [bp + di]
+
 SUB_E004F:
     3633:004F  [E004F]  55              push    bp
     3633:0050  [E0050]  8bec            mov     bp, sp

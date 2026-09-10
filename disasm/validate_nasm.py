@@ -37,6 +37,14 @@ NO_OPERAND_MNEMONICS = {
 COMMUTATIVE_REGREG_MNEMONICS = {
     "mov", "add", "sub", "and", "or", "xor", "cmp", "test", "adc", "sbb",
 }
+# Rare instructions encountered while expanding coverage that haven't been
+# individually verified for correct NASM round-tripping yet (string I/O
+# ports, array-bounds check) - conservatively fall back to raw db rather
+# than risk a silently-wrong conversion. Revisit if they turn out to be
+# common enough to be worth handling properly.
+NOT_YET_HANDLED_MNEMONICS = {
+    "insb", "insw", "insd", "outsb", "outsw", "outsd", "bound",
+}
 
 SEG_OVERRIDE_RE = re.compile(r"\b(cs|ds|es|ss):")
 PTR_RE = re.compile(r"\b(byte|word|dword|qword) ptr\b")
@@ -140,6 +148,18 @@ def convert(mnem, op, size, seg, chip_name, chip_base, orig_bytes):
         if not (chip_base <= phys < chip_base + 0x10000):
             return None
         return phys - chip_base
+
+    if mnem.startswith("f"):
+        # x87 FPU instructions (fadd/fdiv/fld/fst/...) - no x86 integer
+        # mnemonic starts with "f", so this reliably catches them. Not
+        # handled yet (capstone's "st(N)" operand syntax needs
+        # translating for NASM); fall back to raw db rather than risk a
+        # wrong conversion for a CPU feature (8087 coprocessor) we
+        # haven't investigated yet - see TODO.md.
+        return None
+
+    if mnem in NOT_YET_HANDLED_MNEMONICS:
+        return None
 
     if mnem == "lock add":
         return f"lock add {fix_mem_operand(op)}"
@@ -246,6 +266,19 @@ def alt_direction_encoding(raw):
     return bytes([alt_opcode, alt_modrm])
 
 
+def alt_duplicate_opcode(orig):
+    """0x82 is an undocumented exact duplicate of 0x80 (group-1 Eb,Ib -
+    byte-sized add/or/adc/.../cmp with an imm8; the 's' sign-extend bit
+    that distinguishes 0x80 from 0x82 in the 16/32-bit-operand cases is
+    meaningless for an 8-bit destination, so both encode identically).
+    NASM always emits 0x80; if the ROM used 0x82, treat it as the same
+    already-recognized equivalence class as the other opcode-choice
+    ambiguities rather than a real mismatch."""
+    if not orig or orig[0] != 0x82:
+        return None
+    return bytes([0x80]) + orig[1:]
+
+
 def alt_displacement_encoding(orig):
     """NASM prefers the shorter mod=01 (disp8) addressing form whenever
     a mod=10 (disp16) displacement's value fits in a signed byte, even
@@ -335,6 +368,10 @@ def main():
                 continue
             alt2 = alt_displacement_encoding(orig)
             if alt2 is not None and got[:len(alt2)] == alt2:
+                alt_encoding += 1
+                continue
+            alt3 = alt_duplicate_opcode(orig)
+            if alt3 is not None and got[:len(alt3)] == alt3:
                 alt_encoding += 1
                 continue
             real_mismatch.append((name, addr, mnem, op, nasm_line, orig, got))

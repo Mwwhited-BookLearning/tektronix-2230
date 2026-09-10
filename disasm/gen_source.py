@@ -149,9 +149,16 @@ def build_source(chip_name, buf, visited, chip_base, nasm_exe):
     return "\n".join(lines) + "\n"
 
 
-def main(nasm_exe):
+def main(nasm_exe, entry_points=None, only_chips=None):
+    """`only_chips`, if given, restricts which chips' .asm files get
+    written - useful when `entry_points` includes lower-confidence
+    (e.g. heuristic) seeds that should expand what's explored WITHOUT
+    mixing that lower confidence into another chip's committed .asm
+    (e.g. the comm ROM's heuristic entries can open up new reachable
+    code in the main ROM chips too, but that shouldn't silently change
+    what 160-3633-14.asm/160-3532-14.asm claim to be proven-reachable)."""
     global labels_by_addr
-    chips, visited, labels = g.main()
+    chips, visited, labels = g.main(None, entry_points)
 
     labels_by_addr = {}
     for phys, lab in labels.items():
@@ -162,6 +169,8 @@ def main(nasm_exe):
             labels_by_addr[(chip_name, chip_off)] = name
 
     for name, info in chips.items():
+        if only_chips is not None and name not in only_chips:
+            continue
         src = build_source(name, info["buf"], visited, info["base"], nasm_exe)
         out_path = f"160-{name}-14.asm"
         open(out_path, "w").write(src)

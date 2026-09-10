@@ -29,6 +29,14 @@ FAR_TARGET_RE = re.compile(r"^\s*(?:0x)?([0-9a-fA-F]+)\s*[:,]\s*(?:0x)?([0-9a-fA
 CHIPS = {
     "3633": {"path": "../binary/160-3633-14.bin", "phys_base": 0xE0000},
     "3532": {"path": "../binary/160-3532-14.bin", "phys_base": 0xF0000},
+    # Not bank-switched after all - confirmed by checking every far-call
+    # target landing in 0x80000-0x8FFFF against this file's own function
+    # starts: 82/84 land exactly on one. This is a plain 64KB device at
+    # a fixed physical address, the same simple pattern as the two main-
+    # ROM halves above (there was no need to bank-switch: the 8088's 1MB
+    # address space has plenty of room free). See NOTES.md "The comm ROM
+    # is NOT bank-switched".
+    "2998": {"path": "../binary/160-2998-14.bin", "phys_base": 0x80000},
 }
 
 ENTRY_POINTS = [

@@ -110,97 +110,169 @@ but **not its own CPU**. Evidence:
 Still unknown: the exact bank-switch mechanism (which port/register
 selects this ROM into the address space, and what window size).
 
+**Update: there is no bank-switch mechanism - see the next section.**
+
+## The comm ROM is NOT bank-switched
+
+Corrected after the user pointed out the obvious question: with a 1MB
+(20-bit) address space and only ~192KB of ROM plus modest RAM in use,
+why would anyone bank-switch a 64KB device when there's plenty of free
+address space to just give it a fixed home? There wasn't a good
+answer - the "bank-switching" framing above came from over-reading the
+repeated per-page headers as evidence of paging, when it wasn't.
+
+**Confirmed: `160-2998` is a plain 64KB device at a fixed physical
+address, `0x80000-0x8FFFF`** - the exact same simple pattern as the
+two main-ROM halves at `0xE0000`/`0xF0000`. Verified two ways:
+
+1. Every far-call target (from both the main ROM's already-proven code
+   and the comm ROM's own code) landing in `0x80000-0x8FFFF` was
+   checked against this file's own `55 8B EC` push-bp signatures at
+   `file_offset = phys - 0x80000`: **82 of 84 distinct targets land
+   exactly on a known function start** (the other 2 likely just hit a
+   leaf function using a different prologue).
+2. The main ROM's own already-proven-reachable code makes several
+   direct far calls straight into that range (e.g. `160-3633:0x1f03`
+   calls `8013:0003` → physical `0x80133`) - this isn't a heuristic
+   result, it's PROVEN reachability from the confirmed boot path.
+
+This also resolved what had been called "the mystery
+`~0x80000-0x97000` region" - the lower half of it (`0x80000-0x8FFFF`)
+*is* the comm ROM we already have a full dump of; it was only ever
+mysterious because of the wrong (arbitrary bookkeeping) addresses this
+project had been using for it. The real, still-unresolved mystery is
+narrower now: `0x90000` and up (see `MEMORY_MAP.md`).
+
+`gen_disasm_x86.CHIPS` now includes `"2998"` (`phys_base=0x80000`)
+directly, exactly like `"3633"`/`"3532"` - no more special-cased
+virtual-page-addressing module needed. `gen_disasm_2998.py` is now
+just a thin heuristic-entry-point supplement (the 398 push-bp
+signatures + the 2 internal boot-stub jumps) layered on top of the
+same real address space, and `gen_source_2998.py` regenerates
+`160-2998-14.asm` with those included (while leaving the main ROM's
+`.asm` files as proven-only, via `gen_source.main()`'s new
+`only_chips` parameter, so heuristic confidence doesn't leak into
+files that are supposed to be proven-reachable-only).
+
+Reaching further into the main ROM through these newly-resolved comm-
+ROM call sites surfaced a few instruction kinds the NASM converter
+hadn't seen yet: x87 FPU instructions (`fdiv`, etc. - capstone's
+`st(N)` operand syntax isn't NASM-compatible as written) and some rare
+string-I/O/bounds-check instructions (`insw`/`outsw`/`outsd`/`bound`).
+Rather than get their exact NASM syntax right immediately, these are
+conservatively excluded from conversion (fall back to raw `db`, same
+safe-by-default principle as everywhere else) - see `TODO.md`. Also
+found and fixed one more real encoding ambiguity while re-validating:
+opcode `0x82` is an undocumented exact duplicate of `0x80` for byte-
+sized group-1 immediate ops (the sign-extend bit that distinguishes
+them doesn't mean anything for an 8-bit destination) - NASM always
+emits `0x80`, so this needed the same kind of alternate-encoding
+detection as the direction-bit and displacement-width ambiguities.
+
 ## Comm ROM disassembly (160-2998-14)
 
-Built with `gen_disasm_2998.py`, reusing `gen_disasm_x86.py`'s engine
-with a combined chip set: the comm ROM's four 16KB pages get arbitrary
-non-overlapping virtual physical bases (`0xA0000`, `0xB0000`, `0xC0000`,
-`0xD0000` - a full 64KB apart per page, not just 16KB, so a near-branch
-offset overflowing past `0x3FFF` lands in genuinely unmapped space
-instead of bleeding into the next page's window) alongside the real
-main-ROM chips, so a far call/jmp landing in `0xE0000-0xFFFFF`
-correctly continues into the already-disassembled main ROM.
+`160-2998` (`phys_base=0x80000`) is now registered directly in
+`gen_disasm_x86.CHIPS`, exactly like `"3633"`/`"3532"` - see "The comm
+ROM is NOT bank-switched" above. Running `gen_disasm_x86.py` alone
+already reaches some of it (99 instructions) through PROVEN control
+flow: real far calls from already-confirmed main-ROM code (this is
+included in the official `sysrom_3532_3633.lst`/`.symbols.json`, no
+separate confidence tier needed for these 99).
 
-**Confidence is lower than the main ROM's disassembly.** The main ROM
-is seeded only from proven entry points (the real reset vector, and
-things reachable from it). The comm ROM has no known reset vector and
-nothing we've disassembled calls into it directly, so it's seeded
-heuristically: every occurrence of the `55 8B EC` (`push bp; mov
-bp,sp`) prologue (398 of them) plus the two boot-stub far jumps. This
-is a strong signal (C-compiler prologues are distinctive) but not
-proof of reachability the way the main ROM's recursive descent is.
+`gen_disasm_2998.py` adds a second, lower-confidence layer on top:
+every occurrence of the `55 8B EC` (`push bp; mov bp,sp`) C-compiler
+prologue (398 of them) plus this ROM's own two internal boot-stub far
+jumps, seeded as additional entry points in the *same* real address
+space (no per-page virtual addressing needed any more - that
+machinery is gone now that the mapping is confirmed flat). This is a
+strong signal but not proof of reachability the way the main ROM's
+recursive descent is - one still-open thread: 2 far calls found landing
+in `0x80000-0x8FFFF` didn't hit an exact function start under this
+scan (see the "82/84" figure above), meaning either a different
+prologue style or a genuine decode drift into data at that spot.
 
-One genuinely high-confidence discovery came out of this, though: the
-boot-stub far jump target (`0xE64C:0000`) is directly observed (both
-comm-ROM pages 2 and 3 independently encode the identical jump), so it
-was promoted into the *official* `gen_disasm_x86.py` `ENTRY_POINTS` as
-`COMM_ROM_BOOTSTUB_TARGET` - this grew the main ROM's own confirmed
-coverage by 29 instructions.
+One high-confidence discovery from the earlier (pre-correction) pass
+remains valid: the boot-stub far-jump target (`0xE64C:0000`) is
+directly observed (both comm-ROM pages 2 and 3 independently encode
+the identical jump) and is promoted into the official
+`gen_disasm_x86.py` `ENTRY_POINTS` as `COMM_ROM_BOOTSTUB_TARGET`.
 
-Result: 20,180 instructions reached, NASM-validated the same way as
-the main ROM (`validate_2998.py`): 18,039 exact + 2,141 alt-encoding,
-0 real mismatches. A buildable NASM source (`160-2998-14.asm`, via
-`gen_source_2998.py`) reassembles byte-identical to the original .bin,
-same guarantee as the main ROM's `.asm` files. Chasing validation
-failures here surfaced two more real bugs in `validate_nasm.py`,
-fixed and now benefiting both ROMs' validation:
+Result with the heuristic layer included: 20,446 instructions reached,
+NASM-validated (`validate_2998.py`): 18,290 exact + 2,151 alt-encoding,
+2 real mismatches (both `push` instructions with a stray `0x67`
+address-size-override prefix, landing right where page 1's header/
+copyright text starts - almost certainly decode drift into data at
+the deepest heuristic reach, not a validator problem), 3 not
+converted. A buildable NASM source (`160-2998-14.asm`, via
+`gen_source_2998.py`) reassembles byte-identical to the original .bin
+regardless, same guarantee as the main ROM's `.asm` files - real
+mismatches/unconverted instructions just fall back to raw `db`.
+
+Chasing validation failures across both correction passes surfaced
+several more real bugs/gaps in `validate_nasm.py`, all now fixed:
 - a segment-override prefix byte (`0x26`/`0x2E`/`0x36`/`0x3E`) was
-  being read as if it were the instruction's opcode, which broke the
-  immediate-width-widening check for any segment-overridden `add`/
-  `or`/`cmp`/etc. with a memory destination (e.g. `or word
-  [es:di+0xA], imm`).
+  being read as if it were the instruction's opcode, breaking the
+  immediate-width-widening check for segment-overridden ALU ops with
+  a memory destination (e.g. `or word [es:di+0xA], imm`).
 - capstone omits the `0x` prefix on some near-branch targets too (not
-  just far ones, which were already handled) - an unprefixed numeric
-  target like a bare `"9"` was silently falling through to a bogus
-  literal-address conversion instead of being resolved or safely
-  rejected.
+  just far ones) - an unprefixed target like a bare `"9"` was falling
+  through to a bogus literal-address conversion instead of being
+  resolved or safely rejected.
+- x87 FPU instructions (`fdiv`, etc.) and a few rare instructions
+  (`insw`/`outsw`/`outsd`/`bound`) surfaced once coverage reached
+  further via the corrected comm-ROM mapping; conservatively excluded
+  from conversion (raw `db` fallback) rather than risk getting their
+  NASM syntax subtly wrong - `TODO.md` has this as a follow-up.
+- opcode `0x82` is an undocumented exact duplicate of `0x80` (byte-
+  sized group-1 immediate ops - the sign-extend bit that distinguishes
+  them at 16/32-bit doesn't mean anything for an 8-bit destination);
+  NASM always emits `0x80`, so this needed the same kind of alternate-
+  encoding detection as the direction-bit/displacement-width cases.
 
-Because the comm ROM's page-relative addressing differs from the main
-ROM's real absolute addressing, `gen_source_2998.py` needed one more
-fix beyond reusing `gen_source.py`'s logic: `classify_instructions()`
-resolves near-branch targets to page-relative addresses (correct for
-validating one 16KB page in isolation via its own `vstart` section),
-but the reconstruction concatenates all four pages under a single
-`ORG 0` spanning the full 64KB file - so a page-relative target must
-be shifted to the matching global file offset (`page*0x4000 +
-page-relative value`) before being embedded, or it silently points at
-the wrong page.
+`gen_source.py`'s `main()` gained an `only_chips` parameter for this
+work: the comm ROM's heuristic entries can open up new PROVEN-reachable
+code in the main ROM chips too (real code, discovered via a real call
+path), but writing that into `160-3633-14.asm`/`160-3532-14.asm` would
+silently mix heuristic-derived confidence into files that are supposed
+to be proven-reachable-only. `gen_source_2998.py` now passes
+`only_chips=["2998"]` so only the comm ROM's file picks up the wider
+heuristic-assisted view; the main ROM's `.asm` files stay proven-only,
+regenerated separately via `gen_source.py`'s default entry set.
 
-## The 0x80000-0x97FFF region: likely RAM, contents unknown
+## The 0x90000+ region: real mystery narrowed down
 
-With the comm ROM fully disassembled, its far calls into the
-previously-flagged "mystery" region turned out to be much larger than
-first thought: **150+ distinct call targets** across dozens of
-separate segments (`8006`, `802c`, `81ae`, `82c9`, `839f`, `8511`,
-`85eb`, `911e`, `92cf`, `941f`, `9470`, `9628`, `9687`, `96f5`, `97c6`,
-...), spanning `0x80000` to `0x97C95` - roughly 96KB. None of it
-overlaps the confirmed main-ROM window, and TekWiki explicitly
-confirms there is no third ROM chip for the 2230 (just the two 27512s
-on A10 plus the comm option ROM), ruling out "it's a ROM we simply
-don't have a dump of."
+Originally flagged as "`~0x80000-0x97000`, likely RAM, contents
+unknown" - the lower half of that turned out to just be the comm ROM
+at its correct address (see "The comm ROM is NOT bank-switched"
+above), so the actual open mystery is narrower: **segments from
+roughly `0x90000` up to `0x97C95`** (`911e`, `91ba`, `92cf`, `941f`,
+`9470`, `9471`, `9628`, `9687`, `96f5`, `97c6`, ...), called into by
+both the comm ROM's own code and (likely - worth re-checking now that
+the comm ROM's real addresses are known) the main ROM. TekWiki
+confirms no third ROM chip exists for the 2230, so this still isn't
+"a ROM dump we're missing" in the straightforward sense.
 
-Direct evidence it's real, tested RAM rather than something exotic:
-the main ROM contains a classic non-destructive memory-test sequence
-targeting `es=0x8000` (`160-3633` offsets around `0x4544`/`0x4566`) -
-read the current value, write the test pattern `0xAA55`, then (per the
-disassembly around there) restore it - the standard way period BIOS/
-POST code detects how much RAM is actually installed by probing
-upward until the pattern stops sticking.
+Direct evidence real RAM exists near there: the main ROM contains a
+classic non-destructive memory-test sequence (`160-3633` offsets
+around `0x4544`/`0x4566`) targeting `es=0x8000` - read, write the test
+pattern `0xAA55`, restore - the standard way period boot code detects
+how much memory is installed. Whether that probe extends as far as
+`0x90000+`, or whether that range is something else entirely (a second
+comm-ROM-adjacent device, RAM populated by a mechanism not yet found,
+etc.) is still open.
 
-**Still open: how code gets into that RAM for the comm ROM to call.**
-Went looking for a block-copy (`rep movsw`/`movsb`) moving bytes from
-ROM into `0x80000+`; found a generic memcpy-style utility
-(`SUB_FBC09`, appears in both `160-3532` and `160-3633`, called from 5
-places) but the 2 call sites checked so far both copy within the
-normal low-RAM globals area, not into the mystery region. Remaining
-possibilities: the load happens via a call site not yet checked, via
-a different mechanism entirely (downloaded over GPIB/RS-232 at
-runtime, generated programmatically, or something else), or the RAM
-simply isn't populated with anything meaningful unless a specific
-hardware option is installed. **Whatever the mechanism, it's likely
-invisible to static analysis of these three ROM dumps alone** - worth
-factoring into any estimate of how much of this system can ultimately
-be reverse-engineered from what we have.
+**Still open: how code gets into that region for the comm ROM to call
+into it.** Went looking for a block-copy (`rep movsw`/`movsb`) moving
+bytes there; found a generic memcpy-style utility (`SUB_FBC09`, in
+both `160-3532` and `160-3633`, called from 5 places) but the 2 call
+sites checked so far both copy within the normal low-RAM globals area.
+Remaining possibilities: a call site not yet checked, a different
+loading mechanism (GPIB/RS-232 download, runtime code generation), or
+this range means something else altogether that hasn't been
+considered yet. Whatever it is, if it's RAM populated only at runtime,
+its contents may be invisible to static analysis of these three ROM
+dumps alone - worth factoring into any estimate of how much of this
+system can ultimately be reverse-engineered from what we have.
 
 ## Interrupt vector table entries (real code entry points)
 
@@ -241,10 +313,12 @@ interrupt handling per state - worth confirming once
 
 ## Validation status
 
-Ran the recursive-descent output (10,360 decoded instructions, after
-seeding the interrupt-handler entry points above) through
-`validate_nasm.py`: **9,368 byte-exact, 988 provably-equivalent
-alternate encodings, 0 real mismatches, 4 not independently checked.**
+Ran the recursive-descent output (10,488 decoded instructions - main
+ROM plus the 99 comm-ROM instructions now proven reachable once
+`160-2998` was registered at its confirmed real address, `0x80000`)
+through `validate_nasm.py`: **9,480 byte-exact, 1,003 provably-
+equivalent alternate encodings, 0 real mismatches, 5 not independently
+checked.**
 This is strong evidence the x86 decode itself (mnemonic, operands,
 instruction length) is correct throughout what's been reached so far —
 it does NOT validate the code-vs-data classification (whether a given
@@ -285,10 +359,11 @@ coverage expands into that area.
 
 ## Current coverage
 
-10,360 instruction-start bytes reached out of 131,072 total ROM bytes
-(~8%), from 7 seed entry points (reset vector, 2 discovered while
-tracing the reset path, 4 interrupt handlers found via IVT-write
-tracing - see above). This is expected to still be a small fraction —
+10,488 instruction-start bytes reached out of 131,072 total main-ROM
+bytes (~8%), from 8 seed entry points (reset vector, 2 discovered
+while tracing the reset path, 4 interrupt handlers found via IVT-write
+tracing, and the comm-ROM boot-stub target - see above). This is
+expected to still be a small fraction —
 most unreached bytes are either (a) code only reachable via computed/
 indirect jumps we can't resolve statically (e.g. jump tables - though
 notably **zero unresolved indirect jmp/call instructions exist in the
