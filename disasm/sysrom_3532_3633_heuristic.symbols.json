@@ -2933,10 +2933,10 @@
     "notes": null
   },
   "E31DC": {
-    "name": "SUB_E31DC",
+    "name": "strncat_far",
     "kind": "sub",
     "ref_count": 62,
-    "functional_name": null,
+    "functional_name": "strncat_far",
     "notes": null
   },
   "E31EE": {
@@ -2982,10 +2982,10 @@
     "notes": null
   },
   "E323F": {
-    "name": "SUB_E323F",
+    "name": "strncpy_far",
     "kind": "sub",
     "ref_count": 28,
-    "functional_name": null,
+    "functional_name": "strncpy_far",
     "notes": null
   },
   "E3248": {
@@ -3010,10 +3010,10 @@
     "notes": null
   },
   "E327F": {
-    "name": "SUB_E327F",
+    "name": "format_number",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": null,
+    "functional_name": "format_number",
     "notes": null
   },
   "E32AD": {
@@ -3115,24 +3115,24 @@
     "notes": null
   },
   "E3372": {
-    "name": "SUB_E3372",
+    "name": "format_hex_word",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "format_hex_word",
     "notes": null
   },
   "E3395": {
-    "name": "SUB_E3395",
+    "name": "format_decimal_word",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "format_decimal_word",
     "notes": null
   },
   "E33B8": {
-    "name": "SUB_E33B8",
+    "name": "format_word_radix",
     "kind": "sub",
     "ref_count": 11,
-    "functional_name": null,
+    "functional_name": "format_word_radix",
     "notes": null
   },
   "E33DD": {
@@ -3206,10 +3206,10 @@
     "notes": null
   },
   "E34CB": {
-    "name": "SUB_E34CB",
+    "name": "format_byte_hex",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "format_byte_hex",
     "notes": null
   },
   "E34F7": {
@@ -3227,17 +3227,17 @@
     "notes": null
   },
   "E3520": {
-    "name": "SUB_E3520",
+    "name": "build_print_record",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "build_print_record",
     "notes": null
   },
   "E3567": {
-    "name": "SUB_E3567",
+    "name": "init_print_region",
     "kind": "sub",
     "ref_count": 15,
-    "functional_name": null,
+    "functional_name": "init_print_region",
     "notes": null
   },
   "E3599": {
@@ -3255,10 +3255,10 @@
     "notes": null
   },
   "E35EF": {
-    "name": "SUB_E35EF",
+    "name": "init_print_record",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_print_record",
     "notes": null
   },
   "E3613": {
@@ -3276,17 +3276,17 @@
     "notes": null
   },
   "E3662": {
-    "name": "SUB_E3662",
+    "name": "pack_row_col_bits",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "pack_row_col_bits",
     "notes": null
   },
   "E36A5": {
-    "name": "SUB_E36A5",
+    "name": "set_position_record",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "set_position_record",
     "notes": null
   },
   "E371E": {
@@ -3297,24 +3297,24 @@
     "notes": null
   },
   "E3736": {
-    "name": "SUB_E3736",
+    "name": "close_print_record_b",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "close_print_record_b",
     "notes": null
   },
   "E374E": {
-    "name": "SUB_E374E",
+    "name": "close_print_record",
     "kind": "sub",
     "ref_count": 18,
-    "functional_name": null,
+    "functional_name": "close_print_record",
     "notes": null
   },
   "E3766": {
-    "name": "SUB_E3766",
+    "name": "mark_readout_delimiter",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "mark_readout_delimiter",
     "notes": null
   },
   "E3792": {
@@ -3360,10 +3360,10 @@
     "notes": null
   },
   "E3821": {
-    "name": "SUB_E3821",
+    "name": "print_readout_string",
     "kind": "sub",
     "ref_count": 14,
-    "functional_name": null,
+    "functional_name": "print_readout_string",
     "notes": null
   },
   "E382F": {
@@ -3381,10 +3381,10 @@
     "notes": null
   },
   "E3854": {
-    "name": "SUB_E3854",
+    "name": "draw_readout_char",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "draw_readout_char",
     "notes": null
   },
   "E3897": {
@@ -3451,17 +3451,17 @@
     "notes": null
   },
   "E3900": {
-    "name": "SUB_E3900",
+    "name": "plot_readout_point_relative",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "plot_readout_point_relative",
     "notes": null
   },
   "E3930": {
-    "name": "SUB_E3930",
+    "name": "plot_readout_point",
     "kind": "sub",
     "ref_count": 16,
-    "functional_name": null,
+    "functional_name": "plot_readout_point",
     "notes": null
   },
   "E39C2": {
@@ -3885,10 +3885,10 @@
     "notes": null
   },
   "E4217": {
-    "name": "SUB_E4217",
+    "name": "print_banner_line",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "print_banner_line",
     "notes": null
   },
   "E4244": {

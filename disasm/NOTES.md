@@ -516,6 +516,65 @@ before writing a character, so either the coordinate is set elsewhere
 (more likely, given how `print_string_far`'s loop uses it - just a
 tight byte-at-a-time write loop with no addressing logic at all).
 
+## The readout vector display list (a second, separate print mechanism)
+
+Found while working through the "rename everything" pass, tracing the
+print-primitive cluster around `160-3633:0x3200-0x3A00`. There are
+**two entirely separate mechanisms** for putting text on the readout,
+not one:
+
+1. **The hardware-port path** (documented above): `print_string_far`
+   -> `print_char` -> `write_readout_port_byte`, writing straight to
+   the fixed physical port `0x40000+0x6F0`.
+2. **The vector display-list path** (new this session):
+   `print_readout_string` (`0xE3821`) -> `draw_readout_char` (`0xE3854`)
+   -> `plot_readout_point_relative` (`0xE3900`) ->
+   `plot_readout_point` (`0xE3930`), which **appends a `(y, x)`
+   coordinate pair plus a duplicated attribute byte** to a buffer at
+   `[0x1CC4]` (tracked via a running write-pointer at `[0x1AF4]`/
+   `[0x1AF6]`, with a *second plane* offset stored in `[0x1C02]` - the
+   same dual-plane pattern `append_readout_char` uses). This is a
+   **vector-stroke display list**, not a bitmap: `draw_readout_char`
+   looks a character up in a stroke-font table at `[0x1DB0]` (indexed
+   by `char & 0x7F`, 4 bytes/char - almost certainly a far-pointer
+   table into a per-character stroke-list), then walks each stroke
+   byte extracting a pen-up/down bit (`0x80`), a coarse component
+   (bits 4-6, `>>4`), and a fine component (bits 0-3), calling
+   `plot_readout_point_relative` once per stroke. This is exactly the
+   classic Tektronix "readout" character-generator format used on
+   other scopes of this era (each character is a short list of vector
+   strokes, not a bitmap) - strong independent corroboration that this
+   scope's CRT readout (channel/volts/time labels drawn alongside the
+   analog trace) really is stroke/vector-based, matching `CONTEXT.md`'s
+   hardware overview.
+
+   `plot_readout_point` also handles **circular-buffer wraparound**:
+   if the write pointer advances past `[0x1CC4]+0x1400` (5120 bytes),
+   it wraps back to `[0x1CC4]+0x13FF` and writes a marker byte
+   (attribute `2`) - the *same* marker value `mark_readout_delimiter`
+   (`0xE3766`) uses, suggesting `2` is a reserved "delimiter/marker"
+   attribute code throughout this buffer format, not a real
+   character attribute.
+
+   Print **records** in this system (`init_print_record`/
+   `build_print_record`/`init_print_region` .. `close_print_record`)
+   bracket a line: `init_print_region` opens one (position + default
+   16x16 cell size), the line's text is drawn into the display list,
+   and `close_print_record` tags the record's first byte with a
+   completion code (`0x11` for the "normal" close, `0x39` for a second
+   variant, `close_print_record_b` - exact meaning of the two codes
+   not confirmed). **Correction**: earlier pseudocode wrongly assumed
+   `close_print_record` (then still `SUB_E374E`) printed a string via
+   its far-pointer argument - it doesn't traverse that pointer at all,
+   it only tags the record. Fixed in `PSEUDOCODE.md`.
+
+`[0x1CC4]`'s own segment component isn't directly confirmed as `0x4000`
+in the proven-reachable code (no write to it was found there - it must
+be initialized somewhere not yet reached), but every *use* of the
+pointer it feeds (`[0x1AF4]`/`[0x1AF6]`, `[0x1C02]`) lines up with the
+same `0x4000`-segment readout memory documented above, so it's the
+working assumption pending that write site being found.
+
 ## The 0x90000+ region: fully resolved (see above)
 
 This used to be a substantial open question ("`~0x80000-0x97000`,

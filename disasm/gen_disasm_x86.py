@@ -122,6 +122,136 @@ FUNCTIONAL_NAMES = {
                                               # same segment - see NOTES.md
     0xFBC09: "memcpy_far",                   # generic far-pointer block
                                               # copy: (dest, src, len)
+
+    # --- Renamed during the "rename everything" pass (session:
+    # keep going until everything is renamed) - see NOTES.md "The
+    # readout vector display list" and FUNCTIONS.md for evidence. ---
+    0x9470E: "set_ds_return_old",             # push ds; mov ds,[bp+6];
+                                               # pop ax - swaps DS to the
+                                               # caller-given segment,
+                                               # returns the OLD ds in ax
+                                               # so the caller can restore
+                                               # it later with a 2nd call
+    0xE31DC: "strncat_far",                   # (dest,src far ptrs, max
+                                               # len) - finds dest's NUL,
+                                               # appends src up to the
+                                               # limit, re-terminates
+    0xE323F: "strncpy_far",                   # (dest,src far ptrs, max
+                                               # len) - bounded copy from
+                                               # src start (no dest-end
+                                               # search, unlike strncat)
+    0xE327F: "format_number",                 # (value, radix, width,
+                                               # overflow-flag, ...) ->
+                                               # far ptr to ASCII digits
+                                               # built backwards into the
+                                               # fixed scratch buffer at
+                                               # [0x1B34]; sign/space/'*'-
+                                               # overflow prefix handling
+    0xE3372: "format_hex_word",               # format_number wrapper:
+                                               # radix=16, width=5
+    0xE3395: "format_decimal_word",           # format_number wrapper:
+                                               # radix=10, width=6
+    0xE33B8: "format_word_radix",             # format_number wrapper:
+                                               # caller-supplied radix,
+                                               # width=5
+    0xE34CB: "format_byte_hex",               # byte -> 2 hex ASCII
+                                               # digits + NUL, written to
+                                               # the fixed scratch buffer
+                                               # at [0x1B4A]; simpler/
+                                               # separate from
+                                               # format_number
+    0xE35EF: "init_print_record",             # sets a print record's
+                                               # attribute byte + position
+                                               # (defaults to the current
+                                               # global cursor [0x1AF4] if
+                                               # no override given, else
+                                               # moves the global cursor)
+    0xE3662: "pack_row_col_bits",              # bit-packs two 5-bit
+                                               # fields into a print
+                                               # record's bytes 1 & 3,
+                                               # preserving each byte's
+                                               # high 3 bits
+    0xE36A5: "set_position_record",           # encodes two coordinates
+                                               # (>>3, character-cell
+                                               # granularity) into a print
+                                               # record's bytes 1-4
+    0xE3520: "build_print_record",            # orchestrates
+                                               # init_print_record ->
+                                               # set_position_record ->
+                                               # pack_row_col_bits into
+                                               # one combined record
+    0xE3567: "init_print_region",             # build_print_record
+                                               # wrapper with default
+                                               # 0x10x0x10 cell size, no
+                                               # position override - the
+                                               # common case
+    0xE3766: "mark_readout_delimiter",        # writes attribute=2 (the
+                                               # same code E3930 uses as
+                                               # its wraparound marker)
+                                               # into the next 2 readout
+                                               # buffer cells' attribute
+                                               # plane and advances the
+                                               # cursor by 2
+    0xE374E: "close_print_record",            # calls mark_readout_
+                                               # delimiter, then tags the
+                                               # caller's record[0] with
+                                               # completion code 0x11 -
+                                               # CORRECTED: earlier notes
+                                               # wrongly assumed this
+                                               # printed a string (it
+                                               # doesn't traverse [bp+6]
+                                               # at all, just tags it)
+    0xE3736: "close_print_record_b",          # same shape as
+                                               # close_print_record but
+                                               # tags with 0x39 instead of
+                                               # 0x11 - a different record
+                                               # "kind"/completion code,
+                                               # exact meaning of 0x11 vs
+                                               # 0x39 not confirmed
+    0xE3821: "print_readout_string",          # loops a far-pointer nul-
+                                               # terminated string calling
+                                               # draw_readout_char per
+                                               # byte - the vector-display-
+                                               # list sibling of
+                                               # print_string_far (which
+                                               # instead goes straight to
+                                               # the 0x40000+0x6F0 port)
+    0xE3854: "draw_readout_char",             # looks up a character's
+                                               # stroke list in the font
+                                               # table at [0x1DB0], walks
+                                               # each stroke byte (pen-up/
+                                               # down bit + packed coarse/
+                                               # fine deltas), calls
+                                               # plot_readout_point_
+                                               # relative per stroke - the
+                                               # CRT readout's character
+                                               # rasterizer
+    0xE3900: "plot_readout_point_relative",   # (dx,dy,attr) - adds the
+                                               # offsets to the current
+                                               # base position ([0x1AF8]/
+                                               # [0x1AFA]) and calls
+                                               # plot_readout_point
+    0xE4217: "print_banner_line",             # (far-ptr string) - calls
+                                               # print_readout_string on
+                                               # the given string, then
+                                               # print_string_far twice
+                                               # more on two FIXED strings
+                                               # in the 0xFF7B string
+                                               # table - used by
+                                               # print_selftest_banner for
+                                               # both its "before"/"after"
+                                               # lines
+    0xE3930: "plot_readout_point",            # (x,y,attr) - THE
+                                               # fundamental primitive:
+                                               # appends a (y,x) coordinate
+                                               # pair + duplicated
+                                               # attribute to the readout
+                                               # vector display-list
+                                               # buffer at [0x1CC4],
+                                               # handles circular-buffer
+                                               # wraparound (marker
+                                               # attribute=2, matches
+                                               # mark_readout_delimiter)
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

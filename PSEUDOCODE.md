@@ -173,22 +173,35 @@ different function, `0xE4244` (below), which now carries the
 `self_test_dispatcher` name. See `disasm/NOTES.md` "self_test_dispatcher
 was misnamed".
 
+**Fully re-derived this session** now that every routine it calls has
+a real name (previously several of these were unidentified `SUB_`s,
+guessed at as generic "line setup" placeholders - see
+`disasm/NOTES.md` "The readout vector display list" for how each was
+identified). This also **corrects a real error**: the former
+`print_string_far(far_ptr_from(0x1DDC) + 0x20A)` line was wrong -
+`SUB_E374E` (now `close_print_record`) never traverses that pointer as
+a string at all; it just tags the record's first byte with a
+completion code.
+
 ```c
 void print_selftest_banner(void) {
     // Called from 0xE07F8, guarded by [0x1B10]==0.
-    // "Before" banner:
-    print_line_setup(far_ptr_from(0x1DDC) + 0x20A, 0xFA, 0x339);  // SUB_E3567
-    print_line_setup2(0, 0, 0);                                  // SUB_E3930
-    print_line_setup3(0x20);                                     // SUB_E3854
-    print_two_strings(far_str_at(0xFF7B, 0x53E));                 // SUB_E4217 -> print_string_far x2
-    print_string_far(far_ptr_from(0x1DDC) + 0x20A);               // SUB_E374E
+    // "Before" banner - open a print record for this line, home the
+    // cursor, draw a blank (space) character, print the line's text
+    // (the caller's own far-ptr string plus 2 fixed strings from the
+    // 0xFF7B string table), then close the record:
+    print_record *rec = init_print_region(far_ptr_from(0x1DDC) + 0x20A, 0xFA, 0x339);  // SUB_E3567
+    plot_readout_point(0, 0, 0);                                    // SUB_E3930 - home cursor
+    draw_readout_char(0x20);                                        // SUB_E3854 - blank/space
+    print_banner_line(rec);   // SUB_E4217: print_readout_string(rec) + print_string_far(x2, fixed 0xFF7B text)
+    close_print_record(far_ptr_from(0x1DDC) + 0x20A);               // SUB_E374E - tag byte 0 = 0x11
 
     // "After" banner (same shape, different offsets):
-    print_line_setup(far_ptr_from(0x1DDC) + 0x213, 0x7D, 0x307);
-    print_line_setup2(0, 0, 0);
-    print_line_setup3(0x20);
-    print_two_strings(far_str_at(0xFF7B, 0x550));
-    print_string_far(far_ptr_from(0x1DDC) + 0x213);
+    init_print_region(far_ptr_from(0x1DDC) + 0x213, 0x7D, 0x307);
+    plot_readout_point(0, 0, 0);
+    draw_readout_char(0x20);
+    print_banner_line(rec);
+    close_print_record(far_ptr_from(0x1DDC) + 0x213);
 
     [0x1B10] = 3;
 }

@@ -4002,7 +4002,7 @@ L_E315E:
     db 0x08, 0x00, 0x75, 0x08, 0xc7, 0x46, 0x08, 0x02, 0x02, 0xeb, 0x06, 0x90, 0xc7, 0x46, 0x08, 0x00  ; 31B7
     db 0x00, 0x03, 0x4e, 0x0a, 0x41, 0x8b, 0x56, 0x06, 0x3b, 0xca, 0x7c, 0xc1, 0x83, 0xc4, 0x04, 0x59  ; 31C7
     db 0x5e, 0x5d, 0xca, 0x02, 0x00  ; 31D7
-SUB_E31DC:
+strncat_far:
     push bp                                  ; 31DC: push bp
     db 0x8b, 0xec  ; 31DD: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 31DF: sub sp, 0xa
@@ -4045,7 +4045,7 @@ L_E3232:
     db 0x8b, 0xe5  ; 3239: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 323B: pop bp
     retf 4                                   ; 323C: retf 4
-SUB_E323F:
+strncpy_far:
     push bp                                  ; 323F: push bp
     db 0x8b, 0xec  ; 3240: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3242: sub sp, 6
@@ -4073,7 +4073,7 @@ L_E3272:
     db 0x8b, 0xe5  ; 3279: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 327B: pop bp
     retf 4                                   ; 327C: retf 4
-SUB_E327F:
+format_number:
     push bp                                  ; 327F: push bp
     db 0x8b, 0xec  ; 3280: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 3282: sub sp, 0xc
@@ -4172,7 +4172,7 @@ L_E3367:
     db 0x8b, 0xe5  ; 336C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 336E: pop bp
     retf 2                                   ; 336F: retf 2
-SUB_E3372:
+format_hex_word:
     push bp                                  ; 3372: push bp
     db 0x8b, 0xec  ; 3373: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3375: sub sp, 6
@@ -4189,7 +4189,7 @@ SUB_E3372:
     db 0x8b, 0xe5  ; 338F: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3391: pop bp
     retf 2                                   ; 3392: retf 2
-SUB_E3395:
+format_decimal_word:
     push bp                                  ; 3395: push bp
     db 0x8b, 0xec  ; 3396: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3398: sub sp, 6
@@ -4206,7 +4206,7 @@ SUB_E3395:
     db 0x8b, 0xe5  ; 33B2: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 33B4: pop bp
     retf 2                                   ; 33B5: retf 2
-SUB_E33B8:
+format_word_radix:
     push bp                                  ; 33B8: push bp
     db 0x8b, 0xec  ; 33B9: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 33BB: sub sp, 6
@@ -4238,7 +4238,7 @@ SUB_E33B8:
     db 0xe9, 0x03, 0x00, 0xbf, 0x20, 0x00, 0x8b, 0xd7, 0x8b, 0x7e, 0xf8, 0xff, 0x4e, 0xf8, 0x88, 0x95  ; 349D
     db 0x34, 0x1b, 0x83, 0x7e, 0xf8, 0x00, 0x7d, 0xda, 0x83, 0x7e, 0x06, 0x00, 0x74, 0x05, 0xc6, 0x06  ; 34AD
     db 0x34, 0x1b, 0x2a, 0xbb, 0x34, 0x1b, 0x1e, 0x07, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 34BD
-SUB_E34CB:
+format_byte_hex:
     push bp                                  ; 34CB: push bp
     db 0x8b, 0xec  ; 34CC: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 34CE: sub sp, 6
@@ -4271,7 +4271,7 @@ L_E3510:
     db 0x8b, 0xe5  ; 351A: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 351C: pop bp
     retf 2                                   ; 351D: retf 2
-SUB_E3520:
+build_print_record:
     push bp                                  ; 3520: push bp
     db 0x8b, 0xec  ; 3521: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3523: sub sp, 6
@@ -4301,7 +4301,7 @@ SUB_E3520:
     db 0x8b, 0xe5  ; 3561: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3563: pop bp
     retf 4                                   ; 3564: retf 4
-SUB_E3567:
+init_print_region:
     push bp                                  ; 3567: push bp
     db 0x8b, 0xec  ; 3568: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 356A: sub sp, 6
@@ -4369,7 +4369,7 @@ SUB_E35C2:
     db 0x8b, 0xe5  ; 35E9: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 35EB: pop bp
     retf 4                                   ; 35EC: retf 4
-SUB_E35EF:
+init_print_record:
     push bp                                  ; 35EF: push bp
     db 0x8b, 0xec  ; 35F0: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 35F2: sub sp, 0xa
@@ -4412,7 +4412,7 @@ L_E361E:
     db 0x8b, 0xe5  ; 365C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 365E: pop bp
     retf 4                                   ; 365F: retf 4
-SUB_E3662:
+pack_row_col_bits:
     push bp                                  ; 3662: push bp
     db 0x8b, 0xec  ; 3663: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3665: sub sp, 6
@@ -4437,7 +4437,7 @@ SUB_E3662:
     db 0x8b, 0xe5  ; 369F: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 36A1: pop bp
     retf 4                                   ; 36A2: retf 4
-SUB_E36A5:
+set_position_record:
     push bp                                  ; 36A5: push bp
     db 0x8b, 0xec  ; 36A6: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 36A8: sub sp, 6
@@ -4487,7 +4487,7 @@ SUB_E36A5:
     retf 4                                   ; 371B: retf 4
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x9a, 0x46, 0x02, 0x52, 0xe3, 0xc4, 0x7e, 0x06, 0x26, 0xc6  ; 371E
     db 0x05, 0x3d, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00  ; 372E
-SUB_E3736:
+close_print_record_b:
     push bp                                  ; 3736: push bp
     db 0x8b, 0xec  ; 3737: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3739: sub sp, 6
@@ -4497,7 +4497,7 @@ SUB_E3736:
     db 0x8b, 0xe5  ; 3748: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 374A: pop bp
     retf 4                                   ; 374B: retf 4
-SUB_E374E:
+close_print_record:
     push bp                                  ; 374E: push bp
     db 0x8b, 0xec  ; 374F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3751: sub sp, 6
@@ -4507,7 +4507,7 @@ SUB_E374E:
     db 0x8b, 0xe5  ; 3760: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3762: pop bp
     retf 4                                   ; 3763: retf 4
-SUB_E3766:
+mark_readout_delimiter:
     push bp                                  ; 3766: push bp
     db 0x8b, 0xec  ; 3767: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3769: sub sp, 6
@@ -4561,7 +4561,7 @@ L_E37F0:
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x2b, 0xff, 0x57, 0x8a, 0x56, 0x08, 0x2a, 0xf6, 0x52, 0x8a  ; 37FE
     db 0x5e, 0x06, 0x2a, 0xff, 0x53, 0x9a, 0xe0, 0x03, 0x52, 0xe3, 0x83, 0xc4, 0x04, 0x8b, 0xe5, 0x5d  ; 380E
     db 0xca, 0x02, 0x00  ; 381E
-SUB_E3821:
+print_readout_string:
     push bp                                  ; 3821: push bp
     db 0x8b, 0xec  ; 3822: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 3824: sub sp, 0xa
@@ -4583,7 +4583,7 @@ L_E383A:
     db 0x8b, 0xe5  ; 384E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3850: pop bp
     retf 4                                   ; 3851: retf 4
-SUB_E3854:
+draw_readout_char:
     push bp                                  ; 3854: push bp
     db 0x8b, 0xec  ; 3855: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xe                              ; 3857: sub sp, 0xe
@@ -4658,7 +4658,7 @@ L_E38FA:
     db 0x8b, 0xe5  ; 38FA: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 38FC: pop bp
     retf 2                                   ; 38FD: retf 2
-SUB_E3900:
+plot_readout_point_relative:
     push bp                                  ; 3900: push bp
     db 0x8b, 0xec  ; 3901: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3903: sub sp, 6
@@ -4680,7 +4680,7 @@ SUB_E3900:
     db 0x8b, 0xe5  ; 392A: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 392C: pop bp
     retf 2                                   ; 392D: retf 2
-SUB_E3930:
+plot_readout_point:
     push bp                                  ; 3930: push bp
     db 0x8b, 0xec  ; 3931: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 3933: sub sp, 6
@@ -5406,7 +5406,7 @@ print_selftest_banner:
     db 0x8b, 0xe5  ; 4213: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4215: pop bp
     retf                                     ; 4216: retf 
-SUB_E4217:
+print_banner_line:
     push bp                                  ; 4217: push bp
     db 0x8b, 0xec  ; 4218: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 421A: sub sp, 6
