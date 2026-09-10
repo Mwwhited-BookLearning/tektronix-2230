@@ -1,0 +1,237 @@
+#!/usr/bin/env python
+"""
+Recursive-descent disassembler for the Tektronix 2230 main system ROM pair.
+
+Confirmed facts (see NOTES.md):
+  - CPU: Intel 8088/8086, 16-bit real mode.
+  - 160-3633-14.bin (silkscreen "sys_rom_0", socket U9109) is mapped at
+    physical 0xE0000-0xEFFFF.
+  - 160-3532-14.bin (silkscreen "sys_rom_1", socket U9110) is mapped at
+    physical 0xF0000-0xFFFFF and contains the CPU reset vector at FFFF0
+    (a far JMP into the 3633 half).
+  - Together they form one 128KB address space for the acquisition/
+    display CPU. The comm/GPIB ROM (160-2998) is a separate, still-
+    unmapped piece (bank-switched option-board ROM) and is NOT handled
+    by this script yet.
+
+Approach: recursive descent from known entry points, tracking (segment,
+offset) so near vs far transfers are handled correctly, instead of a
+blind linear sweep. This only disassembles code actually reachable from
+a real entry point, which is far more trustworthy than sweeping every
+byte. Anything not reached is left as unclassified data for a later pass.
+"""
+import json
+import re
+import capstone as cs
+
+FAR_TARGET_RE = re.compile(r"^\s*(?:0x)?([0-9a-fA-F]+)\s*[:,]\s*(?:0x)?([0-9a-fA-F]+)\s*$")
+
+CHIPS = {
+    "3633": {"path": "../binary/160-3633-14.bin", "phys_base": 0xE0000},
+    "3532": {"path": "../binary/160-3532-14.bin", "phys_base": 0xF0000},
+}
+
+ENTRY_POINTS = [
+    # (segment, offset, label)
+    (0xF000, 0xFFF0, "RESET"),
+    (0xE5D1, 0x00B4, "ENTRY_E5D1_B4"),
+    (0xE5D1, 0x00C7, "ENTRY_E5D1_C7"),
+]
+
+CALL_MNEMONICS = {"call", "lcall"}
+JUMP_MNEMONICS = {"jmp", "ljmp"}
+COND_JUMP_PREFIX = "j"  # je, jne, jg, jl, ... (capstone x86 conditional jumps)
+RET_MNEMONICS = {"ret", "retf", "iret"}
+STOP_MNEMONICS = {"hlt"} | RET_MNEMONICS
+
+
+def load_chips():
+    data = {}
+    for name, info in CHIPS.items():
+        buf = open(info["path"], "rb").read()
+        data[name] = {"buf": buf, "base": info["phys_base"], "size": len(buf)}
+    return data
+
+
+def phys_to_chip_offset(chips, phys):
+    for name, c in chips.items():
+        if c["base"] <= phys < c["base"] + c["size"]:
+            return name, phys - c["base"]
+    return None, None
+
+
+def main():
+    chips = load_chips()
+    md = cs.Cs(cs.CS_ARCH_X86, cs.CS_MODE_16)
+    md.detail = False
+
+    visited = {}   # phys addr -> instruction dict
+    queue = []     # (seg, off) to process
+    labels = {}    # phys addr -> {"name":..., "kind":..., "refs":[...]}
+
+    def seg_off_to_phys(seg, off):
+        return ((seg << 4) + off) & 0xFFFFF
+
+    def add_label(phys, kind, from_phys):
+        lab = labels.setdefault(phys, {"kind": kind, "refs": []})
+        if kind == "sub" and lab["kind"] != "sub":
+            lab["kind"] = "sub"
+        lab["refs"].append(from_phys)
+
+    for seg, off, name in ENTRY_POINTS:
+        phys = seg_off_to_phys(seg, off)
+        labels[phys] = {"kind": "entry", "refs": [], "fixed_name": name}
+        queue.append((seg, off))
+
+    while queue:
+        seg, off = queue.pop()
+        cs_val = seg  # current code segment for this walk
+
+        while True:
+            phys = seg_off_to_phys(cs_val, off)
+            if phys in visited:
+                break  # already decoded, converges into existing flow
+            chip_name, chip_off = phys_to_chip_offset(chips, phys)
+            if chip_name is None:
+                break  # ran off into unmapped memory (RAM/IO) - stop this path
+            buf = chips[chip_name]["buf"]
+            chunk = buf[chip_off:chip_off + 16]
+            insns = list(md.disasm(chunk, off))
+            if not insns:
+                break
+            insn = insns[0]
+
+            visited[phys] = {
+                "phys": phys, "seg": cs_val, "off": off,
+                "chip": chip_name, "chip_off": chip_off,
+                "mnem": insn.mnemonic, "op": insn.op_str,
+                "size": insn.size,
+                "raw": buf[chip_off:chip_off + insn.size].hex(),
+            }
+
+            mnem = insn.mnemonic
+            nxt_off = (off + insn.size) & 0xFFFF
+
+            if mnem in ("ljmp", "lcall"):
+                m = FAR_TARGET_RE.match(insn.op_str)
+                if m:
+                    tseg = int(m.group(1), 16)
+                    toff = int(m.group(2), 16)
+                    tphys = seg_off_to_phys(tseg, toff)
+                    add_label(tphys, "sub" if mnem == "lcall" else "loc", phys)
+                    queue.append((tseg, toff))
+                    if mnem == "lcall":
+                        off = nxt_off
+                        continue
+                    else:
+                        break
+                # unresolved indirect far jmp/call
+                if mnem == "ljmp":
+                    break
+                off = nxt_off
+                continue
+
+            if mnem == "jmp":
+                if insn.op_str.startswith("0x"):
+                    toff = int(insn.op_str, 16)
+                    tphys = seg_off_to_phys(cs_val, toff)
+                    add_label(tphys, "loc", phys)
+                    off = toff
+                    continue
+                break  # unresolved indirect jmp (register/memory) - stop this path
+
+            if mnem == "call":
+                if insn.op_str.startswith("0x"):
+                    toff = int(insn.op_str, 16)
+                    tphys = seg_off_to_phys(cs_val, toff)
+                    add_label(tphys, "sub", phys)
+                    queue.append((cs_val, toff))
+                # unresolved indirect call: target unknown, but a call always
+                # returns to nxt_off, so fall through either way
+                off = nxt_off
+                continue
+
+            if mnem.startswith(COND_JUMP_PREFIX) and mnem not in ("jmp",) and insn.op_str.startswith("0x"):
+                toff = int(insn.op_str, 16)
+                tphys = seg_off_to_phys(cs_val, toff)
+                add_label(tphys, "loc", phys)
+                queue.append((cs_val, toff))
+                off = nxt_off
+                continue
+
+            if mnem in STOP_MNEMONICS:
+                break
+
+            off = nxt_off
+
+    return chips, visited, labels
+
+
+def render(chips, visited, labels, out_path, sym_path):
+    for phys, lab in labels.items():
+        if "fixed_name" in lab:
+            lab["name"] = lab["fixed_name"]
+        else:
+            lab["name"] = ("SUB_%05X" % phys) if lab["kind"] == "sub" else ("L_%05X" % phys)
+
+    ordered = sorted(visited.values(), key=lambda e: e["phys"])
+    with open(out_path, "w") as f:
+        f.write("; Tektronix 2230 main system ROM (160-3532-14 + 160-3633-14)\n")
+        f.write("; Intel 8088/8086 real mode, recursive-descent from reset vector.\n")
+        f.write("; CONFIRMED mapping: 3633=0xE0000-0xEFFFF, 3532=0xF0000-0xFFFFF\n")
+        f.write("; Labels are address-based placeholders; rename to functional\n")
+        f.write("; names in the .symbols.json as their purpose is understood.\n\n")
+
+        last_phys = None
+        for e in ordered:
+            phys = e["phys"]
+            if last_phys is not None and phys != last_phys:
+                f.write("\n")
+            lab = labels.get(phys)
+            if lab:
+                f.write(f"{lab['name']}:\n")
+
+            op = e["op"]
+            mnem = e["mnem"]
+            resolved = None
+            if mnem in ("jmp", "call") and op.startswith("0x"):
+                toff = int(op, 16)
+                tphys = ((e["seg"] << 4) + toff) & 0xFFFFF
+                resolved = labels.get(tphys, {}).get("name")
+            elif mnem in ("ljmp", "lcall"):
+                m = FAR_TARGET_RE.match(op)
+                if m:
+                    tseg = int(m.group(1), 16)
+                    toff = int(m.group(2), 16)
+                    tphys = ((tseg << 4) + toff) & 0xFFFFF
+                    resolved = labels.get(tphys, {}).get("name")
+            elif mnem.startswith("j") and mnem != "jmp" and op.startswith("0x"):
+                toff = int(op, 16)
+                tphys = ((e["seg"] << 4) + toff) & 0xFFFFF
+                resolved = labels.get(tphys, {}).get("name")
+
+            if resolved:
+                op = f"{resolved}  ; {op}"
+
+            f.write(f"    {e['chip']}:{e['chip_off']:04X}  [{phys:05X}]  "
+                     f"{e['raw']:<14s}  {mnem:<7s} {op}\n")
+            last_phys = phys + e["size"]
+
+    sym_out = {
+        ("%05X" % phys): {
+            "name": lab["name"],
+            "kind": lab["kind"],
+            "ref_count": len(lab["refs"]),
+            "functional_name": None,
+            "notes": None,
+        }
+        for phys, lab in sorted(labels.items())
+    }
+    with open(sym_path, "w") as f:
+        json.dump(sym_out, f, indent=2)
+
+
+if __name__ == "__main__":
+    chips, visited, labels = main()
+    render(chips, visited, labels, "sysrom_3532_3633.lst", "sysrom_3532_3633.symbols.json")
+    print(f"visited {len(visited)} instructions, {len(labels)} labels")
