@@ -28,17 +28,22 @@ real RS-232 hardware, not just a GPIB-only board — but `[0x629]` stays
 open as "GPIB vs RS-232" (or something else), just not DTE/DCE.
 
 **PARAMETERS — a 10-position DIP switch**, individually numbered 1-10,
-each a 0/1 slide. This is almost certainly the hardware source of some
-of the comm ROM's configuration bytes read at startup (candidates:
-baud rate, parity mode — ties to `enqueue_comm_char`'s `[0x4ED]`
-parity-mode byte and `send_serial_newline`'s `[0x4EF]` CR/LF option —
-data bits, stop bits, GPIB primary address, DTE/DCE select, talk-only/
-listen-only mode). **Not yet traced**: no code found so far that reads
-a literal DIP-switch I/O port — worth searching for an 8-bit input
-port read early in the comm ROM's init path (`init_comm_channel_state_a`/
-`init_comm_rx_queue_and_ready_flags`, or the comm ROM's own boot stub)
-that could source `[0x4ED]`/`[0x4EF]`/`[0x629]`/the GPIB address table
-`SUB_97905` reads from.
+each a 0/1 slide. **Found and confirmed**: `read_dip_switches_serial_
+config` and `read_dip_switches_gpib_config` (comm ROM) both read two
+hardware switch bytes via far pointers `[0x6DE]`/`[0x6DA]` (inverted -
+active-low switches read as 0 when on) and decode them into exactly
+the settings a config DIP bank would carry - a baud-rate-like code
+(`[0x4EC]`), parity mode (`[0x4ED]`, the same byte `enqueue_comm_char`
+uses), a CR/LF option (`[0x4EF]`, the same byte `send_serial_newline`
+uses), a 5-bit GPIB primary address 0-30 (`[0x4F0]`), and further mode
+flag bits (`[0x4F1]`/`[0x461]`). This is almost certainly the firmware
+side of this exact switch bank. Not yet done: mapping each decoded
+value back to a specific switch-position meaning (e.g. which 2 of the
+10 switches select parity, which set the baud rate) - the bit-field
+widths above (4 bits baud, 1+2 bits parity, 1 bit CR/LF, 5 bits GPIB
+address, assorted mode bits) add up close to 10-13 bits total, roughly
+consistent with two switch bytes feeding a 10-switch panel with some
+switches shared/overlapping between the two decode passes.
 
 **AUXILIARY CONNECTOR — 9-pin D-sub**, pins labeled: `RELAY N.O.`,
 `RELAY COMM`, `RELAY N.C.`, `+4.2 VDC`, `SIG GND`, `SHIELD GND`,

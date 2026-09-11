@@ -110,13 +110,11 @@
 - [ ] What hardware `0x403FFA`/`0x403FFB` belong to (read every timer
       tick by `scheduler_tick_service`) isn't confirmed - front-panel
       key/encoder status is the leading candidate.
-- [ ] **New from hardware photos** (`HARDWARE.md`): the comm option
-      board's rear panel has a 10-position "PARAMETERS" DIP switch -
-      no code has been found yet that reads a literal DIP-switch I/O
-      port; find what sources `[0x4ED]` (parity mode), `[0x4EF]`
-      (CR/LF option), `[0x629]` (GPIB/RS-232 mode?), and the GPIB
-      address table `SUB_97905` reads from - likely all or partly this
-      switch bank, read once at startup.
+- [ ] Found the comm option board's DIP-switch reader (`read_dip_
+      switches_serial_config`/`read_dip_switches_gpib_config`, see
+      `HARDWARE.md`) - still open: map each of the 10 physical switch
+      positions to which specific decoded bit(s) it controls. `[0x629]`
+      (GPIB/RS-232 mode) still isn't confirmed as switch-sourced.
 - [ ] **New from hardware photos**: the same rear panel's 9-pin
       "AUXILIARY CONNECTOR" has a pen-lift relay plus analog X/Y
       outputs - a direct X-Y plotter interface. Check whether

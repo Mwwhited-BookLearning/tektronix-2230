@@ -2018,7 +2018,7 @@ L_96355:
     2998_alias_90000:6378  [96378]  7478            je      L_963F2  ; 0x172
     2998_alias_90000:637A  [9637A]  c43ed606        les     di, ptr [0x6d6]
     2998_alias_90000:637E  [9637E]  26c6450380      mov     byte ptr es:[di + 3], 0x80
-    2998_alias_90000:6383  [96383]  9a01052896      lcall   SUB_96781  ; 0x9628, 0x501
+    2998_alias_90000:6383  [96383]  9a01052896      lcall   read_dip_switches_gpib_config  ; 0x9628, 0x501
     2998_alias_90000:6388  [96388]  a0f004          mov     al, byte ptr [0x4f0]
     2998_alias_90000:638B  [9638B]  2ae4            sub     ah, ah
     2998_alias_90000:638D  [9638D]  251f00          and     ax, 0x1f
@@ -2138,7 +2138,7 @@ L_964B9:
     2998_alias_90000:64D5  [964D5]  c6069f0500      mov     byte ptr [0x59f], 0
     2998_alias_90000:64DA  [964DA]  c6069b0540      mov     byte ptr [0x59b], 0x40
     2998_alias_90000:64DF  [964DF]  c6065e04ff      mov     byte ptr [0x45e], 0xff
-    2998_alias_90000:64E4  [964E4]  9a67042896      lcall   SUB_966E7  ; 0x9628, 0x467
+    2998_alias_90000:64E4  [964E4]  9a67042896      lcall   read_dip_switches_serial_config  ; 0x9628, 0x467
     2998_alias_90000:64E9  [964E9]  803eec041f      cmp     byte ptr [0x4ec], 0x1f
     2998_alias_90000:64EE  [964EE]  7450            je      L_96540  ; 0x2c0
     2998_alias_90000:64F0  [964F0]  c6065d0400      mov     byte ptr [0x45d], 0
@@ -2260,7 +2260,7 @@ L_96692:
     2998_alias_90000:6692  [96692]  8be5            mov     sp, bp
     2998_alias_90000:6694  [96694]  5d              pop     bp
     2998_alias_90000:6695  [96695]  cb              retf    
-SUB_96696:
+reset_gpib_addr_scratch:
     2998_alias_90000:6696  [96696]  55              push    bp
     2998_alias_90000:6697  [96697]  8bec            mov     bp, sp
     2998_alias_90000:6699  [96699]  83ec06          sub     sp, 6
@@ -2291,7 +2291,7 @@ L_966DE:
     2998_alias_90000:66E3  [966E3]  8be5            mov     sp, bp
     2998_alias_90000:66E5  [966E5]  5d              pop     bp
     2998_alias_90000:66E6  [966E6]  cb              retf    
-SUB_966E7:
+read_dip_switches_serial_config:
     2998_alias_90000:66E7  [966E7]  55              push    bp
     2998_alias_90000:66E8  [966E8]  8bec            mov     bp, sp
     2998_alias_90000:66EA  [966EA]  83ec08          sub     sp, 8
@@ -2356,7 +2356,7 @@ L_9675C:
     2998_alias_90000:677D  [9677D]  8be5            mov     sp, bp
     2998_alias_90000:677F  [9677F]  5d              pop     bp
     2998_alias_90000:6780  [96780]  cb              retf    
-SUB_96781:
+read_dip_switches_gpib_config:
     2998_alias_90000:6781  [96781]  55              push    bp
     2998_alias_90000:6782  [96782]  8bec            mov     bp, sp
     2998_alias_90000:6784  [96784]  83ec08          sub     sp, 8
@@ -2984,7 +2984,7 @@ L_97B47:
     2998_alias_90000:7B47  [97B47]  9a28011185      lcall   reset_comm_parser_state  ; 0x8511, 0x128
     2998_alias_90000:7B4C  [97B4C]  9a17032896      lcall   init_comm_channel_state_a  ; 0x9628, 0x317
     2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   init_comm_rx_queue_and_ready_flags  ; 0x9628, 0x3b4
-    2998_alias_90000:7B56  [97B56]  9a16042896      lcall   SUB_96696  ; 0x9628, 0x416
+    2998_alias_90000:7B56  [97B56]  9a16042896      lcall   reset_gpib_addr_scratch  ; 0x9628, 0x416
     2998_alias_90000:7B5B  [97B5B]  c6060c00ff      mov     byte ptr [0xc], 0xff
     2998_alias_90000:7B60  [97B60]  c6065404ff      mov     byte ptr [0x454], 0xff
     2998_alias_90000:7B65  [97B65]  bf4100          mov     di, 0x41

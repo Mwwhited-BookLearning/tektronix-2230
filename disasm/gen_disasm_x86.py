@@ -666,6 +666,56 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x966E7: "read_dip_switches_serial_config", # comm ROM: reads a
+                                               # hardware config-switch
+                                               # byte via far ptr
+                                               # [0x6DE] (inverted -
+                                               # active-low switch
+                                               # bank) and decodes it
+                                               # into a baud-rate-like
+                                               # code [0x4EC] (bits
+                                               # 0-3, special-cased to
+                                               # 0x1F when all 4 set)
+                                               # and a parity mode
+                                               # [0x4ED] (bit 4 gates
+                                               # 0 vs bits 5-6+1); also
+                                               # reads a second switch
+                                               # byte via far ptr
+                                               # [0x6DA] for a CR/LF
+                                               # option [0x4EF] (bit 3)
+                                               # and another config
+                                               # byte [0x461] (bits
+                                               # 4-5) - very likely the
+                                               # firmware-side reader
+                                               # for the comm option
+                                               # board's physical
+                                               # "PARAMETERS" DIP
+                                               # switch bank (see
+                                               # HARDWARE.md)
+    0x96781: "read_dip_switches_gpib_config",   # comm ROM: reads the
+                                               # same two hardware
+                                               # switch bytes ([0x6DE]/
+                                               # [0x6DA]) as read_dip_
+                                               # switches_serial_config
+                                               # but decodes the GPIB-
+                                               # relevant fields
+                                               # instead: a 5-bit GPIB
+                                               # primary address
+                                               # (0-30) into [0x4F0],
+                                               # and mode flag bits
+                                               # into [0x4F1]/[0x461]
+    0x96696: "reset_gpib_addr_scratch",         # clears the 10-byte
+                                               # scratch buffer at
+                                               # [0x586] (same buffer
+                                               # used for building a
+                                               # GPIB device-address
+                                               # list elsewhere),
+                                               # conditionally calls
+                                               # SUB_97905 when in GPIB
+                                               # mode ([0x629]!=0) and
+                                               # not addressed as
+                                               # device 1 ([0x580]!=1),
+                                               # then sets [0x581]=0x80
     0x924D2: "build_comm_status_message",       # comm ROM: (index 0-3)
                                                # picks one of 4 far-
                                                # pointer message chunks
