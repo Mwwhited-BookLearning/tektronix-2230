@@ -2825,6 +2825,36 @@ FUNCTIONAL_NAMES = {
                                                # clear, called with
                                                # `di=1` from the boot/
                                                # reinit sequence
+    0xF0C2A: "draw_pending_line_segment",     # entered via 5 identical
+                                               # far-call sites (always
+                                               # with arg 1, unused role
+                                               # not confirmed), and also
+                                               # falls through internally
+                                               # from earlier plot-loop
+                                               # code (same family as the
+                                               # already-named
+                                               # reset_acq_buffers_stub/
+                                               # print_and_reset_acq_
+                                               # buffers, both odd-opener
+                                               # members of this cluster):
+                                               # conditionally homes the
+                                               # pen via update_plot_
+                                               # position (if [0x6C0] bit
+                                               # 0x10), always draws via
+                                               # plot_line_to to
+                                               # [0x6BC]/[0x6BE], then on
+                                               # every 3rd segment
+                                               # ([0x6C1]%3==2) advances 2
+                                               # loop counters and falls
+                                               # into reset_plot_home_or_
+                                               # acq; every caller checks
+                                               # the returned AX as a
+                                               # boolean gate, but the
+                                               # exact AX semantics
+                                               # (falls out of whichever
+                                               # path was taken, not an
+                                               # explicit `mov ax,`) are
+                                               # not confirmed
     0xF8234: "load_print_record_templates",   # copies 2 fixed 0xAA
                                                # (170)-byte compiled-in
                                                # template blocks (from

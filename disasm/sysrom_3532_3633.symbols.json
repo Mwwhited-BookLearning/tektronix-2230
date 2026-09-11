@@ -7987,10 +7987,10 @@
     "notes": null
   },
   "F0C2A": {
-    "name": "SUB_F0C2A",
+    "name": "draw_pending_line_segment",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "draw_pending_line_segment",
     "notes": null
   },
   "F0C49": {

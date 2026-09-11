@@ -12780,7 +12780,7 @@ L_E817F:
     3633:817F  [E817F]  c7064c050000    mov     word ptr [0x54c], 0
     3633:8185  [E8185]  bf0100          mov     di, 1
     3633:8188  [E8188]  57              push    di
-    3633:8189  [E8189]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:8189  [E8189]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:818E  [E818E]  3d0000          cmp     ax, 0
     3633:8191  [E8191]  754e            jne     L_E81E1  ; 0x1a1
     3633:8193  [E8193]  bf0400          mov     di, 4
@@ -12822,7 +12822,7 @@ L_E81E1:
 L_E81E9:
     3633:81E9  [E81E9]  bf0100          mov     di, 1
     3633:81EC  [E81EC]  57              push    di
-    3633:81ED  [E81ED]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:81ED  [E81ED]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:81F2  [E81F2]  3d0000          cmp     ax, 0
     3633:81F5  [E81F5]  7519            jne     L_E8210  ; 0x1d0
     3633:81F7  [E81F7]  bf0100          mov     di, 1
@@ -12848,7 +12848,7 @@ L_E8218:
     3633:822B  [E822B]  9ac60308f0      lcall   reset_all_channel_plot_caches  ; 0xf008, 0x3c6
     3633:8230  [E8230]  bf0100          mov     di, 1
     3633:8233  [E8233]  57              push    di
-    3633:8234  [E8234]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:8234  [E8234]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:8239  [E8239]  3d0000          cmp     ax, 0
     3633:823C  [E823C]  751c            jne     L_E825A  ; 0x21a
     3633:823E  [E823E]  bf0100          mov     di, 1
@@ -12868,7 +12868,7 @@ L_E825A:
 L_E8262:
     3633:8262  [E8262]  bf0100          mov     di, 1
     3633:8265  [E8265]  57              push    di
-    3633:8266  [E8266]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:8266  [E8266]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:826B  [E826B]  3d0000          cmp     ax, 0
     3633:826E  [E826E]  7519            jne     L_E8289  ; 0x249
     3633:8270  [E8270]  bf0100          mov     di, 1
@@ -12896,7 +12896,7 @@ L_E829A:
     3633:82A6  [E82A6]  9ac60308f0      lcall   reset_all_channel_plot_caches  ; 0xf008, 0x3c6
     3633:82AB  [E82AB]  bf0100          mov     di, 1
     3633:82AE  [E82AE]  57              push    di
-    3633:82AF  [E82AF]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:82AF  [E82AF]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:82B4  [E82B4]  3d0000          cmp     ax, 0
     3633:82B7  [E82B7]  751c            jne     L_E82D5  ; 0x295
     3633:82B9  [E82B9]  bf0100          mov     di, 1
@@ -13147,7 +13147,7 @@ L_E8527:
     3633:8540  [E8540]  7465            je      L_E85A7  ; 0x85a7
     3633:8542  [E8542]  bf0100          mov     di, 1
     3633:8545  [E8545]  57              push    di
-    3633:8546  [E8546]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:8546  [E8546]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:854B  [E854B]  3d0000          cmp     ax, 0
     3633:854E  [E854E]  7577            jne     L_E85C7  ; 0x85c7
     3633:8550  [E8550]  c7064c050000    mov     word ptr [0x54c], 0
@@ -13237,7 +13237,7 @@ L_E8623:
     3633:862D  [E862D]  743b            je      L_E866A  ; 0x866a
     3633:862F  [E862F]  bf0100          mov     di, 1
     3633:8632  [E8632]  57              push    di
-    3633:8633  [E8633]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
+    3633:8633  [E8633]  9a0a00c2f0      lcall   draw_pending_line_segment  ; 0xf0c2, 0xa
     3633:8638  [E8638]  3d0000          cmp     ax, 0
     3633:863B  [E863B]  752d            jne     L_E866A  ; 0x866a
     3633:863D  [E863D]  bf0100          mov     di, 1
@@ -25275,7 +25275,7 @@ L_F08E4:
 L_F0A70:
     3532:0A70  [F0A70]  a0c106          mov     al, byte ptr [0x6c1]
 
-SUB_F0C2A:
+draw_pending_line_segment:
     3532:0C2A  [F0C2A]  8811            mov     byte ptr [bx + di], dl
     3532:0C2C  [F0C2C]  a0c006          mov     al, byte ptr [0x6c0]
     3532:0C2F  [F0C2F]  2ae4            sub     ah, ah
