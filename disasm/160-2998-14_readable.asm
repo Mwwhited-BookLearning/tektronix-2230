@@ -45,7 +45,7 @@ L_80095:
     mov sp, bp                               ; 0095: mov sp, bp
     pop bp                                   ; 0097: pop bp
     retf 2                                   ; 0098: retf 2
-SUB_8009B:
+set_comm_queue_busy:
     push bp                                  ; 009B: push bp
     mov bp, sp                               ; 009C: mov bp, sp
     sub sp, 6                                ; 009E: sub sp, 6
@@ -81,7 +81,7 @@ L_800F5:
     mov sp, bp                               ; 00F6: mov sp, bp
     pop bp                                   ; 00F8: pop bp
     retf 2                                   ; 00F9: retf 2
-SUB_800FC:
+update_comm_tx_ready_flag:
     push bp                                  ; 00FC: push bp
     mov bp, sp                               ; 00FD: mov bp, sp
     sub sp, 6                                ; 00FF: sub sp, 6

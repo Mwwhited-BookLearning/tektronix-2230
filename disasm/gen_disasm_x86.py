@@ -666,6 +666,84 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x94488: "get_comm_config_flag",            # (index) - reads a byte
+                                               # from a config/flag
+                                               # array at far ptr
+                                               # [0x73A], zero-extended
+    0x944A2: "set_comm_config_flag",            # (index, value) -
+                                               # writes a byte into the
+                                               # config/flag array at
+                                               # far ptr [0x73A]
+                                               # (get_comm_config_
+                                               # flag's counterpart),
+                                               # then invalidates a
+                                               # cache (clears es:
+                                               # [0x736] word to
+                                               # 0xFFFF) and sets bit 0
+                                               # of [0x603] (plus bit 1
+                                               # too if [0x604]==0)
+    0x96597: "init_comm_channel_state_a",       # comm ROM: resets
+                                               # several default far
+                                               # pointers (to offset
+                                               # 0xF and 0x46C within
+                                               # DS) and counters/flags
+                                               # to 0, then sets the
+                                               # channel status byte
+                                               # es:[0x6D6+3] to 2 or 3
+                                               # depending on [0x629]/
+                                               # [0x4F1] - first half of
+                                               # a channel (re)init
+                                               # sequence, always
+                                               # called immediately
+                                               # before init_comm_rx_
+                                               # queue_and_ready_flags
+    0x96634: "init_comm_rx_queue_and_ready_flags", # comm ROM: resets
+                                               # the rx ring buffer read/
+                                               # write pointers
+                                               # ([0x448]/[0x44C], same
+                                               # base 0xAF used by
+                                               # service_comm_rx_queue)
+                                               # and related flags, then
+                                               # either sets the channel
+                                               # status byte es:
+                                               # [0x6D6+3]=5 ([0x629]
+                                               # set, GPIB) or clears
+                                               # tx-ready (es:[0x6E2+1]/
+                                               # [0x596], RS-232) -
+                                               # second half of the pair
+                                               # started by init_comm_
+                                               # channel_state_a
+    0x800FC: "update_comm_tx_ready_flag",       # (clear) - single-shot
+                                               # toggle of the tx-ready
+                                               # byte pair ([0x596] and
+                                               # es:[di+1] via far ptr
+                                               # [0x6E2]): clear!=0 sets
+                                               # not-ready; clear==0
+                                               # sets ready ONLY if
+                                               # [0x45A] indicates data
+                                               # is actually pending -
+                                               # called by enqueue_comm_
+                                               # char(0) right after
+                                               # storing a new byte
+    0x8009B: "set_comm_queue_busy",            # (engage) - nestable,
+                                               # interrupt-safe (cli/
+                                               # pushf) critical-section
+                                               # marker for the comm rx/
+                                               # tx queue: engage!=0
+                                               # pushes a level onto the
+                                               # [0x5A1] nesting counter
+                                               # and clears both ready
+                                               # flags ([0x597]/[0x596]
+                                               # and the es:[0x6E2] word
+                                               # pair); engage==0 pops a
+                                               # level and, once fully
+                                               # unnested, restores rx-
+                                               # ready unconditionally
+                                               # and tx-ready only if
+                                               # [0x45A] indicates data
+                                               # is pending (same gate
+                                               # as update_comm_tx_
+                                               # ready_flag)
     0x80060: "set_comm_flow_hold",              # (engage) - guarded
                                                # on/off toggle of
                                                # [0x5A1]/[0x5A2]: if

@@ -28,10 +28,10 @@
     "notes": null
   },
   "8009B": {
-    "name": "SUB_8009B",
+    "name": "set_comm_queue_busy",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "set_comm_queue_busy",
     "notes": null
   },
   "800CF": {
@@ -49,10 +49,10 @@
     "notes": null
   },
   "800FC": {
-    "name": "SUB_800FC",
+    "name": "update_comm_tx_ready_flag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "update_comm_tx_ready_flag",
     "notes": null
   },
   "8011B": {
@@ -462,17 +462,17 @@
     "notes": null
   },
   "94488": {
-    "name": "SUB_94488",
+    "name": "get_comm_config_flag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "get_comm_config_flag",
     "notes": null
   },
   "944A2": {
-    "name": "SUB_944A2",
+    "name": "set_comm_config_flag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "set_comm_config_flag",
     "notes": null
   },
   "944CF": {
@@ -1302,10 +1302,10 @@
     "notes": null
   },
   "96597": {
-    "name": "SUB_96597",
+    "name": "init_comm_channel_state_a",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_comm_channel_state_a",
     "notes": null
   },
   "96627": {
@@ -1323,10 +1323,10 @@
     "notes": null
   },
   "96634": {
-    "name": "SUB_96634",
+    "name": "init_comm_rx_queue_and_ready_flags",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_comm_rx_queue_and_ready_flags",
     "notes": null
   },
   "96684": {

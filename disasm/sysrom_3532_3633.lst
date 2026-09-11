@@ -33,7 +33,7 @@ L_80095:
     2998:0095  [80095]  8be5            mov     sp, bp
     2998:0097  [80097]  5d              pop     bp
     2998:0098  [80098]  ca0200          retf    2
-SUB_8009B:
+set_comm_queue_busy:
     2998:009B  [8009B]  55              push    bp
     2998:009C  [8009C]  8bec            mov     bp, sp
     2998:009E  [8009E]  83ec06          sub     sp, 6
@@ -69,7 +69,7 @@ L_800F5:
     2998:00F6  [800F6]  8be5            mov     sp, bp
     2998:00F8  [800F8]  5d              pop     bp
     2998:00F9  [800F9]  ca0200          retf    2
-SUB_800FC:
+update_comm_tx_ready_flag:
     2998:00FC  [800FC]  55              push    bp
     2998:00FD  [800FD]  8bec            mov     bp, sp
     2998:00FF  [800FF]  83ec06          sub     sp, 6
@@ -611,7 +611,7 @@ L_9253C:
     2998_alias_90000:257D  [9257D]  5d              pop     bp
     2998_alias_90000:257E  [9257E]  ca0200          retf    2
 
-SUB_94488:
+get_comm_config_flag:
     2998_alias_90000:4488  [94488]  55              push    bp
     2998_alias_90000:4489  [94489]  8bec            mov     bp, sp
     2998_alias_90000:448B  [9448B]  83ec06          sub     sp, 6
@@ -623,7 +623,7 @@ SUB_94488:
     2998_alias_90000:449C  [9449C]  8be5            mov     sp, bp
     2998_alias_90000:449E  [9449E]  5d              pop     bp
     2998_alias_90000:449F  [9449F]  ca0200          retf    2
-SUB_944A2:
+set_comm_config_flag:
     2998_alias_90000:44A2  [944A2]  55              push    bp
     2998_alias_90000:44A3  [944A3]  8bec            mov     bp, sp
     2998_alias_90000:44A5  [944A5]  83ec06          sub     sp, 6
@@ -2130,7 +2130,7 @@ L_964B1:
 L_964B9:
     2998_alias_90000:64B9  [964B9]  bfffff          mov     di, 0xffff
     2998_alias_90000:64BC  [964BC]  57              push    di
-    2998_alias_90000:64BD  [964BD]  9a3b000680      lcall   SUB_8009B  ; 0x8006, 0x3b
+    2998_alias_90000:64BD  [964BD]  9a3b000680      lcall   set_comm_queue_busy  ; 0x8006, 0x3b
     2998_alias_90000:64C2  [964C2]  c6069c0500      mov     byte ptr [0x59c], 0
     2998_alias_90000:64C7  [964C7]  c43ed606        les     di, ptr [0x6d6]
     2998_alias_90000:64CB  [964CB]  26c6450200      mov     byte ptr es:[di + 2], 0
@@ -2183,7 +2183,7 @@ L_96560:
     2998_alias_90000:657D  [9657D]  26884502        mov     byte ptr es:[di + 2], al
     2998_alias_90000:6581  [96581]  2bd2            sub     dx, dx
     2998_alias_90000:6583  [96583]  52              push    dx
-    2998_alias_90000:6584  [96584]  9a3b000680      lcall   SUB_8009B  ; 0x8006, 0x3b
+    2998_alias_90000:6584  [96584]  9a3b000680      lcall   set_comm_queue_busy  ; 0x8006, 0x3b
     2998_alias_90000:6589  [96589]  c606a30500      mov     byte ptr [0x5a3], 0
 L_9658E:
     2998_alias_90000:658E  [9658E]  9a80052896      lcall   SUB_96800  ; 0x9628, 0x580
@@ -2191,7 +2191,7 @@ L_96593:
     2998_alias_90000:6593  [96593]  8be5            mov     sp, bp
     2998_alias_90000:6595  [96595]  5d              pop     bp
     2998_alias_90000:6596  [96596]  cb              retf    
-SUB_96597:
+init_comm_channel_state_a:
     2998_alias_90000:6597  [96597]  55              push    bp
     2998_alias_90000:6598  [96598]  8bec            mov     bp, sp
     2998_alias_90000:659A  [9659A]  83ec06          sub     sp, 6
@@ -2232,7 +2232,7 @@ L_96630:
     2998_alias_90000:6630  [96630]  8be5            mov     sp, bp
     2998_alias_90000:6632  [96632]  5d              pop     bp
     2998_alias_90000:6633  [96633]  cb              retf    
-SUB_96634:
+init_comm_rx_queue_and_ready_flags:
     2998_alias_90000:6634  [96634]  55              push    bp
     2998_alias_90000:6635  [96635]  8bec            mov     bp, sp
     2998_alias_90000:6637  [96637]  83ec06          sub     sp, 6
@@ -2824,7 +2824,7 @@ L_974FD:
     2998_alias_90000:7507  [97507]  c6065a0400      mov     byte ptr [0x45a], 0
     2998_alias_90000:750C  [9750C]  2bdb            sub     bx, bx
     2998_alias_90000:750E  [9750E]  53              push    bx
-    2998_alias_90000:750F  [9750F]  9a9c000680      lcall   SUB_800FC  ; 0x8006, 0x9c
+    2998_alias_90000:750F  [9750F]  9a9c000680      lcall   update_comm_tx_ready_flag  ; 0x8006, 0x9c
     2998_alias_90000:7514  [97514]  8be5            mov     sp, bp
     2998_alias_90000:7516  [97516]  5d              pop     bp
     2998_alias_90000:7517  [97517]  ca0200          retf    2
@@ -2971,19 +2971,19 @@ SUB_97B01:
 L_97B2A:
     2998_alias_90000:7B2A  [97B2A]  bf2000          mov     di, 0x20
     2998_alias_90000:7B2D  [97B2D]  57              push    di
-    2998_alias_90000:7B2E  [97B2E]  9a98021f94      lcall   SUB_94488  ; 0x941f, 0x298
+    2998_alias_90000:7B2E  [97B2E]  9a98021f94      lcall   get_comm_config_flag  ; 0x941f, 0x298
     2998_alias_90000:7B33  [97B33]  3d0000          cmp     ax, 0
     2998_alias_90000:7B36  [97B36]  740f            je      L_97B47  ; 0xbf7
     2998_alias_90000:7B38  [97B38]  2bff            sub     di, di
     2998_alias_90000:7B3A  [97B3A]  57              push    di
     2998_alias_90000:7B3B  [97B3B]  ba1d00          mov     dx, 0x1d
     2998_alias_90000:7B3E  [97B3E]  52              push    dx
-    2998_alias_90000:7B3F  [97B3F]  9ab2021f94      lcall   SUB_944A2  ; 0x941f, 0x2b2
+    2998_alias_90000:7B3F  [97B3F]  9ab2021f94      lcall   set_comm_config_flag  ; 0x941f, 0x2b2
     2998_alias_90000:7B44  [97B44]  83c402          add     sp, 2
 L_97B47:
     2998_alias_90000:7B47  [97B47]  9a28011185      lcall   reset_comm_parser_state  ; 0x8511, 0x128
-    2998_alias_90000:7B4C  [97B4C]  9a17032896      lcall   SUB_96597  ; 0x9628, 0x317
-    2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   SUB_96634  ; 0x9628, 0x3b4
+    2998_alias_90000:7B4C  [97B4C]  9a17032896      lcall   init_comm_channel_state_a  ; 0x9628, 0x317
+    2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   init_comm_rx_queue_and_ready_flags  ; 0x9628, 0x3b4
     2998_alias_90000:7B56  [97B56]  9a16042896      lcall   SUB_96696  ; 0x9628, 0x416
     2998_alias_90000:7B5B  [97B5B]  c6060c00ff      mov     byte ptr [0xc], 0xff
     2998_alias_90000:7B60  [97B60]  c6065404ff      mov     byte ptr [0x454], 0xff

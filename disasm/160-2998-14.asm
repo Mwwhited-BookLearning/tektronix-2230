@@ -47,7 +47,7 @@ L_80095:
     db 0x8b, 0xe5  ; 0095: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0097: pop bp
     retf 2                                   ; 0098: retf 2
-SUB_8009B:
+set_comm_queue_busy:
     push bp                                  ; 009B: push bp
     db 0x8b, 0xec  ; 009C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 009E: sub sp, 6
@@ -83,7 +83,7 @@ L_800F5:
     db 0x8b, 0xe5  ; 00F6: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 00F8: pop bp
     retf 2                                   ; 00F9: retf 2
-SUB_800FC:
+update_comm_tx_ready_flag:
     push bp                                  ; 00FC: push bp
     db 0x8b, 0xec  ; 00FD: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 00FF: sub sp, 6
