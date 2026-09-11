@@ -1821,8 +1821,23 @@ renamed) it calls `SUB_ED0AE`, which itself calls into `SUB_F5184` -
 and `SUB_F5184`'s own body sits right in the middle of a clear
 `itoa`-style digit-formatting loop that starts at `L_F50FA` (repeated
 `idiv`-by-10, appending `'0'+digit` characters, with a `.` decimal-
-point insertion at a per-item table position `[bx+0x63A]`). `SUB_
-F5184` itself opens with 2 bytes (`46 0AC7` = `inc si` / `or al,bh`)
+point insertion at a per-item table position `[bx+0x63A]`).
+
+**This also confirms the "outlined helper, no own frame" theory above
+with a concrete, traceable example, not just circumstantial evidence.**
+`SUB_ED0AE` genuinely never touches `bp` at all - its entire body is
+`mov ax,[0x464]; mov [0x46C],ax; lcall SUB_F5184; jmp L_ED0C6` (then a
+bare `retf`, caller-cleans-stack, matching `SUB_F750A`/`SUB_F7603`).
+Its caller (`SUB_F4150`) pushes 3 words before calling it and cleans
+them up itself afterward (`add sp,6`) - words `SUB_ED0AE` never reads.
+Since `SUB_F5184` (called from inside `SUB_ED0AE`) *also* has no
+prologue and reads `[bp-0x10]` etc., those locals **must** belong to
+`SUB_F4150`'s own frame, 2 calls up the chain - there is no other
+frame they could be. This is direct, traceable confirmation (not
+speculation) that at least this chain shares one frame across 3
+nested `lcall`s with zero prologues in between.
+
+`SUB_F5184` itself opens with 2 bytes (`46 0AC7` = `inc si` / `or al,bh`)
 that don't fit this loop's logic at all - likely another instance of
 the un-prologued-entry/decode-drift family - immediately followed by
 `mov word [bp-0x10], 0`, identical to a reset done a few bytes earlier
