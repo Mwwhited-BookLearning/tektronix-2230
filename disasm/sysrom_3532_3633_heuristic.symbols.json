@@ -16674,10 +16674,10 @@
     "notes": null
   },
   "F0446": {
-    "name": "SUB_F0446",
+    "name": "reset_all_channel_plot_caches",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "reset_all_channel_plot_caches",
     "notes": null
   },
   "F044A": {
@@ -25522,10 +25522,10 @@
     "notes": null
   },
   "F8E98": {
-    "name": "SUB_F8E98",
+    "name": "deselect_item_pair",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "deselect_item_pair",
     "notes": null
   },
   "F8EC8": {
@@ -25557,10 +25557,10 @@
     "notes": null
   },
   "F8F24": {
-    "name": "SUB_F8F24",
+    "name": "disable_item_pair",
     "kind": "sub",
     "ref_count": 10,
-    "functional_name": null,
+    "functional_name": "disable_item_pair",
     "notes": null
   },
   "F8F50": {

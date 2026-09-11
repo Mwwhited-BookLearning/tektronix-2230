@@ -1219,6 +1219,13 @@ ROM, so that's less likely). Revisit if the self-test subroutines or
 menu-string cross-referencing work ever turns up a direct link to
 "record length" or a channel-buffer concept.
 
+**Update:** the shared tail itself (`L_F0678`, reached via `SUB_F0446`'s
+un-prologued "push es; jmp" stub) is now renamed
+`reset_all_channel_plot_caches`. Its entry style (no `push bp`/`mov bp,
+sp` of its own, relying on a frame already established by whatever
+reaches it) is the same shared-tail pattern already confirmed harmless
+for `convert_sample_value`.
+
 ## Found: the hardware shift-register write (I/O ports 0xD1/0xC4)
 
 Renamed `write_hw_shift_register` (`0xEE13B`), resolving I/O ports

@@ -12809,10 +12809,10 @@ L_E81C3:
 L_E81C6:
     3633:81C6  [E81C6]  bf0200          mov     di, 2
     3633:81C9  [E81C9]  57              push    di
-    3633:81CA  [E81CA]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:81CA  [E81CA]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:81CF  [E81CF]  bf0300          mov     di, 3
     3633:81D2  [E81D2]  57              push    di
-    3633:81D3  [E81D3]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:81D3  [E81D3]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:81D8  [E81D8]  bf0100          mov     di, 1
     3633:81DB  [E81DB]  57              push    di
     3633:81DC  [E81DC]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
@@ -12845,7 +12845,7 @@ L_E8218:
     3633:8222  [E8222]  7473            je      L_E8297  ; 0x257
     3633:8224  [E8224]  833e4c0500      cmp     word ptr [0x54c], 0
     3633:8229  [E8229]  7537            jne     L_E8262  ; 0x222
-    3633:822B  [E822B]  9ac60308f0      lcall   SUB_F0446  ; 0xf008, 0x3c6
+    3633:822B  [E822B]  9ac60308f0      lcall   reset_all_channel_plot_caches  ; 0xf008, 0x3c6
     3633:8230  [E8230]  bf0100          mov     di, 1
     3633:8233  [E8233]  57              push    di
     3633:8234  [E8234]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
@@ -12893,7 +12893,7 @@ L_E829A:
     3633:829D  [E829D]  81e70100        and     di, 1
     3633:82A1  [E82A1]  83ff00          cmp     di, 0
     3633:82A4  [E82A4]  7434            je      L_E82DA  ; 0x29a
-    3633:82A6  [E82A6]  9ac60308f0      lcall   SUB_F0446  ; 0xf008, 0x3c6
+    3633:82A6  [E82A6]  9ac60308f0      lcall   reset_all_channel_plot_caches  ; 0xf008, 0x3c6
     3633:82AB  [E82AB]  bf0100          mov     di, 1
     3633:82AE  [E82AE]  57              push    di
     3633:82AF  [E82AF]  9a0a00c2f0      lcall   SUB_F0C2A  ; 0xf0c2, 0xa
@@ -13040,7 +13040,7 @@ FUNC_3633_8414:
     3633:8415  [E8415]  8bec            mov     bp, sp
     3633:8417  [E8417]  83ec06          sub     sp, 6
     3633:841A  [E841A]  ff7606          push    word ptr [bp + 6]
-    3633:841D  [E841D]  9a3800e6f8      lcall   SUB_F8E98  ; 0xf8e6, 0x38
+    3633:841D  [E841D]  9a3800e6f8      lcall   deselect_item_pair  ; 0xf8e6, 0x38
     3633:8422  [E8422]  8b7e06          mov     di, word ptr [bp + 6]
     3633:8425  [E8425]  393e7005        cmp     word ptr [0x570], di
     3633:8429  [E8429]  7515            jne     L_E8440  ; 0x8440
@@ -13071,7 +13071,7 @@ FUNC_3633_8446:
     3633:846A  [E846A]  9a940308f0      lcall   print_and_reset_acq_buffers  ; 0xf008, 0x394
     3633:846F  [E846F]  bf0100          mov     di, 1
     3633:8472  [E8472]  57              push    di
-    3633:8473  [E8473]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:8473  [E8473]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
 L_E8478:
     3633:8478  [E8478]  8be5            mov     sp, bp
     3633:847A  [E847A]  5d              pop     bp
@@ -13172,10 +13172,10 @@ L_E8567:
     3633:8587  [E8587]  9a940308f0      lcall   print_and_reset_acq_buffers  ; 0xf008, 0x394
     3633:858C  [E858C]  bf0200          mov     di, 2
     3633:858F  [E858F]  57              push    di
-    3633:8590  [E8590]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:8590  [E8590]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:8595  [E8595]  bf0300          mov     di, 3
     3633:8598  [E8598]  57              push    di
-    3633:8599  [E8599]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:8599  [E8599]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:859E  [E859E]  bf0100          mov     di, 1
     3633:85A1  [E85A1]  57              push    di
     3633:85A2  [E85A2]  eb06            jmp     L_E85AA  ; 0x85aa
@@ -13245,13 +13245,13 @@ L_E8623:
     3633:8641  [E8641]  9a940308f0      lcall   print_and_reset_acq_buffers  ; 0xf008, 0x394
     3633:8646  [E8646]  bf0100          mov     di, 1
     3633:8649  [E8649]  57              push    di
-    3633:864A  [E864A]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:864A  [E864A]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:864F  [E864F]  bf0300          mov     di, 3
     3633:8652  [E8652]  57              push    di
     3633:8653  [E8653]  9a940308f0      lcall   print_and_reset_acq_buffers  ; 0xf008, 0x394
     3633:8658  [E8658]  bf0300          mov     di, 3
     3633:865B  [E865B]  57              push    di
-    3633:865C  [E865C]  9ac400e6f8      lcall   SUB_F8F24  ; 0xf8e6, 0xc4
+    3633:865C  [E865C]  9ac400e6f8      lcall   disable_item_pair  ; 0xf8e6, 0xc4
     3633:8661  [E8661]  bf0100          mov     di, 1
     3633:8664  [E8664]  57              push    di
     3633:8665  [E8665]  9a6100c2f0      lcall   reset_plot_home_or_acq  ; 0xf0c2, 0x61
@@ -24838,7 +24838,7 @@ print_and_reset_acq_buffers:
     3532:0441  [F0441]  25f0ff          and     ax, 0xfff0
     3532:0444  [F0444]  a3d606          mov     word ptr [0x6d6], ax
 
-SUB_F0446:
+reset_all_channel_plot_caches:
     3532:0446  [F0446]  06              push    es
     3532:0447  [F0447]  e92e02          jmp     L_F0678  ; 0x5f8
 L_F044A:
@@ -37426,7 +37426,7 @@ L_F8AC6:
     3532:8ACF  [F8ACF]  9a0600e6f8      lcall   set_item_pair_active  ; 0xf8e6, 6
     3532:8AD4  [F8AD4]  bf0400          mov     di, 4
     3532:8AD7  [F8AD7]  57              push    di
-    3532:8AD8  [F8AD8]  9a3800e6f8      lcall   SUB_F8E98  ; 0xf8e6, 0x38
+    3532:8AD8  [F8AD8]  9a3800e6f8      lcall   deselect_item_pair  ; 0xf8e6, 0x38
 L_F8ADD:
     3532:8ADD  [F8ADD]  803e761b00      cmp     byte ptr [0x1b76], 0
     3532:8AE2  [F8AE2]  742e            je      L_F8B12  ; 0x8b12
@@ -37820,7 +37820,7 @@ set_item_pair_active:
     3532:8E92  [F8E92]  8be5            mov     sp, bp
     3532:8E94  [F8E94]  5d              pop     bp
     3532:8E95  [F8E95]  ca0200          retf    2
-SUB_F8E98:
+deselect_item_pair:
     3532:8E98  [F8E98]  55              push    bp
     3532:8E99  [F8E99]  8bec            mov     bp, sp
     3532:8E9B  [F8E9B]  83ec08          sub     sp, 8
@@ -37878,12 +37878,12 @@ L_F8F1E:
     3532:8F1E  [F8F1E]  8be5            mov     sp, bp
     3532:8F20  [F8F20]  5d              pop     bp
     3532:8F21  [F8F21]  ca0200          retf    2
-SUB_F8F24:
+disable_item_pair:
     3532:8F24  [F8F24]  55              push    bp
     3532:8F25  [F8F25]  8bec            mov     bp, sp
     3532:8F27  [F8F27]  83ec08          sub     sp, 8
     3532:8F2A  [F8F2A]  ff7606          push    word ptr [bp + 6]
-    3532:8F2D  [F8F2D]  9a3800e6f8      lcall   SUB_F8E98  ; 0xf8e6, 0x38
+    3532:8F2D  [F8F2D]  9a3800e6f8      lcall   deselect_item_pair  ; 0xf8e6, 0x38
     3532:8F32  [F8F32]  8b7e06          mov     di, word ptr [bp + 6]
     3532:8F35  [F8F35]  d1e7            shl     di, 1
     3532:8F37  [F8F37]  897ef8          mov     word ptr [bp - 8], di
@@ -38778,7 +38778,7 @@ FUNC_3532_9812:
     3532:98C6  [F98C6]  83c404          add     sp, 4
     3532:98C9  [F98C9]  bf0400          mov     di, 4
     3532:98CC  [F98CC]  57              push    di
-    3532:98CD  [F98CD]  9a3800e6f8      lcall   SUB_F8E98  ; 0xf8e6, 0x38
+    3532:98CD  [F98CD]  9a3800e6f8      lcall   deselect_item_pair  ; 0xf8e6, 0x38
 L_F98D2:
     3532:98D2  [F98D2]  810e48050004    or      word ptr [0x548], 0x400
     3532:98D8  [F98D8]  c70688010000    mov     word ptr [0x188], 0

@@ -3465,7 +3465,7 @@ set_item_pair_active:
     db 0x8b, 0xe5  ; 8E92: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 8E94: pop bp
     retf 2                                   ; 8E95: retf 2
-SUB_F8E98:
+deselect_item_pair:
     push bp                                  ; 8E98: push bp
     db 0x8b, 0xec  ; 8E99: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 8E9B: sub sp, 8
@@ -3523,7 +3523,7 @@ L_F8F1E:
     db 0x8b, 0xe5  ; 8F1E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 8F20: pop bp
     retf 2                                   ; 8F21: retf 2
-SUB_F8F24:
+disable_item_pair:
     push bp                                  ; 8F24: push bp
     db 0x8b, 0xec  ; 8F25: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 8F27: sub sp, 8

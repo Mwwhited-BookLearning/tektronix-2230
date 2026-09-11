@@ -636,6 +636,45 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xF0446: "reset_all_channel_plot_caches",  # resets 8 plot-position
+                                               # caches ([0x6B2]/[0x6B4]/
+                                               # [0x6E6]/[0x6E8]/[0x6F2]/
+                                               # [0x6F4]/[0x6F6]/[0x6F8],
+                                               # same family as the
+                                               # confirmed [0x6E6]/
+                                               # [0x6E8] plot-scale
+                                               # cache) to the midpoint
+                                               # 0x800, clears [0x700]/
+                                               # [0x702]/[0x70E], sets
+                                               # [0x704]=0x14, writes
+                                               # 0xD5 to a channel-state
+                                               # byte via far ptr
+                                               # [0x6FA], and resets the
+                                               # plot cursor to
+                                               # (0x200,0x200) via
+                                               # update_plot_position -
+                                               # entered via jmp from an
+                                               # un-prologued "push es"
+                                               # stub, same shared-tail
+                                               # pattern as convert_
+                                               # sample_value
+    0xF8E98: "deselect_item_pair",             # (pair_index) - calls
+                                               # set_item_active_flag
+                                               # (2*pair_index, 0) and
+                                               # set_item_active_flag
+                                               # (2*pair_index+1, 0) -
+                                               # clears the "selected"
+                                               # bit for both items of
+                                               # a pair
+    0xF8F24: "disable_item_pair",              # (pair_index) - calls
+                                               # deselect_item_pair,
+                                               # then also clears bit 1
+                                               # ("enabled/valid") of
+                                               # [item+0x1BE2] for both
+                                               # items of the pair -
+                                               # removes them from
+                                               # selectability entirely,
+                                               # not just deselecting
     0xF0CCC: "start_plot_output_task",         # calls SUB_E8E03(2), then
                                                # format_string_va("%c%c",
                                                # 0x1B, 0x40) - sends an
