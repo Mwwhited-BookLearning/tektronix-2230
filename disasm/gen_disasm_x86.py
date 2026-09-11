@@ -2874,6 +2874,25 @@ FUNCTIONAL_NAMES = {
                                                # buffer_length_and_flag`
                                                # sets) to flag the
                                                # readout content changed
+    0xFBCCF: "init_default_print_cell_dimensions", # writes 5 fixed
+                                               # byte constants to
+                                               # [0x30]-[0x34] (9, 0xA,
+                                               # 0x14, 0x10, 0xA) -
+                                               # [0x34] specifically is
+                                               # read as a per-row
+                                               # `memcpy_far` stride
+                                               # (`*0xA`) by the print-
+                                               # record character-row
+                                               # copier near `0xEF3D6`-
+                                               # `0xEF440`, consistent
+                                               # with these being
+                                               # default print-record
+                                               # cell width/height
+                                               # fields; called from
+                                               # compute_readout_buffer_
+                                               # length_and_flag right
+                                               # before it sets up the
+                                               # far ptr [0x36]/[0x38]
     0xF8234: "load_print_record_templates",   # copies 2 fixed 0xAA
                                                # (170)-byte compiled-in
                                                # template blocks (from

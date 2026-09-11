@@ -42395,7 +42395,7 @@ FUNC_3532_BCC3:
     3532:BCC9  [FBCC9]  8be5            mov     sp, bp
     3532:BCCB  [FBCCB]  5d              pop     bp
     3532:BCCC  [FBCCC]  ca0200          retf    2
-SUB_FBCCF:
+init_default_print_cell_dimensions:
     3532:BCCF  [FBCCF]  55              push    bp
     3532:BCD0  [FBCD0]  8bec            mov     bp, sp
     3532:BCD2  [FBCD2]  83ec06          sub     sp, 6
@@ -42429,7 +42429,7 @@ compute_readout_buffer_length_and_flag:
     3532:BD1C  [FBD1C]  0316021c        add     dx, word ptr [0x1c02]
     3532:BD20  [FBD20]  89163600        mov     word ptr [0x36], dx
     3532:BD24  [FBD24]  8c063800        mov     word ptr [0x38], es
-    3532:BD28  [FBD28]  9a0f00ccfb      lcall   SUB_FBCCF  ; 0xfbcc, 0xf
+    3532:BD28  [FBD28]  9a0f00ccfb      lcall   init_default_print_cell_dimensions  ; 0xfbcc, 0xf
     3532:BD2D  [FBD2D]  810e22000020    or      word ptr [0x22], 0x2000
     3532:BD33  [FBD33]  9a0c0011f9      lcall   pad_readout_buffer_remainder  ; 0xf911, 0xc
     3532:BD38  [FBD38]  8be5            mov     sp, bp

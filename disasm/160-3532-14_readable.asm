@@ -4460,7 +4460,7 @@ set_position_record_3532:
     pop bp                                   ; BCBE: pop bp
     retf 4                                   ; BCBF: retf 4
     db 0xff, 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; BCC2
-SUB_FBCCF:
+init_default_print_cell_dimensions:
     push bp                                  ; BCCF: push bp
     mov bp, sp                               ; BCD0: mov bp, sp
     sub sp, 6                                ; BCD2: sub sp, 6
