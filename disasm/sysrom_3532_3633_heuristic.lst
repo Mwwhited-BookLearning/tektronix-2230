@@ -835,7 +835,7 @@ L_E07E7:
     3633:07F1  [E07F1]  833e101b00      cmp     word ptr [0x1b10], 0
     3633:07F6  [E07F6]  751d            jne     L_E0815  ; 0x165
     3633:07F8  [E07F8]  9a5f06b1e3      lcall   print_selftest_banner  ; 0xe3b1, 0x65f
-    3633:07FD  [E07FD]  9a9b026be0      lcall   SUB_E094B  ; 0xe06b, 0x29b
+    3633:07FD  [E07FD]  9a9b026be0      lcall   init_selftest_report_record  ; 0xe06b, 0x29b
     3633:0802  [E0802]  c43edc1d        les     di, ptr [0x1ddc]
     3633:0806  [E0806]  8d951c02        lea     dx, [di + 0x21c]
     3633:080A  [E080A]  8916521b        mov     word ptr [0x1b52], dx
@@ -938,7 +938,7 @@ L_E08F2:
     3633:08F9  [E08F9]  8a5612          mov     dl, byte ptr [bp + 0x12]
     3633:08FC  [E08FC]  2af6            sub     dh, dh
     3633:08FE  [E08FE]  52              push    dx
-    3633:08FF  [E08FF]  9acb026be0      lcall   SUB_E097B  ; 0xe06b, 0x2cb
+    3633:08FF  [E08FF]  9acb026be0      lcall   append_selftest_report_char  ; 0xe06b, 0x2cb
 L_E0904:
     3633:0904  [E0904]  c47e06          les     di, ptr [bp + 6]
     3633:0907  [E0907]  06              push    es
@@ -970,7 +970,7 @@ L_E0945:
     3633:0945  [E0945]  8be5            mov     sp, bp
     3633:0947  [E0947]  5d              pop     bp
     3633:0948  [E0948]  ca0400          retf    4
-SUB_E094B:
+init_selftest_report_record:
     3633:094B  [E094B]  55              push    bp
     3633:094C  [E094C]  8bec            mov     bp, sp
     3633:094E  [E094E]  83ec06          sub     sp, 6
@@ -986,7 +986,7 @@ SUB_E094B:
     3633:0977  [E0977]  8be5            mov     sp, bp
     3633:0979  [E0979]  5d              pop     bp
     3633:097A  [E097A]  cb              retf    
-SUB_E097B:
+append_selftest_report_char:
     3633:097B  [E097B]  55              push    bp
     3633:097C  [E097C]  8bec            mov     bp, sp
     3633:097E  [E097E]  83ec06          sub     sp, 6

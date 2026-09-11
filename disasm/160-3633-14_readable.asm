@@ -581,7 +581,7 @@ L_E0945:
     mov sp, bp                               ; 0945: mov sp, bp
     pop bp                                   ; 0947: pop bp
     retf 4                                   ; 0948: retf 4
-SUB_E094B:
+init_selftest_report_record:
     push bp                                  ; 094B: push bp
     mov bp, sp                               ; 094C: mov bp, sp
     sub sp, 6                                ; 094E: sub sp, 6
@@ -597,7 +597,7 @@ SUB_E094B:
     mov sp, bp                               ; 0977: mov sp, bp
     pop bp                                   ; 0979: pop bp
     retf                                     ; 097A: retf 
-SUB_E097B:
+append_selftest_report_char:
     push bp                                  ; 097B: push bp
     mov bp, sp                               ; 097C: mov bp, sp
     sub sp, 6                                ; 097E: sub sp, 6

@@ -583,7 +583,7 @@ L_E0945:
     db 0x8b, 0xe5  ; 0945: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0947: pop bp
     retf 4                                   ; 0948: retf 4
-SUB_E094B:
+init_selftest_report_record:
     push bp                                  ; 094B: push bp
     db 0x8b, 0xec  ; 094C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 094E: sub sp, 6
@@ -599,7 +599,7 @@ SUB_E094B:
     db 0x8b, 0xe5  ; 0977: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0979: pop bp
     retf                                     ; 097A: retf 
-SUB_E097B:
+append_selftest_report_char:
     push bp                                  ; 097B: push bp
     db 0x8b, 0xec  ; 097C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 097E: sub sp, 6

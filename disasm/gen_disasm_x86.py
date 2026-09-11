@@ -702,6 +702,42 @@ FUNCTIONAL_NAMES = {
                                                # and-report engine
                                                # behind selftest_rom_
                                                # checksum
+    0xE094B: "init_selftest_report_record",     # writes a fixed 3-byte
+                                               # header record (type=3,
+                                               # 2, 0) at the buffer
+                                               # pointed to by [0x1C80]
+                                               # into [0x1B56]/[0x1B58]
+                                               # - called once, right
+                                               # after print_selftest_
+                                               # banner, from print_
+                                               # selftest_report_line's
+                                               # first-call setup path
+                                               # (guarded by [0x1B10])
+                                               # - seeds the initial
+                                               # readout display-list
+                                               # entry for the self-
+                                               # test report
+    0xE097B: "append_selftest_report_char",     # (char) - appends a
+                                               # byte to the current
+                                               # self-test report
+                                               # record at [0x1B56]
+                                               # (the record init_
+                                               # selftest_report_record
+                                               # seeds with a length
+                                               # counter at offset 0):
+                                               # if the record already
+                                               # has more than 3 bytes
+                                               # and both the new and
+                                               # previous byte share a
+                                               # nonzero high nibble,
+                                               # ORs the new byte into
+                                               # the previous slot
+                                               # (nibble-packing)
+                                               # instead of appending;
+                                               # otherwise appends
+                                               # normally, increments
+                                               # the length counter,
+                                               # and null-terminates
     0xE230B: "run_indexed_adc_selftest",        # (index) - builds a
                                                # descriptive test name
                                                # by copying a base

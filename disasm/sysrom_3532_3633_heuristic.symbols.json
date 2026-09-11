@@ -791,17 +791,17 @@
     "notes": null
   },
   "E094B": {
-    "name": "SUB_E094B",
+    "name": "init_selftest_report_record",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_selftest_report_record",
     "notes": null
   },
   "E097B": {
-    "name": "SUB_E097B",
+    "name": "append_selftest_report_char",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "append_selftest_report_char",
     "notes": null
   },
   "E09E3": {
