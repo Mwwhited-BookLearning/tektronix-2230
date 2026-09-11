@@ -1470,10 +1470,10 @@
     "notes": null
   },
   "96800": {
-    "name": "SUB_96800",
+    "name": "compute_parity_mode_code",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "compute_parity_mode_code",
     "notes": null
   },
   "96815": {

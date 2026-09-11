@@ -20945,7 +20945,7 @@ L_EDF19:
     3633:DF34  [EDF34]  c606120401      mov     byte ptr [0x412], 1
     3633:DF39  [EDF39]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3633:DF3E  [EDF3E]  7405            je      L_EDF45  ; 0xdf45
-    3633:DF40  [EDF40]  9a80052896      lcall   SUB_96800  ; 0x9628, 0x580
+    3633:DF40  [EDF40]  9a80052896      lcall   compute_parity_mode_code  ; 0x9628, 0x580
 L_EDF45:
     3633:DF45  [EDF45]  803e831b14      cmp     byte ptr [0x1b83], 0x14
     3633:DF4A  [EDF4A]  7406            je      L_EDF52  ; 0xdf52

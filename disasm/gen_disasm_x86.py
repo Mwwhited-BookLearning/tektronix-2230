@@ -666,6 +666,35 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x96800: "compute_parity_mode_code",        # comm ROM: dispatches
+                                               # on the DIP-switch-
+                                               # derived parity value
+                                               # [0x461] to produce a
+                                               # standard parity mode
+                                               # code stored into the
+                                               # config array at es:
+                                               # [0x73A+0x20]: 0->1,
+                                               # 1->4, 2->(3 if RS-232
+                                               # mode and [0x4ED]!=0,
+                                               # else 0), else->0.
+                                               # Also calls scale_and_
+                                               # plot_point_default
+                                               # (confirmed address
+                                               # 0xF0078) at entry with
+                                               # arg 0x8F80, saves its
+                                               # AX result, and calls
+                                               # it again at exit with
+                                               # that saved value - the
+                                               # same argument/result
+                                               # shape as the DS-switch
+                                               # helper set_ds_return_
+                                               # old, but calling the
+                                               # plot-scaling function
+                                               # instead; not resolved
+                                               # whether this is a real
+                                               # cross-purpose reuse or
+                                               # a labeling mistake -
+                                               # see disasm/NOTES.md
     0x916D6: "handle_gpib_device_clear",        # comm ROM: clears a
                                                # 36-entry table at
                                                # [0x6BC]/[0x1DDC]+0xA2

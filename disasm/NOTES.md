@@ -1275,6 +1275,27 @@ non-drifted floating-point instruction in the middle of otherwise
 completely ordinary compiled-C integer code, not part of any known
 decode-drift cluster).
 
+## Open puzzle: comm ROM's compute_parity_mode_code calls the main ROM's scale_and_plot_point_default
+
+`compute_parity_mode_code` (`0x96800`, comm ROM) is a straightforward
+DIP-switch-to-parity-code dispatcher, but it brackets that dispatch
+with two calls to `scale_and_plot_point_default` (physical `0xF0078`,
+confirmed by direct disassembly to multiply an argument by the global
+plot-scale reciprocal at `[0x6D2]` and fall through into real plotting
+code) - once at entry with the literal argument `0x8F80`, saving its
+`AX` result, and again at exit passing that saved result back in. This
+is the exact argument/save/restore shape used everywhere else for the
+`set_ds_return_old` DS-segment-switch helper (`push value; lcall;
+save AX; ...; push saved AX; lcall` again) - but the target here is
+confirmed to be the plot-scaling function's real address, not
+`set_ds_return_old`'s. Not resolved: whether the comm ROM is
+deliberately (ab)using this shared math primitive for value round-
+tripping unrelated to plotting (and the "plot a point" side effect is
+simply harmless/unobserved in this codepath), or whether this points
+at some other addressing subtlety not yet understood. Left as an open
+question rather than guessed at; the parity-code logic itself doesn't
+depend on the answer.
+
 ## Resolved (partially): SUB_E90A5/SUB_E92B0 are call targets landing 1 byte into a "mov di, tag" instruction
 
 An earlier session's investigation of `SUB_E90A5` and `SUB_E92B0` (both

@@ -2186,7 +2186,7 @@ L_96560:
     2998_alias_90000:6584  [96584]  9a3b000680      lcall   set_comm_queue_busy  ; 0x8006, 0x3b
     2998_alias_90000:6589  [96589]  c606a30500      mov     byte ptr [0x5a3], 0
 L_9658E:
-    2998_alias_90000:658E  [9658E]  9a80052896      lcall   SUB_96800  ; 0x9628, 0x580
+    2998_alias_90000:658E  [9658E]  9a80052896      lcall   compute_parity_mode_code  ; 0x9628, 0x580
 L_96593:
     2998_alias_90000:6593  [96593]  8be5            mov     sp, bp
     2998_alias_90000:6595  [96595]  5d              pop     bp
@@ -2414,7 +2414,7 @@ L_967DA:
     2998_alias_90000:67FC  [967FC]  8be5            mov     sp, bp
     2998_alias_90000:67FE  [967FE]  5d              pop     bp
     2998_alias_90000:67FF  [967FF]  cb              retf    
-SUB_96800:
+compute_parity_mode_code:
     2998_alias_90000:6800  [96800]  55              push    bp
     2998_alias_90000:6801  [96801]  8bec            mov     bp, sp
     2998_alias_90000:6803  [96803]  83ec0a          sub     sp, 0xa
