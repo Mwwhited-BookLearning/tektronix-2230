@@ -2945,6 +2945,27 @@ FUNCTIONAL_NAMES = {
                                                # `value` bits 0x100/
                                                # 0x200 and returns
                                                # `value`
+    0xEEA58: "clear_readout_attrs_for_item",  # (item, count) - reads
+                                               # a far ptr base from
+                                               # [0x36] plus a per-item
+                                               # offset table
+                                               # ([bx+0x3C], bx=
+                                               # count<<2), picks a
+                                               # clear_attr_bits_at_
+                                               # prev_delimiter mode
+                                               # (0/1/2) from [0x1CC]
+                                               # bits 0x10/0x20 (gated
+                                               # by [0x233] bits 1/2
+                                               # and the `item`
+                                               # argument), then calls
+                                               # clear_attr_bits_at_
+                                               # prev_delimiter with
+                                               # that mode, [0x1D4],
+                                               # and the computed
+                                               # position - a sibling
+                                               # of clear_readout_
+                                               # attrs_and_flag_dirty
+                                               # for this ROM
     0xF7603: "apply_pending_position_delta",  # reads a signed pending
                                                # adjustment from
                                                # [0x52C] (always reset

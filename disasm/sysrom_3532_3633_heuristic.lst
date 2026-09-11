@@ -13535,7 +13535,7 @@ L_E8E11:
 L_E8E16:
     3633:8E16  [E8E16]  9a060034ef      lcall   SUB_EF346  ; 0xef34, 6
     3633:8E1B  [E8E1B]  9a530034ef      lcall   SUB_EF393  ; 0xef34, 0x53
-    3633:8E20  [E8E20]  9a0800a5ee      lcall   SUB_EEA58  ; 0xeea5, 8
+    3633:8E20  [E8E20]  9a0800a5ee      lcall   clear_readout_attrs_for_item  ; 0xeea5, 8
     3633:8E25  [E8E25]  803ef91b00      cmp     byte ptr [0x1bf9], 0
 
 SUB_E8E29:
@@ -22138,7 +22138,7 @@ L_EEA40:
     3633:EA56  [EEA56]  53              push    bx
     3633:EA57  [EEA57]  9a080080f1      lcall   SUB_F1808  ; 0xf180, 8
 
-SUB_EEA58:
+clear_readout_attrs_for_item:
     3633:EA58  [EEA58]  0800            or      byte ptr [bx + si], al
     3633:EA5A  [EEA5A]  80f183          xor     cl, 0x83
 

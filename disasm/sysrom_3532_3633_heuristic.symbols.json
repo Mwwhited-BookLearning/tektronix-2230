@@ -15099,10 +15099,10 @@
     "notes": null
   },
   "EEA58": {
-    "name": "SUB_EEA58",
+    "name": "clear_readout_attrs_for_item",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "clear_readout_attrs_for_item",
     "notes": null
   },
   "EEA62": {
