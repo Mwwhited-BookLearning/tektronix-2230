@@ -643,7 +643,7 @@ L_E0602:
     3633:0604  [E0604]  8be5            mov     sp, bp
     3633:0606  [E0606]  5d              pop     bp
     3633:0607  [E0607]  ca0200          retf    2
-SUB_E060A:
+verify_prc_readback_pattern:
     3633:060A  [E060A]  55              push    bp
     3633:060B  [E060B]  8bec            mov     bp, sp
     3633:060D  [E060D]  83ec0a          sub     sp, 0xa
@@ -9901,7 +9901,7 @@ SUB_E62EE:
     3633:62F1  [E62F1]  83ec08          sub     sp, 8
     3633:62F4  [E62F4]  803e5e1b00      cmp     byte ptr [0x1b5e], 0
     3633:62F9  [E62F9]  740b            je      L_E6306  ; 0x26
-    3633:62FB  [E62FB]  9a0a0060e0      lcall   SUB_E060A  ; 0xe060, 0xa
+    3633:62FB  [E62FB]  9a0a0060e0      lcall   verify_prc_readback_pattern  ; 0xe060, 0xa
     3633:6300  [E6300]  a29507          mov     byte ptr [0x795], al
     3633:6303  [E6303]  e90b00          jmp     L_E6311  ; 0x31
 L_E6306:

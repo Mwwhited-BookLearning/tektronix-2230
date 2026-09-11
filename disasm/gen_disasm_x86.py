@@ -717,6 +717,34 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE060A: "verify_prc_readback_pattern",     # a 2-phase state
+                                               # machine driven by
+                                               # [0x1B5F]: phase 1
+                                               # compares a bit read
+                                               # back from far ptr
+                                               # [0x322] (the CONFIRMED
+                                               # comm-option probe
+                                               # register 0x40377E)
+                                               # against the expected
+                                               # pattern state in
+                                               # [0x257]/[0x258]; phase
+                                               # 2 does the same for
+                                               # far ptr [0x1D20]
+                                               # against [0x1B1C] -
+                                               # returns 0x20 when a
+                                               # phase's pattern
+                                               # verifies, 0 otherwise,
+                                               # advancing/resetting
+                                               # [0x1B5F] accordingly -
+                                               # the verification half
+                                               # of the PRC_READBACK
+                                               # self-test whose
+                                               # register table is set
+                                               # up by init_selftest_
+                                               # register_group and
+                                               # driven by the step_
+                                               # progress_pattern_*
+                                               # helpers
     0xE4443: "init_selftest_register_group",    # (group) - initializes
                                                # a table of far
                                                # pointers used by the

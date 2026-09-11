@@ -518,10 +518,10 @@
     "notes": null
   },
   "E060A": {
-    "name": "SUB_E060A",
+    "name": "verify_prc_readback_pattern",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "verify_prc_readback_pattern",
     "notes": null
   },
   "E0660": {
