@@ -2728,6 +2728,53 @@ FUNCTIONAL_NAMES = {
                                                # 0xE6A8 instead - the
                                                # comm-option-present-vs-
                                                # absent dispatch switch
+    0xE7238: "init_acq_channel_error_table",  # clears a 12-entry byte
+                                               # array at [di+0x79D] plus
+                                               # [0x732]/[0x733], and sets
+                                               # the "initialized" latch
+                                               # [0x734]=1 - one-time setup
+                                               # for the acq-channel-error
+                                               # tracking used by
+                                               # ack_acq_channel_error_flag
+    0xE7322: "ack_acq_channel_error_flag",    # critical-section
+                                               # (disable_interrupts/
+                                               # sync_and_enable_
+                                               # interrupts) check-and-
+                                               # clear of error flag
+                                               # [0x7A5] bit 0: lazily
+                                               # sets the same
+                                               # "initialized" latch
+                                               # [0x734] used by
+                                               # init_acq_channel_error_
+                                               # table, and on a set flag
+                                               # increments the shared
+                                               # debounced failure counter
+                                               # [0x1A99] (same counter
+                                               # run_continuous_selftest_
+                                               # tick feeds) before
+                                               # clearing [0x7A5]
+    0xE783D: "udiv32",                        # the unsigned 32-bit /
+                                               # 32-bit -> 32-bit divide
+                                               # sdiv32 calls after
+                                               # computing operand signs
+                                               # and taking absolute
+                                               # values - builds a small
+                                               # ES:SS stack-overlay scratch
+                                               # frame and calls
+                                               # udiv32_core to do the
+                                               # actual shift-subtract
+                                               # division, then reads the
+                                               # quotient back out of that
+                                               # frame
+    0xE788F: "udiv32_core",                   # the restoring-division
+                                               # shift-subtract loop
+                                               # proper (near `call`, SI:DI
+                                               # accumulate the quotient
+                                               # bit by bit) - divide-by-
+                                               # zero short-circuits to a
+                                               # saturated 0xFFFFFFFF
+                                               # result; called only from
+                                               # udiv32
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

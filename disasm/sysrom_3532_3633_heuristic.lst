@@ -10680,7 +10680,7 @@ L_E6B71:
     3633:6B71  [E6B71]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
     3633:6B76  [E6B76]  9a0300cffb      lcall   compute_readout_buffer_length_and_flag  ; 0xfbcf, 3
     3633:6B7B  [E6B7B]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
-    3633:6B80  [E6B80]  9a080023e7      lcall   SUB_E7238  ; 0xe723, 8
+    3633:6B80  [E6B80]  9a080023e7      lcall   init_acq_channel_error_table  ; 0xe723, 8
     3633:6B85  [E6B85]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6B8A  [E6B8A]  fe06911a        inc     byte ptr [0x1a91]
     3633:6B8E  [E6B8E]  a0911a          mov     al, byte ptr [0x1a91]
@@ -10810,7 +10810,7 @@ reset_display_and_notify_comm:
     3633:6CBA  [E6CBA]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6CBF  [E6CBF]  800e761b80      or      byte ptr [0x1b76], 0x80
     3633:6CC4  [E6CC4]  9a6802a8e6      lcall   finish_acq_reset_and_clear_mode  ; 0xe6a8, 0x268
-    3633:6CC9  [E6CC9]  9af20023e7      lcall   SUB_E7322  ; 0xe723, 0xf2
+    3633:6CC9  [E6CC9]  9af20023e7      lcall   ack_acq_channel_error_flag  ; 0xe723, 0xf2
     3633:6CCE  [E6CCE]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6CD3  [E6CD3]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
     3633:6CD8  [E6CD8]  803ef71b00      cmp     byte ptr [0x1bf7], 0
@@ -11290,7 +11290,7 @@ FUNC_3633_721A:
     3633:7234  [E7234]  8be5            mov     sp, bp
     3633:7236  [E7236]  5d              pop     bp
     3633:7237  [E7237]  cb              retf    
-SUB_E7238:
+init_acq_channel_error_table:
     3633:7238  [E7238]  55              push    bp
     3633:7239  [E7239]  8bec            mov     bp, sp
     3633:723B  [E723B]  83ec08          sub     sp, 8
@@ -11379,7 +11379,7 @@ FUNC_3633_7309:
     3633:731C  [E731C]  8be5            mov     sp, bp
     3633:731E  [E731E]  5d              pop     bp
     3633:731F  [E731F]  ca0200          retf    2
-SUB_E7322:
+ack_acq_channel_error_flag:
     3633:7322  [E7322]  55              push    bp
     3633:7323  [E7323]  8bec            mov     bp, sp
     3633:7325  [E7325]  83ec06          sub     sp, 6
@@ -11856,7 +11856,7 @@ L_E77CA:
 L_E77DC:
     3633:77DC  [E77DC]  51              push    cx
     3633:77DD  [E77DD]  53              push    bx
-    3633:77DE  [E77DE]  9a1d0172e7      lcall   SUB_E783D  ; 0xe772, 0x11d
+    3633:77DE  [E77DE]  9a1d0172e7      lcall   udiv32  ; 0xe772, 0x11d
     3633:77E3  [E77E3]  837efe00        cmp     word ptr [bp - 2], 0
     3633:77E7  [E77E7]  7d07            jge     L_E77F0  ; 0xd0
     3633:77E9  [E77E9]  f7da            neg     dx
@@ -11869,7 +11869,7 @@ L_E77F0:
     3633:77F4  [E77F4]  5d              pop     bp
     3633:77F5  [E77F5]  ca0400          retf    4
 
-SUB_E783D:
+udiv32:
     3633:783D  [E783D]  55              push    bp
     3633:783E  [E783E]  06              push    es
     3633:783F  [E783F]  57              push    di
@@ -11882,7 +11882,7 @@ SUB_E783D:
     3633:784C  [E784C]  8ec7            mov     es, di
     3633:784E  [E784E]  8bfc            mov     di, sp
     3633:7850  [E7850]  83c708          add     di, 8
-    3633:7853  [E7853]  e83900          call    SUB_E788F  ; 0x16f
+    3633:7853  [E7853]  e83900          call    udiv32_core  ; 0x16f
     3633:7856  [E7856]  268b45fe        mov     ax, word ptr es:[di - 2]
     3633:785A  [E785A]  268b55fc        mov     dx, word ptr es:[di - 4]
     3633:785E  [E785E]  8be5            mov     sp, bp
@@ -11911,7 +11911,7 @@ SUB_E7866:
     3633:788A  [E788A]  07              pop     es
     3633:788B  [E788B]  5d              pop     bp
     3633:788C  [E788C]  ca0400          retf    4
-SUB_E788F:
+udiv32_core:
     3633:788F  [E788F]  55              push    bp
     3633:7890  [E7890]  2bed            sub     bp, bp
     3633:7892  [E7892]  eb05            jmp     L_E7899  ; 0x179
@@ -30677,7 +30677,7 @@ L_F46EE:
     3532:4718  [F4718]  50              push    ax
     3532:4719  [F4719]  8b46f4          mov     ax, word ptr [bp - 0xc]
     3532:471C  [F471C]  8b56f6          mov     dx, word ptr [bp - 0xa]
-    3532:471F  [F471F]  9a1d0172e7      lcall   SUB_E783D  ; 0xe772, 0x11d
+    3532:471F  [F471F]  9a1d0172e7      lcall   udiv32  ; 0xe772, 0x11d
     3532:4724  [F4724]  8946f4          mov     word ptr [bp - 0xc], ax
     3532:4727  [F4727]  8956f6          mov     word ptr [bp - 0xa], dx
     3532:472A  [F472A]  ff46f8          inc     word ptr [bp - 8]

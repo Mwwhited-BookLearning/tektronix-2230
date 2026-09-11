@@ -6286,10 +6286,10 @@
     "notes": null
   },
   "E7238": {
-    "name": "SUB_E7238",
+    "name": "init_acq_channel_error_table",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_acq_channel_error_table",
     "notes": null
   },
   "E7246": {
@@ -6398,10 +6398,10 @@
     "notes": null
   },
   "E7322": {
-    "name": "SUB_E7322",
+    "name": "ack_acq_channel_error_flag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "ack_acq_channel_error_flag",
     "notes": null
   },
   "E7338": {
@@ -6790,10 +6790,10 @@
     "notes": null
   },
   "E783D": {
-    "name": "SUB_E783D",
+    "name": "udiv32",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "udiv32",
     "notes": null
   },
   "E7866": {
@@ -6804,10 +6804,10 @@
     "notes": null
   },
   "E788F": {
-    "name": "SUB_E788F",
+    "name": "udiv32_core",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "udiv32_core",
     "notes": null
   },
   "E7895": {
