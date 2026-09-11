@@ -3416,10 +3416,10 @@
     "notes": null
   },
   "E22AF": {
-    "name": "SUB_E22AF",
+    "name": "run_adc_selftest_range",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "run_adc_selftest_range",
     "notes": null
   },
   "E2302": {
@@ -3430,10 +3430,10 @@
     "notes": null
   },
   "E230B": {
-    "name": "SUB_E230B",
+    "name": "run_indexed_adc_selftest",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "run_indexed_adc_selftest",
     "notes": null
   },
   "E252A": {

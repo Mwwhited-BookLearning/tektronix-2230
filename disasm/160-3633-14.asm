@@ -2652,7 +2652,7 @@ L_E2297:
     db 0x8b, 0xe5  ; 22AB: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 22AD: pop bp
     retf                                     ; 22AE: retf 
-SUB_E22AF:
+run_adc_selftest_range:
     push bp                                  ; 22AF: push bp
     db 0x8b, 0xec  ; 22B0: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 22B2: sub sp, 0xa
@@ -2686,7 +2686,7 @@ L_E2302:
     db 0x8b, 0xe5  ; 2305: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2307: pop bp
     retf 2                                   ; 2308: retf 2
-SUB_E230B:
+run_indexed_adc_selftest:
     push bp                                  ; 230B: push bp
     db 0x8b, 0xec  ; 230C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x26                             ; 230E: sub sp, 0x26

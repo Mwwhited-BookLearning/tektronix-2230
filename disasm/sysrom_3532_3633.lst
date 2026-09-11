@@ -5531,7 +5531,7 @@ selftest_front_panel_switch_a:
 L_E2297:
     3633:2297  [E2297]  bf0300          mov     di, 3
     3633:229A  [E229A]  57              push    di
-    3633:229B  [E229B]  9aaf0020e2      lcall   SUB_E22AF  ; 0xe220, 0xaf
+    3633:229B  [E229B]  9aaf0020e2      lcall   run_adc_selftest_range  ; 0xe220, 0xaf
     3633:22A0  [E22A0]  258000          and     ax, 0x80
     3633:22A3  [E22A3]  8946f8          mov     word ptr [bp - 8], ax
     3633:22A6  [E22A6]  3d0000          cmp     ax, 0
@@ -5539,7 +5539,7 @@ L_E2297:
     3633:22AB  [E22AB]  8be5            mov     sp, bp
     3633:22AD  [E22AD]  5d              pop     bp
     3633:22AE  [E22AE]  cb              retf    
-SUB_E22AF:
+run_adc_selftest_range:
     3633:22AF  [E22AF]  55              push    bp
     3633:22B0  [E22B0]  8bec            mov     bp, sp
     3633:22B2  [E22B2]  83ec0a          sub     sp, 0xa
@@ -5555,7 +5555,7 @@ SUB_E22AF:
     3633:22CF  [E22CF]  3dfeff          cmp     ax, 0xfffe
     3633:22D2  [E22D2]  742e            je      L_E2302  ; 0x102
     3633:22D4  [E22D4]  50              push    ax
-    3633:22D5  [E22D5]  9a0b0120e2      lcall   SUB_E230B  ; 0xe220, 0x10b
+    3633:22D5  [E22D5]  9a0b0120e2      lcall   run_indexed_adc_selftest  ; 0xe220, 0x10b
     3633:22DA  [E22DA]  0946f8          or      word ptr [bp - 8], ax
     3633:22DD  [E22DD]  8b46f6          mov     ax, word ptr [bp - 0xa]
     3633:22E0  [E22E0]  ba0a00          mov     dx, 0xa
@@ -5573,7 +5573,7 @@ L_E2302:
     3633:2305  [E2305]  8be5            mov     sp, bp
     3633:2307  [E2307]  5d              pop     bp
     3633:2308  [E2308]  ca0200          retf    2
-SUB_E230B:
+run_indexed_adc_selftest:
     3633:230B  [E230B]  55              push    bp
     3633:230C  [E230C]  8bec            mov     bp, sp
     3633:230E  [E230E]  83ec26          sub     sp, 0x26

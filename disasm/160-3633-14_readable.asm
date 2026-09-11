@@ -2650,7 +2650,7 @@ L_E2297:
     mov sp, bp                               ; 22AB: mov sp, bp
     pop bp                                   ; 22AD: pop bp
     retf                                     ; 22AE: retf 
-SUB_E22AF:
+run_adc_selftest_range:
     push bp                                  ; 22AF: push bp
     mov bp, sp                               ; 22B0: mov bp, sp
     sub sp, 0xa                              ; 22B2: sub sp, 0xa
@@ -2684,7 +2684,7 @@ L_E2302:
     mov sp, bp                               ; 2305: mov sp, bp
     pop bp                                   ; 2307: pop bp
     retf 2                                   ; 2308: retf 2
-SUB_E230B:
+run_indexed_adc_selftest:
     push bp                                  ; 230B: push bp
     mov bp, sp                               ; 230C: mov bp, sp
     sub sp, 0x26                             ; 230E: sub sp, 0x26

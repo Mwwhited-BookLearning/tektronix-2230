@@ -702,6 +702,38 @@ FUNCTIONAL_NAMES = {
                                                # and-report engine
                                                # behind selftest_rom_
                                                # checksum
+    0xE230B: "run_indexed_adc_selftest",        # (index) - builds a
+                                               # descriptive test name
+                                               # by copying a base
+                                               # string from the fixed
+                                               # string table (0xFF7B0
+                                               # +0x6A8) and appending
+                                               # a per-index name from
+                                               # a 10-byte-per-record
+                                               # device table at
+                                               # [0x1DCC] (+2 offset),
+                                               # then calls the already
+                                               # -confirmed run_adc_
+                                               # selftest with per-
+                                               # record min/max
+                                               # threshold values
+                                               # (offsets +0/+1/+8/+9)
+    0xE22AF: "run_adc_selftest_range",         # (start_flags) - loops
+                                               # calling update_menu_
+                                               # position(0, 8, ...) to
+                                               # scan up to 8 positions
+                                               # (the same range-scan
+                                               # shape as the front-
+                                               # panel-switch self-
+                                               # tests), calling run_
+                                               # indexed_adc_selftest
+                                               # for each position
+                                               # until the sentinel
+                                               # 0xFFFE is returned,
+                                               # OR-folding each
+                                               # result into the
+                                               # overall pass/fail
+                                               # accumulator
     0xE1FBC: "selftest_comm_fget_flag",         # the real body of
                                                # selftest_comm_
                                                # loopback_b (called
