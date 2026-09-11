@@ -23259,7 +23259,7 @@ L_EF496:
     3633:F49D  [EF49D]  52              push    dx
     3633:F49E  [EF49E]  ff7608          push    word ptr [bp + 8]
     3633:F4A1  [EF4A1]  ff7606          push    word ptr [bp + 6]
-    3633:F4A4  [EF4A4]  9aaa0406f7      lcall   SUB_F750A  ; 0xf706, 0x4aa
+    3633:F4A4  [EF4A4]  9aaa0406f7      lcall   sync_shift_register_output  ; 0xf706, 0x4aa
     3633:F4A9  [EF4A9]  83c408          add     sp, 8
     3633:F4AC  [EF4AC]  8b7e08          mov     di, word ptr [bp + 8]
     3633:F4AF  [EF4AF]  d1ff            sar     di, 1
@@ -35263,7 +35263,7 @@ L_F7504:
     3532:7504  [F7504]  8346f802        add     word ptr [bp - 8], 2
     3532:7508  [F7508]  837ef806        cmp     word ptr [bp - 8], 6
 
-SUB_F750A:
+sync_shift_register_output:
     3532:750A  [F750A]  f8              clc     
     3532:750B  [F750B]  06              push    es
     3532:750C  [F750C]  7e05            jle     L_F7513  ; 0x4b3

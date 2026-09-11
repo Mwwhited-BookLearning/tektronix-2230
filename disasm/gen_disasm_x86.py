@@ -2855,6 +2855,37 @@ FUNCTIONAL_NAMES = {
                                                # path was taken, not an
                                                # explicit `mov ax,`) are
                                                # not confirmed
+    0xF750A: "sync_shift_register_output",    # a secondary entry point
+                                               # into update_display_
+                                               # mode_flags (jumps
+                                               # backward into its
+                                               # L_F7504 scan loop and
+                                               # shares its [bp-8]
+                                               # "changed flags" local -
+                                               # found via a systematic
+                                               # loop-vs-function pass,
+                                               # see disasm/
+                                               # analyze_loops_vs_
+                                               # functions.py): scans a
+                                               # per-item flag byte pair
+                                               # ([idx+0x1BE2]/
+                                               # [idx+0x1BE3] bit 0) for
+                                               # the first "not yet
+                                               # synced" index, computes
+                                               # a shift count into
+                                               # [0x570], and calls
+                                               # write_hw_shift_register
+                                               # - the same per-item
+                                               # flag bytes SUB_EFB64/
+                                               # SUB_EFBA5's bit-1 checks
+                                               # also use, consistent
+                                               # with a multi-bit per-
+                                               # output-line enable byte
+                                               # for the shift-register-
+                                               # driven hardware (AUX
+                                               # pen-lift relay/X-Y
+                                               # candidate per
+                                               # HARDWARE.md)
     0xFB8E8: "clear_readout_attrs_and_flag_dirty", # (skip_clear) -
                                                # unless `skip_clear!=0`,
                                                # picks a mode (0/1/2)

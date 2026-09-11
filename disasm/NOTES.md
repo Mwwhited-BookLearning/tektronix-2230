@@ -1762,6 +1762,85 @@ layout by convention, established at compile time rather than
 literally sharing one runtime frame across multiple calls) - but this
 is speculation, not confirmed. Still not renaming any of these.
 
+## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
+
+Built in response to a direct question: of the many `L_XXXXX` branch
+targets in the disassembly, which are genuinely local loop/goto
+constructs (a `for`/`while`/`do-while` or an `if`/`switch`/early-exit
+inside one function) versus branch targets that are actually reached
+from a *different* function's address range - i.e. code that's really
+shared/independent but only ever got a bare `L_` label because nothing
+reaches it via `CALL`/`LCALL`.
+
+**Method**: walk the `.lst` top to bottom, tracking "current function"
+as the most recently seen `sub`/`entry`-kind label (functions occupy
+contiguous address ranges in this address-sorted listing, so this is a
+reasonable proxy for lexical scope). For every branch/jump instruction,
+resolve its target's physical address and record `(source, source's
+owning function)`. For every `loc`-kind (bare `L_`) target with
+incoming branches, classify:
+- `loop` - only backward edges (source addr > target addr), all from
+  its own owning function - classic `for`/`while`/`do-while`.
+- `goto` - only forward edges, all local - `if`/`switch`/early exit.
+- `mixed` - both, still local.
+- `cross-fn` - reached by a `jmp`/`Jcc` from a **different** function's
+  range than the one that lexically owns the target address.
+
+Also computes raw jump **distance** (`|target - source|`) independent
+of the owning-function heuristic, per the user's suggestion that a
+large displacement is itself a strong, assumption-free signal that a
+target isn't ordinary local control flow.
+
+**Results** (proven set, 13,510 instructions, 1,032 classified `loc`
+targets): 127 `loop`, 885 `goto`, 5 `mixed`, **15 `cross-fn`**. Of
+those 15, most match the "un-prologued entry" cluster already
+documented above (`SUB_EF346`/`SUB_EF393`, `SUB_EFB64`/`SUB_EFBA5`,
+`SUB_F156E`/`SUB_F1581`, `SUB_F4150`/`SUB_F5184`, `SUB_F6382`/
+`SUB_F635E`) plus the big multi-entry plot/acq region around
+`draw_pending_line_segment`/`reset_plot_home_or_acq`/
+`reset_all_channel_plot_caches` - good independent confirmation that
+those groupings are real, not cherry-picked.
+
+**The distance lens found something the cross-fn lens alone wouldn't
+have prioritized as clearly**: `L_EDA0A` is reached by a `jmp` from
+`SUB_F1581` at a displacement of **0x3B7A (15,226 bytes)** - by far the
+largest in the whole proven set (the next-largest is `L_F08E4` at
+0x3A8=936, and everything past that is well under 1,000, matching
+ordinary big-function loop/if spans). This single outlier is strong,
+assumption-free evidence that `L_EDA0A`'s neighborhood (the `[0x1BEC]`
+scale-clamp region touched by `SUB_ED9BC` too) is genuinely a separate
+shared routine being tail-jumped into from far away, not local control
+flow - worth prioritizing if the un-prologued-entry cluster is
+revisited with fresh eyes, over any of the other members.
+
+**Two `cross-fn` hits turned out to be heuristic false positives when
+manually verified** (worth knowing before trusting this tool's list
+blindly): `L_EE139` (flagged as "owned by `SUB_EDFFD`, crossed from
+`write_hw_shift_register`") is really just `write_hw_shift_register`'s
+own loop-top, 2 bytes before where the recursive descent happened to
+plant that function's `SUB_` label - the "owning function" bisection
+mis-assigns anything in that 2-byte gap to the *previous* function
+purely because there's no label exactly at the boundary. Likewise
+`L_F0E50` (flagged as "owned by `start_plot_output_task`, crossed from
+`convert_sample_value`") is really `convert_sample_value` looping back
+on itself across an address gap (documented in `FUNCTIONS.md`'s
+`convert_sample_value` entry) - `start_plot_output_task` has nothing
+to do with it, it's just the nearest preceding label. **Small
+distances in the `cross-fn` list need manual confirmation**; large
+ones (`L_EDA0A`, and to a lesser extent `L_F08E4`/`L_F0678`/`L_F0A70`)
+are much more trustworthy since a real address gap or genuinely
+distant tail-jump is much less likely to be a boundary artifact.
+
+**One genuine new find from manually checking the list**: `SUB_F750A`
+(`jmp`s backward into `update_display_mode_flags`'s `L_F7504` scan
+loop, sharing its `[bp-8]` local) turned out to be a real secondary
+entry point into that function - confirmed and renamed to
+`sync_shift_register_output` (see `FUNCTIONS.md`). This also surfaced
+that `update_display_mode_flags` is the one that *sets* the
+`[0x1BEC]` scale-clamp bound (`0x400`/`0x1000`) that the `SUB_ED9BC`/
+`L_EDA0A` region reads - connecting two previously-separate
+investigation threads.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to

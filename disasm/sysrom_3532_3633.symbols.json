@@ -8519,10 +8519,10 @@
     "notes": null
   },
   "F750A": {
-    "name": "SUB_F750A",
+    "name": "sync_shift_register_output",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "sync_shift_register_output",
     "notes": null
   },
   "F7513": {
