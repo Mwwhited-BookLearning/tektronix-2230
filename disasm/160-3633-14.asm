@@ -664,7 +664,7 @@ L_E0A1C:
     db 0x8b, 0xe5  ; 0A1D: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0A1F: pop bp
     retf 2                                   ; 0A20: retf 2
-SUB_E0A23:
+scroll_selftest_report_display:
     push bp                                  ; 0A23: push bp
     db 0x8b, 0xec  ; 0A24: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0A26: sub sp, 6

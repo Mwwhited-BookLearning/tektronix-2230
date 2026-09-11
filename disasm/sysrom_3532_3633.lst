@@ -3656,7 +3656,7 @@ L_E0A1C:
     3633:0A1D  [E0A1D]  8be5            mov     sp, bp
     3633:0A1F  [E0A1F]  5d              pop     bp
     3633:0A20  [E0A20]  ca0200          retf    2
-SUB_E0A23:
+scroll_selftest_report_display:
     3633:0A23  [E0A23]  55              push    bp
     3633:0A24  [E0A24]  8bec            mov     bp, sp
     3633:0A26  [E0A26]  83ec06          sub     sp, 6
@@ -7887,7 +7887,7 @@ L_E3E61:
     3633:3E7D  [E3E7D]  3bc7            cmp     ax, di
     3633:3E7F  [E3E7F]  750d            jne     L_E3E8E  ; 0x37e
     3633:3E81  [E3E81]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
-    3633:3E86  [E3E86]  9a73036be0      lcall   SUB_E0A23  ; 0xe06b, 0x373
+    3633:3E86  [E3E86]  9a73036be0      lcall   scroll_selftest_report_display  ; 0xe06b, 0x373
 L_E3E8B:
     3633:3E8B  [E3E8B]  e9d3ff          jmp     L_E3E61  ; 0x351
 L_E3E8E:

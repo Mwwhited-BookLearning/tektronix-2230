@@ -717,6 +717,32 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE0A23: "scroll_selftest_report_display",  # called periodically;
+                                               # decrements a countdown
+                                               # byte at report-record
+                                               # offset 2 ([0x1B56]+2);
+                                               # on expiry, resets the
+                                               # countdown to 0x32 and
+                                               # either (mode==2, from
+                                               # init_selftest_report_
+                                               # record) blanks the
+                                               # channel display via
+                                               # write_measurement_
+                                               # channel_reg(0xFF) and
+                                               # advances mode to 3, or
+                                               # (other modes) writes
+                                               # the next character of
+                                               # the report string to
+                                               # write_measurement_
+                                               # channel_reg, wrapping
+                                               # mode back to 2 once
+                                               # the string (length =
+                                               # record byte 0) has
+                                               # been fully shown -
+                                               # scrolls the self-test
+                                               # report text across a
+                                               # small channel/status
+                                               # display register
     0xE097B: "append_selftest_report_char",     # (char) - appends a
                                                # byte to the current
                                                # self-test report

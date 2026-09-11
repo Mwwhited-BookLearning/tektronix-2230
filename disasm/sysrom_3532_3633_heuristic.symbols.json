@@ -819,10 +819,10 @@
     "notes": null
   },
   "E0A23": {
-    "name": "SUB_E0A23",
+    "name": "scroll_selftest_report_display",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scroll_selftest_report_display",
     "notes": null
   },
   "E0A63": {

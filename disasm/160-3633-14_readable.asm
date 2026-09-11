@@ -662,7 +662,7 @@ L_E0A1C:
     mov sp, bp                               ; 0A1D: mov sp, bp
     pop bp                                   ; 0A1F: pop bp
     retf 2                                   ; 0A20: retf 2
-SUB_E0A23:
+scroll_selftest_report_display:
     push bp                                  ; 0A23: push bp
     mov bp, sp                               ; 0A24: mov bp, sp
     sub sp, 6                                ; 0A26: sub sp, 6
