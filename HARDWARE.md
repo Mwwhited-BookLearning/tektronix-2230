@@ -16,17 +16,16 @@ disassembly work has been analyzing purely from code so far.
 - `RS232 DTE` (male pins)
 - `RS232 DCE` (female socket)
 
-Having both a DTE and a DCE connector wired to the same UART is a
-common way to let the scope connect directly to either a DTE device
-(a PC, via a straight-through cable) or a DCE device (a modem, via the
-other connector) without needing a null-modem adapter. This is a
-strong physical confirmation of the **RS-232 flow-control cluster**
-found in the comm ROM this session (`get_xon_xoff_byte`,
-`enqueue_comm_char`, `service_comm_rx_queue`) — real RS-232 hardware,
-not just a GPIB-only board. Worth checking whether `[0x629]` (the mode
-flag gating several comm-ROM routines, tentatively "GPIB vs RS-232")
-might actually be a DTE-vs-DCE port select instead, or a third
-independent thing — not yet re-examined against this.
+**Confirmed by the user**: this is just the *same* serial port wired
+out to two connectors (DTE and DCE pinouts) for cabling convenience —
+plug into whichever matches the far end, no null-modem adapter needed.
+Not two UARTs and not a firmware-visible mode select; `[0x629]` (the
+mode flag gating several comm-ROM routines) is *not* a DTE/DCE switch.
+This is still a strong physical confirmation of the **RS-232
+flow-control cluster** found in the comm ROM this session
+(`get_xon_xoff_byte`, `enqueue_comm_char`, `service_comm_rx_queue`) —
+real RS-232 hardware, not just a GPIB-only board — but `[0x629]` stays
+open as "GPIB vs RS-232" (or something else), just not DTE/DCE.
 
 **PARAMETERS — a 10-position DIP switch**, individually numbered 1-10,
 each a 0/1 slide. This is almost certainly the hardware source of some

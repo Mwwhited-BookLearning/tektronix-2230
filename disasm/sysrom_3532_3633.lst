@@ -2076,7 +2076,7 @@ L_9640E:
     2998_alias_90000:640E  [9640E]  c606060001      mov     byte ptr [6], 1
     2998_alias_90000:6413  [96413]  9a5b011185      lcall   SUB_8526B  ; 0x8511, 0x15b
 L_96418:
-    2998_alias_90000:6418  [96418]  9ab10bf596      lcall   SUB_97B01  ; 0x96f5, 0xbb1
+    2998_alias_90000:6418  [96418]  9ab10bf596      lcall   reinit_comm_channel  ; 0x96f5, 0xbb1
     2998_alias_90000:641D  [9641D]  a0f104          mov     al, byte ptr [0x4f1]
     2998_alias_90000:6420  [96420]  2420            and     al, 0x20
     2998_alias_90000:6422  [96422]  3c00            cmp     al, 0
@@ -2158,7 +2158,7 @@ L_964B9:
     2998_alias_90000:651D  [9651D]  80e23f          and     dl, 0x3f
     2998_alias_90000:6520  [96520]  88169a05        mov     byte ptr [0x59a], dl
     2998_alias_90000:6524  [96524]  c6069c0567      mov     byte ptr [0x59c], 0x67
-    2998_alias_90000:6529  [96529]  9ab10bf596      lcall   SUB_97B01  ; 0x96f5, 0xbb1
+    2998_alias_90000:6529  [96529]  9ab10bf596      lcall   reinit_comm_channel  ; 0x96f5, 0xbb1
     2998_alias_90000:652E  [9652E]  c6067f0580      mov     byte ptr [0x57f], 0x80
     2998_alias_90000:6533  [96533]  c606900580      mov     byte ptr [0x590], 0x80
     2998_alias_90000:6538  [96538]  c606800580      mov     byte ptr [0x580], 0x80
@@ -2954,7 +2954,7 @@ L_97A0D:
     2998_alias_90000:7A14  [97A14]  5d              pop     bp
     2998_alias_90000:7A15  [97A15]  cb              retf    
 
-SUB_97B01:
+reinit_comm_channel:
     2998_alias_90000:7B01  [97B01]  55              push    bp
     2998_alias_90000:7B02  [97B02]  8bec            mov     bp, sp
     2998_alias_90000:7B04  [97B04]  83ec06          sub     sp, 6

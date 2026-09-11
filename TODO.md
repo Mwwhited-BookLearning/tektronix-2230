@@ -123,9 +123,11 @@
       `write_hw_shift_register` (ports `0xD1`/`0xC4`) is what drives
       this relay in sync with the HPGL PU/PD state (`[0x6CA]`), as an
       alternative/addition to the current "front-panel setting" guess.
-      Also confirms two separate RS-232 connectors exist (DTE and
-      DCE) - re-examine whether `[0x629]` is actually a DTE/DCE port
-      select rather than (or in addition to) GPIB-vs-RS-232.
+      (The two RS-232 connectors are confirmed by the user to be just
+      DTE/DCE pinouts of the *same* serial port for cabling
+      convenience, not a firmware-visible mode select - `[0x629]`
+      stays open as "GPIB vs RS-232" or something else, just not
+      DTE/DCE.)
 
 ## Ongoing documentation goal
 

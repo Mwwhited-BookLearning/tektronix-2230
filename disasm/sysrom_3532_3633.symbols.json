@@ -1960,10 +1960,10 @@
     "notes": null
   },
   "97B01": {
-    "name": "SUB_97B01",
+    "name": "reinit_comm_channel",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "reinit_comm_channel",
     "notes": null
   },
   "97B2A": {

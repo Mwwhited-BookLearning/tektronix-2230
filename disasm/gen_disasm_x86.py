@@ -666,6 +666,31 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x97B01: "reinit_comm_channel",             # comm ROM's own top-
+                                               # level channel
+                                               # reinitialization
+                                               # sequence (analogous to
+                                               # the main ROM's reinit_
+                                               # system_state): if a
+                                               # flag at es:[0x732+0x93]
+                                               # is set, calls reinit_
+                                               # system_state itself
+                                               # (cross-ROM, wrapped in
+                                               # DS segment switches);
+                                               # conditionally clears a
+                                               # config flag via get_/
+                                               # set_comm_config_flag;
+                                               # unconditionally calls
+                                               # reset_comm_parser_
+                                               # state, init_comm_
+                                               # channel_state_a, init_
+                                               # comm_rx_queue_and_
+                                               # ready_flags, SUB_96696;
+                                               # resets more flags
+                                               # ([0xC]/[0x454]/[0x7B8]);
+                                               # and calls SUB_850A2 or
+                                               # resets [0x5A4]
+                                               # depending on its value
     0x94488: "get_comm_config_flag",            # (index) - reads a byte
                                                # from a config/flag
                                                # array at far ptr
