@@ -28,7 +28,7 @@
     3633:004A  [E004A]  7276            jb      L_E00C2  ; 0xc2
     3633:004C  [E004C]  656400558b      add     byte ptr fs:[di - 0x75], dl
 
-SUB_E004F:
+plot_point_with_flag_update:
     3633:004F  [E004F]  55              push    bp
     3633:0050  [E0050]  8bec            mov     bp, sp
 
@@ -10934,7 +10934,7 @@ L_E6DF6:
     3633:6E25  [E6E25]  7409            je      L_E6E30  ; 0x3b0
     3633:6E27  [E6E27]  bf0100          mov     di, 1
     3633:6E2A  [E6E2A]  57              push    di
-    3633:6E2B  [E6E2B]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3633:6E2B  [E6E2B]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_E6E30:
     3633:6E30  [E6E30]  c6063c0600      mov     byte ptr [0x63c], 0
     3633:6E35  [E6E35]  bf4100          mov     di, 0x41
@@ -43757,7 +43757,7 @@ L_FCCD1:
 L_FCCDF:
     3532:CCDF  [FCCDF]  bf0200          mov     di, 2
     3532:CCE2  [FCCE2]  57              push    di
-    3532:CCE3  [FCCE3]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3532:CCE3  [FCCE3]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_FCCE8:
     3532:CCE8  [FCCE8]  8be5            mov     sp, bp
     3532:CCEA  [FCCEA]  5d              pop     bp
@@ -43942,7 +43942,7 @@ L_FCEC4:
 L_FCED2:
     3532:CED2  [FCED2]  bf0200          mov     di, 2
     3532:CED5  [FCED5]  57              push    di
-    3532:CED6  [FCED6]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3532:CED6  [FCED6]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_FCEDB:
     3532:CEDB  [FCEDB]  8be5            mov     sp, bp
     3532:CEDD  [FCEDD]  5d              pop     bp
@@ -44049,7 +44049,7 @@ FUNC_3532_CFD2:
     3532:CFDE  [FCFDE]  800e761b20      or      byte ptr [0x1b76], 0x20
     3532:CFE3  [FCFE3]  bf0200          mov     di, 2
     3532:CFE6  [FCFE6]  57              push    di
-    3532:CFE7  [FCFE7]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3532:CFE7  [FCFE7]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
     3532:CFEC  [FCFEC]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
     3532:CFF1  [FCFF1]  8026761bdf      and     byte ptr [0x1b76], 0xdf
     3532:CFF6  [FCFF6]  9a4f0540fd      lcall   FUNC_3532_D94F  ; 0xfd40, 0x54f
@@ -44276,7 +44276,7 @@ L_FD267:
 L_FD27F:
     3532:D27F  [FD27F]  bf0200          mov     di, 2
     3532:D282  [FD282]  57              push    di
-    3532:D283  [FD283]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3532:D283  [FD283]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_FD288:
     3532:D288  [FD288]  8be5            mov     sp, bp
     3532:D28A  [FD28A]  5d              pop     bp
@@ -44785,7 +44785,7 @@ L_FD7D3:
 L_FD7EB:
     3532:D7EB  [FD7EB]  bf0200          mov     di, 2
     3532:D7EE  [FD7EE]  57              push    di
-    3532:D7EF  [FD7EF]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3532:D7EF  [FD7EF]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_FD7F4:
     3532:D7F4  [FD7F4]  8be5            mov     sp, bp
     3532:D7F6  [FD7F6]  5d              pop     bp

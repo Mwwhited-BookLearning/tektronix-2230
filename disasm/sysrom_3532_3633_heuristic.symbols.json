@@ -1,9 +1,9 @@
 {
   "E004F": {
-    "name": "SUB_E004F",
+    "name": "plot_point_with_flag_update",
     "kind": "sub",
     "ref_count": 6,
-    "functional_name": null,
+    "functional_name": "plot_point_with_flag_update",
     "notes": null
   },
   "E006F": {

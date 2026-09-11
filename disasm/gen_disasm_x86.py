@@ -666,6 +666,51 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0xE004F: "plot_point_with_flag_update",     # (arg) - calls scale_
+                                               # and_plot_point_default
+                                               # (0x8F80), then if
+                                               # [0x61A] is set, ORs
+                                               # arg into [0x61B], then
+                                               # calls scale_and_plot_
+                                               # point_default again
+                                               # with the first call's
+                                               # saved AX result -
+                                               # called once, from the
+                                               # plot-output task area
+                                               # (0xE6E2B); see disasm/
+                                               # NOTES.md "Open puzzle"
+                                               # for the same bracketing
+                                               # shape seen in the comm
+                                               # ROM's compute_parity_
+                                               # mode_code
+    0x97BE6: "engage_comm_hold",                # comm ROM: (reason
+                                               # bitmask) - ORs reason
+                                               # into a hold bitmask
+                                               # [0x45C]; if this is
+                                               # the first hold engaged
+                                               # (was 0), updates the
+                                               # channel status byte
+                                               # es:[0x6D6+2] and, if
+                                               # enabled ([0x45B]),
+                                               # requests XOFF via
+                                               # [0x460] bit 0x2 (see
+                                               # get_xon_xoff_byte),
+                                               # immediately servicing
+                                               # the tx queue if data
+                                               # is pending ([0x45A])
+    0x97C28: "release_comm_hold",              # comm ROM: (reason
+                                               # bitmask) - AND-NOTs
+                                               # reason out of the hold
+                                               # bitmask [0x45C]; if
+                                               # this releases the LAST
+                                               # hold (now 0), updates
+                                               # the channel status
+                                               # byte and, if enabled,
+                                               # requests XON via
+                                               # [0x460] bit 0x1,
+                                               # servicing the tx queue
+                                               # if pending - counterpart
+                                               # to engage_comm_hold
     0x96C5F: "send_response_terminator",        # comm ROM: if a
                                                # pending-terminator
                                                # flag [0x459] is set,

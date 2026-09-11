@@ -1296,6 +1296,29 @@ at some other addressing subtlety not yet understood. Left as an open
 question rather than guessed at; the parity-code logic itself doesn't
 depend on the answer.
 
+**Second instance found**: `plot_point_with_flag_update` (`0xE004F`,
+main ROM `160-3633`) uses the *exact same* bracketing shape (call
+`scale_and_plot_point_default(0x8F80)`, save `AX`, do unrelated work,
+call it again with the saved value) - but this one is called from
+within the plot-output task area (`0xE6E2B`), where actually invoking
+the real plot-scaling code is completely plausible, unlike the comm
+ROM's parity-code context. This tips the balance slightly toward "the
+`0x8F80`/save/restore bracketing is a real, intentional pattern with
+some purpose beyond DS-switching" rather than a decode error - but
+what that purpose is (is `0x8F80` a real point coordinate? is the
+saved/restored value meaningful, or is only the side effect of the
+call wanted?) still isn't understood.
+
+**Checked for the `SUB_F6382`/`SUB_E90A5`-style "landing 1-byte-early
+into a neighboring instruction" explanation** and it does NOT apply
+here: the bytes immediately before `0xF0078` (`0xF0070-0xF0077`) are
+never reached by recursive descent from any other confirmed path, so
+there's no second, contradicting decode to compare against - unlike
+those two cases, where a real fallthrough path disagreed with the
+call-target path. `scale_and_plot_point_default`'s own decode (`inc
+sp; add byte [bp+si-0x19], dh; ...`) is the only interpretation
+available for those bytes, however unusual it looks.
+
 ## Resolved (partially): SUB_E90A5/SUB_E92B0 are call targets landing 1 byte into a "mov di, tag" instruction
 
 An earlier session's investigation of `SUB_E90A5` and `SUB_E92B0` (both

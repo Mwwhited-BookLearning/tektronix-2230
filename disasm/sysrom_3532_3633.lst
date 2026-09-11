@@ -2700,7 +2700,7 @@ SUB_96EC6:
     2998_alias_90000:6EEA  [96EEA]  8856f7          mov     byte ptr [bp - 9], dl
     2998_alias_90000:6EED  [96EED]  bf0200          mov     di, 2
     2998_alias_90000:6EF0  [96EF0]  57              push    di
-    2998_alias_90000:6EF1  [96EF1]  9ad80cf596      lcall   SUB_97C28  ; 0x96f5, 0xcd8
+    2998_alias_90000:6EF1  [96EF1]  9ad80cf596      lcall   release_comm_hold  ; 0x96f5, 0xcd8
     2998_alias_90000:6EF6  [96EF6]  8a56f7          mov     dl, byte ptr [bp - 9]
     2998_alias_90000:6EF9  [96EF9]  2af6            sub     dh, dh
     2998_alias_90000:6EFB  [96EFB]  52              push    dx
@@ -2728,7 +2728,7 @@ SUB_96F0D:
     2998_alias_90000:6F31  [96F31]  8856f7          mov     byte ptr [bp - 9], dl
     2998_alias_90000:6F34  [96F34]  bf0200          mov     di, 2
     2998_alias_90000:6F37  [96F37]  57              push    di
-    2998_alias_90000:6F38  [96F38]  9a960cf596      lcall   SUB_97BE6  ; 0x96f5, 0xc96
+    2998_alias_90000:6F38  [96F38]  9a960cf596      lcall   engage_comm_hold  ; 0x96f5, 0xc96
     2998_alias_90000:6F3D  [96F3D]  8a56f7          mov     dl, byte ptr [bp - 9]
     2998_alias_90000:6F40  [96F40]  2af6            sub     dh, dh
     2998_alias_90000:6F42  [96F42]  52              push    dx
@@ -3034,7 +3034,7 @@ L_97BD6:
     2998_alias_90000:7BE0  [97BE0]  8be5            mov     sp, bp
     2998_alias_90000:7BE2  [97BE2]  5d              pop     bp
     2998_alias_90000:7BE3  [97BE3]  ca0200          retf    2
-SUB_97BE6:
+engage_comm_hold:
     2998_alias_90000:7BE6  [97BE6]  55              push    bp
     2998_alias_90000:7BE7  [97BE7]  8bec            mov     bp, sp
     2998_alias_90000:7BE9  [97BE9]  83ec06          sub     sp, 6
@@ -3056,7 +3056,7 @@ L_97C1B:
     2998_alias_90000:7C22  [97C22]  8be5            mov     sp, bp
     2998_alias_90000:7C24  [97C24]  5d              pop     bp
     2998_alias_90000:7C25  [97C25]  ca0200          retf    2
-SUB_97C28:
+release_comm_hold:
     2998_alias_90000:7C28  [97C28]  55              push    bp
     2998_alias_90000:7C29  [97C29]  8bec            mov     bp, sp
     2998_alias_90000:7C2B  [97C2B]  83ec06          sub     sp, 6
@@ -3081,7 +3081,7 @@ L_97C68:
     2998_alias_90000:7C6A  [97C6A]  5d              pop     bp
     2998_alias_90000:7C6B  [97C6B]  ca0200          retf    2
 
-SUB_E004F:
+plot_point_with_flag_update:
     3633:004F  [E004F]  55              push    bp
     3633:0050  [E0050]  8bec            mov     bp, sp
     3633:0052  [E0052]  83ec08          sub     sp, 8
@@ -10807,7 +10807,7 @@ L_E6DF6:
     3633:6E25  [E6E25]  7409            je      L_E6E30  ; 0x3b0
     3633:6E27  [E6E27]  bf0100          mov     di, 1
     3633:6E2A  [E6E2A]  57              push    di
-    3633:6E2B  [E6E2B]  9a0f0004e0      lcall   SUB_E004F  ; 0xe004, 0xf
+    3633:6E2B  [E6E2B]  9a0f0004e0      lcall   plot_point_with_flag_update  ; 0xe004, 0xf
 L_E6E30:
     3633:6E30  [E6E30]  c6063c0600      mov     byte ptr [0x63c], 0
     3633:6E35  [E6E35]  bf4100          mov     di, 0x41
