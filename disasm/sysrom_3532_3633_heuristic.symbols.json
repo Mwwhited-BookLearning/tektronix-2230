@@ -2639,10 +2639,10 @@
     "notes": null
   },
   "E2CD3": {
-    "name": "SUB_E2CD3",
+    "name": "reset_progress_pattern_e",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "reset_progress_pattern_e",
     "notes": null
   },
   "E2CEC": {
@@ -2828,10 +2828,10 @@
     "notes": null
   },
   "E2FFC": {
-    "name": "SUB_E2FFC",
+    "name": "step_front_panel_switch_b_test",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "step_front_panel_switch_b_test",
     "notes": null
   },
   "E3045": {

@@ -717,6 +717,36 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE2CD3: "reset_progress_pattern_e",        # clears [0x1B1C] to
+                                               # 0xFF and es:[0x1D20]
+                                               # (step_progress_
+                                               # pattern_e's target
+                                               # register) to 0xFF -
+                                               # called once, at the
+                                               # start of selftest_
+                                               # display_irq_idle, to
+                                               # reset that pattern's
+                                               # state before the test
+    0xE2FFC: "step_front_panel_switch_b_test", # per-position worker
+                                               # for selftest_front_
+                                               # panel_switch_b: scans
+                                               # 0-0x15 (21 positions)
+                                               # via update_menu_
+                                               # position, computes a
+                                               # shifted 0xFFE
+                                               # threshold mask per
+                                               # position, calls
+                                               # verify_adc_calibration
+                                               # (ADC readback check,
+                                               # same shape as switch_
+                                               # a's run_adc_selftest_
+                                               # range/verify_adc_
+                                               # calibration pairing),
+                                               # formats the result and
+                                               # a unit-label string
+                                               # (from a RAM buffer at
+                                               # [0x476]) into a report
+                                               # message
     0xE060A: "verify_prc_readback_pattern",     # a 2-phase state
                                                # machine driven by
                                                # [0x1B5F]: phase 1

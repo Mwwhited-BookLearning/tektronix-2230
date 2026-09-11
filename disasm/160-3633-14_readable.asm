@@ -3583,7 +3583,7 @@ L_E2CCD:
     mov sp, bp                               ; 2CCD: mov sp, bp
     pop bp                                   ; 2CCF: pop bp
     retf 2                                   ; 2CD0: retf 2
-SUB_E2CD3:
+reset_progress_pattern_e:
     push bp                                  ; 2CD3: push bp
     mov bp, sp                               ; 2CD4: mov bp, sp
     sub sp, 6                                ; 2CD6: sub sp, 6
@@ -3845,7 +3845,7 @@ L_E2FE1:
     mov sp, bp                               ; 2FF8: mov sp, bp
     pop bp                                   ; 2FFA: pop bp
     retf                                     ; 2FFB: retf 
-SUB_E2FFC:
+step_front_panel_switch_b_test:
     push bp                                  ; 2FFC: push bp
     mov bp, sp                               ; 2FFD: mov bp, sp
     sub sp, 0xc                              ; 2FFF: sub sp, 0xc

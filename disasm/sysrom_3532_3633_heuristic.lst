@@ -4603,7 +4603,7 @@ L_E2CCD:
     3633:2CCD  [E2CCD]  8be5            mov     sp, bp
     3633:2CCF  [E2CCF]  5d              pop     bp
     3633:2CD0  [E2CD0]  ca0200          retf    2
-SUB_E2CD3:
+reset_progress_pattern_e:
     3633:2CD3  [E2CD3]  55              push    bp
     3633:2CD4  [E2CD4]  8bec            mov     bp, sp
     3633:2CD6  [E2CD6]  83ec06          sub     sp, 6
@@ -4877,7 +4877,7 @@ L_E2F87:
     3633:2FA3  [E2FA3]  837e0603        cmp     word ptr [bp + 6], 3
     3633:2FA7  [E2FA7]  7514            jne     L_E2FBD  ; 0x2fbd
     3633:2FA9  [E2FA9]  ff7606          push    word ptr [bp + 6]
-    3633:2FAC  [E2FAC]  9abc00f4e2      lcall   SUB_E2FFC  ; 0xe2f4, 0xbc
+    3633:2FAC  [E2FAC]  9abc00f4e2      lcall   step_front_panel_switch_b_test  ; 0xe2f4, 0xbc
     3633:2FB1  [E2FB1]  8946f8          mov     word ptr [bp - 8], ax
     3633:2FB4  [E2FB4]  50              push    ax
     3633:2FB5  [E2FB5]  9a8d056be0      lcall   format_selftest_result_string  ; 0xe06b, 0x58d
@@ -4904,7 +4904,7 @@ selftest_front_panel_switch_b:
 L_E2FE1:
     3633:2FE1  [E2FE1]  bf0300          mov     di, 3
     3633:2FE4  [E2FE4]  57              push    di
-    3633:2FE5  [E2FE5]  9abc00f4e2      lcall   SUB_E2FFC  ; 0xe2f4, 0xbc
+    3633:2FE5  [E2FE5]  9abc00f4e2      lcall   step_front_panel_switch_b_test  ; 0xe2f4, 0xbc
     3633:2FEA  [E2FEA]  8946f8          mov     word ptr [bp - 8], ax
     3633:2FED  [E2FED]  258000          and     ax, 0x80
     3633:2FF0  [E2FF0]  3d0000          cmp     ax, 0
@@ -4913,7 +4913,7 @@ L_E2FE1:
     3633:2FF8  [E2FF8]  8be5            mov     sp, bp
     3633:2FFA  [E2FFA]  5d              pop     bp
     3633:2FFB  [E2FFB]  cb              retf    
-SUB_E2FFC:
+step_front_panel_switch_b_test:
     3633:2FFC  [E2FFC]  55              push    bp
     3633:2FFD  [E2FFD]  8bec            mov     bp, sp
     3633:2FFF  [E2FFF]  83ec0c          sub     sp, 0xc
@@ -6430,7 +6430,7 @@ selftest_display_irq_idle:
     3633:3F32  [E3F32]  c746f80100      mov     word ptr [bp - 8], 1
     3633:3F37  [E3F37]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
     3633:3F3C  [E3F3C]  9aa6076be0      lcall   clear_selftest_status_flags  ; 0xe06b, 0x7a6
-    3633:3F41  [E3F41]  9a730396e2      lcall   SUB_E2CD3  ; 0xe296, 0x373
+    3633:3F41  [E3F41]  9a730396e2      lcall   reset_progress_pattern_e  ; 0xe296, 0x373
     3633:3F46  [E3F46]  c706f01a0100    mov     word ptr [0x1af0], 1
     3633:3F4C  [E3F4C]  c706f21a0000    mov     word ptr [0x1af2], 0
     3633:3F52  [E3F52]  c706ee1a0000    mov     word ptr [0x1aee], 0

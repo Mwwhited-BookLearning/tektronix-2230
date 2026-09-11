@@ -1168,10 +1168,14 @@ digital position read. This is a real clue for "which control": it's
 very plausibly an **analog/potentiometer-based** front-panel control
 (read through the A/D converter) rather than a purely digital rotary
 switch - VOLTS/DIV is the leading candidate given its 9-ish detent
-positions matching the 0-8 sweep range. `selftest_front_panel_switch_b`
-(0-0x15, 21 positions) remains unconfirmed - TIME/DIV is a plausible
-guess given its typically larger number of positions, but not
-verified the same way.
+positions matching the 0-8 sweep range. **`selftest_front_panel_
+switch_b`'s step helper (`step_front_panel_switch_b_test`, 0xE2FFC)
+turns out to use the exact same shape** - it also calls an ADC
+verification routine (`verify_adc_calibration`) rather than a digital
+read, over its 0-0x15 (21-position) range. So both of the still-open
+front-panel-control tests are ADC-verified analog controls, not
+digital switches - VOLTS/DIV (CH1) and VOLTS/DIV (CH2) is now a more
+likely pairing than VOLTS/DIV + TIME/DIV, though not confirmed.
 
 The `selftest_display_irq_idle`/`selftest_display_irq_active`
 (`0xE3F2C`/`0xE3F99`) pair - referenced from a *different* part of the
