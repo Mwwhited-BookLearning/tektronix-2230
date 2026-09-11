@@ -701,6 +701,17 @@ adds the actual task-scheduler behavior on top once installed - the
 EARLY/LATE split for INT2 mirrors the diagnostic-vs-normal-mode
 distinction already suspected for INT255.
 
+**`INT255_HANDLER_LATE` calls `run_continuous_selftest_tick` (renamed
+from `SUB_E62EE`) on every tick** - this ties `PRC_READBACK`
+(`verify_prc_readback_pattern`) into a genuine background watchdog: it
+dispatches to `verify_prc_readback_pattern` when `[0x1B5E]` is set (or
+a fallback `SUB_FDB8F` otherwise), tracks 3 independent sticky/debounce
+failure counters, and on a clean result calls through a hook function
+pointer at `[0x740]`. So `PRC_READBACK` isn't only a menu-invoked self-
+test - it (or its fallback) genuinely runs continuously in the
+background via the interrupt-driven scheduler, consistent with it
+checking live hardware readback rather than a one-shot boot check.
+
 These 4 non-`INT2_HANDLER_EARLY` handlers are entry points nothing in
 the program's direct call graph would ever reach (only the
 corresponding interrupt firing calls them), so they were added to

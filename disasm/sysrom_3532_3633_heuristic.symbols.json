@@ -5040,10 +5040,10 @@
     "notes": null
   },
   "E5EAE": {
-    "name": "SUB_E5EAE",
+    "name": "init_far_pointer_table_sysrom",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_far_pointer_table_sysrom",
     "notes": null
   },
   "E5EBE": {
@@ -5131,10 +5131,10 @@
     "notes": null
   },
   "E62EE": {
-    "name": "SUB_E62EE",
+    "name": "run_continuous_selftest_tick",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "run_continuous_selftest_tick",
     "notes": null
   },
   "E6306": {

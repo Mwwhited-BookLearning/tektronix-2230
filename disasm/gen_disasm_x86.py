@@ -2637,6 +2637,43 @@ FUNCTIONAL_NAMES = {
                                                # (sibling of the 0x1000
                                                # bit set elsewhere in the
                                                # same report-screen flow)
+    0xE5EAE: "init_far_pointer_table_sysrom", # the main-ROM counterpart of
+                                               # the comm ROM's confirmed
+                                               # init_far_pointer_table:
+                                               # reads a segment word then
+                                               # a table of (dest_offset,
+                                               # value_dword) entries -
+                                               # terminated by dest==-1 -
+                                               # from a fixed location
+                                               # (segment 0xE5D1, the same
+                                               # code segment
+                                               # INT2_HANDLER_EARLY lives
+                                               # in - "compiled-in table
+                                               # right after the code",
+                                               # same shape as the comm ROM
+                                               # version) and copies each
+                                               # dword to es:[dest] - bulk
+                                               # RAM-resident-variable init
+    0xE62EE: "run_continuous_selftest_tick",  # called every tick from
+                                               # INT255_HANDLER_LATE:
+                                               # dispatches to
+                                               # verify_prc_readback_pattern
+                                               # (if [0x1B5E]) or SUB_FDB8F
+                                               # otherwise, storing the
+                                               # result in [0x795]; tracks 2
+                                               # independent sticky/debounce
+                                               # failure counters
+                                               # ([0x1A9A] from bit 2,
+                                               # [0x1A99] from bits 0-1) and
+                                               # a 3rd ([0x1A96], gated by
+                                               # [0x1BFA]); on a clean
+                                               # result ([0x795]==0) calls
+                                               # a hook function pointer at
+                                               # [0x740] - the background
+                                               # continuous self-test/
+                                               # watchdog engine, not the
+                                               # foreground
+                                               # run_selftest_sequence
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

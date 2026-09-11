@@ -9689,7 +9689,7 @@ ENTRY_E5D1_C7:
     3633:5E2C  [E5E2C]  8ed8            mov     ds, ax
     3633:5E2E  [E5E2E]  8ed0            mov     ss, ax
     3633:5E30  [E5E30]  8be2            mov     sp, dx
-    3633:5E32  [E5E32]  9a9e01d1e5      lcall   SUB_E5EAE  ; 0xe5d1, 0x19e
+    3633:5E32  [E5E32]  9a9e01d1e5      lcall   init_far_pointer_table_sysrom  ; 0xe5d1, 0x19e
     3633:5E37  [E5E37]  b84100          mov     ax, 0x41
     3633:5E3A  [E5E3A]  8ed8            mov     ds, ax
     3633:5E3C  [E5E3C]  8ed0            mov     ss, ax
@@ -9727,7 +9727,7 @@ L_E5E99:
 
 INT1_HANDLER:
     3633:5EAD  [E5EAD]  cf              iret    
-SUB_E5EAE:
+init_far_pointer_table_sysrom:
     3633:5EAE  [E5EAE]  fc              cld     
     3633:5EAF  [E5EAF]  b8d1e5          mov     ax, 0xe5d1
     3633:5EB2  [E5EB2]  8ed8            mov     ds, ax
@@ -9767,7 +9767,7 @@ INT255_HANDLER_LATE:
     3633:60D0  [E60D0]  8bc4            mov     ax, sp
     3633:60D2  [E60D2]  8907            mov     word ptr [bx], ax
     3633:60D4  [E60D4]  8c5702          mov     word ptr [bx + 2], ss
-    3633:60D7  [E60D7]  9a0e002ee6      lcall   SUB_E62EE  ; 0xe62e, 0xe
+    3633:60D7  [E60D7]  9a0e002ee6      lcall   run_continuous_selftest_tick  ; 0xe62e, 0xe
     3633:60DC  [E60DC]  bb911a          mov     bx, 0x1a91
     3633:60DF  [E60DF]  a1cd1a          mov     ax, word ptr [0x1acd]
     3633:60E2  [E60E2]  03d8            add     bx, ax
@@ -9974,7 +9974,7 @@ L_E6274:
     3633:6286  [E6286]  80270f          and     byte ptr [bx], 0xf
     3633:6289  [E6289]  eab6000be6      ljmp    switch_to_next_task  ; 0xe60b:0xb6
 
-SUB_E62EE:
+run_continuous_selftest_tick:
     3633:62EE  [E62EE]  55              push    bp
     3633:62EF  [E62EF]  8bec            mov     bp, sp
     3633:62F1  [E62F1]  83ec08          sub     sp, 8
