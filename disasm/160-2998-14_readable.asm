@@ -104,7 +104,7 @@ L_8012C:
     mov sp, bp                               ; 012D: mov sp, bp
     pop bp                                   ; 012F: pop bp
     retf 2                                   ; 0130: retf 2
-SUB_80133:
+init_far_pointer_table:
     cld                                      ; 0133: cld 
     mov ax, 0x8013                           ; 0134: mov ax, 0x8013
     mov ds, ax                               ; 0137: mov ds, ax
@@ -421,7 +421,7 @@ L_80151:
     db 0x83, 0x7e, 0xf8, 0x01, 0x75, 0x13, 0xc6, 0x06, 0x23, 0x06, 0x22, 0xe9, 0x0b, 0x00, 0x83, 0x7e  ; 13E2
     db 0xf8, 0x04, 0x75, 0x05, 0xc6, 0x06, 0x23, 0x06, 0x22, 0xa0, 0x23, 0x06, 0x2a, 0xe4, 0x8b, 0xe5  ; 13F2
     db 0x5d, 0xcb  ; 1402
-SUB_81404:
+print_signed_decimal_serial:
     push bp                                  ; 1404: push bp
     mov bp, sp                               ; 1405: mov bp, sp
     sub sp, 6                                ; 1407: sub sp, 6
@@ -439,7 +439,7 @@ L_81421:
     mov sp, bp                               ; 1429: mov sp, bp
     pop bp                                   ; 142B: pop bp
     retf 2                                   ; 142C: retf 2
-SUB_8142F:
+print_unsigned_decimal_serial:
     push bp                                  ; 142F: push bp
     mov bp, sp                               ; 1430: mov bp, sp
     sub sp, 0xc                              ; 1432: sub sp, 0xc

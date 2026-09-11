@@ -92,7 +92,7 @@ L_8012C:
     2998:012D  [8012D]  8be5            mov     sp, bp
     2998:012F  [8012F]  5d              pop     bp
     2998:0130  [80130]  ca0200          retf    2
-SUB_80133:
+init_far_pointer_table:
     2998:0133  [80133]  fc              cld     
     2998:0134  [80134]  b81380          mov     ax, 0x8013
     2998:0137  [80137]  8ed8            mov     ds, ax
@@ -111,7 +111,7 @@ L_80143:
 L_80151:
     2998:0151  [80151]  cb              retf    
 
-SUB_81404:
+print_signed_decimal_serial:
     2998:1404  [81404]  55              push    bp
     2998:1405  [81405]  8bec            mov     bp, sp
     2998:1407  [81407]  83ec06          sub     sp, 6
@@ -125,11 +125,11 @@ SUB_81404:
     2998:141E  [8141E]  897e06          mov     word ptr [bp + 6], di
 L_81421:
     2998:1421  [81421]  ff7606          push    word ptr [bp + 6]
-    2998:1424  [81424]  9a6f112c80      lcall   SUB_8142F  ; 0x802c, 0x116f
+    2998:1424  [81424]  9a6f112c80      lcall   print_unsigned_decimal_serial  ; 0x802c, 0x116f
     2998:1429  [81429]  8be5            mov     sp, bp
     2998:142B  [8142B]  5d              pop     bp
     2998:142C  [8142C]  ca0200          retf    2
-SUB_8142F:
+print_unsigned_decimal_serial:
     2998:142F  [8142F]  55              push    bp
     2998:1430  [81430]  8bec            mov     bp, sp
     2998:1432  [81432]  83ec0c          sub     sp, 0xc
@@ -276,7 +276,7 @@ L_82EDE:
     2998:2EE5  [82EE5]  8ad1            mov     dl, cl
     2998:2EE7  [82EE7]  2af6            sub     dh, dh
     2998:2EE9  [82EE9]  52              push    dx
-    2998:2EEA  [82EEA]  9a44112c80      lcall   SUB_81404  ; 0x802c, 0x1144
+    2998:2EEA  [82EEA]  9a44112c80      lcall   print_signed_decimal_serial  ; 0x802c, 0x1144
     2998:2EEF  [82EEF]  a08005          mov     al, byte ptr [0x580]
     2998:2EF2  [82EF2]  8a169005        mov     dl, byte ptr [0x590]
     2998:2EF6  [82EF6]  3ac2            cmp     al, dl
@@ -1533,7 +1533,7 @@ L_95ACC:
     2998_alias_90000:5AD0  [95AD0]  26837d0c06      cmp     word ptr es:[di + 0xc], 6
     2998_alias_90000:5AD5  [95AD5]  7e1e            jle     L_95AF5  ; 0x13e5
     2998_alias_90000:5AD7  [95AD7]  c70690063305    mov     word ptr [0x690], 0x533
-    2998_alias_90000:5ADD  [95ADD]  9a59187194      lcall   SUB_95F69  ; 0x9471, 0x1859
+    2998_alias_90000:5ADD  [95ADD]  9a59187194      lcall   init_comm_device_table  ; 0x9471, 0x1859
     2998_alias_90000:5AE2  [95AE2]  ffb64cff        push    word ptr [bp - 0xb4]
     2998_alias_90000:5AE6  [95AE6]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998_alias_90000:5AEB  [95AEB]  89864aff        mov     word ptr [bp - 0xb6], ax
@@ -1552,7 +1552,7 @@ L_95AF5:
     2998_alias_90000:5B12  [95B12]  3d0000          cmp     ax, 0
     2998_alias_90000:5B15  [95B15]  741e            je      L_95B35  ; 0x1425
     2998_alias_90000:5B17  [95B17]  c70690064005    mov     word ptr [0x690], 0x540
-    2998_alias_90000:5B1D  [95B1D]  9a59187194      lcall   SUB_95F69  ; 0x9471, 0x1859
+    2998_alias_90000:5B1D  [95B1D]  9a59187194      lcall   init_comm_device_table  ; 0x9471, 0x1859
     2998_alias_90000:5B22  [95B22]  ffb64cff        push    word ptr [bp - 0xb4]
     2998_alias_90000:5B26  [95B26]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998_alias_90000:5B2B  [95B2B]  89864aff        mov     word ptr [bp - 0xb6], ax
@@ -1770,7 +1770,7 @@ L_95D76:
     2998_alias_90000:5D7D  [95D7D]  5d              pop     bp
     2998_alias_90000:5D7E  [95D7E]  ca0400          retf    4
 
-SUB_95F69:
+init_comm_device_table:
     2998_alias_90000:5F69  [95F69]  55              push    bp
     2998_alias_90000:5F6A  [95F6A]  8bec            mov     bp, sp
     2998_alias_90000:5F6C  [95F6C]  83ec0c          sub     sp, 0xc
@@ -1951,7 +1951,7 @@ SUB_9628C:
     2998_alias_90000:6295  [96295]  57              push    di
     2998_alias_90000:6296  [96296]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998_alias_90000:629B  [9629B]  8946f8          mov     word ptr [bp - 8], ax
-    2998_alias_90000:629E  [9629E]  9a03001380      lcall   SUB_80133  ; 0x8013, 3
+    2998_alias_90000:629E  [9629E]  9a03001380      lcall   init_far_pointer_table  ; 0x8013, 3
     2998_alias_90000:62A3  [962A3]  bf808f          mov     di, 0x8f80
     2998_alias_90000:62A6  [962A6]  57              push    di
     2998_alias_90000:62A7  [962A7]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
@@ -5183,7 +5183,7 @@ L_E1EF9:
     3633:1EFC  [E1EFC]  8b56f0          mov     dx, word ptr [bp - 0x10]
     3633:1EFF  [E1EFF]  3bfa            cmp     di, dx
     3633:1F01  [E1F01]  72ec            jb      L_E1EEF  ; 0x23f
-    3633:1F03  [E1F03]  9a03001380      lcall   SUB_80133  ; 0x8013, 3
+    3633:1F03  [E1F03]  9a03001380      lcall   init_far_pointer_table  ; 0x8013, 3
     3633:1F08  [E1F08]  bf4100          mov     di, 0x41
     3633:1F0B  [E1F0B]  57              push    di
     3633:1F0C  [E1F0C]  9a080007f0      lcall   scale_and_plot_point_default  ; 0xf007, 8
@@ -11338,7 +11338,7 @@ L_E795E:
     3633:7962  [E7962]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     3633:7967  [E7967]  c47ef4          les     di, ptr [bp - 0xc]
     3633:796A  [E796A]  26ff35          push    word ptr es:[di]
-    3633:796D  [E796D]  9a44112c80      lcall   SUB_81404  ; 0x802c, 0x1144
+    3633:796D  [E796D]  9a44112c80      lcall   print_signed_decimal_serial  ; 0x802c, 0x1144
     3633:7972  [E7972]  bf4100          mov     di, 0x41
     3633:7975  [E7975]  57              push    di
     3633:7976  [E7976]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe

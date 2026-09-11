@@ -70,10 +70,10 @@
     "notes": null
   },
   "80133": {
-    "name": "SUB_80133",
+    "name": "init_far_pointer_table",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "init_far_pointer_table",
     "notes": null
   },
   "80143": {
@@ -91,10 +91,10 @@
     "notes": null
   },
   "81404": {
-    "name": "SUB_81404",
+    "name": "print_signed_decimal_serial",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "print_signed_decimal_serial",
     "notes": null
   },
   "81421": {
@@ -105,10 +105,10 @@
     "notes": null
   },
   "8142F": {
-    "name": "SUB_8142F",
+    "name": "print_unsigned_decimal_serial",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "print_unsigned_decimal_serial",
     "notes": null
   },
   "8143D": {
@@ -1057,10 +1057,10 @@
     "notes": null
   },
   "95F69": {
-    "name": "SUB_95F69",
+    "name": "init_comm_device_table",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "init_comm_device_table",
     "notes": null
   },
   "95F83": {

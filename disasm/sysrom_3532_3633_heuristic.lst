@@ -3218,7 +3218,7 @@ L_E1EF9:
     3633:1EFC  [E1EFC]  8b56f0          mov     dx, word ptr [bp - 0x10]
     3633:1EFF  [E1EFF]  3bfa            cmp     di, dx
     3633:1F01  [E1F01]  72ec            jb      L_E1EEF  ; 0x23f
-    3633:1F03  [E1F03]  9a03001380      lcall   SUB_80133  ; 0x8013, 3
+    3633:1F03  [E1F03]  9a03001380      lcall   init_far_pointer_table  ; 0x8013, 3
     3633:1F08  [E1F08]  bf4100          mov     di, 0x41
     3633:1F0B  [E1F0B]  57              push    di
     3633:1F0C  [E1F0C]  9a080007f0      lcall   scale_and_plot_point_default  ; 0xf007, 8
@@ -12026,7 +12026,7 @@ L_E795E:
     3633:7962  [E7962]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     3633:7967  [E7967]  c47ef4          les     di, ptr [bp - 0xc]
     3633:796A  [E796A]  26ff35          push    word ptr es:[di]
-    3633:796D  [E796D]  9a44112c80      lcall   SUB_81404  ; 0x802c, 0x1144
+    3633:796D  [E796D]  9a44112c80      lcall   print_signed_decimal_serial  ; 0x802c, 0x1144
     3633:7972  [E7972]  bf4100          mov     di, 0x41
     3633:7975  [E7975]  57              push    di
     3633:7976  [E7976]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe

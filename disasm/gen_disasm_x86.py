@@ -636,6 +636,50 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0x80133: "init_far_pointer_table",         # comm ROM: sets DS to
+                                               # its own segment (0x8013)
+                                               # and applies a compiled-
+                                               # in table (embedded
+                                               # right after this code,
+                                               # at offset 0x22): first
+                                               # word is a destination
+                                               # ES segment, then
+                                               # repeated (dest_offset,
+                                               # far_ptr_lo, far_ptr_hi)
+                                               # triples (movsw x2) are
+                                               # written to es:[offset]
+                                               # until a -1 sentinel -
+                                               # bulk-initializes a set
+                                               # of RAM-resident far
+                                               # pointer variables from
+                                               # ROM data; called from
+                                               # both the comm ROM and
+                                               # the main ROM (0xE1F03)
+    0x81404: "print_signed_decimal_serial",    # (n) - prints '-' via
+                                               # putchar_serial and
+                                               # negates n if negative,
+                                               # then calls print_
+                                               # unsigned_decimal_serial
+    0x8142F: "print_unsigned_decimal_serial",  # (n) - converts n to
+                                               # decimal digits via
+                                               # repeated div by 10 into
+                                               # a stack buffer, then
+                                               # prints the resulting
+                                               # string via SUB_82D01
+    0x95F69: "init_comm_device_table",         # comm ROM: zeroes bytes
+                                               # 0-9 and sets byte 0xA=1
+                                               # (an "enabled" default?)
+                                               # for each of 26 12-byte
+                                               # records at far ptr
+                                               # [0x73E], then memset_
+                                               # far's a large block at
+                                               # [0x742] and clears
+                                               # several fields at
+                                               # [0x746] - a comm-
+                                               # channel/device table
+                                               # init routine, entered
+                                               # via a DS switch to
+                                               # segment 0x8F80
     0xE45A6: "compute_range_checksum",         # (seed, start_far_ptr,
                                                # end_far_ptr) - classic
                                                # shift-and-add-with-
