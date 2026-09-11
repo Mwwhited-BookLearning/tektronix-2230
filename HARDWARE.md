@@ -23,7 +23,7 @@ Not two UARTs and not a firmware-visible mode select; `[0x629]` (the
 mode flag gating several comm-ROM routines) is *not* a DTE/DCE switch.
 This is still a strong physical confirmation of the **RS-232
 flow-control cluster** found in the comm ROM this session
-(`get_xon_xoff_byte`, `enqueue_comm_char`, `service_comm_rx_queue`) —
+(`get_xon_xoff_byte`, `enqueue_comm_char`, `service_comm_tx_queue`) —
 real RS-232 hardware, not just a GPIB-only board — but `[0x629]` stays
 open as "GPIB vs RS-232" (or something else), just not DTE/DCE.
 

@@ -1336,15 +1336,35 @@ inside `assert_and_halt`'s/`plot_scaled_point`'s tag-dispatch code.
 match for standard RS-232 software flow control: it checks two request
 bits in `[0x460]` and returns the ASCII control code for XOFF (`0x13`,
 DC3) or XON (`0x11`, DC1), clearing the corresponding request bit as
-it does. It's called from `service_comm_rx_queue` (`0x97431`), which
-services a wrap-around rx ring buffer (`[0x448]`/`[0x44A]` read
-pointer, `[0x44C]` write pointer, base `0xAF` size `0x384`) and
-forwards either a pending flow-control byte or the next queued data
-byte to `enqueue_comm_char` (`0x974E1`), which also implements
-space/mark parity handling based on a `[0x4ED]` mode byte (0 = no
-parity adjustment, else strip bit 7, and for mode `3` specifically
-force bit 7 back on). This is a solid, concrete confirmation of the
-RS-232 (not just GPIB) personality of the comm ROM's serial path.
+it does. It's called from `service_comm_tx_queue` (`0x97431` -
+**renamed from an earlier wrong `service_comm_rx_queue`**: this drains
+the OUTGOING tx ring buffer that `serial_tx_buffer_put` produces into,
+not an incoming rx buffer - see "Direction correction" below), which
+services a wrap-around ring buffer (`[0x448]`/`[0x44A]` read pointer,
+`[0x44C]` write pointer, base `0xAF` size `0x384`) and forwards either
+a pending flow-control byte or the next queued outgoing data byte to
+`enqueue_comm_char` (`0x974E1`), which also implements space/mark
+parity handling based on a `[0x4ED]` mode byte (0 = no parity
+adjustment, else strip bit 7, and for mode `3` specifically force bit
+7 back on). This is a solid, concrete confirmation of the RS-232 (not
+just GPIB) personality of the comm ROM's serial path.
+
+### Direction correction: the ring buffer is a TX queue, not RX
+
+Found while investigating `serial_tx_buffer_put` and `SUB_96872`: the
+ring buffer at `[0x448]`(read)/`[0x44C]`(write), base `0xAF` size
+`0x384`, has `serial_tx_buffer_put` as its PRODUCER (writes the next
+byte to transmit and advances `[0x44C]`) and what was named
+`service_comm_rx_queue` as its CONSUMER (reads via `[0x448]` and
+forwards each byte on toward the real hardware tx path via
+`enqueue_comm_char`). A "service_comm_**rx**_queue" name for the
+consumer of a queue that `serial_tx_**buffer_put**` feeds was
+backwards - renamed to `service_comm_tx_queue`, and its paired
+initializer `init_comm_rx_queue_and_ready_flags` to `init_comm_tx_
+queue_and_ready_flags`. No genuine incoming-data ring buffer has been
+identified yet - worth keeping an eye out for one when tracing however
+incoming RS-232/GPIB bytes actually reach the firmware (an interrupt
+handler is the likely mechanism, not yet traced).
 
 ## A third decode anomaly: SUB_F6382, likely capstone misreading opcode 0x0F
 

@@ -666,6 +666,32 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x96872: "spawn_task_with_tag",             # comm ROM: (tag) -
+                                               # stores tag into the
+                                               # CURRENTLY running
+                                               # task's per-task
+                                               # scratch byte at
+                                               # [task_index+0x744]
+                                               # (task_index read from
+                                               # [0x1ACD], the task-
+                                               # scheduler's current-
+                                               # task index), then
+                                               # calls create_task() to
+                                               # spawn a new task -
+                                               # called by serial_tx_
+                                               # buffer_put(0xA) to
+                                               # launch a background
+                                               # comm-tx-servicing task.
+                                               # Note: [x+0x744] is the
+                                               # same per-item table
+                                               # update_plot_retry_
+                                               # counters iterates over
+                                               # 12 entries - suggests
+                                               # that table is really a
+                                               # general per-task
+                                               # scratch byte, not
+                                               # specifically a "plot
+                                               # retry counter"
     0x96800: "compute_parity_mode_code",        # comm ROM: dispatches
                                                # on the DIP-switch-
                                                # derived parity value
@@ -900,15 +926,20 @@ FUNCTIONAL_NAMES = {
                                                # a channel (re)init
                                                # sequence, always
                                                # called immediately
-                                               # before init_comm_rx_
+                                               # before init_comm_tx_
                                                # queue_and_ready_flags
-    0x96634: "init_comm_rx_queue_and_ready_flags", # comm ROM: resets
-                                               # the rx ring buffer read/
-                                               # write pointers
-                                               # ([0x448]/[0x44C], same
-                                               # base 0xAF used by
-                                               # service_comm_rx_queue)
-                                               # and related flags, then
+    0x96634: "init_comm_tx_queue_and_ready_flags", # comm ROM:
+                                               # **CORRECTED from an
+                                               # earlier wrong name
+                                               # init_comm_rx_queue_
+                                               # and_ready_flags** -
+                                               # resets the tx ring
+                                               # buffer's read/write
+                                               # pointers ([0x448]/
+                                               # [0x44C], same base
+                                               # 0xAF used by service_
+                                               # comm_tx_queue) and
+                                               # related flags, then
                                                # either sets the channel
                                                # status byte es:
                                                # [0x6D6+3]=5 ([0x629]
@@ -1177,19 +1208,32 @@ FUNCTIONAL_NAMES = {
                                                # the tx queue at [0x6D6],
                                                # clears [0x45A], and
                                                # calls SUB_800FC(0)
-    0x97431: "service_comm_rx_queue",          # comm ROM: pulls one byte
-                                               # from the rx ring buffer
-                                               # ([0x448]/[0x44A], base
-                                               # 0xAF, size 0x384,
-                                               # wrapping), forwards a
-                                               # pending XON/XOFF byte
-                                               # (get_xon_xoff_byte) or
-                                               # the next queued data
-                                               # byte via enqueue_comm_
-                                               # char, and sets [0x455]
-                                               # (queue-empty flag) once
-                                               # the read pointer catches
-                                               # up to the write pointer
+    0x97431: "service_comm_tx_queue",          # comm ROM: **CORRECTED
+                                               # from an earlier wrong
+                                               # name service_comm_rx_
+                                               # queue** - direction was
+                                               # backwards; this is the
+                                               # CONSUMER side of the tx
+                                               # ring buffer that
+                                               # serial_tx_buffer_put
+                                               # (application code)
+                                               # PRODUCES into. Pulls
+                                               # one byte from the ring
+                                               # buffer ([0x448]/[0x44A]
+                                               # read ptr, base 0xAF,
+                                               # size 0x384, wrapping),
+                                               # forwards a pending
+                                               # XON/XOFF byte (get_
+                                               # xon_xoff_byte) or the
+                                               # next queued outgoing
+                                               # data byte via enqueue_
+                                               # comm_char (which pushes
+                                               # it toward the real
+                                               # hardware tx path), and
+                                               # sets [0x455] (queue-
+                                               # empty flag) once the
+                                               # read pointer catches up
+                                               # to the write pointer
                                                # [0x44C]
     0xE6C85: "reset_display_and_notify_comm", # if [0x766] set: notifies
                                                # comm ROM (notify_comm_

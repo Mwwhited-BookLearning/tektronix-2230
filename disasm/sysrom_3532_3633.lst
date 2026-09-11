@@ -2232,7 +2232,7 @@ L_96630:
     2998_alias_90000:6630  [96630]  8be5            mov     sp, bp
     2998_alias_90000:6632  [96632]  5d              pop     bp
     2998_alias_90000:6633  [96633]  cb              retf    
-init_comm_rx_queue_and_ready_flags:
+init_comm_tx_queue_and_ready_flags:
     2998_alias_90000:6634  [96634]  55              push    bp
     2998_alias_90000:6635  [96635]  8bec            mov     bp, sp
     2998_alias_90000:6637  [96637]  83ec06          sub     sp, 6
@@ -2461,7 +2461,7 @@ L_9685A:
     2998_alias_90000:686F  [9686F]  5d              pop     bp
     2998_alias_90000:6870  [96870]  cb              retf    
 
-SUB_96872:
+spawn_task_with_tag:
     2998_alias_90000:6872  [96872]  55              push    bp
     2998_alias_90000:6873  [96873]  8bec            mov     bp, sp
     2998_alias_90000:6875  [96875]  83ec08          sub     sp, 8
@@ -2494,7 +2494,7 @@ L_96B7D:
     2998_alias_90000:6B85  [96B85]  9a440cf596      lcall   set_comm_critical_flag  ; 0x96f5, 0xc44
     2998_alias_90000:6B8A  [96B8A]  bf0a00          mov     di, 0xa
     2998_alias_90000:6B8D  [96B8D]  57              push    di
-    2998_alias_90000:6B8E  [96B8E]  9a02008796      lcall   SUB_96872  ; 0x9687, 2
+    2998_alias_90000:6B8E  [96B8E]  9a02008796      lcall   spawn_task_with_tag  ; 0x9687, 2
     2998_alias_90000:6B93  [96B93]  c606a305ff      mov     byte ptr [0x5a3], 0xff
 L_96B98:
     2998_alias_90000:6B98  [96B98]  803e550400      cmp     byte ptr [0x455], 0
@@ -2562,7 +2562,7 @@ L_96C3A:
 L_96C3D:
     2998_alias_90000:6C3D  [96C3D]  e90500          jmp     L_96C45  ; 0x3d5
 L_96C40:
-    2998_alias_90000:6C40  [96C40]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
+    2998_alias_90000:6C40  [96C40]  9ae104f596      lcall   service_comm_tx_queue  ; 0x96f5, 0x4e1
 L_96C45:
     2998_alias_90000:6C45  [96C45]  e90500          jmp     L_96C4D  ; 0x3dd
 L_96C48:
@@ -2740,7 +2740,7 @@ L_96F50:
     2998_alias_90000:6F52  [96F52]  5d              pop     bp
     2998_alias_90000:6F53  [96F53]  cb              retf    
 
-service_comm_rx_queue:
+service_comm_tx_queue:
     2998_alias_90000:7431  [97431]  55              push    bp
     2998_alias_90000:7432  [97432]  8bec            mov     bp, sp
     2998_alias_90000:7434  [97434]  83ec0a          sub     sp, 0xa
@@ -2983,7 +2983,7 @@ L_97B2A:
 L_97B47:
     2998_alias_90000:7B47  [97B47]  9a28011185      lcall   reset_comm_parser_state  ; 0x8511, 0x128
     2998_alias_90000:7B4C  [97B4C]  9a17032896      lcall   init_comm_channel_state_a  ; 0x9628, 0x317
-    2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   init_comm_rx_queue_and_ready_flags  ; 0x9628, 0x3b4
+    2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   init_comm_tx_queue_and_ready_flags  ; 0x9628, 0x3b4
     2998_alias_90000:7B56  [97B56]  9a16042896      lcall   reset_gpib_addr_scratch  ; 0x9628, 0x416
     2998_alias_90000:7B5B  [97B5B]  c6060c00ff      mov     byte ptr [0xc], 0xff
     2998_alias_90000:7B60  [97B60]  c6065404ff      mov     byte ptr [0x454], 0xff
@@ -3049,7 +3049,7 @@ SUB_97BE6:
     2998_alias_90000:7C0A  [97C0A]  800e600402      or      byte ptr [0x460], 2
     2998_alias_90000:7C0F  [97C0F]  803e5a0400      cmp     byte ptr [0x45a], 0
     2998_alias_90000:7C14  [97C14]  7405            je      L_97C1B  ; 0xccb
-    2998_alias_90000:7C16  [97C16]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
+    2998_alias_90000:7C16  [97C16]  9ae104f596      lcall   service_comm_tx_queue  ; 0x96f5, 0x4e1
 L_97C1B:
     2998_alias_90000:7C1B  [97C1B]  8a5606          mov     dl, byte ptr [bp + 6]
     2998_alias_90000:7C1E  [97C1E]  08165c04        or      byte ptr [0x45c], dl
@@ -3075,7 +3075,7 @@ SUB_97C28:
     2998_alias_90000:7C57  [97C57]  800e600401      or      byte ptr [0x460], 1
     2998_alias_90000:7C5C  [97C5C]  803e5a0400      cmp     byte ptr [0x45a], 0
     2998_alias_90000:7C61  [97C61]  7405            je      L_97C68  ; 0xd18
-    2998_alias_90000:7C63  [97C63]  9ae104f596      lcall   service_comm_rx_queue  ; 0x96f5, 0x4e1
+    2998_alias_90000:7C63  [97C63]  9ae104f596      lcall   service_comm_tx_queue  ; 0x96f5, 0x4e1
 L_97C68:
     2998_alias_90000:7C68  [97C68]  8be5            mov     sp, bp
     2998_alias_90000:7C6A  [97C6A]  5d              pop     bp

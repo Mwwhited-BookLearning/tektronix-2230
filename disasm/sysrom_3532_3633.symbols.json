@@ -1323,10 +1323,10 @@
     "notes": null
   },
   "96634": {
-    "name": "init_comm_rx_queue_and_ready_flags",
+    "name": "init_comm_tx_queue_and_ready_flags",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "init_comm_rx_queue_and_ready_flags",
+    "functional_name": "init_comm_tx_queue_and_ready_flags",
     "notes": null
   },
   "96684": {
@@ -1526,10 +1526,10 @@
     "notes": null
   },
   "96872": {
-    "name": "SUB_96872",
+    "name": "spawn_task_with_tag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "spawn_task_with_tag",
     "notes": null
   },
   "96B68": {
@@ -1778,10 +1778,10 @@
     "notes": null
   },
   "97431": {
-    "name": "service_comm_rx_queue",
+    "name": "service_comm_tx_queue",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": "service_comm_rx_queue",
+    "functional_name": "service_comm_tx_queue",
     "notes": null
   },
   "9746A": {

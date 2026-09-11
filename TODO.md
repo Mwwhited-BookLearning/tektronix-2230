@@ -2,6 +2,17 @@
 
 ## Next up
 
+- [ ] Find the comm ROM's actual **incoming**-data path. The ring
+      buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
+      out to be a TX queue (`serial_tx_buffer_put` producer,
+      `service_comm_tx_queue` consumer, both renamed this session
+      after an earlier direction mistake - see `disasm/NOTES.md`
+      "Direction correction"), not an RX buffer as first assumed. No
+      genuine incoming-byte ring buffer/interrupt handler has been
+      identified yet - worth tracing if the user's offered comm-module
+      board photos turn up a UART chip whose interrupt line can be
+      followed back into the IVT.
+
 - [ ] **REVIEW LATER**: `binary/aligned/*.bin` (NOP-padded, fully-
       readable reconstructions - see `binary/aligned/README.md` and
       `disasm/NOTES.md` "NOP-aligned readable reconstruction") were
