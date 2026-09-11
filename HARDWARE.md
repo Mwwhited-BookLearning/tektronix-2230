@@ -106,3 +106,165 @@ maps to. This photo is a good reference for that once someone traces
 which `[0x4E7]`/`[0x4E8]` (front-panel button/encoder state, read by
 `update_menu_position`) bit ranges correspond to which physical
 switch bank.
+
+## Full menu tree walkthrough (`hardware/photos/`, 2026-09-11 batch)
+
+The user photographed essentially the entire `ACQ_MODE_SETUP_TABLE`
+menu tree and the `DIAGNOSTICS` self-test menu screen-by-screen (71
+photos - see `hardware/photos/INVENTORY.md` for the per-file index).
+This is by far the strongest confirmation yet of the menu-structure
+and self-test-naming work done purely from disassembly. Full tree as
+observed:
+
+```
+ACQ_MODE_SETUP_TABLE
+├── SELECT_MODE      - UN-TRIG/TRIG x sweep-speed matrix of
+│                      SAMPLE/ACCPEAK/AVERAGE/PEAKDET
+├── SWP_LIMIT
+├── WEIGHT
+├── A_TRIG_POS       - "Points before trigger, PRE or POST" (0-4095/4K)
+├── DISPLAY
+│   ├── DELTA_T_MODE - DELTA_TIME / 1/DELTA_TIME
+│   ├── VECTORS      - line vs. dots
+│   └── SMOOTH
+├── DEFAULT          - restores menu defaults
+├── FORMATTING       - "Alter display of SAVE-REFs"
+│   ├── TARGET_REFERENCE
+│   ├── VGAIN        - (disabled in X-Y mode)
+│   ├── VPOSITION
+│   ├── HMAG         - 10X mag (disabled in X-Y mode)
+│   └── MODE
+├── PLOT             - "Control the XY plotter"
+│   ├── SPEED        - pen speed
+│   ├── START        - starts/stops a plot
+│   ├── GRATICULE    - include graticule in plot
+│   ├── AUTO         - auto-plot mode (needs XY or talk-only)
+│   ├── FORMAT       - XY (analog plotter) / HPGL / EPS7 / EPS8 /
+│   │                  TJET (HP ThinkJet) / RESERVED - all non-XY
+│   │                  formats explicitly go out "COMM port"
+│   └── SETUP        - plotter gain and offset
+└── ADVANCED_FUNCTIONS
+    ├── REFERENCE    - 26 non-volatile ref-waveform slots, A-Z
+    │   ├── COPY
+    │   ├── DELETE
+    │   └── PROTECT  - LOCK/UNLOCK
+    ├── COMM         - "Setup host communications"
+    │   ├── DATA     - "Setup data transmission parameters"
+    │   │   ├── ENCDG   - ASCII / BINARY(default) / HEX
+    │   │   ├── SOURCE  - ACQ / REF1-REF3 / ...
+    │   │   └── CHANNEL - CH1(default) / CH2
+    │   ├── STOP_BITS
+    │   └── FLOW     - flow control on/off
+    ├── ACQ_MODE_SETUP_TREE - "Tree structured acquisition setup"
+    │   ├── REPETITIVE        (.05-2 uS/Div)   - SAMPLE/ACCPEAK/AVERAGE
+    │   ├── FAST_RECORD       (5-10 uS/Div)    - SAMPLE/ACCPEAK/AVERAGE
+    │   ├── SLOW_RECORD       (20uS-50mS/Div)  - +PEAKDET
+    │   ├── SLOW_TRIGGERED    (0.1-5 S/Div or EXT CLOCK) - +PEAKDET
+    │   └── SLOW_UNTRIGGERED  (0.1-5 S/Div or EXT CLOCK) - SAMPLE/PEAKDET
+    └── DIAGNOSTICS
+        ├── TESTS
+        │   ├── MEMORY     - SYS_ROM_0 / SYS_ROM_1 / COMM_ROM / ACQ_RAM
+        │   ├── SYSTEM     - ACQ_ACCESS / PRC_READBACK / FP_AtoD /
+        │   │                COMM_READBACK / COMM_LOOPBACK
+        │   └── ACQUISITION - HS_ACQ / TB_DIVIDER / MAX_MIN_ACQ /
+        │                     XY_ACQ / CLK_DELAY
+        ├── CAL_AIDS   - BOX / CAL_V_POS / CAL_CLK_DLY
+        └── EXERCISERS - CONFIGURATION / IO / A_TO_D_TESTS
+```
+
+### Direct confirmations of existing firmware findings
+
+- **`SYS_ROM_0`/`SYS_ROM_1`** in the `MEMORY` test menu match the ROM
+  chips' own silkscreen names *exactly* (`160-3633`="sys_rom_0",
+  `160-3532`="sys_rom_1") - settles any doubt about that mapping.
+- **`COMM_ROM` PASSED** in the same menu is `selftest_comm_rom`'s real
+  on-screen name; **`ACQ_RAM` PASSED** is `selftest_acq_ram`'s.
+- **`FP_AtoD` PASSED** is `selftest_front_panel_adc`'s real name -
+  confirms the front-panel A/D converter identification.
+- **`COMM_READBACK` PASSED** / **`COMM_LOOPBACK` UNTESTED** are
+  `selftest_comm_readback`/`selftest_comm_loopback_a`/`_b`'s real
+  names - `COMM_LOOPBACK` reading UNTESTED on this unit (rather than
+  PASSED/FAILED) matches the "Not installed"/untested status-bit
+  encoding already confirmed in `format_selftest_result_string`.
+- **`HS_ACQ`/`MAX_MIN_ACQ`/`XY_ACQ`** PASSED in the `ACQUISITION` test
+  menu are `selftest_hs_acq`/`selftest_mm_acq`/`selftest_xy_acq`'s real
+  names.
+- **The `SAMPLE`/`ACCPEAK`/`AVERAGE`/`PEAKDET` x sweep-speed matrix**
+  (`SELECT_MODE`, and its more detailed tree-structured twin
+  `ACQ_MODE_SETUP_TREE`) is the on-screen shape of the acquisition-
+  mode bit dispatch traced this session in `handle_acq_mode_change` -
+  strong confirmation that function's bit-flag interpretation is on
+  the right track.
+- **`PLOT`/`FORMAT`'s non-XY options all say "COMM port"** - confirms
+  HPGL/Epson/ThinkJet plot output goes out the RS-232/GPIB path (via
+  `start_plot_output_task`'s `ESC @` reset - a real Epson/ThinkJet
+  printer reset convention, now doubly confirmed), while only `XY`
+  format drives the AUX connector's analog pen plotter directly.
+- **`ACQ_MODE_SETUP_TREE`'s `EXT CLOCK` option** (on the two slowest
+  sweep tiers) is the firmware-side use of the AUX connector's
+  `EXT CLK` pin found in the rear-panel photo.
+
+### New leads / open questions from this batch
+
+- Self-test names seen here but not yet matched to a specific
+  function: `TB_DIVIDER`, `CLK_DELAY` (both PASSED, under
+  `DIAGNOSTICS/TESTS/ACQUISITION`), `ACQ_ACCESS`, `PRC_READBACK` (both
+  PASSED, under `.../SYSTEM`), `CAL_AIDS`'s `BOX`/`CAL_V_POS`/
+  `CAL_CLK_DLY`, and `EXERCISERS`'s `CONFIGURATION`/`IO`/
+  `A_TO_D_TESTS`. `A_TO_D_TESTS` is a strong new lead for identifying
+  the A/D converter I/O ports beyond what `selftest_front_panel_adc`
+  already covers.
+- `COMM/DATA/ENCDG` offers `ASCII`/`BINARY`/`HEX` waveform-data coding
+  - `print_signed_decimal_serial`/`print_param_list_response` cover
+  the ASCII path; no binary or hex waveform-transfer routine has been
+  identified in the comm ROM yet - worth searching for one.
+- `COMM/DATA/STOP_BITS`/`FLOW` and the rear-panel PARAMETERS DIP
+  switch both appear to configure overlapping RS-232 parameters
+  (parity, flow control) - not yet reconciled which one wins, or
+  whether the DIP switch only sets power-on defaults that this menu
+  can override at runtime (plausible given `set_comm_config_flag`'s
+  config array is separate from the raw DIP-switch-read variables).
+
+## Main system board interior (`hardware/photos/IMG_1412.jpg`)
+
+A photo of the A10 main digital/acquisition board with its top board
+lifted (silkscreened "REMOVE TO LIFT BOARD" / "BOARD LATCH"). Text on
+densely-packed 1980s TTL silkscreens is small and photo-compression-
+lossy, so treat exact chip designators below as "best read, not
+service-manual-verified" until cross-checked against a clearer photo
+or the schematic.
+
+- **CPU confirmed as an Intel `P8088-2`, date-coded 1978** (the DIP-8
+  chip marked `INTEL`, `P8088-2`, `1978`). The `-2` suffix is Intel's
+  higher-speed grade (8 MHz vs. the base 8088's 5 MHz) - a firmware-
+  invisible detail (doesn't change the ISA `disasm/` targets) but a
+  nice concrete confirmation of `CONTEXT.md`'s "CPU: Intel 8088" entry
+  beyond the TekWiki-sourced claim it was based on before.
+- Two chips marked **Tektronix `160-3532-14`** and what reads as
+  **`160-3633-14`** (the two main system ROMs this whole project
+  disassembles) are visible and socketed near the CPU, exactly as
+  expected.
+- A **Sony-branded chip** (partial marking, something like `SONY
+  20??7K`) sits near the bottom right, close to labeled `CH1`/`CH2`
+  input traces - consistent with `CONTEXT.md`'s claimed Sony CX20052A
+  A/D converter, but the visible part number doesn't cleanly read as
+  `CX20052A` from this photo. **Needs a clearer close-up photo of just
+  that chip** to confirm or correct the exact part number.
+- Hand-silkscreened **signal/test-point labels** are visible amid the
+  wiring harness: `TRIGGERED`, `ACQEN A` (Acquisition Enable, channel
+  A?), `EOR`, and something ending `...FULL` (partially obscured by a
+  wire tie, possibly "POST FULL" or similar) - real hardware names for
+  signals this project has only inferred from variable usage so far
+  (e.g. `[0x54A]`'s acquisition-timeout countdown, the `PRE`/`POST`
+  trigger-position wording confirmed in the `A_TRIG_POS` menu above).
+  Worth a dedicated close-up photo of that harness area if the labels
+  matter for future work.
+- A PAL/GAL chip marked `PAL10L8-2CN` (or similar) provides custom
+  glue logic - a candidate source for some of the address-decode
+  behavior already inferred from the disassembly (e.g. the `0x90000`
+  alias), though not confirmed.
+- **Open**: the ROM sockets read as roughly `U3103`/`U3110` in this
+  photo, which doesn't match `CONTEXT.md`'s TekWiki-sourced `U9109`/
+  `U9110` designators - likely just a misread of small silkscreen text
+  in a compressed photo, but flagged here rather than silently
+  "corrected" without a clearer photo to check against.

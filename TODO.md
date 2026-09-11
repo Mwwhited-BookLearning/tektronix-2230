@@ -9,11 +9,28 @@
       choice once the rest of the analysis (self-test subroutine ID,
       menu tree, I/O port mapping) is further along, to confirm
       nothing was missed by not using the true original byte-for-byte.
-- [ ] Cross-reference the front-panel menu/parameter tree names found
-      in `160-3633` (`ACQ_MODE_SETUP_TABLE`, `SELECT_MODE`, etc. - see
-      `STRINGS.md`) against the code that reads them, to build the
-      actual menu structure for `JUMP_MAP.md`/the "user-facing flows"
-      documentation goal.
+- [ ] The full `ACQ_MODE_SETUP_TABLE` menu tree and the `DIAGNOSTICS`
+      self-test menu are now photographed and documented end-to-end in
+      `HARDWARE.md`/`hardware/photos/INVENTORY.md` (screen-by-screen,
+      2026-09-11). Still open: trace the actual menu-rendering code
+      that reads/draws these screens (an `update_menu_position`-driven
+      state machine is the leading candidate) to tie each menu string
+      to its backing code, rather than just the backing variables
+      already found for the acquisition-mode bit flags. Also:
+      identify the specific functions behind the newly-named self-test
+      leaves `TB_DIVIDER`, `CLK_DELAY`, `ACQ_ACCESS`, `PRC_READBACK`
+      (all under `DIAGNOSTICS/TESTS`), and `CAL_AIDS`'s `BOX`/
+      `CAL_V_POS`/`CAL_CLK_DLY` and `EXERCISERS`'s `CONFIGURATION`/
+      `IO`/`A_TO_D_TESTS` - `A_TO_D_TESTS` in particular is a strong
+      lead for the still-unconfirmed A/D converter identity.
+- [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
+      the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
+      config`) - both seem to configure overlapping RS-232 parameters;
+      not yet clear which wins or whether the DIP switch only sets
+      power-on defaults. Also: `COMM/DATA/ENCDG` offers ASCII/BINARY/
+      HEX waveform-data coding but only the ASCII path
+      (`print_signed_decimal_serial`/`print_param_list_response`) has
+      been identified in code so far - find the binary/hex one(s).
 - [ ] Handle the ~39-instruction decode-drift cluster in `3633` around
       physical `0xEA1A0-0xEA615` (386-only features that can't be real
       on this 8086/8088 - see `disasm/NOTES.md`). Doesn't threaten the

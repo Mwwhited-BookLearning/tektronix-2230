@@ -13,7 +13,11 @@ routines actually do.
 ## The hardware (per TekWiki, w140.com/tekwiki/wiki/2230)
 
 - CPU: **Intel 8088** (confirmed — see `disasm/NOTES.md` for how this
-  was pinned down after an initial wrong guess of a 6809).
+  was pinned down after an initial wrong guess of a 6809). A photo of
+  the main board (`HARDWARE.md`, `hardware/photos/IMG_1412.jpg`)
+  confirms the physical chip as an Intel **`P8088-2`** (1978 date
+  code) — the `-2` is Intel's 8 MHz speed grade, vs. the base part's
+  5 MHz.
   - firmware in a pair of 27512 (64Kx8) EPROMs
   - six TMS4426 16Kx4 DRAMs (main memory)
   - a pair of MCM2016H 2Kx8 SRAMs (acquisition memory)
