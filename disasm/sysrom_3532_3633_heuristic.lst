@@ -26107,7 +26107,7 @@ L_F1457:
     3532:1457  [F1457]  e91300          jmp     L_F146D  ; 0x146d
 L_F145A:
     3532:145A  [F145A]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
-    3532:145F  [F145F]  9aef038796      lcall   SUB_96C5F  ; 0x9687, 0x3ef
+    3532:145F  [F145F]  9aef038796      lcall   send_response_terminator  ; 0x9687, 0x3ef
     3532:1464  [F1464]  bf4100          mov     di, 0x41
     3532:1467  [F1467]  57              push    di
     3532:1468  [F1468]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe

@@ -1659,10 +1659,10 @@
     "notes": null
   },
   "96C5F": {
-    "name": "SUB_96C5F",
+    "name": "send_response_terminator",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "send_response_terminator",
     "notes": null
   },
   "96C93": {
@@ -1722,10 +1722,10 @@
     "notes": null
   },
   "96E5F": {
-    "name": "SUB_96E5F",
+    "name": "finish_comm_response",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "finish_comm_response",
     "notes": null
   },
   "96E9B": {

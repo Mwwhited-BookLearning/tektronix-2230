@@ -2488,7 +2488,7 @@ serial_tx_buffer_put:
     2998_alias_90000:6B78  [96B78]  7563            jne     L_96BDD  ; 0x36d
     2998_alias_90000:6B7A  [96B7A]  e91b00          jmp     L_96B98  ; 0x328
 L_96B7D:
-    2998_alias_90000:6B7D  [96B7D]  9aef058796      lcall   SUB_96E5F  ; 0x9687, 0x5ef
+    2998_alias_90000:6B7D  [96B7D]  9aef058796      lcall   finish_comm_response  ; 0x9687, 0x5ef
     2998_alias_90000:6B82  [96B82]  2bff            sub     di, di
     2998_alias_90000:6B84  [96B84]  57              push    di
     2998_alias_90000:6B85  [96B85]  9a440cf596      lcall   set_comm_critical_flag  ; 0x96f5, 0xc44
@@ -2577,7 +2577,7 @@ L_96C53:
     2998_alias_90000:6C5B  [96C5B]  8be5            mov     sp, bp
     2998_alias_90000:6C5D  [96C5D]  5d              pop     bp
     2998_alias_90000:6C5E  [96C5E]  cb              retf    
-SUB_96C5F:
+send_response_terminator:
     2998_alias_90000:6C5F  [96C5F]  55              push    bp
     2998_alias_90000:6C60  [96C60]  8bec            mov     bp, sp
     2998_alias_90000:6C62  [96C62]  83ec06          sub     sp, 6
@@ -2646,7 +2646,7 @@ L_96DE1:
     2998_alias_90000:6DE3  [96DE3]  5d              pop     bp
     2998_alias_90000:6DE4  [96DE4]  cb              retf    
 
-SUB_96E5F:
+finish_comm_response:
     2998_alias_90000:6E5F  [96E5F]  55              push    bp
     2998_alias_90000:6E60  [96E60]  8bec            mov     bp, sp
     2998_alias_90000:6E62  [96E62]  83ec06          sub     sp, 6
@@ -2665,7 +2665,7 @@ SUB_96E5F:
     2998_alias_90000:6E8A  [96E8A]  750f            jne     L_96E9B  ; 0x62b
     2998_alias_90000:6E8C  [96E8C]  c6060500ff      mov     byte ptr [5], 0xff
     2998_alias_90000:6E91  [96E91]  9af8028796      lcall   serial_tx_buffer_put  ; 0x9687, 0x2f8
-    2998_alias_90000:6E96  [96E96]  9aef038796      lcall   SUB_96C5F  ; 0x9687, 0x3ef
+    2998_alias_90000:6E96  [96E96]  9aef038796      lcall   send_response_terminator  ; 0x9687, 0x3ef
 L_96E9B:
     2998_alias_90000:6E9B  [96E9B]  803e5a0400      cmp     byte ptr [0x45a], 0
     2998_alias_90000:6EA0  [96EA0]  7420            je      L_96EC2  ; 0x652

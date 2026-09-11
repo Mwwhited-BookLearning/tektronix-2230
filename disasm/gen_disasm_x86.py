@@ -666,6 +666,36 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x96C5F: "send_response_terminator",        # comm ROM: if a
+                                               # pending-terminator
+                                               # flag [0x459] is set,
+                                               # sends CR+LF (directly
+                                               # via serial_tx_buffer_
+                                               # put for GPIB mode with
+                                               # [0x4F1] bit 0x20 set,
+                                               # or via send_serial_
+                                               # newline otherwise for
+                                               # RS-232), then marks
+                                               # completion flags
+                                               # [0x5A3]/[0x456] and
+                                               # calls set_comm_
+                                               # critical_flag(0)
+    0x96E5F: "finish_comm_response",           # comm ROM: checks a
+                                               # channel-ready bit
+                                               # (es:[0x6D6+2] bit 1);
+                                               # if set and no
+                                               # terminator already
+                                               # pending, sends a 0xFF
+                                               # marker byte via
+                                               # serial_tx_buffer_put
+                                               # then calls send_
+                                               # response_terminator;
+                                               # if data was left
+                                               # pending ([0x45A]),
+                                               # sets busy flags
+                                               # ([0x5A3]/[0x68F]) and
+                                               # calls set_comm_
+                                               # critical_flag(0)
     0x96872: "spawn_task_with_tag",             # comm ROM: (tag) -
                                                # stores tag into the
                                                # CURRENTLY running
