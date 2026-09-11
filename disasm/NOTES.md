@@ -1785,6 +1785,35 @@ layout by convention, established at compile time rather than
 literally sharing one runtime frame across multiple calls) - but this
 is speculation, not confirmed. Still not renaming any of these.
 
+**Follow-up (now with `SUB_F750A`/`SUB_F7603` both named): this
+"frame-sharing helper" theory now has a plausible mechanical basis.**
+Both end with a bare `retf` (no immediate, i.e. **caller-cleans-
+stack**), the opposite of the callee-cleans `retf N` convention used
+almost everywhere else in this codebase (including `SUB_F5D89`,
+called from the very same neighborhood, which *does* end `retf 2`).
+Their shared caller (`0xEF467`-ish) calls both with a completely
+ordinary `push`-args-then-`lcall` sequence - no special `mov bp, ...`
+trick is visible at the call site. Put together, the likely
+explanation: these functions were originally part of their caller's
+own body (sharing its `bp`-relative locals directly, which is why
+their `[bp-N]` references only make sense in light of the *caller's*
+stack layout, not a fresh frame), and the compiler's code-size
+optimizer "outlined" them into separately-callable units - skipping
+frame setup/teardown since it could prove they're only ever invoked
+from that one context with a guaranteed-compatible frame, and leaving
+stack cleanup to the caller for exactly the local scratch space that
+would need it. This would explain every symptom found in this cluster
+(no prologue, `bp`-relative addressing that "just works" only from
+specific callers, mixed `retf` conventions) without needing self-
+modifying code, a decode-tooling bug, or literally-shared open frames
+across independent `lcall`s. **Still not proven** (would need to find
+the caller's own frame layout and show the offsets genuinely alias its
+locals) but it's the most coherent explanation yet, and was enough
+supporting context to confidently name both `SUB_F750A`
+(`sync_shift_register_output`) and `SUB_F7603`
+(`apply_pending_position_delta`) - see `FUNCTIONS.md` - even without a
+conventional prologue.
+
 ## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
 
 Built in response to a direct question: of the many `L_XXXXX` branch

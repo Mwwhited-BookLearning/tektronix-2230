@@ -12903,7 +12903,7 @@ L_EF4D1:
     3633:F4F7  [EF4F7]  03cf            add     cx, di
     3633:F4F9  [EF4F9]  06              push    es
     3633:F4FA  [EF4FA]  51              push    cx
-    3633:F4FB  [EF4FB]  9aa30506f7      lcall   SUB_F7603  ; 0xf706, 0x5a3
+    3633:F4FB  [EF4FB]  9aa30506f7      lcall   apply_pending_position_delta  ; 0xf706, 0x5a3
     3633:F500  [EF500]  83c40a          add     sp, 0xa
 L_EF503:
     3633:F503  [EF503]  59              pop     cx
@@ -13839,7 +13839,7 @@ L_F7549:
     3532:7565  [F7565]  5d              pop     bp
     3532:7566  [F7566]  cb              retf    
 
-SUB_F7603:
+apply_pending_position_delta:
     3532:7603  [F7603]  833e2c0500      cmp     word ptr [0x52c], 0
     3532:7608  [F7608]  7d10            jge     L_F761A  ; 0x5ba
     3532:760A  [F760A]  c746eeffff      mov     word ptr [bp - 0x12], 0xffff

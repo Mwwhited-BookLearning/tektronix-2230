@@ -2881,6 +2881,31 @@ FUNCTIONAL_NAMES = {
                                                # scale-marker label
                                                # builder for the
                                                # readout graticule
+    0xF7603: "apply_pending_position_delta",  # reads a signed pending
+                                               # adjustment from
+                                               # [0x52C] (always reset
+                                               # to 0 once consumed -
+                                               # a one-shot "apply this"
+                                               # flag, likely fed by a
+                                               # front-panel encoder/
+                                               # knob), clamps the
+                                               # resulting position to
+                                               # [0,0xFFF], updates a
+                                               # stored position value
+                                               # via far ptr [bp-0xC]
+                                               # and computes the
+                                               # delta; if the position
+                                               # actually moved, flags
+                                               # bit 0x100 of
+                                               # [([0x570]<<1)+0x550] -
+                                               # same per-item flag
+                                               # table and channel/item
+                                               # index [0x570] that
+                                               # sync_shift_register_
+                                               # output uses - the
+                                               # scale-position-
+                                               # adjustment half of that
+                                               # same subsystem
     0xF750A: "sync_shift_register_output",    # a secondary entry point
                                                # into update_display_
                                                # mode_flags (jumps

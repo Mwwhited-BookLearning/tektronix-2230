@@ -8554,10 +8554,10 @@
     "notes": null
   },
   "F7603": {
-    "name": "SUB_F7603",
+    "name": "apply_pending_position_delta",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "apply_pending_position_delta",
     "notes": null
   },
   "F761A": {
