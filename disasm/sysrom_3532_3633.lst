@@ -160,7 +160,7 @@ L_8143D:
     2998:146C  [8146C]  5d              pop     bp
     2998:146D  [8146D]  ca0200          retf    2
 
-SUB_821F7:
+init_comm_default_params:
     2998:21F7  [821F7]  55              push    bp
     2998:21F8  [821F8]  8bec            mov     bp, sp
     2998:21FA  [821FA]  83ec06          sub     sp, 6
@@ -452,7 +452,7 @@ L_85E80:
     2998:5E92  [85E92]  c706fa040100    mov     word ptr [0x4fa], 1
     2998:5E98  [85E98]  bf0100          mov     di, 1
     2998:5E9B  [85E9B]  57              push    di
-    2998:5E9C  [85E9C]  9a1707ae81      lcall   SUB_821F7  ; 0x81ae, 0x717
+    2998:5E9C  [85E9C]  9a1707ae81      lcall   init_comm_default_params  ; 0x81ae, 0x717
     2998:5EA1  [85EA1]  c6062806ff      mov     byte ptr [0x628], 0xff
     2998:5EA6  [85EA6]  c6061c0601      mov     byte ptr [0x61c], 1
     2998:5EAB  [85EAB]  c606390600      mov     byte ptr [0x639], 0
@@ -545,7 +545,7 @@ L_9177D:
     2998_alias_90000:17B8  [917B8]  5d              pop     bp
     2998_alias_90000:17B9  [917B9]  cb              retf    
 
-SUB_924D2:
+build_comm_status_message:
     2998_alias_90000:24D2  [924D2]  55              push    bp
     2998_alias_90000:24D3  [924D3]  8bec            mov     bp, sp
     2998_alias_90000:24D5  [924D5]  83ec12          sub     sp, 0x12
@@ -13346,7 +13346,7 @@ L_F42B9:
     3532:42BE  [F42BE]  7409            je      L_F42C9  ; 0x249
     3532:42C0  [F42C0]  bf0200          mov     di, 2
     3532:42C3  [F42C3]  57              push    di
-    3532:42C4  [F42C4]  9a3209ba91      lcall   SUB_924D2  ; 0x91ba, 0x932
+    3532:42C4  [F42C4]  9a3209ba91      lcall   build_comm_status_message  ; 0x91ba, 0x932
 L_F42C9:
     3532:42C9  [F42C9]  e91600          jmp     L_F42E2  ; 0x262
 

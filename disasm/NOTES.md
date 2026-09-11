@@ -1430,10 +1430,31 @@ above:
 - It's reached via a **clean, unambiguous far call** (`lcall 0xEA34:
   0x946`, computing to physical `0xEAC86` with no ambiguity), not
   fallthrough - and the *same* literal `(0xEA34, 0x946)` target is
-  called from **3 separate places**: twice more in `160-3532` and once
-  from the comm ROM (`2998_alias_90000`). A shared target called this
-  consistently from three different ROMs strongly implies it's
-  supposed to be a real, working function.
+  called from **4 separate places**: 3 times in `160-3532` (all inside
+  one small routine near `0xF58B1`) and once from the comm ROM
+  (`2998_alias_90000`, inside `SUB_924D2`/`build_comm_status_message`).
+  A shared target called this consistently from two different ROMs
+  strongly implies it's supposed to be a real, working function.
+- **New: the calling convention is now fully understood**, even though
+  the bytes at the target still aren't. All 4 call sites push the
+  identical shape of arguments - two far pointers, `(dest_far_ptr,
+  src_far_ptr)` (`push es; push offset` twice) - consistent with a
+  small "append/copy a chunk from src to dest" utility. In `160-3532`,
+  `src` is always the fixed string-table segment `0xFF7B` at offsets
+  `0x20F`/`0x221`/`0x233`, each exactly `0x12` (18) bytes apart; reading
+  those bytes shows **not printable text** but a repeating pattern of
+  small negative-looking bytes (`0xF8`/`0xFB`/`0xFA`) terminated by
+  `0xFF`, then pairs starting with `0x07` - the same shape as the
+  already-documented vector/stroke-font draw-command data used by the
+  readout display list (see "a second, separate print mechanism"
+  below) - immediately followed in the table by the plain ASCII text
+  `" TEKTRONIX  2220"`. This strongly suggests the caller is assembling
+  a **boot-splash "TEKTRONIX" logo** by appending 3 stroke-data chunks
+  in sequence (each call advances the destination offset by `0xE`=14
+  bytes), i.e. `SUB_EAC86`'s *intended* role is something like
+  `append_stroke_or_string_chunk(dest, src)`. This makes the "it's
+  supposed to be a real function" case even stronger, but doesn't
+  explain why its actual bytes are garbage - still not resolved.
 - Checked for an off-by-a-few-bytes misalignment (the classic
   "recursive descent walked into the middle of an instruction"
   failure mode) by dumping the raw bytes a few positions before and

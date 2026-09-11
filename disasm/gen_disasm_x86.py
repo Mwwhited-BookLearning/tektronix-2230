@@ -666,6 +666,43 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x924D2: "build_comm_status_message",       # comm ROM: (index 0-3)
+                                               # picks one of 4 far-
+                                               # pointer message chunks
+                                               # (0x693/0x69D/0x6A7/
+                                               # 0x6B1, 10 bytes apart)
+                                               # by index (default/
+                                               # index<0 falls back to
+                                               # a base template at
+                                               # 0x65E), scans the base
+                                               # template for its
+                                               # length, appends the
+                                               # selected chunk onto it
+                                               # via SUB_EAC86(dest,
+                                               # src) (see NOTES.md -
+                                               # same call signature as
+                                               # the 160-3532 stroke-
+                                               # data-append call
+                                               # sites), terminates
+                                               # with 0xFF, and clears
+                                               # [0x6BB]
+    0x821F7: "init_comm_default_params",        # comm ROM: (mode) - a
+                                               # no-op unless mode==1;
+                                               # when it is, sets
+                                               # [0x4F5] to 1 or 4
+                                               # depending on whether a
+                                               # status byte at es:
+                                               # [0x732+0x1F] equals
+                                               # 0x1E (device-type
+                                               # select, likely comm-
+                                               # option-installed vs
+                                               # not), then initializes
+                                               # a batch of comm
+                                               # parameter defaults
+                                               # ([0x557]/[0x559]/
+                                               # [0x55A]/[0x55B]/
+                                               # [0x55C]/[0x560]/
+                                               # [0x562]/[0x55E])
     0x97B01: "reinit_comm_channel",             # comm ROM's own top-
                                                # level channel
                                                # reinitialization

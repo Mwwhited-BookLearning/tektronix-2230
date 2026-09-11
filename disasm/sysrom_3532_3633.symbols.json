@@ -119,10 +119,10 @@
     "notes": null
   },
   "821F7": {
-    "name": "SUB_821F7",
+    "name": "init_comm_default_params",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_comm_default_params",
     "notes": null
   },
   "82200": {
@@ -406,10 +406,10 @@
     "notes": null
   },
   "924D2": {
-    "name": "SUB_924D2",
+    "name": "build_comm_status_message",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "build_comm_status_message",
     "notes": null
   },
   "924EF": {

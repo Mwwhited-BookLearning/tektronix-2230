@@ -29664,7 +29664,7 @@ L_F3D1D:
     3532:3D31  [F3D31]  7408            je      L_F3D3B  ; 0x3d3b
     3532:3D33  [F3D33]  2bff            sub     di, di
     3532:3D35  [F3D35]  57              push    di
-    3532:3D36  [F3D36]  9a3209ba91      lcall   SUB_924D2  ; 0x91ba, 0x932
+    3532:3D36  [F3D36]  9a3209ba91      lcall   build_comm_status_message  ; 0x91ba, 0x932
 L_F3D3B:
     3532:3D3B  [F3D3B]  803eea0300      cmp     byte ptr [0x3ea], 0
     3532:3D40  [F3D40]  7414            je      L_F3D56  ; 0x3d56
@@ -30016,7 +30016,7 @@ L_F40A0:
     3532:40A5  [F40A5]  7409            je      L_F40B0  ; 0x30
     3532:40A7  [F40A7]  bf0100          mov     di, 1
     3532:40AA  [F40AA]  57              push    di
-    3532:40AB  [F40AB]  9a3209ba91      lcall   SUB_924D2  ; 0x91ba, 0x932
+    3532:40AB  [F40AB]  9a3209ba91      lcall   build_comm_status_message  ; 0x91ba, 0x932
 L_F40B0:
     3532:40B0  [F40B0]  e91600          jmp     L_F40C9  ; 0x49
 L_F40B3:
@@ -30235,7 +30235,7 @@ L_F42B9:
     3532:42BE  [F42BE]  7409            je      L_F42C9  ; 0x249
     3532:42C0  [F42C0]  bf0200          mov     di, 2
     3532:42C3  [F42C3]  57              push    di
-    3532:42C4  [F42C4]  9a3209ba91      lcall   SUB_924D2  ; 0x91ba, 0x932
+    3532:42C4  [F42C4]  9a3209ba91      lcall   build_comm_status_message  ; 0x91ba, 0x932
 L_F42C9:
     3532:42C9  [F42C9]  e91600          jmp     L_F42E2  ; 0x262
 L_F42CC:
@@ -30352,7 +30352,7 @@ L_F43DA:
     3532:43DF  [F43DF]  7409            je      L_F43EA  ; 0x36a
     3532:43E1  [F43E1]  bf0300          mov     di, 3
     3532:43E4  [F43E4]  57              push    di
-    3532:43E5  [F43E5]  9a3209ba91      lcall   SUB_924D2  ; 0x91ba, 0x932
+    3532:43E5  [F43E5]  9a3209ba91      lcall   build_comm_status_message  ; 0x91ba, 0x932
 L_F43EA:
     3532:43EA  [F43EA]  8be5            mov     sp, bp
     3532:43EC  [F43EC]  5d              pop     bp
