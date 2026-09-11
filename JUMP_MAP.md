@@ -176,11 +176,19 @@ stop
 @enduml
 ```
 
+**Cross-ROM handoff found**: `comm_rom_boot_init` (`0x9628C`, comm ROM)
+is called exactly once, from the main ROM at `0xE6D5A`, gated on
+`[0x1BF9]!=0` (i.e. only when `check_comm_option_installed` found the
+option board present, per the checksum diagram above) - this is the
+main boot sequence handing off to the comm ROM's own initialization
+(`init_far_pointer_table`, `init_comm_device_type_and_defaults`,
+`poll_dip_switch_change`, reading the rear-panel DIP switch bank - see
+`HARDWARE.md`) once its presence is confirmed.
+
 ## Level 1 detail: (more as identified)
 
 As the remaining subsystem-test subroutines above get identified, add
 a Level-1 diagram here per subsystem showing its own internal control
 flow (and update `FUNCTIONS.md` + the relevant `.symbols.json` at the
-same time). Also still open from the main boot sequence: what
-`SUB_E3B1`/`SUB_FDB3`/`SUB_F9FE`/`SUB_F156` (called from `SUB_E6AAB`)
-and `SUB_E75C`/`SUB_FBCF`/`SUB_E925`/`SUB_E723` actually do.
+same time). Still open (still-unnamed, per `TODO.md`'s renaming
+tracker): `SUB_F156E`/`SUB_F1581` and `SUB_FBCF3`.

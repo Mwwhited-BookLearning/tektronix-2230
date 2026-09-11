@@ -322,10 +322,10 @@
     "notes": null
   },
   "85E66": {
-    "name": "SUB_85E66",
+    "name": "init_comm_device_type_and_defaults",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_comm_device_type_and_defaults",
     "notes": null
   },
   "85E7D": {
@@ -1134,17 +1134,17 @@
     "notes": null
   },
   "9628C": {
-    "name": "SUB_9628C",
+    "name": "comm_rom_boot_init",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "comm_rom_boot_init",
     "notes": null
   },
   "962C2": {
-    "name": "SUB_962C2",
+    "name": "poll_dip_switch_change",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "poll_dip_switch_change",
     "notes": null
   },
   "96316": {

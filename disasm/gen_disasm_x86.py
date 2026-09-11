@@ -666,6 +666,48 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x9628C: "comm_rom_boot_init",              # called exactly once,
+                                               # cross-ROM, from the
+                                               # main ROM's boot
+                                               # sequence (0xE6D5A),
+                                               # gated by `[0x1BF9]!=0`
+                                               # (the comm-option-
+                                               # installed result byte
+                                               # from check_comm_
+                                               # option_installed) -
+                                               # bootstraps the comm
+                                               # ROM: init_far_pointer_
+                                               # table, init_comm_
+                                               # device_type_and_
+                                               # defaults, then poll_
+                                               # dip_switch_change, all
+                                               # wrapped in DS-segment
+                                               # switches to/from
+                                               # 0x8F80
+    0x85E66: "init_comm_device_type_and_defaults", # detects device
+                                               # type the same way as
+                                               # init_comm_default_
+                                               # params (es:
+                                               # [0x732+0x1F]==0x1E ->
+                                               # [0x4F5]=1 else 4),
+                                               # sets buffer-size-like
+                                               # defaults [0x4FC]/
+                                               # [0x4F8]/[0x4FA], then
+                                               # calls init_comm_
+                                               # default_params(1) for
+                                               # the rest
+    0x962C2: "poll_dip_switch_change",          # toggles a strobe/
+                                               # chip-select-looking
+                                               # flag (es:[0x6E2+3],
+                                               # 0 then 1) bracketing
+                                               # two reads of the GPIB-
+                                               # config DIP switch byte
+                                               # (far ptr [0x6DA]) and
+                                               # XORs them to detect
+                                               # which bits changed,
+                                               # then branches on bits
+                                               # 0x40/0x80 of the
+                                               # difference
     0x966E7: "read_dip_switches_serial_config", # comm ROM: reads a
                                                # hardware config-switch
                                                # byte via far ptr

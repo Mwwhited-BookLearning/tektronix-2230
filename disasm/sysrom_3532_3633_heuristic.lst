@@ -10875,7 +10875,7 @@ SUB_E6D4D:
     3633:6D50  [E6D50]  83ec06          sub     sp, 6
     3633:6D53  [E6D53]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3633:6D58  [E6D58]  7442            je      L_E6D9C  ; 0x31c
-    3633:6D5A  [E6D5A]  9a0c002896      lcall   SUB_9628C  ; 0x9628, 0xc
+    3633:6D5A  [E6D5A]  9a0c002896      lcall   comm_rom_boot_init  ; 0x9628, 0xc
     3633:6D5F  [E6D5F]  c70640070400    mov     word ptr [0x740], 4
     3633:6D65  [E6D65]  c7064207f596    mov     word ptr [0x742], 0x96f5
     3633:6D6B  [E6D6B]  c70638070500    mov     word ptr [0x738], 5

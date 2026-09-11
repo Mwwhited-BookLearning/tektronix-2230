@@ -433,7 +433,7 @@ L_852F2:
     2998:52FF  [852FF]  5d              pop     bp
     2998:5300  [85300]  cb              retf    
 
-SUB_85E66:
+init_comm_device_type_and_defaults:
     2998:5E66  [85E66]  55              push    bp
     2998:5E67  [85E67]  8bec            mov     bp, sp
     2998:5E69  [85E69]  83ec06          sub     sp, 6
@@ -1943,7 +1943,7 @@ init_gpib_record:
     2998_alias_90000:6286  [96286]  8be5            mov     sp, bp
     2998_alias_90000:6288  [96288]  5d              pop     bp
     2998_alias_90000:6289  [96289]  ca0200          retf    2
-SUB_9628C:
+comm_rom_boot_init:
     2998_alias_90000:628C  [9628C]  55              push    bp
     2998_alias_90000:628D  [9628D]  8bec            mov     bp, sp
     2998_alias_90000:628F  [9628F]  83ec08          sub     sp, 8
@@ -1955,14 +1955,14 @@ SUB_9628C:
     2998_alias_90000:62A3  [962A3]  bf808f          mov     di, 0x8f80
     2998_alias_90000:62A6  [962A6]  57              push    di
     2998_alias_90000:62A7  [962A7]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
-    2998_alias_90000:62AC  [962AC]  9a0600e685      lcall   SUB_85E66  ; 0x85e6, 6
-    2998_alias_90000:62B1  [962B1]  9a42002896      lcall   SUB_962C2  ; 0x9628, 0x42
+    2998_alias_90000:62AC  [962AC]  9a0600e685      lcall   init_comm_device_type_and_defaults  ; 0x85e6, 6
+    2998_alias_90000:62B1  [962B1]  9a42002896      lcall   poll_dip_switch_change  ; 0x9628, 0x42
     2998_alias_90000:62B6  [962B6]  ff76f8          push    word ptr [bp - 8]
     2998_alias_90000:62B9  [962B9]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998_alias_90000:62BE  [962BE]  8be5            mov     sp, bp
     2998_alias_90000:62C0  [962C0]  5d              pop     bp
     2998_alias_90000:62C1  [962C1]  cb              retf    
-SUB_962C2:
+poll_dip_switch_change:
     2998_alias_90000:62C2  [962C2]  55              push    bp
     2998_alias_90000:62C3  [962C3]  8bec            mov     bp, sp
     2998_alias_90000:62C5  [962C5]  83ec08          sub     sp, 8
@@ -10748,7 +10748,7 @@ SUB_E6D4D:
     3633:6D50  [E6D50]  83ec06          sub     sp, 6
     3633:6D53  [E6D53]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3633:6D58  [E6D58]  7442            je      L_E6D9C  ; 0x31c
-    3633:6D5A  [E6D5A]  9a0c002896      lcall   SUB_9628C  ; 0x9628, 0xc
+    3633:6D5A  [E6D5A]  9a0c002896      lcall   comm_rom_boot_init  ; 0x9628, 0xc
     3633:6D5F  [E6D5F]  c70640070400    mov     word ptr [0x740], 4
     3633:6D65  [E6D65]  c7064207f596    mov     word ptr [0x742], 0x96f5
     3633:6D6B  [E6D6B]  c70638070500    mov     word ptr [0x738], 5
