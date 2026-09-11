@@ -87,6 +87,13 @@
       valid code but rely on a `bp`/`si` implicit-register calling
       convention this project doesn't model yet - also left unnamed;
       see the "Follow-up" paragraph appended to that same NOTES.md
+      section. **Update**: this isn't localized to the boot-splash
+      area - `SUB_E99DF`/`SUB_EADA0` (outright garbage, like
+      `SUB_EAC86`) and `SUB_E8E03`/`SUB_E8E29`/`SUB_ED9BC`/`SUB_EEA58`
+      (coherent code, ambiguous entry, like `SUB_F5898`) are further
+      instances found elsewhere in `160-3633`, including one inside the
+      acquisition/plot scale-clamp subsystem. See the "not confined to
+      the boot-splash neighborhood" paragraph in the same NOTES.md
       section.
 - [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
       ports, near the confirmed readout/CRT write port) actually are -

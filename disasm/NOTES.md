@@ -1683,6 +1683,43 @@ single coherent (if unusual) subsystem - the "TEKTRONIX" boot-splash
 renderer - built around an implicit-register calling convention, not
 three unrelated anomalies.
 
+**The phenomenon is not confined to the boot-splash neighborhood.**
+While working through the remaining unnamed proven-set functions,
+several more clean far-call targets turned up opening with an
+instruction that doesn't make sense as a true entry point (no
+`push bp; mov bp,sp`, and/or an operand referencing a register that
+nothing sets up beforehand), splitting into the same two buckets:
+
+- **Outright garbage** (same bucket as `SUB_EAC86`): `SUB_E99DF`
+  (`160-3633`) opens `int1` / `add cl,dl` / `ljmp 0x830A:0x5689` -
+  that far jump target isn't a sane address either. Called once, from
+  `0xF42AB`. Its own body calls `SUB_EADA0` (`call`, near, from deep
+  inside the garbage), which itself decodes as a long run of bare
+  `add ax, <imm>` instructions - technically valid opcodes, but with
+  no other instructions mixed in, indistinguishable from data that
+  happens to disassemble as `add ax,imm16` (opcode `0x05`). Neither
+  renamed.
+- **Coherent code, ambiguous entry** (same bucket as `SUB_F5898`/
+  `SUB_E97DC`): `SUB_E8E03`/`SUB_E8E29` (adjacent, `160-3633`, called
+  from `0xF0CD7`/`0xE7E5D` respectively - the second is likely reached
+  by fallthrough from the first too) call real, already-confirmed
+  functions (`handle_gpib_device_clear`, `scale_and_plot_point`) with
+  sensible-looking logic once past the first instruction or two.
+  `SUB_ED9BC` (called from `0xE6740`) and `SUB_EEA58` (called from
+  `0xE8E20`) are the same shape, and `SUB_ED9BC` in particular falls
+  through into the `[0x1BEC]` scale-value clamp code documented
+  elsewhere (the same clamp region `SUB_F1581` tail-jumps into via
+  `L_EDA0A` after pushing an unconsumed-looking constant `0x5102`) -
+  i.e. the acquisition/plot scale-clamp subsystem has its *own*
+  cluster of these, separate from the boot-splash one.
+
+None of these six were renamed. Taken together with the boot-splash
+cluster, this now looks like a **project-wide convention** (values
+passed in registers/`bp` across certain far calls, established by
+matching caller/callee code this tooling doesn't model) rather than a
+one-off anomaly - worth keeping in mind before assuming any remaining
+odd-looking function opener is decode drift.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to
