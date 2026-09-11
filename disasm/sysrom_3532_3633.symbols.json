@@ -1750,10 +1750,10 @@
     "notes": null
   },
   "96EC6": {
-    "name": "SUB_96EC6",
+    "name": "release_comm_hold_critical",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "release_comm_hold_critical",
     "notes": null
   },
   "96F09": {
@@ -1764,10 +1764,10 @@
     "notes": null
   },
   "96F0D": {
-    "name": "SUB_96F0D",
+    "name": "engage_comm_hold_critical",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "engage_comm_hold_critical",
     "notes": null
   },
   "96F50": {

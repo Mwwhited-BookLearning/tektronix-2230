@@ -11004,7 +11004,7 @@ notify_comm_rom_a:
     3633:6EEB  [E6EEB]  740c            je      L_E6EF9  ; 0x479
     3633:6EED  [E6EED]  803efa1b00      cmp     byte ptr [0x1bfa], 0
     3633:6EF2  [E6EF2]  7505            jne     L_E6EF9  ; 0x479
-    3633:6EF4  [E6EF4]  9a9d068796      lcall   SUB_96F0D  ; 0x9687, 0x69d
+    3633:6EF4  [E6EF4]  9a9d068796      lcall   engage_comm_hold_critical  ; 0x9687, 0x69d
 L_E6EF9:
     3633:6EF9  [E6EF9]  8be5            mov     sp, bp
     3633:6EFB  [E6EFB]  5d              pop     bp
@@ -11017,7 +11017,7 @@ notify_comm_rom_b:
     3633:6F08  [E6F08]  741d            je      L_E6F27  ; 0x4a7
     3633:6F0A  [E6F0A]  803efa1b00      cmp     byte ptr [0x1bfa], 0
     3633:6F0F  [E6F0F]  7516            jne     L_E6F27  ; 0x4a7
-    3633:6F11  [E6F11]  9a56068796      lcall   SUB_96EC6  ; 0x9687, 0x656
+    3633:6F11  [E6F11]  9a56068796      lcall   release_comm_hold_critical  ; 0x9687, 0x656
     3633:6F16  [E6F16]  833ecd1a0a      cmp     word ptr [0x1acd], 0xa
     3633:6F1B  [E6F1B]  740a            je      L_E6F27  ; 0x4a7
     3633:6F1D  [E6F1D]  9a0c0093e6      lcall   restart_current_task  ; 0xe693, 0xc

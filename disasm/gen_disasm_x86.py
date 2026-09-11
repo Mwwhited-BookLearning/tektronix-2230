@@ -666,6 +666,25 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x96EC6: "release_comm_hold_critical",      # comm ROM: RS-232-only
+                                               # ([0x629]==0) wrapper -
+                                               # under DS switch to
+                                               # 0x8F80, engages the
+                                               # comm critical flag
+                                               # (set_comm_critical_
+                                               # flag(0xFFFF), saving
+                                               # the old value), calls
+                                               # release_comm_hold(2),
+                                               # then restores the
+                                               # critical flag to its
+                                               # saved value
+    0x96F0D: "engage_comm_hold_critical",       # comm ROM: mirror of
+                                               # release_comm_hold_
+                                               # critical - same RS-232
+                                               # -only critical-section
+                                               # wrapper, but calls
+                                               # engage_comm_hold(2)
+                                               # instead
     0xE004F: "plot_point_with_flag_update",     # (arg) - calls scale_
                                                # and_plot_point_default
                                                # (0x8F80), then if
