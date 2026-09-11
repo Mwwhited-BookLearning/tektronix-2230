@@ -98,6 +98,13 @@ write - consistent with a **front-panel setting (e.g. an attenuator,
 gain, or offset calibration value) being pushed out to analog hardware
 whenever it changes**. Peripheral identity still not confirmed against
 a schematic, but the *mechanism* (serial shift-register write) now is.
+**New candidate from hardware photos** (see `HARDWARE.md`): the comm
+option board's rear-panel "AUXILIARY CONNECTOR" has a pen-lift relay
+plus analog X/Y outputs for driving an X-Y plotter directly - worth
+checking whether this shift-register write is what toggles that relay
+in sync with the HPGL PU/PD state (`[0x6CA]`) tracked by
+`update_plot_position`/`plot_line_to`, rather than (or in addition to)
+a front-panel setting.
 
 All writes are 16-bit (`ax`), suggesting word-wide peripheral
 registers. No documentation yet on which physical device these

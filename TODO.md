@@ -103,10 +103,29 @@
 - [ ] Which physical front-panel control each of the 3
       `update_menu_position`-range-scan self-tests
       (`selftest_front_panel_switch_a`/`_b`, `selftest_comm_option_
-      switch`) corresponds to isn't confirmed.
+      switch`) corresponds to isn't confirmed. **New**: `HARDWARE.md`
+      now has a front-panel photo with all control-group labels
+      (VERTICAL MODE, ACQUISITION, TRIGGER, etc.) - use it once tracing
+      `[0x4E7]`/`[0x4E8]` bit ranges.
 - [ ] What hardware `0x403FFA`/`0x403FFB` belong to (read every timer
       tick by `scheduler_tick_service`) isn't confirmed - front-panel
       key/encoder status is the leading candidate.
+- [ ] **New from hardware photos** (`HARDWARE.md`): the comm option
+      board's rear panel has a 10-position "PARAMETERS" DIP switch -
+      no code has been found yet that reads a literal DIP-switch I/O
+      port; find what sources `[0x4ED]` (parity mode), `[0x4EF]`
+      (CR/LF option), `[0x629]` (GPIB/RS-232 mode?), and the GPIB
+      address table `SUB_97905` reads from - likely all or partly this
+      switch bank, read once at startup.
+- [ ] **New from hardware photos**: the same rear panel's 9-pin
+      "AUXILIARY CONNECTOR" has a pen-lift relay plus analog X/Y
+      outputs - a direct X-Y plotter interface. Check whether
+      `write_hw_shift_register` (ports `0xD1`/`0xC4`) is what drives
+      this relay in sync with the HPGL PU/PD state (`[0x6CA]`), as an
+      alternative/addition to the current "front-panel setting" guess.
+      Also confirms two separate RS-232 connectors exist (DTE and
+      DCE) - re-examine whether `[0x629]` is actually a DTE/DCE port
+      select rather than (or in addition to) GPIB-vs-RS-232.
 
 ## Ongoing documentation goal
 

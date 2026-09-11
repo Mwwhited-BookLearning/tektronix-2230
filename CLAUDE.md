@@ -24,6 +24,11 @@ are already settled and documented there and in `disasm/NOTES.md`.
   for the authoritative technical log (CPU, memory map, ROM roles).
 - `CONTEXT.md` — why this project exists and what's been learned about
   the hardware/device itself.
+- `HARDWARE.md` — primary-source photos of the physical unit (front
+  panel, rear-panel connectors, DIP switches) in `hardware/photos/`,
+  with notes cross-referencing them against firmware findings. Add to
+  this whenever new hardware photos come in; split into multiple files
+  if it grows unwieldy.
 - `MEMORY_MAP.md` — the physical memory/IO map as understood so far
   (with a PlantUML diagram). **Update this whenever a new address
   range, segment, or I/O port gets identified or corrected** — it's
