@@ -1275,6 +1275,40 @@ non-drifted floating-point instruction in the middle of otherwise
 completely ordinary compiled-C integer code, not part of any known
 decode-drift cluster).
 
+## Resolved (partially): SUB_E90A5/SUB_E92B0 are call targets landing 1 byte into a "mov di, tag" instruction
+
+An earlier session's investigation of `SUB_E90A5` and `SUB_E92B0` (both
+called via genuine `lcall`, both opening with the same
+capstone-decoded-as-garbage bytes `1f 00 57 9a ...` / `00 57 9a ...`)
+is now explained, at least mechanically. In both cases, the call
+target address is exactly **one byte past** the start of a `mov di,
+TAG` instruction (`BF <tag_lo> 00`, 3 bytes) that a separate,
+already-understood fallthrough/jump path executes normally as part of
+the same repeating pattern used throughout `assert_and_halt`: `mov di,
+TAG; push di; lcall convert_sample_value; push di; push ax; lcall
+halt_cpu`. Landing 1 byte in means the CPU instead starts decoding
+from the immediate's low byte (which, for tag values `< 0x100`, equals
+the tag itself) and the always-zero high byte, producing exactly the
+"garbage" opcodes seen (e.g. `1f` = `pop ds`, `00 57 9a` = `add byte
+[bx-0x66], dl`, etc). For `SUB_E92B0` specifically, tracing both
+byte streams forward shows they **reconverge exactly at `0xE92B7`**
+with identical subsequent bytes (`mov word [bp-0xa], ax`, the start of
+the next `convert_sample_value` result store) - strong confirmation
+this is a real, reproducible byte-level coincidence and not a
+transcription error.
+
+**Not fully resolved:** *why* something calls directly into what looks
+like the middle of another check's tag-setup instruction, rather than
+its intended start. Possibly these call sites intentionally reuse a
+"skip the redundant tag load, the value we want is already what's
+sitting in that immediate's low byte" trick, or possibly this is
+itself a symptom of the same `0x0F`-style capstone-vs-real-8086
+opcode-table mismatch documented for `SUB_F6382` interacting badly
+with an unrelated coincidence here - not pursued further. Left
+`SUB_E90A5`/`SUB_E92B0` unrenamed; they are not independent functions
+worth naming, just artifacts of where a real call happens to land
+inside `assert_and_halt`'s/`plot_scaled_point`'s tag-dispatch code.
+
 ## Found: RS-232 software flow control (XON/XOFF) in the comm ROM
 
 `get_xon_xoff_byte` (`0x9751A`, `160-2998`) is a small, unambiguous
