@@ -684,15 +684,26 @@ already-decoded code:
 
 | IVT slot (int #) | Handler installed | When |
 |---|---|---|
-| 0x008 (INT 2, NMI) | `E5D1:0057` (`SUB_E5D67`) | at reset |
+| 0x008 (INT 2, NMI) | `E5D1:0057` (`INT2_HANDLER_EARLY`) | at reset |
 | 0x004 (INT 1, trap) | `E5D1:019D` (`INT1_HANDLER`) | at reset |
 | 0x3FC (INT 255) | `E5D1:0090` (`INT255_HANDLER_EARLY`) | at reset |
 | 0x3FC (INT 255) | `E60B:0005` (`INT255_HANDLER_LATE`) | later, overwrites the above |
 | 0x008 (INT 2, NMI) | `E60B:003A` (`INT2_HANDLER_LATE`) | later, overwrites the reset-time NMI handler |
 
-These 4 non-`SUB_E5D67` handlers are entry points nothing in the
-program's direct call graph would ever reach (only the corresponding
-interrupt firing calls them), so they were added to
+**`INT2_HANDLER_EARLY` read closely (renamed from `SUB_E5D67`)**: it's
+the direct counterpart of `INT255_HANDLER_EARLY`/`_LATE` (same
+prologue shape, same "early installed at reset, later replaced"
+lifecycle) - reads the hardware tick bytes at physical `0x403FFA`/
+`0x403FFB` into `[0x758]`/`[0x759]`, increments the tick counter
+`[0x752]`, ORs `[0x1AF2]` into the pending-work flags `[0x1AEE]`, and
+calls `delay_read_128w`, all before `iret`. `INT2_HANDLER_LATE` (below)
+adds the actual task-scheduler behavior on top once installed - the
+EARLY/LATE split for INT2 mirrors the diagnostic-vs-normal-mode
+distinction already suspected for INT255.
+
+These 4 non-`INT2_HANDLER_EARLY` handlers are entry points nothing in
+the program's direct call graph would ever reach (only the
+corresponding interrupt firing calls them), so they were added to
 `gen_disasm_x86.py`'s `ENTRY_POINTS` list and seeded directly. This
 raised coverage from 9,369 to 10,360 instructions. Re-running the same
 vector-tracing search against the newly-reached code found no further
@@ -724,11 +735,19 @@ NMI handler, it implements a **small task/context switcher**:
    `L_E5E99` (in the boot-adjacent `0xE5D1` segment) - **a per-task
    stack-overflow guard**.
 3. Sets a "ready" flag bit (`0x40`) for the current task in a flags
-   table at `[0x1A91 + idx]`, calls `SUB_E6524` (not yet examined -
-   very likely "pick the next task to run" or "signal work
-   available"), then falls into `switch_to_next_task` (`0xE6166`).
-4. `switch_to_next_task` re-reads `[0x1ACD]` (now presumably updated by
-   `SUB_E6524` to the *next* task's index), checks that task's ready
+   table at `[0x1A91 + idx]`, calls `scheduler_tick_service`
+   (`0xE6524` - see "the per-tick heartbeat" below, NOT the task
+   picker as originally guessed here), then falls into
+   `switch_to_next_task` (`0xE6166`).
+4. `switch_to_next_task` calls **`select_next_ready_task`** (`0xE5C65`
+   - the actual "pick the next task to run" logic guessed at above):
+   it walks BACKWARD through the same 12-entry per-task ready-state
+   table at `[idx + 0x1A91]`, looking for a task whose ready bits
+   (low nibble, after masking off bits `0xB0`) are nonzero, and writes
+   the found index into `[0x1ACD]` (also setting `[0x1A8F]` to `0` if
+   the found index is `8` - very plausibly a distinguished idle/
+   background task slot - or `0x200` otherwise). `switch_to_next_task`
+   then re-reads `[0x1ACD]` (now updated), checks that task's ready
    flag - if set, loads *that* task's saved `SP`/`SS` from the same
    `[0x1A9D + idx*4]` table and resumes it (the standard 9-register
    pop + `iret` epilogue, now running on the new task's stack); if not

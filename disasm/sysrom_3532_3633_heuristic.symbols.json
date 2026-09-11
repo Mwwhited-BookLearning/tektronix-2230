@@ -3766,10 +3766,10 @@
     "notes": null
   },
   "E3E97": {
-    "name": "SUB_E3E97",
+    "name": "draw_display_test_pattern",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "draw_display_test_pattern",
     "notes": null
   },
   "E3ECA": {
@@ -4284,10 +4284,10 @@
     "notes": null
   },
   "E4858": {
-    "name": "SUB_E4858",
+    "name": "step_readout_window_pattern",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_readout_window_pattern",
     "notes": null
   },
   "E486C": {
@@ -4858,10 +4858,10 @@
     "notes": null
   },
   "E5C65": {
-    "name": "SUB_E5C65",
+    "name": "select_next_ready_task",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "select_next_ready_task",
     "notes": null
   },
   "E5C89": {
@@ -4991,7 +4991,7 @@
     "notes": null
   },
   "E5D67": {
-    "name": "SUB_E5D67",
+    "name": "INT2_HANDLER_EARLY",
     "kind": "sub",
     "ref_count": 1,
     "functional_name": null,

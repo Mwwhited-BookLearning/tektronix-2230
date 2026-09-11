@@ -7873,7 +7873,7 @@ L_E3E03:
     3633:3E52  [E3E52]  8946ea          mov     word ptr [bp - 0x16], ax
     3633:3E55  [E3E55]  803e831b14      cmp     byte ptr [0x1b83], 0x14
     3633:3E5A  [E3E5A]  7505            jne     L_E3E61  ; 0x351
-    3633:3E5C  [E3E5C]  9a8703b1e3      lcall   SUB_E3E97  ; 0xe3b1, 0x387
+    3633:3E5C  [E3E5C]  9a8703b1e3      lcall   draw_display_test_pattern  ; 0xe3b1, 0x387
 L_E3E61:
     3633:3E61  [E3E61]  8b7ef6          mov     di, word ptr [bp - 0xa]
     3633:3E64  [E3E64]  ff46f6          inc     word ptr [bp - 0xa]
@@ -7895,7 +7895,7 @@ L_E3E8E:
     3633:3E93  [E3E93]  8be5            mov     sp, bp
     3633:3E95  [E3E95]  5d              pop     bp
     3633:3E96  [E3E96]  cb              retf    
-SUB_E3E97:
+draw_display_test_pattern:
     3633:3E97  [E3E97]  55              push    bp
     3633:3E98  [E3E98]  8bec            mov     bp, sp
     3633:3E9A  [E3E9A]  83ec08          sub     sp, 8
@@ -8587,7 +8587,7 @@ refresh_report_display:
     3633:46AE  [E46AE]  803e7a1b01      cmp     byte ptr [0x1b7a], 1
     3633:46B3  [E46B3]  7408            je      L_E46BD  ; 0xed
     3633:46B5  [E46B5]  ff7606          push    word ptr [bp + 6]
-    3633:46B8  [E46B8]  9a88025de4      lcall   SUB_E4858  ; 0xe45d, 0x288
+    3633:46B8  [E46B8]  9a88025de4      lcall   step_readout_window_pattern  ; 0xe45d, 0x288
 L_E46BD:
     3633:46BD  [E46BD]  8be5            mov     sp, bp
     3633:46BF  [E46BF]  5d              pop     bp
@@ -8754,7 +8754,7 @@ L_E4852:
     3633:4852  [E4852]  8be5            mov     sp, bp
     3633:4854  [E4854]  5d              pop     bp
     3633:4855  [E4855]  ca0200          retf    2
-SUB_E4858:
+step_readout_window_pattern:
     3633:4858  [E4858]  55              push    bp
     3633:4859  [E4859]  8bec            mov     bp, sp
     3633:485B  [E485B]  83ec06          sub     sp, 6
@@ -9489,7 +9489,7 @@ L_E5C5E:
     3633:5C60  [E5C60]  5d              pop     bp
     3633:5C61  [E5C61]  ca0200          retf    2
 
-SUB_E5C65:
+select_next_ready_task:
     3633:5C65  [E5C65]  55              push    bp
     3633:5C66  [E5C66]  8bec            mov     bp, sp
     3633:5C68  [E5C68]  51              push    cx
@@ -9594,7 +9594,7 @@ scan_low_ram_chunk2:
     3633:5D61  [E5D61]  b92000          mov     cx, 0x20
     3633:5D64  [E5D64]  f3ad            rep lodsw ax, word ptr [si]
     3633:5D66  [E5D66]  cb              retf    
-SUB_E5D67:
+INT2_HANDLER_EARLY:
     3633:5D67  [E5D67]  56              push    si
     3633:5D68  [E5D68]  1e              push    ds
     3633:5D69  [E5D69]  06              push    es
@@ -9697,7 +9697,7 @@ ENTRY_E5D1_C7:
     3633:5E41  [E5E41]  8ec2            mov     es, dx
     3633:5E43  [E5E43]  bbfa3f          mov     bx, 0x3ffa
     3633:5E46  [E5E46]  268b37          mov     si, word ptr es:[bx]
-    3633:5E49  [E5E49]  9a5700d1e5      lcall   SUB_E5D67  ; 0xe5d1, 0x57
+    3633:5E49  [E5E49]  9a5700d1e5      lcall   INT2_HANDLER_EARLY  ; 0xe5d1, 0x57
     3633:5E4E  [E5E4E]  ea2b00a8e6      ljmp    L_E6AAB  ; 0xe6a8:0x2b
 install_late_interrupt_vectors:
     3633:5E53  [E5E53]  fa              cli     
@@ -9837,7 +9837,7 @@ L_E6157:
     3633:6164  [E6164]  58              pop     ax
     3633:6165  [E6165]  cf              iret    
 switch_to_next_task:
-    3633:6166  [E6166]  9a0500c6e5      lcall   SUB_E5C65  ; 0xe5c6, 5
+    3633:6166  [E6166]  9a0500c6e5      lcall   select_next_ready_task  ; 0xe5c6, 5
     3633:616B  [E616B]  bb911a          mov     bx, 0x1a91
     3633:616E  [E616E]  a1cd1a          mov     ax, word ptr [0x1acd]
     3633:6171  [E6171]  03d8            add     bx, ax

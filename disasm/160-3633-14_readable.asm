@@ -5070,7 +5070,7 @@ L_E3E8E:
     mov sp, bp                               ; 3E93: mov sp, bp
     pop bp                                   ; 3E95: pop bp
     retf                                     ; 3E96: retf 
-SUB_E3E97:
+draw_display_test_pattern:
     push bp                                  ; 3E97: push bp
     mov bp, sp                               ; 3E98: mov bp, sp
     sub sp, 8                                ; 3E9A: sub sp, 8
@@ -5939,7 +5939,7 @@ L_E4852:
     mov sp, bp                               ; 4852: mov sp, bp
     pop bp                                   ; 4854: pop bp
     retf 2                                   ; 4855: retf 2
-SUB_E4858:
+step_readout_window_pattern:
     push bp                                  ; 4858: push bp
     mov bp, sp                               ; 4859: mov bp, sp
     sub sp, 6                                ; 485B: sub sp, 6
@@ -6876,7 +6876,7 @@ L_E5C5E:
     pop bp                                   ; 5C60: pop bp
     retf 2                                   ; 5C61: retf 2
     db 0xff  ; 5C64
-SUB_E5C65:
+select_next_ready_task:
     push bp                                  ; 5C65: push bp
     mov bp, sp                               ; 5C66: mov bp, sp
     push cx                                  ; 5C68: push cx
@@ -6983,7 +6983,7 @@ scan_low_ram_chunk2:
     mov cx, 0x20                             ; 5D61: mov cx, 0x20
     rep lodsw                                ; 5D64: rep lodsw ax, word ptr [si]
     retf                                     ; 5D66: retf 
-SUB_E5D67:
+INT2_HANDLER_EARLY:
     push si                                  ; 5D67: push si
     push ds                                  ; 5D68: push ds
     push es                                  ; 5D69: push es

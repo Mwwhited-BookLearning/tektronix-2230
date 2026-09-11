@@ -267,6 +267,10 @@ range-scan tests corresponds to.
 | `0x961E9` | `init_gpib_record` **(renamed)** | `(record_index)` - zeroes 5 word fields and sets a status byte to 1 within one 12-byte entry of the `[0x73E]` record table (the same table `build_gpib_message_checksum` reads a length field from) | Confirmed |
 | `0x9605A` | `checksum_bytes` **(renamed)** | `(far ptr, count)` - sums `count` bytes into a byte accumulator (wrapping), returns it - a plain byte checksum | Confirmed |
 | `0x96087` | `memset_far` **(renamed)** | `(far ptr, fill_byte, count)` - writes `fill_byte` to `count` consecutive bytes | Confirmed |
+| `0xE3E97` | `draw_display_test_pattern` **(renamed)** | Called from `run_selftest_sequence`'s wrap-up phase (right after "Power up tests complete."), gated on `[0x1B83]==0x14`: draws two 250-point diagonal lines via `plot_readout_point_scaled` - the readout test pattern for the "MI / line stuck high" interrupt-line check | Mechanism confirmed |
+| `0xE4858` | `step_readout_window_pattern` **(renamed)** | Sibling of `step_progress_pattern_*`, targeting the readout-window register range `0x40000+0x6F8..0x6FF` (8 bytes) with a cycling counter `[0x1B16]` | Mechanism confirmed |
+| `0xE5C65` | `select_next_ready_task` **(renamed)** | The task scheduler's task-selection logic: walks the 12-entry per-task ready-state table at `[task_idx+0x1A91]` (confirms it's a real ready/priority table, not plot-specific) looking for a ready task, sets `[0x1ACD]` (current task index) and `[0x1A8F]` | Confirmed |
+| `0xE5D67` | `INT2_HANDLER_EARLY` **(renamed)** | INT 2 (NMI) handler installed at reset, replaced later by `INT2_HANDLER_LATE`: reads the hardware tick bytes at `0x403FFA`/`0x403FFB` into `[0x758]`/`[0x759]`, increments the tick counter `[0x752]`, ORs `[0x1AF2]` into `[0x1AEE]`, calls `delay_read_128w` | Confirmed - already in `disasm/NOTES.md`'s IVT table, just not yet named to match the `INT255_HANDLER_EARLY/LATE` family |
 
 The remaining ~400 heuristically-found functions (`FUNC_2998_XXXX` in
 `disasm/160-2998-14.lst`) are candidates once specific ones are traced

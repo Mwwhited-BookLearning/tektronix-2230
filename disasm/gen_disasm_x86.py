@@ -62,6 +62,25 @@ ENTRY_POINTS = [
     # hardware/software interrupt actually firing.
     (0xE5D1, 0x019D, "INT1_HANDLER"),           # INT 1 (single-step/trap)
     (0xE5D1, 0x0090, "INT255_HANDLER_EARLY"),   # INT 255, installed at reset
+    (0xE5D1, 0x0057, "INT2_HANDLER_EARLY"),     # INT 2 (NMI), installed at
+                                               # reset (0xE5D67) - already
+                                               # documented in NOTES.md's
+                                               # IVT table but never
+                                               # renamed to match the
+                                               # INT255_HANDLER_EARLY/LATE
+                                               # family. Reads the hardware
+                                               # tick bytes at physical
+                                               # 0x403FFA/0x403FFB into
+                                               # [0x758]/[0x759],
+                                               # increments the tick
+                                               # counter [0x752], ORs
+                                               # [0x1AF2] into the pending-
+                                               # work flags [0x1AEE], and
+                                               # calls delay_read_128w -
+                                               # later replaced by
+                                               # INT2_HANDLER_LATE (which
+                                               # adds the task-scheduler
+                                               # behavior on top)
     (0xE60B, 0x0005, "INT255_HANDLER_LATE"),    # INT 255, reinstalled later
     (0xE60B, 0x003A, "INT2_HANDLER_LATE"),      # INT 2 (NMI), reinstalled later
     # Both 16KB pages at file offset 0x8000 and 0xC000 in the comm/GPIB
@@ -717,6 +736,81 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE5C65: "select_next_ready_task",          # task scheduler: picks
+                                               # a starting group via
+                                               # [0x1B76]/[0x760]
+                                               # flags into [0x79A],
+                                               # then walks BACKWARD
+                                               # through the 12-entry
+                                               # per-task ready-state
+                                               # table at
+                                               # [task_idx+0x1A91]
+                                               # (the SAME table
+                                               # update_plot_retry_
+                                               # counters/spawn_task_
+                                               # with_tag use - confirms
+                                               # it's a genuine per-task
+                                               # ready/priority table,
+                                               # not plot-specific)
+                                               # looking for a task
+                                               # whose low nibble
+                                               # (after masking off
+                                               # bits 0xB0) is nonzero;
+                                               # sets the CURRENT TASK
+                                               # INDEX [0x1ACD] to the
+                                               # task found, and
+                                               # [0x1A8F] to 0 (task
+                                               # index 8 - likely the
+                                               # idle/background task)
+                                               # or 0x200 (any other
+                                               # task) - the task
+                                               # scheduler's task-
+                                               # selection logic
+    0xE4858: "step_readout_window_pattern",     # sibling of the step_
+                                               # progress_pattern_*
+                                               # family, but targets
+                                               # the readout-window
+                                               # register range
+                                               # 0x40000+0x6F8..0x6FF
+                                               # (8 bytes) instead of a
+                                               # single far-ptr
+                                               # register: cycles a
+                                               # counter [0x1B16]
+                                               # through 0-15
+                                               # (resetting on arg==1
+                                               # or reaching 0xF),
+                                               # writing bit
+                                               # ([0x1B16]>>3, 0 or 1)
+                                               # to whichever of the 8
+                                               # destination bytes
+                                               # `[0x1B16] & 7` selects
+                                               # - a walking-pattern
+                                               # exerciser for this
+                                               # register family, same
+                                               # role as init_selftest_
+                                               # register_group's
+                                               # "else" branch
+    0xE3E97: "draw_display_test_pattern",       # called from within
+                                               # run_selftest_sequence's
+                                               # final wrap-up phase
+                                               # (right after printing
+                                               # "2230/2220 Power up
+                                               # tests complete."),
+                                               # gated on [0x1B83]==0x14
+                                               # (comm option
+                                               # installed): inits a
+                                               # print region, plots an
+                                               # initial point, then
+                                               # draws two 250-point
+                                               # diagonal lines via
+                                               # plot_readout_point_
+                                               # scaled - the readout
+                                               # test pattern used by
+                                               # the surrounding "MI /
+                                               # line stuck high"
+                                               # interrupt-line check
+                                               # (diagnostic string at
+                                               # 0xFF7B0+0x497)
     0xE2CD3: "reset_progress_pattern_e",        # clears [0x1B1C] to
                                                # 0xFF and es:[0x1D20]
                                                # (step_progress_
