@@ -4781,10 +4781,10 @@
     "notes": null
   },
   "E43F2": {
-    "name": "SUB_E43F2",
+    "name": "report_and_read_channel1",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "report_and_read_channel1",
     "notes": null
   },
   "E440A": {
@@ -4802,10 +4802,10 @@
     "notes": null
   },
   "E4443": {
-    "name": "SUB_E4443",
+    "name": "init_selftest_register_group",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_selftest_register_group",
     "notes": null
   },
   "E44B7": {

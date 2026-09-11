@@ -5547,7 +5547,7 @@ init_selftest_report_screen:
     mov sp, bp                               ; 43EE: mov sp, bp
     pop bp                                   ; 43F0: pop bp
     retf                                     ; 43F1: retf 
-SUB_E43F2:
+report_and_read_channel1:
     push bp                                  ; 43F2: push bp
     mov bp, sp                               ; 43F3: mov bp, sp
     sub sp, 6                                ; 43F5: sub sp, 6
@@ -5585,7 +5585,7 @@ read_channel1_status:
     mov sp, bp                               ; 443F: mov sp, bp
     pop bp                                   ; 4441: pop bp
     retf                                     ; 4442: retf 
-SUB_E4443:
+init_selftest_register_group:
     push bp                                  ; 4443: push bp
     mov bp, sp                               ; 4444: mov bp, sp
     sub sp, 6                                ; 4446: sub sp, 6

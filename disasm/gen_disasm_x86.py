@@ -717,6 +717,43 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE4443: "init_selftest_register_group",    # (group) - initializes
+                                               # a table of far
+                                               # pointers used by the
+                                               # step_progress_pattern_
+                                               # * helpers and other
+                                               # self-test code:
+                                               # group==1 sets [0x31E]/
+                                               # [0x322]/[0x326]/[0x32A]
+                                               # /[0x32E]/[0x332]/
+                                               # [0x336]/[0x33A] to
+                                               # physical 0x48000 (the
+                                               # readout second plane)
+                                               # and several 0x437xx
+                                               # registers, including
+                                               # the CONFIRMED comm-
+                                               # option probe pair at
+                                               # 0x40377E/0x4007DE (see
+                                               # detect_comm_option_hw)
+                                               # - i.e. this group mixes
+                                               # a display buffer with
+                                               # real comm-option
+                                               # hardware probes; else
+                                               # sets [0x1AD0]/[0x1AD4]/
+                                               # [0x1AD8]/[0x1ADC] to
+                                               # the readout-window
+                                               # register family
+                                               # (0x406F0/0x4067C/
+                                               # 0x406F8/0x406BC, the
+                                               # same family selftest_
+                                               # comm_fget_flag uses)
+    0xE43F2: "report_and_read_channel1",       # sets report_screen_
+                                               # mode(2) then calls
+                                               # read_channel1_status -
+                                               # called from run_
+                                               # selftest_sequence when
+                                               # its readback loop is
+                                               # aborted/interrupted
     0xE46C3: "step_progress_pattern_a",         # (mode) - one of 5
                                                # near-identical helpers
                                                # called together by
