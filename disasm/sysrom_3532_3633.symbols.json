@@ -3031,10 +3031,10 @@
     "notes": null
   },
   "E1816": {
-    "name": "SUB_E1816",
+    "name": "verify_rom_checksum_and_report",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "verify_rom_checksum_and_report",
     "notes": null
   },
   "E18E7": {
@@ -3297,10 +3297,10 @@
     "notes": null
   },
   "E1FBC": {
-    "name": "SUB_E1FBC",
+    "name": "selftest_comm_fget_flag",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "selftest_comm_fget_flag",
     "notes": null
   },
   "E1FDB": {

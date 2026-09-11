@@ -666,6 +666,62 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0xE1816: "verify_rom_checksum_and_report",  # (name_far_ptr,
+                                               # range1_start,
+                                               # range1_end,
+                                               # range2_start,
+                                               # range2_end) - computes
+                                               # compute_range_checksum
+                                               # over 2 address ranges,
+                                               # chains them together
+                                               # (2nd seeded with the
+                                               # 1st's result), and
+                                               # compares the combined
+                                               # 16-bit checksum against
+                                               # a stored expected value
+                                               # read from a header
+                                               # record; if it matches,
+                                               # returns cleanly, else
+                                               # builds a "<name>
+                                               # <computed_hex>
+                                               # <expected_hex>"
+                                               # diagnostic message
+                                               # (strncpy_far/strncat_
+                                               # far/format_byte_hex)
+                                               # for the self-test
+                                               # report. Confirmed
+                                               # caller: selftest_comm_
+                                               # rom, checksumming the
+                                               # comm ROM's two 32KB
+                                               # halves (0x80000-
+                                               # 0x87FFF, 0x90000-
+                                               # 0x97FFF) against the
+                                               # "COMM_ROM" string
+                                               # label - the real
+                                               # generic ROM-checksum-
+                                               # and-report engine
+                                               # behind selftest_rom_
+                                               # checksum
+    0xE1FBC: "selftest_comm_fget_flag",         # the real body of
+                                               # selftest_comm_
+                                               # loopback_b (called
+                                               # after its installed-
+                                               # gate check): writes a
+                                               # command byte (0x86,
+                                               # then 6) to the comm
+                                               # register at physical
+                                               # 0x406F3 (0x40000+
+                                               # 0x6F0+3), reads
+                                               # back status bits at
+                                               # 0x4067C (bit 4) and
+                                               # 0x406BC (bit 0x80),
+                                               # and reports "COMM_LB /
+                                               # FGET NOT SET" or
+                                               # "FGET NOT CLEAR" via
+                                               # print_selftest_report_
+                                               # line if the flag
+                                               # doesn't behave as
+                                               # expected
     0x8526B: "process_gpib_command_byte",       # comm ROM: handles a
                                                # received GPIB command/
                                                # data byte at [6] under

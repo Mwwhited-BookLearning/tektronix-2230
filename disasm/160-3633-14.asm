@@ -1777,7 +1777,7 @@ L_E180F:
     db 0x8b, 0xe5  ; 1812: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1814: pop bp
     retf                                     ; 1815: retf 
-SUB_E1816:
+verify_rom_checksum_and_report:
     push bp                                  ; 1816: push bp
     db 0x8b, 0xec  ; 1817: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0x32                             ; 1819: sub sp, 0x32
@@ -2374,7 +2374,7 @@ L_E1FB7:
     db 0x8b, 0xe5  ; 1FB8: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1FBA: pop bp
     retf                                     ; 1FBB: retf 
-SUB_E1FBC:
+selftest_comm_fget_flag:
     push bp                                  ; 1FBC: push bp
     db 0x8b, 0xec  ; 1FBD: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 1FBF: sub sp, 8

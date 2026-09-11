@@ -1775,7 +1775,7 @@ L_E180F:
     mov sp, bp                               ; 1812: mov sp, bp
     pop bp                                   ; 1814: pop bp
     retf                                     ; 1815: retf 
-SUB_E1816:
+verify_rom_checksum_and_report:
     push bp                                  ; 1816: push bp
     mov bp, sp                               ; 1817: mov bp, sp
     sub sp, 0x32                             ; 1819: sub sp, 0x32
@@ -2372,7 +2372,7 @@ L_E1FB7:
     mov sp, bp                               ; 1FB8: mov sp, bp
     pop bp                                   ; 1FBA: pop bp
     retf                                     ; 1FBB: retf 
-SUB_E1FBC:
+selftest_comm_fget_flag:
     push bp                                  ; 1FBC: push bp
     mov bp, sp                               ; 1FBD: mov bp, sp
     sub sp, 8                                ; 1FBF: sub sp, 8

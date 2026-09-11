@@ -4714,7 +4714,7 @@ L_E180F:
     3633:1812  [E1812]  8be5            mov     sp, bp
     3633:1814  [E1814]  5d              pop     bp
     3633:1815  [E1815]  cb              retf    
-SUB_E1816:
+verify_rom_checksum_and_report:
     3633:1816  [E1816]  55              push    bp
     3633:1817  [E1817]  8bec            mov     bp, sp
     3633:1819  [E1819]  83ec32          sub     sp, 0x32
@@ -5088,7 +5088,7 @@ selftest_comm_loopback_b:
     3633:1DC3  [E1DC3]  b82000          mov     ax, 0x20
     3633:1DC6  [E1DC6]  e90500          jmp     L_E1DCE  ; 0x11e
 L_E1DC9:
-    3633:1DC9  [E1DC9]  9a0c03cbe1      lcall   SUB_E1FBC  ; 0xe1cb, 0x30c
+    3633:1DC9  [E1DC9]  9a0c03cbe1      lcall   selftest_comm_fget_flag  ; 0xe1cb, 0x30c
 L_E1DCE:
     3633:1DCE  [E1DCE]  8be5            mov     sp, bp
     3633:1DD0  [E1DD0]  5d              pop     bp
@@ -5128,7 +5128,7 @@ L_E1E54:
     3633:1E7F  [E1E7F]  57              push    di
     3633:1E80  [E1E80]  bbae06          mov     bx, 0x6ae
     3633:1E83  [E1E83]  53              push    bx
-    3633:1E84  [E1E84]  9ad60254e1      lcall   SUB_E1816  ; 0xe154, 0x2d6
+    3633:1E84  [E1E84]  9ad60254e1      lcall   verify_rom_checksum_and_report  ; 0xe154, 0x2d6
     3633:1E89  [E1E89]  83c414          add     sp, 0x14
 L_E1E8C:
     3633:1E8C  [E1E8C]  8be5            mov     sp, bp
@@ -5268,7 +5268,7 @@ L_E1FB7:
     3633:1FB8  [E1FB8]  8be5            mov     sp, bp
     3633:1FBA  [E1FBA]  5d              pop     bp
     3633:1FBB  [E1FBB]  cb              retf    
-SUB_E1FBC:
+selftest_comm_fget_flag:
     3633:1FBC  [E1FBC]  55              push    bp
     3633:1FBD  [E1FBD]  8bec            mov     bp, sp
     3633:1FBF  [E1FBF]  83ec08          sub     sp, 8
