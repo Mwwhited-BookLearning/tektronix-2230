@@ -4,7 +4,7 @@
 ; Labels are address-based placeholders; rename to functional
 ; names in the .symbols.json as their purpose is understood.
 
-SUB_80060:
+set_comm_flow_hold:
     2998:0060  [80060]  55              push    bp
     2998:0061  [80061]  8bec            mov     bp, sp
     2998:0063  [80063]  83ec06          sub     sp, 6
@@ -363,7 +363,7 @@ SUB_850A2:
     2998:50B0  [850B0]  5d              pop     bp
     2998:50B1  [850B1]  cb              retf    
 
-SUB_85238:
+reset_comm_parser_state:
     2998:5238  [85238]  55              push    bp
     2998:5239  [85239]  8bec            mov     bp, sp
     2998:523B  [8523B]  83ec06          sub     sp, 6
@@ -2090,7 +2090,7 @@ L_9642F:
     2998_alias_90000:643B  [9643B]  26c647018d      mov     byte ptr es:[bx + 1], 0x8d
     2998_alias_90000:6440  [96440]  2bd2            sub     dx, dx
     2998_alias_90000:6442  [96442]  52              push    dx
-    2998_alias_90000:6443  [96443]  9a00000680      lcall   SUB_80060  ; 0x8006, 0
+    2998_alias_90000:6443  [96443]  9a00000680      lcall   set_comm_flow_hold  ; 0x8006, 0
     2998_alias_90000:6448  [96448]  c606a30500      mov     byte ptr [0x5a3], 0
     2998_alias_90000:644D  [9644D]  c43ed606        les     di, ptr [0x6d6]
     2998_alias_90000:6451  [96451]  26c6450300      mov     byte ptr es:[di + 3], 0
@@ -2981,7 +2981,7 @@ L_97B2A:
     2998_alias_90000:7B3F  [97B3F]  9ab2021f94      lcall   SUB_944A2  ; 0x941f, 0x2b2
     2998_alias_90000:7B44  [97B44]  83c402          add     sp, 2
 L_97B47:
-    2998_alias_90000:7B47  [97B47]  9a28011185      lcall   SUB_85238  ; 0x8511, 0x128
+    2998_alias_90000:7B47  [97B47]  9a28011185      lcall   reset_comm_parser_state  ; 0x8511, 0x128
     2998_alias_90000:7B4C  [97B4C]  9a17032896      lcall   SUB_96597  ; 0x9628, 0x317
     2998_alias_90000:7B51  [97B51]  9ab4032896      lcall   SUB_96634  ; 0x9628, 0x3b4
     2998_alias_90000:7B56  [97B56]  9a16042896      lcall   SUB_96696  ; 0x9628, 0x416

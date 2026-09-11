@@ -1,9 +1,9 @@
 {
   "80060": {
-    "name": "SUB_80060",
+    "name": "set_comm_flow_hold",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "set_comm_flow_hold",
     "notes": null
   },
   "8007B": {
@@ -280,10 +280,10 @@
     "notes": null
   },
   "85238": {
-    "name": "SUB_85238",
+    "name": "reset_comm_parser_state",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "reset_comm_parser_state",
     "notes": null
   },
   "8526B": {

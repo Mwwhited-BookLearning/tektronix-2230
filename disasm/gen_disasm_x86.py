@@ -666,6 +666,34 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x80060: "set_comm_flow_hold",              # (engage) - guarded
+                                               # on/off toggle of
+                                               # [0x5A1]/[0x5A2]: if
+                                               # engage!=0 and [0x5A1]
+                                               # was 0, sets both to
+                                               # 0xFF and writes 0x93
+                                               # into the comm status
+                                               # structure at es:
+                                               # [0x6D6+3]; if engage==0
+                                               # and [0x5A1] was
+                                               # nonzero, clears both to
+                                               # 0 and writes 0x13
+                                               # (XOFF) there instead -
+                                               # looks like asserting/
+                                               # releasing a flow-
+                                               # control hold, guarded
+                                               # against redundant
+                                               # transitions
+    0x85238: "reset_comm_parser_state",        # clears a cluster of
+                                               # comm ROM parser/command
+                                               # state variables
+                                               # ([0x62A]/[0x63A]/
+                                               # [0x63B]/[0x632]/[6]/
+                                               # [0x61B]/[0x5A4]/[3]) -
+                                               # called as part of the
+                                               # comm channel
+                                               # reinitialization
+                                               # sequence in SUB_97B01
     0x82D01: "print_string_serial",            # (far_str_ptr) - loops
                                                # sending each byte via
                                                # serial_tx_buffer_put
