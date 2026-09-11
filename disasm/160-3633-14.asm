@@ -6295,7 +6295,7 @@ L_E5670:
     db 0x8b, 0xe5  ; 5670: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 5672: pop bp
     retf 2                                   ; 5673: retf 2
-SUB_E5676:
+draw_selftest_report_frame:
     push bp                                  ; 5676: push bp
     db 0x8b, 0xec  ; 5677: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 5679: sub sp, 0xa

@@ -4564,10 +4564,10 @@
     "notes": null
   },
   "E5676": {
-    "name": "SUB_E5676",
+    "name": "draw_selftest_report_frame",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "draw_selftest_report_frame",
     "notes": null
   },
   "E571E": {
@@ -28301,10 +28301,10 @@
     "notes": null
   },
   "FBCF3": {
-    "name": "SUB_FBCF3",
+    "name": "compute_readout_buffer_length_and_flag",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "compute_readout_buffer_length_and_flag",
     "notes": null
   },
   "FBD3D": {
@@ -28343,10 +28343,10 @@
     "notes": null
   },
   "FBD86": {
-    "name": "SUB_FBD86",
+    "name": "clear_attr_bits_at_prev_delimiter",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "clear_attr_bits_at_prev_delimiter",
     "notes": null
   },
   "FBDA4": {

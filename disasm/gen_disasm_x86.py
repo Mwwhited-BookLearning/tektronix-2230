@@ -2583,6 +2583,60 @@ FUNCTIONAL_NAMES = {
                                                # unconditionally as the
                                                # first step of
                                                # process_gpib_command_byte
+    0xE5676: "draw_selftest_report_frame",    # (far ptr region) - draws
+                                               # 2 nested box outlines via
+                                               # draw_box_outline (at
+                                               # y=0x19,h=0xe1 with two
+                                               # different x/w pairs),
+                                               # bracketed by
+                                               # init_print_region_home/
+                                               # close_print_record/
+                                               # init_print_region -
+                                               # called exactly once,
+                                               # latched by [0x1AFD],
+                                               # from report_screen_mode's
+                                               # mode==4 case - the self-
+                                               # test report screen's
+                                               # frame/border
+    0xFBD86: "clear_attr_bits_at_prev_delimiter", # (far_ptr buf, start,
+                                               # mode) - scans backward
+                                               # from `start` through the
+                                               # readout text buffer
+                                               # [0x1C80] for a 0/0xFF
+                                               # delimiter byte, using a
+                                               # byte/word/dword stride
+                                               # selected by `mode`
+                                               # (0/1/else); once found,
+                                               # clears bits 0-1 of the
+                                               # paired attribute-plane
+                                               # byte (same offset, ES=
+                                               # DS+0x800) if bit 0 was
+                                               # set - called twice from
+                                               # 0xFB935/0xFB95A, once
+                                               # scanning the whole buffer
+                                               # (0x2000) and once a
+                                               # specific item's end
+                                               # position from the
+                                               # [0x1C94] item table
+    0xFBCF3: "compute_readout_buffer_length_and_flag", # computes the
+                                               # linear-address delta
+                                               # between far pointers
+                                               # [0x1C84] and [0x1C80]
+                                               # (via seg_off_to_linear
+                                               # x2) into [0x1C02] - the
+                                               # same running length/
+                                               # position value read by
+                                               # read_acq_sample_with_wrap
+                                               # and the "TEKTRONIX" logo
+                                               # builder SUB_F5898 -
+                                               # builds a far ptr to the
+                                               # buffer's current end at
+                                               # [0x36]/[0x38], calls
+                                               # SUB_FBCCF then sets flag
+                                               # bit [0x22]|=0x2000
+                                               # (sibling of the 0x1000
+                                               # bit set elsewhere in the
+                                               # same report-screen flow)
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

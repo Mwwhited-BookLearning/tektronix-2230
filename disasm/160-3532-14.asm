@@ -4469,7 +4469,7 @@ SUB_FBCCF:
     pop bp                                   ; BCF0: pop bp
     retf                                     ; BCF1: retf 
     db 0xff  ; BCF2
-SUB_FBCF3:
+compute_readout_buffer_length_and_flag:
     push bp                                  ; BCF3: push bp
     db 0x8b, 0xec  ; BCF4: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; BCF6: sub sp, 6
@@ -4504,7 +4504,7 @@ SUB_FBCF3:
     db 0x88, 0x00, 0xeb, 0xee  ; BD76
     db 0x59, 0x5a, 0x5b, 0x58, 0x5e  ; BD7A: "YZ[X^"
     db 0x1f, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00  ; BD7F
-SUB_FBD86:
+clear_attr_bits_at_prev_delimiter:
     push bp                                  ; BD86: push bp
     db 0x8b, 0xec  ; BD87: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     push ds                                  ; BD89: push ds

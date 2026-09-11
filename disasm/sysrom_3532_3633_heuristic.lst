@@ -8728,7 +8728,7 @@ L_E5581:
     3633:5597  [E5597]  8d950a02        lea     dx, [di + 0x20a]
     3633:559B  [E559B]  06              push    es
     3633:559C  [E559C]  52              push    dx
-    3633:559D  [E559D]  9aa6105de4      lcall   SUB_E5676  ; 0xe45d, 0x10a6
+    3633:559D  [E559D]  9aa6105de4      lcall   draw_selftest_report_frame  ; 0xe45d, 0x10a6
     3633:55A2  [E55A2]  c43edc1d        les     di, ptr [0x1ddc]
     3633:55A6  [E55A6]  26c685250200    mov     byte ptr es:[di + 0x225], 0
     3633:55AC  [E55AC]  ba6400          mov     dx, 0x64
@@ -8810,7 +8810,7 @@ L_E5670:
     3633:5670  [E5670]  8be5            mov     sp, bp
     3633:5672  [E5672]  5d              pop     bp
     3633:5673  [E5673]  ca0200          retf    2
-SUB_E5676:
+draw_selftest_report_frame:
     3633:5676  [E5676]  55              push    bp
     3633:5677  [E5677]  8bec            mov     bp, sp
     3633:5679  [E5679]  83ec0a          sub     sp, 0xa
@@ -9313,7 +9313,7 @@ L_E5B61:
     3633:5B71  [E5B71]  8d950a02        lea     dx, [di + 0x20a]
     3633:5B75  [E5B75]  06              push    es
     3633:5B76  [E5B76]  52              push    dx
-    3633:5B77  [E5B77]  9aa6105de4      lcall   SUB_E5676  ; 0xe45d, 0x10a6
+    3633:5B77  [E5B77]  9aa6105de4      lcall   draw_selftest_report_frame  ; 0xe45d, 0x10a6
     3633:5B7C  [E5B7C]  c43edc1d        les     di, ptr [0x1ddc]
     3633:5B80  [E5B80]  26c685130200    mov     byte ptr es:[di + 0x213], 0
     3633:5B86  [E5B86]  c41edc1d        les     bx, ptr [0x1ddc]
@@ -10096,7 +10096,7 @@ L_E64F0:
 L_E64FB:
     3633:64FB  [E64FB]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:64FF  [E64FF]  7cef            jl      L_E64F0  ; 0x30
-    3633:6501  [E6501]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
+    3633:6501  [E6501]  9a0300cffb      lcall   compute_readout_buffer_length_and_flag  ; 0xfbcf, 3
     3633:6506  [E6506]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
     3633:650B  [E650B]  9a4301d1e5      lcall   install_late_interrupt_vectors  ; 0xe5d1, 0x143
     3633:6510  [E6510]  b80000          mov     ax, 0
@@ -10678,7 +10678,7 @@ L_E6B6B:
     3633:6B6F  [E6B6F]  7cef            jl      L_E6B60  ; 0xe0
 L_E6B71:
     3633:6B71  [E6B71]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
-    3633:6B76  [E6B76]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
+    3633:6B76  [E6B76]  9a0300cffb      lcall   compute_readout_buffer_length_and_flag  ; 0xfbcf, 3
     3633:6B7B  [E6B7B]  9a050025e9      lcall   assert_and_halt  ; 0xe925, 5
     3633:6B80  [E6B80]  9a080023e7      lcall   SUB_E7238  ; 0xe723, 8
     3633:6B85  [E6B85]  c6068d1b01      mov     byte ptr [0x1b8d], 1
@@ -11711,7 +11711,7 @@ L_E7695:
     3633:7695  [E7695]  813e5207ff01    cmp     word ptr [0x752], 0x1ff
     3633:769B  [E769B]  7e78            jle     L_E7715  ; 0x7715
     3633:769D  [E769D]  9a4004a8e6      lcall   FUNC_3633_6EC0  ; 0xe6a8, 0x440
-    3633:76A2  [E76A2]  9a0300cffb      lcall   SUB_FBCF3  ; 0xfbcf, 3
+    3633:76A2  [E76A2]  9a0300cffb      lcall   compute_readout_buffer_length_and_flag  ; 0xfbcf, 3
     3633:76A7  [E76A7]  fe069a1a        inc     byte ptr [0x1a9a]
     3633:76AB  [E76AB]  a09a1a          mov     al, byte ptr [0x1a9a]
     3633:76AE  [E76AE]  2ae4            sub     ah, ah
@@ -22256,7 +22256,7 @@ L_EEB46:
     3633:EB4F  [EEB4F]  c47eee          les     di, ptr [bp - 0x12]
     3633:EB52  [EEB52]  06              push    es
     3633:EB53  [EEB53]  57              push    di
-    3633:EB54  [EEB54]  9a0600d8fb      lcall   SUB_FBD86  ; 0xfbd8, 6
+    3633:EB54  [EEB54]  9a0600d8fb      lcall   clear_attr_bits_at_prev_delimiter  ; 0xfbd8, 6
     3633:EB59  [EEB59]  83c404          add     sp, 4
 L_EEB5C:
     3633:EB5C  [EEB5C]  8be5            mov     sp, bp
@@ -41858,7 +41858,7 @@ L_FB787:
     3532:B7AD  [FB7AD]  03da            add     bx, dx
     3532:B7AF  [FB7AF]  06              push    es
     3532:B7B0  [FB7B0]  53              push    bx
-    3532:B7B1  [FB7B1]  9a0600d8fb      lcall   SUB_FBD86  ; 0xfbd8, 6
+    3532:B7B1  [FB7B1]  9a0600d8fb      lcall   clear_attr_bits_at_prev_delimiter  ; 0xfbd8, 6
     3532:B7B6  [FB7B6]  83c404          add     sp, 4
     3532:B7B9  [FB7B9]  8a56f4          mov     dl, byte ptr [bp - 0xc]
     3532:B7BC  [FB7BC]  2af6            sub     dh, dh
@@ -41879,7 +41879,7 @@ L_FB7C7:
     3532:B7DA  [FB7DA]  03da            add     bx, dx
     3532:B7DC  [FB7DC]  06              push    es
     3532:B7DD  [FB7DD]  53              push    bx
-    3532:B7DE  [FB7DE]  9a0600d8fb      lcall   SUB_FBD86  ; 0xfbd8, 6
+    3532:B7DE  [FB7DE]  9a0600d8fb      lcall   clear_attr_bits_at_prev_delimiter  ; 0xfbd8, 6
     3532:B7E3  [FB7E3]  83c404          add     sp, 4
 L_FB7E6:
     3532:B7E6  [FB7E6]  c47e08          les     di, ptr [bp + 8]
@@ -42014,7 +42014,7 @@ L_FB928:
     3532:B92F  [FB92F]  c43e801c        les     di, ptr [0x1c80]
     3532:B933  [FB933]  06              push    es
     3532:B934  [FB934]  57              push    di
-    3532:B935  [FB935]  9a0600d8fb      lcall   SUB_FBD86  ; 0xfbd8, 6
+    3532:B935  [FB935]  9a0600d8fb      lcall   clear_attr_bits_at_prev_delimiter  ; 0xfbd8, 6
     3532:B93A  [FB93A]  83c404          add     sp, 4
     3532:B93D  [FB93D]  ff76f4          push    word ptr [bp - 0xc]
     3532:B940  [FB940]  bf0008          mov     di, 0x800
@@ -42028,7 +42028,7 @@ L_FB928:
     3532:B956  [FB956]  03d0            add     dx, ax
     3532:B958  [FB958]  06              push    es
     3532:B959  [FB959]  52              push    dx
-    3532:B95A  [FB95A]  9a0600d8fb      lcall   SUB_FBD86  ; 0xfbd8, 6
+    3532:B95A  [FB95A]  9a0600d8fb      lcall   clear_attr_bits_at_prev_delimiter  ; 0xfbd8, 6
     3532:B95F  [FB95F]  83c404          add     sp, 4
     3532:B962  [FB962]  e90900          jmp     L_FB96E  ; 0x3de
 L_FB965:
@@ -42408,7 +42408,7 @@ SUB_FBCCF:
     3532:BCF0  [FBCF0]  5d              pop     bp
     3532:BCF1  [FBCF1]  cb              retf    
 
-SUB_FBCF3:
+compute_readout_buffer_length_and_flag:
     3532:BCF3  [FBCF3]  55              push    bp
     3532:BCF4  [FBCF4]  8bec            mov     bp, sp
     3532:BCF6  [FBCF6]  83ec06          sub     sp, 6
@@ -42479,7 +42479,7 @@ L_FBD7A:
     3532:BD80  [FBD80]  8be5            mov     sp, bp
     3532:BD82  [FBD82]  5d              pop     bp
     3532:BD83  [FBD83]  ca0400          retf    4
-SUB_FBD86:
+clear_attr_bits_at_prev_delimiter:
     3532:BD86  [FBD86]  55              push    bp
     3532:BD87  [FBD87]  8bec            mov     bp, sp
     3532:BD89  [FBD89]  1e              push    ds

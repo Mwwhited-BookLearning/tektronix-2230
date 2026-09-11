@@ -6293,7 +6293,7 @@ L_E5670:
     mov sp, bp                               ; 5670: mov sp, bp
     pop bp                                   ; 5672: pop bp
     retf 2                                   ; 5673: retf 2
-SUB_E5676:
+draw_selftest_report_frame:
     push bp                                  ; 5676: push bp
     mov bp, sp                               ; 5677: mov bp, sp
     sub sp, 0xa                              ; 5679: sub sp, 0xa
