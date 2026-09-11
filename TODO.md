@@ -21,6 +21,17 @@
       but reaching it via pure fallthrough with no owning label means
       there's a real function boundary nearby the recursive descent
       doesn't know about - worth finding for a cleaner listing.
+- [ ] Investigate whether capstone is misdecoding the undocumented
+      8086 1-byte opcode `0x0F` (`POP CS`) as a 286+-style SSE/MMX
+      two-byte escape prefix - found at `SUB_F6382` (`160-3532`),
+      where reading `0x0F` as `pop cs` instead of the start of `movd`
+      makes a separate fallthrough path and the far-call entry cleanly
+      reconverge a few bytes later, which doesn't happen under
+      capstone's decode. See `disasm/NOTES.md` "A third decode
+      anomaly: SUB_F6382, likely capstone misreading opcode 0x0F". If
+      confirmed, worth checking whether this also explains other
+      `0x0F`-led decode oddities elsewhere (it does *not* explain
+      `SUB_EAC86`, which doesn't start with `0x0F`).
 - [ ] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
       unambiguous garbage (including an impossible SSE instruction)
       despite being a **clean, unambiguous far-call target** reached

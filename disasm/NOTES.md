@@ -1284,6 +1284,46 @@ parity adjustment, else strip bit 7, and for mode `3` specifically
 force bit 7 back on). This is a solid, concrete confirmation of the
 RS-232 (not just GPIB) personality of the comm ROM's serial path.
 
+## A third decode anomaly: SUB_F6382, likely capstone misreading opcode 0x0F
+
+`SUB_F6382` (`160-3532`, 3 far-call sites from `160-3633`) opens with
+`0f 7e 05` -> capstone reads this as the SSE2/MMX instruction `movd
+dword ptr [di], mm0`, impossible on an 8086/8088. Unlike `SUB_EAC86`
+(pure garbage for many bytes with no coherent reconvergence - see
+below), this one is a single misdecoded instruction: everything from
+the byte right after it (`0xF6385` onward: `mov word [bp-0xa],
+0x0f9a`) is completely ordinary, bp-relative compiled-C code, and the
+function's tail (checking `[0x1B83]` against `0x14` - the same comm-
+option-installed value from `detect_comm_option_hw`!) is entirely
+coherent.
+
+The likely explanation: on a real 8086/8088, opcode byte `0x0F` alone
+is the **undocumented 1-byte `POP CS`** instruction, not a two-byte
+SSE/MMX escape prefix (that reuse of `0x0F` didn't happen until the
+80286). Capstone's 16-bit mode still decodes `0x0F` as a multi-byte
+escape, so it's very likely misreading a real (if unusual/undocumented)
+`POP CS` as `movd`. Support for this: decoding `0x0F` as a 1-byte
+`pop cs` at `0xF6382`, the very next byte `0x7E` naturally starts a
+fresh `jle` instruction at `0xF6383`, landing exactly on the same
+`cmp byte [0x1B83], 0x14` block (`0xF638A`) that a separate fallthrough
+path into this same code reaches via its own, differently-encoded
+comparison - i.e. under the `pop cs` reading, both the far-call entry
+and the fallthrough entry cleanly reconverge, which doesn't happen
+under capstone's `movd` reading. (Whether a real `POP CS` immediately
+after a far call is itself sound - it would clobber the just-pushed
+return address - isn't resolved; possibly the routine's own `retf 4`
+stack cleanup account for it, or this entry point is never actually
+exercised on real hardware. Not pursued further.)
+
+**Not renamed** pending a firmer resolution (either fix the generator
+to treat bare `0x0F` as `pop cs` on this specific address and see if
+the surrounding disassembly cleans up, or find corroborating evidence
+this instruction is genuinely reached). Distinct from `SUB_EAC86`:
+that one decodes as incoherent garbage for many consecutive
+instructions with no clean reconvergence at any nearby byte shift,
+while this one is a single misdecoded opcode immediately followed by
+clean code.
+
 ## Found: the acquisition mode-change dispatcher (handle_acq_mode_change)
 
 `SUB_E80E4` takes a single "what changed" flags word (arg at `[bp-8]`)
