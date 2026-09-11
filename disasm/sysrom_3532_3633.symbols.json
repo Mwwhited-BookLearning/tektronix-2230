@@ -8862,10 +8862,10 @@
     "notes": null
   },
   "FB8E8": {
-    "name": "SUB_FB8E8",
+    "name": "clear_readout_attrs_and_flag_dirty",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "clear_readout_attrs_and_flag_dirty",
     "notes": null
   },
   "FB90D": {

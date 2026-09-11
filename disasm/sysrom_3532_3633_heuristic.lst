@@ -10828,7 +10828,7 @@ finish_acq_reset_and_clear_mode:
     3633:6CF3  [E6CF3]  9aa002a8e6      lcall   clear_measurement_mode_relay  ; 0xe6a8, 0x2a0
     3633:6CF8  [E6CF8]  2bff            sub     di, di
     3633:6CFA  [E6CFA]  57              push    di
-    3633:6CFB  [E6CFB]  9a580359fb      lcall   SUB_FB8E8  ; 0xfb59, 0x358
+    3633:6CFB  [E6CFB]  9a580359fb      lcall   clear_readout_attrs_and_flag_dirty  ; 0xfb59, 0x358
     3633:6D00  [E6D00]  8be5            mov     sp, bp
     3633:6D02  [E6D02]  5d              pop     bp
     3633:6D03  [E6D03]  cb              retf    
@@ -41983,7 +41983,7 @@ L_FB893:
     3532:B8E2  [FB8E2]  8be5            mov     sp, bp
     3532:B8E4  [FB8E4]  5d              pop     bp
     3532:B8E5  [FB8E5]  ca0200          retf    2
-SUB_FB8E8:
+clear_readout_attrs_and_flag_dirty:
     3532:B8E8  [FB8E8]  55              push    bp
     3532:B8E9  [FB8E9]  8bec            mov     bp, sp
     3532:B8EB  [FB8EB]  83ec0c          sub     sp, 0xc

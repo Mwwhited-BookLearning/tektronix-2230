@@ -2855,6 +2855,25 @@ FUNCTIONAL_NAMES = {
                                                # path was taken, not an
                                                # explicit `mov ax,`) are
                                                # not confirmed
+    0xFB8E8: "clear_readout_attrs_and_flag_dirty", # (skip_clear) -
+                                               # unless `skip_clear!=0`,
+                                               # picks a mode (0/1/2)
+                                               # from `[0x18C]` bits
+                                               # `0x10`/`0x20` and calls
+                                               # clear_attr_bits_at_prev_
+                                               # delimiter twice - once
+                                               # over the whole readout
+                                               # buffer (`0x2000`), once
+                                               # up to a specific item's
+                                               # end position from the
+                                               # `[0x1C94]` item table;
+                                               # either way, unconditionally
+                                               # ORs `[0x22]|=0x1000` (the
+                                               # sibling of the `0x2000`
+                                               # bit `compute_readout_
+                                               # buffer_length_and_flag`
+                                               # sets) to flag the
+                                               # readout content changed
     0xF8234: "load_print_record_templates",   # copies 2 fixed 0xAA
                                                # (170)-byte compiled-in
                                                # template blocks (from
