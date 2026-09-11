@@ -13416,7 +13416,7 @@ FUNC_3633_8CDB:
     3633:8CED  [E8CED]  740c            je      L_E8CFB  ; 0x8cfb
     3633:8CEF  [E8CEF]  803e860600      cmp     byte ptr [0x686], 0
     3633:8CF4  [E8CF4]  7405            je      L_E8CFB  ; 0x8cfb
-    3633:8CF6  [E8CF6]  9af6041e91      lcall   SUB_916D6  ; 0x911e, 0x4f6
+    3633:8CF6  [E8CF6]  9af6041e91      lcall   handle_gpib_device_clear  ; 0x911e, 0x4f6
 L_E8CFB:
     3633:8CFB  [E8CFB]  800e8d1b01      or      byte ptr [0x1b8d], 1
     3633:8D00  [E8D00]  800e8e1b01      or      byte ptr [0x1b8e], 1
@@ -13548,7 +13548,7 @@ SUB_E8E29:
     3633:8E36  [E8E36]  2473            and     al, 0x73
     3633:8E38  [E8E38]  3c00            cmp     al, 0
     3633:8E3A  [E8E3A]  7405            je      L_E8E41  ; 0x1a1
-    3633:8E3C  [E8E3C]  9af6041e91      lcall   SUB_916D6  ; 0x911e, 0x4f6
+    3633:8E3C  [E8E3C]  9af6041e91      lcall   handle_gpib_device_clear  ; 0x911e, 0x4f6
 L_E8E41:
     3633:8E41  [E8E41]  9a060008f0      lcall   scale_and_plot_point  ; 0xf008, 6
     3633:8E46  [E8E46]  9a0400b6ef      lcall   SUB_EFB64  ; 0xefb6, 4

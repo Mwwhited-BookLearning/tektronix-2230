@@ -666,6 +666,28 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x916D6: "handle_gpib_device_clear",        # comm ROM: clears a
+                                               # 36-entry table at
+                                               # [0x6BC]/[0x1DDC]+0xA2
+                                               # (address/status list),
+                                               # then dispatches on the
+                                               # current command code
+                                               # [0x686] (0x11 -> set
+                                               # [0x468]=1; 0x21 ->
+                                               # [0x548]=0xFFFF; else,
+                                               # if [0x1B78] clear,
+                                               # resets [0x686]=0 and
+                                               # busy-waits via
+                                               # restart_current_task
+                                               # until [0x548]==0);
+                                               # finally resets
+                                               # [0x686]=0 and calls the
+                                               # main ROM's SUB_E9858
+                                               # (cross-ROM) to reset/
+                                               # clear a display region
+                                               # - shape matches a
+                                               # GPIB Device Clear (DCL)
+                                               # handler
     0x9628C: "comm_rom_boot_init",              # called exactly once,
                                                # cross-ROM, from the
                                                # main ROM's boot

@@ -350,10 +350,10 @@
     "notes": null
   },
   "916D6": {
-    "name": "SUB_916D6",
+    "name": "handle_gpib_device_clear",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "handle_gpib_device_clear",
     "notes": null
   },
   "9170F": {

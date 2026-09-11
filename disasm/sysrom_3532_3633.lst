@@ -465,7 +465,7 @@ L_85E80:
 L_88729:
     2998:8729  [88729]  ff2b            ljmp    [bp + di]
 
-SUB_916D6:
+handle_gpib_device_clear:
     2998_alias_90000:16D6  [916D6]  55              push    bp
     2998_alias_90000:16D7  [916D7]  8bec            mov     bp, sp
     2998_alias_90000:16D9  [916D9]  83ec12          sub     sp, 0x12
@@ -11951,7 +11951,7 @@ SUB_E8E29:
     3633:8E36  [E8E36]  2473            and     al, 0x73
     3633:8E38  [E8E38]  3c00            cmp     al, 0
     3633:8E3A  [E8E3A]  7405            je      L_E8E41  ; 0x1a1
-    3633:8E3C  [E8E3C]  9af6041e91      lcall   SUB_916D6  ; 0x911e, 0x4f6
+    3633:8E3C  [E8E3C]  9af6041e91      lcall   handle_gpib_device_clear  ; 0x911e, 0x4f6
 L_E8E41:
     3633:8E41  [E8E41]  9a060008f0      lcall   scale_and_plot_point  ; 0xf008, 6
     3633:8E46  [E8E46]  9a0400b6ef      lcall   SUB_EFB64  ; 0xefb6, 4
