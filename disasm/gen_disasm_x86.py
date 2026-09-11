@@ -2674,6 +2674,60 @@ FUNCTIONAL_NAMES = {
                                                # watchdog engine, not the
                                                # foreground
                                                # run_selftest_sequence
+    0xE6844: "escalate_acq_timeout_reset",    # the severe half of the
+                                               # acquisition-stall
+                                               # watchdog: called only when
+                                               # the tick counter [0x754]
+                                               # exceeds 2x the timeout
+                                               # [0x790] (the milder single-
+                                               # timeout case just clears
+                                               # channel status directly);
+                                               # tracks how often this
+                                               # escalation fires via
+                                               # [0x7B0], latching
+                                               # [0x1A9B]=1 permanently
+                                               # after >10 escalations,
+                                               # then force-clears both
+                                               # channels via
+                                               # clear_channel1_status/
+                                               # clear_channel2_status and
+                                               # resets [0x754]
+    0xE6884: "compute_acq_channel_scan_counts", # derives 2 base scan-
+                                               # count values from the
+                                               # acquisition mode
+                                               # [0x1B8C] (`(mode-8)/3`
+                                               # and `(mode-8)/4`, or a
+                                               # fixed 4/3 pair outside
+                                               # `[8,0x13]`), then scales
+                                               # each per-channel by
+                                               # x1/x2/x3 based on
+                                               # [0x1B6E] (ch2) and
+                                               # [0x1B6A] (ch1) mode
+                                               # selectors, storing the
+                                               # results into
+                                               # [0x7AC]-[0x7AF]
+    0xE6D4D: "init_comm_dispatch_table",      # called once from the
+                                               # boot sequence right
+                                               # after run_selftest_
+                                               # sequence: if the comm
+                                               # option is installed
+                                               # ([0x1BF9]), calls
+                                               # comm_rom_boot_init then
+                                               # points the far-pointer
+                                               # dispatch slots
+                                               # [0x738]/[0x73A],
+                                               # [0x73C]/[0x73E], and
+                                               # [0x740]/[0x742] (the
+                                               # hook called by
+                                               # run_continuous_selftest_
+                                               # tick) into the comm ROM
+                                               # (segment 0x96F5); if not
+                                               # installed, points all 3
+                                               # at main-ROM no-op/stub
+                                               # targets in segment
+                                               # 0xE6A8 instead - the
+                                               # comm-option-present-vs-
+                                               # absent dispatch switch
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

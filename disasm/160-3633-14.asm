@@ -7887,7 +7887,7 @@ L_E6840:
     db 0x8b, 0xe5  ; 6840: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 6842: pop bp
     retf                                     ; 6843: retf 
-SUB_E6844:
+escalate_acq_timeout_reset:
     push bp                                  ; 6844: push bp
     db 0x8b, 0xec  ; 6845: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 6847: sub sp, 6
@@ -7909,7 +7909,7 @@ L_E6865:
     pop bp                                   ; 6881: pop bp
     retf                                     ; 6882: retf 
     db 0xff  ; 6883
-SUB_E6884:
+compute_acq_channel_scan_counts:
     push bp                                  ; 6884: push bp
     db 0x8b, 0xec  ; 6885: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 6887: sub sp, 8
@@ -8200,7 +8200,7 @@ seg_off_to_linear:
     db 0x8b, 0xe5  ; 6D47: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 6D49: pop bp
     retf 4                                   ; 6D4A: retf 4
-SUB_E6D4D:
+init_comm_dispatch_table:
     push bp                                  ; 6D4D: push bp
     db 0x8b, 0xec  ; 6D4E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 6D50: sub sp, 6

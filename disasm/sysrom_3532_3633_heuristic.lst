@@ -10322,7 +10322,7 @@ L_E678A:
     3633:678D  [E678D]  d1e0            shl     ax, 1
     3633:678F  [E678F]  39065407        cmp     word ptr [0x754], ax
     3633:6793  [E6793]  7e77            jle     L_E680C  ; 0x2ec
-    3633:6795  [E6795]  9a240352e6      lcall   SUB_E6844  ; 0xe652, 0x324
+    3633:6795  [E6795]  9a240352e6      lcall   escalate_acq_timeout_reset  ; 0xe652, 0x324
     3633:679A  [E679A]  e96f00          jmp     L_E680C  ; 0x2ec
 L_E679D:
     3633:679D  [E679D]  803e8d0700      cmp     byte ptr [0x78d], 0
@@ -10382,7 +10382,7 @@ L_E6840:
     3633:6840  [E6840]  8be5            mov     sp, bp
     3633:6842  [E6842]  5d              pop     bp
     3633:6843  [E6843]  cb              retf    
-SUB_E6844:
+escalate_acq_timeout_reset:
     3633:6844  [E6844]  55              push    bp
     3633:6845  [E6845]  8bec            mov     bp, sp
     3633:6847  [E6847]  83ec06          sub     sp, 6
@@ -10404,7 +10404,7 @@ L_E6865:
     3633:6881  [E6881]  5d              pop     bp
     3633:6882  [E6882]  cb              retf    
 
-SUB_E6884:
+compute_acq_channel_scan_counts:
     3633:6884  [E6884]  55              push    bp
     3633:6885  [E6885]  8bec            mov     bp, sp
     3633:6887  [E6887]  83ec08          sub     sp, 8
@@ -10645,7 +10645,7 @@ L_E6AEE:
     3633:6AF2  [E6AF2]  7cec            jl      L_E6AE0  ; 0x60
     3633:6AF4  [E6AF4]  9a0e00b3fd      lcall   clear_measurement_mode_bit  ; 0xfdb3, 0xe
     3633:6AF9  [E6AF9]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:6AFE  [E6AFE]  9acd02a8e6      lcall   SUB_E6D4D  ; 0xe6a8, 0x2cd
+    3633:6AFE  [E6AFE]  9acd02a8e6      lcall   init_comm_dispatch_table  ; 0xe6a8, 0x2cd
     3633:6B03  [E6B03]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
     3633:6B08  [E6B08]  c746f80000      mov     word ptr [bp - 8], 0
     3633:6B0D  [E6B0D]  e90b00          jmp     L_E6B1B  ; 0x9b
@@ -10805,7 +10805,7 @@ reset_display_and_notify_comm:
     3633:6CA1  [E6CA1]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
     3633:6CA6  [E6CA6]  800e8d1b01      or      byte ptr [0x1b8d], 1
     3633:6CAB  [E6CAB]  9aa002a8e6      lcall   clear_measurement_mode_relay  ; 0xe6a8, 0x2a0
-    3633:6CB0  [E6CB0]  9a040088e6      lcall   SUB_E6884  ; 0xe688, 4
+    3633:6CB0  [E6CB0]  9a040088e6      lcall   compute_acq_channel_scan_counts  ; 0xe688, 4
     3633:6CB5  [E6CB5]  9a060041e7      lcall   refresh_display_position_cache  ; 0xe741, 6
     3633:6CBA  [E6CBA]  c6068d1b01      mov     byte ptr [0x1b8d], 1
     3633:6CBF  [E6CBF]  800e761b80      or      byte ptr [0x1b76], 0x80
@@ -10869,7 +10869,7 @@ seg_off_to_linear:
     3633:6D47  [E6D47]  8be5            mov     sp, bp
     3633:6D49  [E6D49]  5d              pop     bp
     3633:6D4A  [E6D4A]  ca0400          retf    4
-SUB_E6D4D:
+init_comm_dispatch_table:
     3633:6D4D  [E6D4D]  55              push    bp
     3633:6D4E  [E6D4E]  8bec            mov     bp, sp
     3633:6D50  [E6D50]  83ec06          sub     sp, 6
@@ -21856,7 +21856,7 @@ L_EE7A8:
     3633:E7AF  [EE7AF]  7505            jne     L_EE7B6  ; 0xd96
     3633:E7B1  [EE7B1]  c606400304      mov     byte ptr [0x340], 4
 L_EE7B6:
-    3633:E7B6  [EE7B6]  9a040088e6      lcall   SUB_E6884  ; 0xe688, 4
+    3633:E7B6  [EE7B6]  9a040088e6      lcall   compute_acq_channel_scan_counts  ; 0xe688, 4
     3633:E7BB  [EE7BB]  8be5            mov     sp, bp
     3633:E7BD  [EE7BD]  5d              pop     bp
     3633:E7BE  [EE7BE]  cb              retf    

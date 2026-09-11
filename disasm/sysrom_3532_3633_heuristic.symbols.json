@@ -5516,10 +5516,10 @@
     "notes": null
   },
   "E6844": {
-    "name": "SUB_E6844",
+    "name": "escalate_acq_timeout_reset",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "escalate_acq_timeout_reset",
     "notes": null
   },
   "E6865": {
@@ -5530,10 +5530,10 @@
     "notes": null
   },
   "E6884": {
-    "name": "SUB_E6884",
+    "name": "compute_acq_channel_scan_counts",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "compute_acq_channel_scan_counts",
     "notes": null
   },
   "E68C5": {
@@ -5915,10 +5915,10 @@
     "notes": null
   },
   "E6D4D": {
-    "name": "SUB_E6D4D",
+    "name": "init_comm_dispatch_table",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_comm_dispatch_table",
     "notes": null
   },
   "E6D89": {
