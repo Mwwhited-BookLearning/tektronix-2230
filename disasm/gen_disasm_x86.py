@@ -717,6 +717,51 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE46C3: "step_progress_pattern_a",         # (mode) - one of 5
+                                               # near-identical helpers
+                                               # called together by
+                                               # refresh_report_display
+                                               # (part of run_selftest_
+                                               # sequence's progress
+                                               # display): maintains a
+                                               # shifting/wrapping bit
+                                               # pattern in [0x1B0C]
+                                               # and writes the current
+                                               # byte to a far-pointer
+                                               # hardware register at
+                                               # [0x31E]; mode==2 clears
+                                               # it to 0 instead - a
+                                               # walking-bit-pattern
+                                               # progress/busy
+                                               # indicator, exact
+                                               # register identity not
+                                               # confirmed
+    0xE470B: "step_progress_pattern_b",         # sibling of step_
+                                               # progress_pattern_a,
+                                               # same shape, targeting
+                                               # far-pointer register
+                                               # [0x326] and counter
+                                               # [0x1B0E]
+    0xE4762: "step_progress_pattern_c",         # sibling of step_
+                                               # progress_pattern_a,
+                                               # targeting far-pointer
+                                               # register [0x336] and
+                                               # counter [0x1B10]
+                                               # (also mirrors the byte
+                                               # to [0x257]/[0x258])
+    0xE47C5: "step_progress_pattern_d",         # sibling of step_
+                                               # progress_pattern_a,
+                                               # targeting far-pointer
+                                               # register [0x33A] (same
+                                               # target as write_
+                                               # measurement_channel_
+                                               # reg) and counter
+                                               # [0x1B12]
+    0xE480E: "step_progress_pattern_e",         # sibling of step_
+                                               # progress_pattern_a,
+                                               # targeting far-pointer
+                                               # register [0x1D20] and
+                                               # counter [0x1B14]
     0xE0D06: "save_restore_measurement_settings", # (mode) - mode==1
                                                # copies the current
                                                # measurement-settings

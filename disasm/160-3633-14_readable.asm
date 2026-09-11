@@ -5777,7 +5777,7 @@ L_E46BD:
     mov sp, bp                               ; 46BD: mov sp, bp
     pop bp                                   ; 46BF: pop bp
     retf 2                                   ; 46C0: retf 2
-SUB_E46C3:
+step_progress_pattern_a:
     push bp                                  ; 46C3: push bp
     mov bp, sp                               ; 46C4: mov bp, sp
     sub sp, 6                                ; 46C6: sub sp, 6
@@ -5806,7 +5806,7 @@ L_E4705:
     mov sp, bp                               ; 4705: mov sp, bp
     pop bp                                   ; 4707: pop bp
     retf 2                                   ; 4708: retf 2
-SUB_E470B:
+step_progress_pattern_b:
     push bp                                  ; 470B: push bp
     mov bp, sp                               ; 470C: mov bp, sp
     sub sp, 6                                ; 470E: sub sp, 6
@@ -5841,7 +5841,7 @@ L_E475C:
     mov sp, bp                               ; 475C: mov sp, bp
     pop bp                                   ; 475E: pop bp
     retf 2                                   ; 475F: retf 2
-SUB_E4762:
+step_progress_pattern_c:
     push bp                                  ; 4762: push bp
     mov bp, sp                               ; 4763: mov bp, sp
     sub sp, 6                                ; 4765: sub sp, 6
@@ -5878,7 +5878,7 @@ L_E47BF:
     mov sp, bp                               ; 47BF: mov sp, bp
     pop bp                                   ; 47C1: pop bp
     retf 2                                   ; 47C2: retf 2
-SUB_E47C5:
+step_progress_pattern_d:
     push bp                                  ; 47C5: push bp
     mov bp, sp                               ; 47C6: mov bp, sp
     sub sp, 6                                ; 47C8: sub sp, 6
@@ -5908,7 +5908,7 @@ L_E4808:
     mov sp, bp                               ; 4808: mov sp, bp
     pop bp                                   ; 480A: pop bp
     retf 2                                   ; 480B: retf 2
-SUB_E480E:
+step_progress_pattern_e:
     push bp                                  ; 480E: push bp
     mov bp, sp                               ; 480F: mov bp, sp
     sub sp, 6                                ; 4811: sub sp, 6

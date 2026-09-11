@@ -8575,15 +8575,15 @@ refresh_report_display:
     3633:4681  [E4681]  8bec            mov     bp, sp
     3633:4683  [E4683]  83ec06          sub     sp, 6
     3633:4686  [E4686]  ff7606          push    word ptr [bp + 6]
-    3633:4689  [E4689]  9af3005de4      lcall   SUB_E46C3  ; 0xe45d, 0xf3
+    3633:4689  [E4689]  9af3005de4      lcall   step_progress_pattern_a  ; 0xe45d, 0xf3
     3633:468E  [E468E]  ff7606          push    word ptr [bp + 6]
-    3633:4691  [E4691]  9a3b015de4      lcall   SUB_E470B  ; 0xe45d, 0x13b
+    3633:4691  [E4691]  9a3b015de4      lcall   step_progress_pattern_b  ; 0xe45d, 0x13b
     3633:4696  [E4696]  ff7606          push    word ptr [bp + 6]
-    3633:4699  [E4699]  9a92015de4      lcall   SUB_E4762  ; 0xe45d, 0x192
+    3633:4699  [E4699]  9a92015de4      lcall   step_progress_pattern_c  ; 0xe45d, 0x192
     3633:469E  [E469E]  ff7606          push    word ptr [bp + 6]
-    3633:46A1  [E46A1]  9af5015de4      lcall   SUB_E47C5  ; 0xe45d, 0x1f5
+    3633:46A1  [E46A1]  9af5015de4      lcall   step_progress_pattern_d  ; 0xe45d, 0x1f5
     3633:46A6  [E46A6]  ff7606          push    word ptr [bp + 6]
-    3633:46A9  [E46A9]  9a3e025de4      lcall   SUB_E480E  ; 0xe45d, 0x23e
+    3633:46A9  [E46A9]  9a3e025de4      lcall   step_progress_pattern_e  ; 0xe45d, 0x23e
     3633:46AE  [E46AE]  803e7a1b01      cmp     byte ptr [0x1b7a], 1
     3633:46B3  [E46B3]  7408            je      L_E46BD  ; 0xed
     3633:46B5  [E46B5]  ff7606          push    word ptr [bp + 6]
@@ -8592,7 +8592,7 @@ L_E46BD:
     3633:46BD  [E46BD]  8be5            mov     sp, bp
     3633:46BF  [E46BF]  5d              pop     bp
     3633:46C0  [E46C0]  ca0200          retf    2
-SUB_E46C3:
+step_progress_pattern_a:
     3633:46C3  [E46C3]  55              push    bp
     3633:46C4  [E46C4]  8bec            mov     bp, sp
     3633:46C6  [E46C6]  83ec06          sub     sp, 6
@@ -8621,7 +8621,7 @@ L_E4705:
     3633:4705  [E4705]  8be5            mov     sp, bp
     3633:4707  [E4707]  5d              pop     bp
     3633:4708  [E4708]  ca0200          retf    2
-SUB_E470B:
+step_progress_pattern_b:
     3633:470B  [E470B]  55              push    bp
     3633:470C  [E470C]  8bec            mov     bp, sp
     3633:470E  [E470E]  83ec06          sub     sp, 6
@@ -8656,7 +8656,7 @@ L_E475C:
     3633:475C  [E475C]  8be5            mov     sp, bp
     3633:475E  [E475E]  5d              pop     bp
     3633:475F  [E475F]  ca0200          retf    2
-SUB_E4762:
+step_progress_pattern_c:
     3633:4762  [E4762]  55              push    bp
     3633:4763  [E4763]  8bec            mov     bp, sp
     3633:4765  [E4765]  83ec06          sub     sp, 6
@@ -8693,7 +8693,7 @@ L_E47BF:
     3633:47BF  [E47BF]  8be5            mov     sp, bp
     3633:47C1  [E47C1]  5d              pop     bp
     3633:47C2  [E47C2]  ca0200          retf    2
-SUB_E47C5:
+step_progress_pattern_d:
     3633:47C5  [E47C5]  55              push    bp
     3633:47C6  [E47C6]  8bec            mov     bp, sp
     3633:47C8  [E47C8]  83ec06          sub     sp, 6
@@ -8723,7 +8723,7 @@ L_E4808:
     3633:4808  [E4808]  8be5            mov     sp, bp
     3633:480A  [E480A]  5d              pop     bp
     3633:480B  [E480B]  ca0200          retf    2
-SUB_E480E:
+step_progress_pattern_e:
     3633:480E  [E480E]  55              push    bp
     3633:480F  [E480F]  8bec            mov     bp, sp
     3633:4811  [E4811]  83ec06          sub     sp, 6

@@ -5779,7 +5779,7 @@ L_E46BD:
     db 0x8b, 0xe5  ; 46BD: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 46BF: pop bp
     retf 2                                   ; 46C0: retf 2
-SUB_E46C3:
+step_progress_pattern_a:
     push bp                                  ; 46C3: push bp
     db 0x8b, 0xec  ; 46C4: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 46C6: sub sp, 6
@@ -5808,7 +5808,7 @@ L_E4705:
     db 0x8b, 0xe5  ; 4705: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4707: pop bp
     retf 2                                   ; 4708: retf 2
-SUB_E470B:
+step_progress_pattern_b:
     push bp                                  ; 470B: push bp
     db 0x8b, 0xec  ; 470C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 470E: sub sp, 6
@@ -5843,7 +5843,7 @@ L_E475C:
     db 0x8b, 0xe5  ; 475C: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 475E: pop bp
     retf 2                                   ; 475F: retf 2
-SUB_E4762:
+step_progress_pattern_c:
     push bp                                  ; 4762: push bp
     db 0x8b, 0xec  ; 4763: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 4765: sub sp, 6
@@ -5880,7 +5880,7 @@ L_E47BF:
     db 0x8b, 0xe5  ; 47BF: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 47C1: pop bp
     retf 2                                   ; 47C2: retf 2
-SUB_E47C5:
+step_progress_pattern_d:
     push bp                                  ; 47C5: push bp
     db 0x8b, 0xec  ; 47C6: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 47C8: sub sp, 6
@@ -5910,7 +5910,7 @@ L_E4808:
     db 0x8b, 0xe5  ; 4808: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 480A: pop bp
     retf 2                                   ; 480B: retf 2
-SUB_E480E:
+step_progress_pattern_e:
     push bp                                  ; 480E: push bp
     db 0x8b, 0xec  ; 480F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 4811: sub sp, 6

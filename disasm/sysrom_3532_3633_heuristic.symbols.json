@@ -4095,10 +4095,10 @@
     "notes": null
   },
   "E46C3": {
-    "name": "SUB_E46C3",
+    "name": "step_progress_pattern_a",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_progress_pattern_a",
     "notes": null
   },
   "E46DA": {
@@ -4130,10 +4130,10 @@
     "notes": null
   },
   "E470B": {
-    "name": "SUB_E470B",
+    "name": "step_progress_pattern_b",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_progress_pattern_b",
     "notes": null
   },
   "E4722": {
@@ -4172,10 +4172,10 @@
     "notes": null
   },
   "E4762": {
-    "name": "SUB_E4762",
+    "name": "step_progress_pattern_c",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_progress_pattern_c",
     "notes": null
   },
   "E4783": {
@@ -4214,10 +4214,10 @@
     "notes": null
   },
   "E47C5": {
-    "name": "SUB_E47C5",
+    "name": "step_progress_pattern_d",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_progress_pattern_d",
     "notes": null
   },
   "E47DC": {
@@ -4249,10 +4249,10 @@
     "notes": null
   },
   "E480E": {
-    "name": "SUB_E480E",
+    "name": "step_progress_pattern_e",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "step_progress_pattern_e",
     "notes": null
   },
   "E4825": {
