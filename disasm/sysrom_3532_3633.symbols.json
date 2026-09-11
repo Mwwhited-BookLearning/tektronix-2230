@@ -8099,10 +8099,10 @@
     "notes": null
   },
   "F4150": {
-    "name": "SUB_F4150",
+    "name": "compute_and_format_sample_delta_readout",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "compute_and_format_sample_delta_readout",
     "notes": null
   },
   "F4156": {

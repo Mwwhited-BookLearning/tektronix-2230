@@ -12634,7 +12634,7 @@ write_hw_shift_register:
     3633:E167  [EE167]  50              push    ax
     3633:E168  [EE168]  ff7608          push    word ptr [bp + 8]
     3633:E16B  [EE16B]  ff76f6          push    word ptr [bp - 0xa]
-    3633:E16E  [EE16E]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E16E  [EE16E]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
     3633:E173  [EE173]  83c404          add     sp, 4
     3633:E176  [EE176]  ff460a          inc     word ptr [bp + 0xa]
     3633:E179  [EE179]  ff760a          push    word ptr [bp + 0xa]
@@ -13200,7 +13200,7 @@ L_F15C2:
 halt_cpu:
     3532:1611  [F1611]  f4              hlt     
 
-SUB_F4150:
+compute_and_format_sample_delta_readout:
     3532:4150  [F4150]  97              xchg    di, ax
     3532:4151  [F4151]  00e9            add     cl, ch
     3532:4153  [F4153]  7701            ja      L_F4156  ; 0xd6

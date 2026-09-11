@@ -1814,6 +1814,31 @@ supporting context to confidently name both `SUB_F750A`
 (`apply_pending_position_delta`) - see `FUNCTIONS.md` - even without a
 conventional prologue.
 
+## Found: a decimal-formatting engine tangled up with SUB_F5184/L_F50FA/SUB_ED0AE
+
+While tracing `compute_and_format_sample_delta_readout` (`SUB_F4150`,
+renamed) it calls `SUB_ED0AE`, which itself calls into `SUB_F5184` -
+and `SUB_F5184`'s own body sits right in the middle of a clear
+`itoa`-style digit-formatting loop that starts at `L_F50FA` (repeated
+`idiv`-by-10, appending `'0'+digit` characters, with a `.` decimal-
+point insertion at a per-item table position `[bx+0x63A]`). `SUB_
+F5184` itself opens with 2 bytes (`46 0AC7` = `inc si` / `or al,bh`)
+that don't fit this loop's logic at all - likely another instance of
+the un-prologued-entry/decode-drift family - immediately followed by
+`mov word [bp-0x10], 0`, identical to a reset done a few bytes earlier
+at `L_F515C`, strongly suggesting `SUB_F5184` is just another named
+entry point into the *same* loop, reached both by explicit far call
+(from `SUB_ED0AE`) and by fallthrough from `L_F5175`. **Not renamed**:
+the exact function boundaries here are genuinely ambiguous (this is a
+shared digit-formatting engine used from several `bp-relative-context`
+callers per the "outlined helper" theory above), and forcing a name on
+`SUB_F5184`/`L_F50FA` specifically would overclaim precision this
+investigation doesn't have. Worth revisiting together with `SUB_ED0AE`
+if a future session wants to fully map this formatting engine (likely
+a per-channel/per-item decimal-place-configurable number formatter,
+akin to `format_number` but with a variable decimal-point position
+read from a table instead of a fixed format).
+
 ## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
 
 Built in response to a direct question: of the many `L_XXXXX` branch

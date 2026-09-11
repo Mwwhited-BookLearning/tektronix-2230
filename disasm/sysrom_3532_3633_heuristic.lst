@@ -21206,7 +21206,7 @@ L_EE161:
     3633:E167  [EE167]  50              push    ax
     3633:E168  [EE168]  ff7608          push    word ptr [bp + 8]
     3633:E16B  [EE16B]  ff76f6          push    word ptr [bp - 0xa]
-    3633:E16E  [EE16E]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E16E  [EE16E]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
     3633:E173  [EE173]  83c404          add     sp, 4
     3633:E176  [EE176]  ff460a          inc     word ptr [bp + 0xa]
     3633:E179  [EE179]  ff760a          push    word ptr [bp + 0xa]
@@ -21244,7 +21244,7 @@ L_EE1B8:
     3633:E1C9  [EE1C9]  57              push    di
     3633:E1CA  [EE1CA]  ff7608          push    word ptr [bp + 8]
     3633:E1CD  [EE1CD]  ff76f4          push    word ptr [bp - 0xc]
-    3633:E1D0  [EE1D0]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E1D0  [EE1D0]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
 
 L_EE1D2:
     3633:E1D2  [EE1D2]  0008            add     byte ptr [bx + si], cl
@@ -21335,7 +21335,7 @@ L_EE288:
     3633:E28A  [EE28A]  57              push    di
     3633:E28B  [EE28B]  ff7608          push    word ptr [bp + 8]
     3633:E28E  [EE28E]  ff76f4          push    word ptr [bp - 0xc]
-    3633:E291  [EE291]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E291  [EE291]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
     3633:E296  [EE296]  83c404          add     sp, 4
     3633:E299  [EE299]  ff460a          inc     word ptr [bp + 0xa]
 L_EE29C:
@@ -21383,7 +21383,7 @@ L_EE2F4:
     3633:E305  [EE305]  52              push    dx
     3633:E306  [EE306]  ff7608          push    word ptr [bp + 8]
     3633:E309  [EE309]  ff76f4          push    word ptr [bp - 0xc]
-    3633:E30C  [EE30C]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E30C  [EE30C]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
     3633:E311  [EE311]  83c404          add     sp, 4
     3633:E314  [EE314]  ff460a          inc     word ptr [bp + 0xa]
     3633:E317  [EE317]  e91500          jmp     L_EE32F  ; 0x90f
@@ -21396,7 +21396,7 @@ L_EE31A:
     3633:E31D  [EE31D]  57              push    di
     3633:E31E  [EE31E]  ff7608          push    word ptr [bp + 8]
     3633:E321  [EE321]  ff76f4          push    word ptr [bp - 0xc]
-    3633:E324  [EE324]  9ad00008f4      lcall   SUB_F4150  ; 0xf408, 0xd0
+    3633:E324  [EE324]  9ad00008f4      lcall   compute_and_format_sample_delta_readout  ; 0xf408, 0xd0
     3633:E329  [EE329]  83c404          add     sp, 4
     3633:E32C  [EE32C]  ff460a          inc     word ptr [bp + 0xa]
 L_EE32F:
@@ -30083,7 +30083,7 @@ L_F4127:
     3532:414C  [F414C]  8946f8          mov     word ptr [bp - 8], ax
     3532:414F  [F414F]  e99700          jmp     L_F41E9  ; 0x169
 
-SUB_F4150:
+compute_and_format_sample_delta_readout:
     3532:4150  [F4150]  97              xchg    di, ax
     3532:4151  [F4151]  00e9            add     cl, ch
 

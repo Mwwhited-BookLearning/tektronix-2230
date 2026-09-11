@@ -2881,6 +2881,36 @@ FUNCTIONAL_NAMES = {
                                                # scale-marker label
                                                # builder for the
                                                # readout graticule
+    0xF4150: "compute_and_format_sample_delta_readout", # called from
+                                               # write_hw_shift_register:
+                                               # computes the delta
+                                               # between 2 adjacent
+                                               # acquisition samples
+                                               # (via read_acq_sample_
+                                               # with_wrap) for each of
+                                               # 2 records ([bp-0x14]/
+                                               # [bp-0x10]), using the
+                                               # channel-config bit
+                                               # ([0x570]-indexed
+                                               # [x+0x18C] bit 0x20/
+                                               # 0x80) to pick which;
+                                               # negates and flags a
+                                               # "-" sign character
+                                               # ([0x65E]) unless
+                                               # [0x67D] overrides;
+                                               # formats the result via
+                                               # SUB_ED0AE into a
+                                               # readout string, and if
+                                               # it changed since the
+                                               # cached value [0x684],
+                                               # calls SUB_E97DC/
+                                               # SUB_E99DF and
+                                               # conditionally
+                                               # build_comm_status_
+                                               # message when the comm
+                                               # option is installed -
+                                               # a cursor/measurement-
+                                               # delta readout updater
     0xF7603: "apply_pending_position_delta",  # reads a signed pending
                                                # adjustment from
                                                # [0x52C] (always reset
