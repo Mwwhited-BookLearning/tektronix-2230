@@ -1720,6 +1720,32 @@ matching caller/callee code this tooling doesn't model) rather than a
 one-off anomaly - worth keeping in mind before assuming any remaining
 odd-looking function opener is decode drift.
 
+**Refined hypothesis: `bp` may be a persistent per-task/per-step
+context pointer, not a fresh stack frame, for this whole class.**
+Found more instances in the self-test/hardware-output area:
+`SUB_F750A` (called via fallthrough from `L_F7504`, itself inside
+another un-prologued block) reads/writes `[bp-8]`/`[bp-0xA]`/`[bp-0xC]`
+freely, calls the confirmed `write_hw_shift_register`, and touches
+`[di+0x550]` - the same per-task/per-item flag word `SUB_F0C2A`'s
+family also touches. `SUB_F7603` (called from `0xEF4FB`, a clean far
+call, no fallthrough predecessor - genuinely reached "cold") likewise
+uses `[bp-8]`/`[bp-0xC]`/`[bp-0xE]`/`[bp-0x12]` from its very first
+instruction with no setup. Since `SUB_F7603` is reached with no
+fallthrough predecessor at all, its `bp` **must** already be valid
+before the call - i.e. some enclosing/parent function set up a frame
+once and then makes several `lcall`s into different "step" entry
+points that all share and mutate that *same* frame's locals, rather
+than each far call getting a fresh one. This would explain every
+instance found so far (boot-splash chunk-appenders, copy-loop-stride
+variants, scale-clamp helpers, and now these hardware-output steps):
+they're not broken functions, they're **secondary entry points into an
+already-open stack frame**, called by something that intentionally
+never returns until all the steps finish. Not yet proven (would need
+to find and read the actual enclosing frame-owner for one of these),
+but a much better-fitting explanation than a tooling/decode bug at
+this point - worth pursuing before assuming any single instance is
+unique.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to
