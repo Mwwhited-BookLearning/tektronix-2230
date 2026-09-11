@@ -13643,10 +13643,10 @@
     "notes": null
   },
   "ED9BC": {
-    "name": "SUB_ED9BC",
+    "name": "compute_and_draw_scale_marker",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "compute_and_draw_scale_marker",
     "notes": null
   },
   "ED9BD": {

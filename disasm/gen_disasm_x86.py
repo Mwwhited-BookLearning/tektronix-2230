@@ -2855,6 +2855,32 @@ FUNCTIONAL_NAMES = {
                                                # path was taken, not an
                                                # explicit `mov ax,`) are
                                                # not confirmed
+    0xED9BC: "compute_and_draw_scale_marker", # (value) - clamps
+                                               # [0x1BEC] to [0x20,
+                                               # 0x1000] against `value`
+                                               # (adding or subtracting
+                                               # depending on [0x1B82]),
+                                               # picks a boundary
+                                               # constant (0x400 or
+                                               # 0x1000) and a divisor
+                                               # shift (>>3, optionally
+                                               # mirrored against that
+                                               # boundary depending on
+                                               # [0x1B70]/[0x1B82]),
+                                               # calls SUB_F5D89 to
+                                               # build a "/1" or "/4"-
+                                               # style label (bytes
+                                               # 0x2F/'1'or'4'/0x4B='K')
+                                               # into a small record,
+                                               # then calls SUB_F6382
+                                               # (the confirmed decode-
+                                               # anomaly function) with
+                                               # far ptr [0x1D00] to
+                                               # draw/place it - the
+                                               # timebase/frequency
+                                               # scale-marker label
+                                               # builder for the
+                                               # readout graticule
     0xF750A: "sync_shift_register_output",    # a secondary entry point
                                                # into update_display_
                                                # mode_flags (jumps

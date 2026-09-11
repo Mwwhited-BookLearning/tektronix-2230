@@ -10376,7 +10376,7 @@ L_E6733:
 L_E6739:
     3633:6739  [E6739]  803e860600      cmp     byte ptr [0x686], 0
     3633:673E  [E673E]  754a            jne     L_E678A  ; 0x26a
-    3633:6740  [E6740]  9a0c009bed      lcall   SUB_ED9BC  ; 0xed9b, 0xc
+    3633:6740  [E6740]  9a0c009bed      lcall   compute_and_draw_scale_marker  ; 0xed9b, 0xc
     3633:6745  [E6745]  3d0000          cmp     ax, 0
     3633:6748  [E6748]  740f            je      L_E6759  ; 0x239
     3633:674A  [E674A]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
@@ -12396,7 +12396,7 @@ L_ED842:
     3633:D844  [ED844]  5d              pop     bp
     3633:D845  [ED845]  ca0400          retf    4
 
-SUB_ED9BC:
+compute_and_draw_scale_marker:
     3633:D9BC  [ED9BC]  01c6            add     si, ax
     3633:D9BE  [ED9BE]  06              push    es
     3633:D9BF  [ED9BF]  680401          push    0x104

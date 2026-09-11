@@ -1458,6 +1458,29 @@ with an unrelated coincidence here - not pursued further. Left
 worth naming, just artifacts of where a real call happens to land
 inside `assert_and_halt`'s/`plot_scaled_point`'s tag-dispatch code.
 
+**A third instance, found via `analyze_loops_vs_functions.py`'s
+long-jump lens (see below): `L_EDA0A`, `SUB_F1581`'s tail-jump
+target.** `SUB_F1581` (`push 0x5102; jmp` a huge `0x3B7A`-byte
+displacement) lands at physical `0xEDA0A`, which is **2 bytes into**
+`compute_and_draw_scale_marker`'s own `mov word [0x1BEC], 0x20`
+instruction (`C7 06 EC 1B 20 00`, `0xEDA0A` = the `EC` byte of that
+instruction's displacement field). Decoding from there produces `in
+al, dx` (`0xEC`) followed immediately by a clean reconvergence with the
+*real* next instruction at `0xEDA0E` (`jmp L_EDA28`) - the same
+"landing mid-instruction, then cleanly reconverging a few bytes later"
+shape as `SUB_E90A5`/`SUB_E92B0` above, not `SUB_EAC86`'s outright
+incoherent garbage. This also **closes an old open thread** from an
+earlier session (`TODO.md` used to note `SUB_F156E`/`SUB_F1581` land
+"inside another unnamed, unexplored function in a way that suggests
+cross-ROM code sharing, not yet reconciled") - it's not cross-ROM
+sharing, it's this same landing-artifact class, now identified
+precisely. Still not resolved *why* the compiled jump target is 2
+bytes short of the real instruction boundary; still not renaming
+`SUB_F1581`/`SUB_F156E`, and `L_EDA0A` itself isn't a real separate
+routine - `compute_and_draw_scale_marker` (the function `L_EDA0A`
+lands inside) was named on the strength of the other ~90% of its body,
+which is completely coherent.
+
 ## Found: RS-232 software flow control (XON/XOFF) in the comm ROM
 
 `get_xon_xoff_byte` (`0x9751A`, `160-2998`) is a small, unambiguous
@@ -1806,12 +1829,16 @@ have prioritized as clearly**: `L_EDA0A` is reached by a `jmp` from
 `SUB_F1581` at a displacement of **0x3B7A (15,226 bytes)** - by far the
 largest in the whole proven set (the next-largest is `L_F08E4` at
 0x3A8=936, and everything past that is well under 1,000, matching
-ordinary big-function loop/if spans). This single outlier is strong,
-assumption-free evidence that `L_EDA0A`'s neighborhood (the `[0x1BEC]`
-scale-clamp region touched by `SUB_ED9BC` too) is genuinely a separate
-shared routine being tail-jumped into from far away, not local control
-flow - worth prioritizing if the un-prologued-entry cluster is
-revisited with fresh eyes, over any of the other members.
+ordinary big-function loop/if spans). Follow-up (see the "A third
+instance" paragraph in the `SUB_E90A5`/`SUB_E92B0` section above):
+**resolved, not a real function** - `L_EDA0A` is `SUB_F1581` landing 2
+bytes into a `mov` instruction belonging to `compute_and_draw_scale_
+marker` (renamed on the strength of the other ~90% of its body), the
+same "landing mid-instruction, clean nearby reconvergence" class as
+`SUB_E90A5`/`SUB_E92B0`. The huge displacement was a real, useful
+signal (it correctly flagged this as worth a close look over anything
+else in the list) - it just pointed at a decode artifact rather than
+an undiscovered function this time.
 
 **Two `cross-fn` hits turned out to be heuristic false positives when
 manually verified** (worth knowing before trusting this tool's list
