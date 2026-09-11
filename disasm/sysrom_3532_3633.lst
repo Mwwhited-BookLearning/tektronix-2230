@@ -14469,7 +14469,7 @@ disable_item_pair:
     3532:8F4C  [F8F4C]  5d              pop     bp
     3532:8F4D  [F8F4D]  ca0200          retf    2
 
-SUB_F911C:
+pad_readout_buffer_remainder:
     3532:911C  [F911C]  55              push    bp
     3532:911D  [F911D]  8bec            mov     bp, sp
     3532:911F  [F911F]  83ec06          sub     sp, 6
@@ -14491,7 +14491,7 @@ SUB_F911C:
     3532:9154  [F9154]  c43e3600        les     di, ptr [0x36]
     3532:9158  [F9158]  06              push    es
     3532:9159  [F9159]  57              push    di
-    3532:915A  [F915A]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:915A  [F915A]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:915F  [F915F]  83c406          add     sp, 6
     3532:9162  [F9162]  8be5            mov     sp, bp
     3532:9164  [F9164]  5d              pop     bp
@@ -14583,7 +14583,7 @@ L_FB96E:
     3532:B970  [FB970]  5d              pop     bp
     3532:B971  [FB971]  ca0200          retf    2
 
-SUB_FBBE9:
+memset_word_pattern_far:
     3532:BBE9  [FBBE9]  55              push    bp
     3532:BBEA  [FBBEA]  8bec            mov     bp, sp
     3532:BBEC  [FBBEC]  1e              push    ds
@@ -14726,7 +14726,7 @@ compute_readout_buffer_length_and_flag:
     3532:BD24  [FBD24]  8c063800        mov     word ptr [0x38], es
     3532:BD28  [FBD28]  9a0f00ccfb      lcall   SUB_FBCCF  ; 0xfbcc, 0xf
     3532:BD2D  [FBD2D]  810e22000020    or      word ptr [0x22], 0x2000
-    3532:BD33  [FBD33]  9a0c0011f9      lcall   SUB_F911C  ; 0xf911, 0xc
+    3532:BD33  [FBD33]  9a0c0011f9      lcall   pad_readout_buffer_remainder  ; 0xf911, 0xc
     3532:BD38  [FBD38]  8be5            mov     sp, bp
     3532:BD3A  [FBD3A]  5d              pop     bp
     3532:BD3B  [FBD3B]  cb              retf    

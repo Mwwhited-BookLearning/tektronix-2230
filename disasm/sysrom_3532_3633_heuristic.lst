@@ -37701,7 +37701,7 @@ L_F8D76:
     3532:8D85  [F8D85]  c45ef2          les     bx, ptr [bp - 0xe]
     3532:8D88  [F8D88]  06              push    es
     3532:8D89  [F8D89]  53              push    bx
-    3532:8D8A  [F8D8A]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8D8A  [F8D8A]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8D8F  [F8D8F]  83c406          add     sp, 6
     3532:8D92  [F8D92]  2bff            sub     di, di
     3532:8D94  [F8D94]  57              push    di
@@ -37713,7 +37713,7 @@ L_F8D76:
     3532:8D9E  [F8D9E]  c456ee          les     dx, ptr [bp - 0x12]
     3532:8DA1  [F8DA1]  06              push    es
     3532:8DA2  [F8DA2]  52              push    dx
-    3532:8DA3  [F8DA3]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8DA3  [F8DA3]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8DA8  [F8DA8]  83c406          add     sp, 6
     3532:8DAB  [F8DAB]  e9a100          jmp     L_F8E4F  ; 0x33f
 L_F8DAE:
@@ -37729,7 +37729,7 @@ L_F8DAE:
     3532:8DBF  [F8DBF]  c45ef2          les     bx, ptr [bp - 0xe]
     3532:8DC2  [F8DC2]  06              push    es
     3532:8DC3  [F8DC3]  53              push    bx
-    3532:8DC4  [F8DC4]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8DC4  [F8DC4]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8DC9  [F8DC9]  83c406          add     sp, 6
     3532:8DCC  [F8DCC]  c43e801c        les     di, ptr [0x1c80]
     3532:8DD0  [F8DD0]  8b5606          mov     dx, word ptr [bp + 6]
@@ -37748,7 +37748,7 @@ L_F8DAE:
     3532:8DED  [F8DED]  c47ef2          les     di, ptr [bp - 0xe]
     3532:8DF0  [F8DF0]  06              push    es
     3532:8DF1  [F8DF1]  57              push    di
-    3532:8DF2  [F8DF2]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8DF2  [F8DF2]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8DF7  [F8DF7]  83c406          add     sp, 6
     3532:8DFA  [F8DFA]  2bff            sub     di, di
     3532:8DFC  [F8DFC]  57              push    di
@@ -37760,7 +37760,7 @@ L_F8DAE:
     3532:8E06  [F8E06]  c456ee          les     dx, ptr [bp - 0x12]
     3532:8E09  [F8E09]  06              push    es
     3532:8E0A  [F8E0A]  52              push    dx
-    3532:8E0B  [F8E0B]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8E0B  [F8E0B]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8E10  [F8E10]  83c406          add     sp, 6
     3532:8E13  [F8E13]  c43e801c        les     di, ptr [0x1c80]
     3532:8E17  [F8E17]  8b5606          mov     dx, word ptr [bp + 6]
@@ -37783,7 +37783,7 @@ L_F8DAE:
     3532:8E3C  [F8E3C]  c47eee          les     di, ptr [bp - 0x12]
     3532:8E3F  [F8E3F]  06              push    es
     3532:8E40  [F8E40]  57              push    di
-    3532:8E41  [F8E41]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8E41  [F8E41]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8E46  [F8E46]  83c406          add     sp, 6
     3532:8E49  [F8E49]  83c402          add     sp, 2
     3532:8E4C  [F8E4C]  83c402          add     sp, 2
@@ -37918,7 +37918,7 @@ L_F8F70:
     3532:8F80  [F8F80]  c43e801c        les     di, ptr [0x1c80]
     3532:8F84  [F8F84]  06              push    es
     3532:8F85  [F8F85]  57              push    di
-    3532:8F86  [F8F86]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8F86  [F8F86]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8F8B  [F8F8B]  83c406          add     sp, 6
     3532:8F8E  [F8F8E]  bf0100          mov     di, 1
     3532:8F91  [F8F91]  57              push    di
@@ -37928,7 +37928,7 @@ L_F8F70:
     3532:8F97  [F8F97]  c43e3600        les     di, ptr [0x36]
     3532:8F9B  [F8F9B]  06              push    es
     3532:8F9C  [F8F9C]  57              push    di
-    3532:8F9D  [F8F9D]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8F9D  [F8F9D]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8FA2  [F8FA2]  83c406          add     sp, 6
     3532:8FA5  [F8FA5]  a08c01          mov     al, byte ptr [0x18c]
     3532:8FA8  [F8FA8]  8846f7          mov     byte ptr [bp - 9], al
@@ -37950,7 +37950,7 @@ L_F8F70:
     3532:8FD2  [F8FD2]  03c2            add     ax, dx
     3532:8FD4  [F8FD4]  06              push    es
     3532:8FD5  [F8FD5]  50              push    ax
-    3532:8FD6  [F8FD6]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8FD6  [F8FD6]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8FDB  [F8FDB]  83c406          add     sp, 6
     3532:8FDE  [F8FDE]  2bff            sub     di, di
     3532:8FE0  [F8FE0]  57              push    di
@@ -37963,7 +37963,7 @@ L_F8F70:
     3532:8FEF  [F8FEF]  03c2            add     ax, dx
     3532:8FF1  [F8FF1]  06              push    es
     3532:8FF2  [F8FF2]  50              push    ax
-    3532:8FF3  [F8FF3]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:8FF3  [F8FF3]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:8FF8  [F8FF8]  83c406          add     sp, 6
     3532:8FFB  [F8FFB]  e94000          jmp     L_F903E  ; 0xee
 L_F8FFE:
@@ -37978,7 +37978,7 @@ L_F8FFE:
     3532:9010  [F9010]  03df            add     bx, di
     3532:9012  [F9012]  06              push    es
     3532:9013  [F9013]  53              push    bx
-    3532:9014  [F9014]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:9014  [F9014]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:9019  [F9019]  83c406          add     sp, 6
     3532:901C  [F901C]  2bff            sub     di, di
     3532:901E  [F901E]  57              push    di
@@ -37995,7 +37995,7 @@ L_F902C:
     3532:9032  [F9032]  03c2            add     ax, dx
     3532:9034  [F9034]  06              push    es
     3532:9035  [F9035]  50              push    ax
-    3532:9036  [F9036]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:9036  [F9036]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:903B  [F903B]  83c406          add     sp, 6
 L_F903E:
     3532:903E  [F903E]  8be5            mov     sp, bp
@@ -38037,7 +38037,7 @@ FUNC_3532_9042:
     3532:9095  [F9095]  03c7            add     ax, di
     3532:9097  [F9097]  06              push    es
     3532:9098  [F9098]  50              push    ax
-    3532:9099  [F9099]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:9099  [F9099]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:909E  [F909E]  83c406          add     sp, 6
     3532:90A1  [F90A1]  2bff            sub     di, di
     3532:90A3  [F90A3]  57              push    di
@@ -38049,7 +38049,7 @@ FUNC_3532_9042:
     3532:90B1  [F90B1]  03c2            add     ax, dx
     3532:90B3  [F90B3]  06              push    es
     3532:90B4  [F90B4]  50              push    ax
-    3532:90B5  [F90B5]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:90B5  [F90B5]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:90BA  [F90BA]  83c406          add     sp, 6
 L_F90BD:
     3532:90BD  [F90BD]  8a5608          mov     dl, byte ptr [bp + 8]
@@ -38093,7 +38093,7 @@ L_F9116:
     3532:9116  [F9116]  8be5            mov     sp, bp
     3532:9118  [F9118]  5d              pop     bp
     3532:9119  [F9119]  ca0200          retf    2
-SUB_F911C:
+pad_readout_buffer_remainder:
     3532:911C  [F911C]  55              push    bp
     3532:911D  [F911D]  8bec            mov     bp, sp
     3532:911F  [F911F]  83ec06          sub     sp, 6
@@ -38126,7 +38126,7 @@ SUB_F911C:
     3532:9154  [F9154]  c43e3600        les     di, ptr [0x36]
     3532:9158  [F9158]  06              push    es
     3532:9159  [F9159]  57              push    di
-    3532:915A  [F915A]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:915A  [F915A]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:915F  [F915F]  83c406          add     sp, 6
 
     3532:9161  [F9161]  06              push    es
@@ -38341,7 +38341,7 @@ L_F9432:
     3532:944F  [F944F]  c456e6          les     dx, ptr [bp - 0x1a]
     3532:9452  [F9452]  06              push    es
     3532:9453  [F9453]  52              push    dx
-    3532:9454  [F9454]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:9454  [F9454]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:9459  [F9459]  83c406          add     sp, 6
     3532:945C  [F945C]  bf0100          mov     di, 1
     3532:945F  [F945F]  57              push    di
@@ -38351,7 +38351,7 @@ L_F9432:
     3532:9468  [F9468]  c456e2          les     dx, ptr [bp - 0x1e]
     3532:946B  [F946B]  06              push    es
     3532:946C  [F946C]  52              push    dx
-    3532:946D  [F946D]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:946D  [F946D]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:9472  [F9472]  83c406          add     sp, 6
     3532:9475  [F9475]  803e831b1e      cmp     byte ptr [0x1b83], 0x1e
     3532:947A  [F947A]  7464            je      L_F94E0  ; 0x94e0
@@ -38379,7 +38379,7 @@ L_F94A7:
     3532:94B7  [F94B7]  03c2            add     ax, dx
     3532:94B9  [F94B9]  06              push    es
     3532:94BA  [F94BA]  50              push    ax
-    3532:94BB  [F94BB]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:94BB  [F94BB]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:94C0  [F94C0]  83c406          add     sp, 6
     3532:94C3  [F94C3]  bf0100          mov     di, 1
     3532:94C6  [F94C6]  57              push    di
@@ -38391,7 +38391,7 @@ L_F94A7:
     3532:94D4  [F94D4]  03df            add     bx, di
     3532:94D6  [F94D6]  06              push    es
     3532:94D7  [F94D7]  53              push    bx
-    3532:94D8  [F94D8]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:94D8  [F94D8]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:94DD  [F94DD]  83c406          add     sp, 6
 L_F94E0:
     3532:94E0  [F94E0]  c47ef2          les     di, ptr [bp - 0xe]
@@ -42184,7 +42184,7 @@ L_FBAD1:
     3532:BADF  [FBADF]  1e              push    ds
     3532:BAE0  [FBAE0]  ba6400          mov     dx, 0x64
     3532:BAE3  [FBAE3]  52              push    dx
-    3532:BAE4  [FBAE4]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:BAE4  [FBAE4]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:BAE9  [FBAE9]  83c406          add     sp, 6
     3532:BAEC  [FBAEC]  8b7ef8          mov     di, word ptr [bp - 8]
     3532:BAEF  [FBAEF]  4f              dec     di
@@ -42281,7 +42281,7 @@ FUNC_3532_BBBF:
     3532:BBE3  [FBBE3]  8be5            mov     sp, bp
     3532:BBE5  [FBBE5]  5d              pop     bp
     3532:BBE6  [FBBE6]  ca0400          retf    4
-SUB_FBBE9:
+memset_word_pattern_far:
     3532:BBE9  [FBBE9]  55              push    bp
     3532:BBEA  [FBBEA]  8bec            mov     bp, sp
     3532:BBEC  [FBBEC]  1e              push    ds
@@ -42431,7 +42431,7 @@ compute_readout_buffer_length_and_flag:
     3532:BD24  [FBD24]  8c063800        mov     word ptr [0x38], es
     3532:BD28  [FBD28]  9a0f00ccfb      lcall   SUB_FBCCF  ; 0xfbcc, 0xf
     3532:BD2D  [FBD2D]  810e22000020    or      word ptr [0x22], 0x2000
-    3532:BD33  [FBD33]  9a0c0011f9      lcall   SUB_F911C  ; 0xf911, 0xc
+    3532:BD33  [FBD33]  9a0c0011f9      lcall   pad_readout_buffer_remainder  ; 0xf911, 0xc
     3532:BD38  [FBD38]  8be5            mov     sp, bp
     3532:BD3A  [FBD3A]  5d              pop     bp
     3532:BD3B  [FBD3B]  cb              retf    
@@ -43678,7 +43678,7 @@ L_FCBD9:
     3532:CBFB  [FCBFB]  1e              push    ds
     3532:CBFC  [FCBFC]  ba6400          mov     dx, 0x64
     3532:CBFF  [FCBFF]  52              push    dx
-    3532:CC00  [FCC00]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:CC00  [FCC00]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:CC05  [FCC05]  83c406          add     sp, 6
     3532:CC08  [FCC08]  8b7ef8          mov     di, word ptr [bp - 8]
     3532:CC0B  [FCC0B]  893e6800        mov     word ptr [0x68], di
@@ -43703,7 +43703,7 @@ L_FCC0F:
     3532:CC35  [FCC35]  83c20a          add     dx, 0xa
     3532:CC38  [FCC38]  1e              push    ds
     3532:CC39  [FCC39]  52              push    dx
-    3532:CC3A  [FCC3A]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:CC3A  [FCC3A]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:CC3F  [FCC3F]  83c406          add     sp, 6
     3532:CC42  [FCC42]  8b7ef8          mov     di, word ptr [bp - 8]
     3532:CC45  [FCC45]  893e7200        mov     word ptr [0x72], di
@@ -43873,7 +43873,7 @@ L_FCDF4:
     3532:CE16  [FCE16]  1e              push    ds
     3532:CE17  [FCE17]  ba6400          mov     dx, 0x64
     3532:CE1A  [FCE1A]  52              push    dx
-    3532:CE1B  [FCE1B]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:CE1B  [FCE1B]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:CE20  [FCE20]  83c406          add     sp, 6
 L_FCE23:
     3532:CE23  [FCE23]  a02000          mov     al, byte ptr [0x20]
@@ -43896,7 +43896,7 @@ L_FCE23:
     3532:CE49  [FCE49]  83c20a          add     dx, 0xa
     3532:CE4C  [FCE4C]  1e              push    ds
     3532:CE4D  [FCE4D]  52              push    dx
-    3532:CE4E  [FCE4E]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:CE4E  [FCE4E]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:CE53  [FCE53]  83c406          add     sp, 6
 L_FCE56:
     3532:CE56  [FCE56]  810e5a050002    or      word ptr [0x55a], 0x200
@@ -44160,7 +44160,7 @@ L_FD104:
     3532:D123  [FD123]  1e              push    ds
     3532:D124  [FD124]  ba6400          mov     dx, 0x64
     3532:D127  [FD127]  52              push    dx
-    3532:D128  [FD128]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:D128  [FD128]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:D12D  [FD12D]  83c406          add     sp, 6
     3532:D130  [FD130]  a02000          mov     al, byte ptr [0x20]
     3532:D133  [FD133]  2480            and     al, 0x80
@@ -44368,7 +44368,7 @@ L_FD357:
     3532:D37A  [FD37A]  1e              push    ds
     3532:D37B  [FD37B]  ba6400          mov     dx, 0x64
     3532:D37E  [FD37E]  52              push    dx
-    3532:D37F  [FD37F]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:D37F  [FD37F]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:D384  [FD384]  83c406          add     sp, 6
 L_FD387:
     3532:D387  [FD387]  a02000          mov     al, byte ptr [0x20]
@@ -44385,7 +44385,7 @@ L_FD387:
     3532:D39D  [FD39D]  83c20a          add     dx, 0xa
     3532:D3A0  [FD3A0]  1e              push    ds
     3532:D3A1  [FD3A1]  52              push    dx
-    3532:D3A2  [FD3A2]  9a0900befb      lcall   SUB_FBBE9  ; 0xfbbe, 9
+    3532:D3A2  [FD3A2]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
     3532:D3A7  [FD3A7]  83c406          add     sp, 6
 L_FD3AA:
     3532:D3AA  [FD3AA]  9a0c0040fd      lcall   FUNC_3532_D40C  ; 0xfd40, 0xc

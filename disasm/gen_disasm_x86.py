@@ -2785,6 +2785,36 @@ FUNCTIONAL_NAMES = {
                                                # print_string_serial
                                                # (which uses
                                                # serial_tx_buffer_put)
+    0xFBBE9: "memset_word_pattern_far",       # (far_ptr dest, byte_count,
+                                               # fill_lo, fill_hi) - word-
+                                               # granularity sibling of
+                                               # the confirmed memset_far:
+                                               # `rep stosw` filling
+                                               # `byte_count/2` words with
+                                               # the packed `fill_hi:
+                                               # fill_lo` byte pair -
+                                               # called from SUB_F911C to
+                                               # pad the readout buffer's
+                                               # tail with a repeating
+                                               # `0x0101` pattern
+    0xF911C: "pad_readout_buffer_remainder",  # computes 2 far pointers
+                                               # relative to the readout
+                                               # buffer base [0x1C80]
+                                               # (+0x4851 and -0x37AF)
+                                               # into fixed scratch vars
+                                               # [0x1E8]/[0x1EA] and
+                                               # [0x1EC]/[0x1EE], calls
+                                               # SUB_F8234/SUB_F80A6, then
+                                               # memset_word_pattern_far's
+                                               # 0x4800 bytes from the
+                                               # buffer's current end
+                                               # (far ptr [0x36], set by
+                                               # compute_readout_buffer_
+                                               # length_and_flag) with a
+                                               # 0x0101 fill pattern -
+                                               # called only from
+                                               # compute_readout_buffer_
+                                               # length_and_flag
     0xE7F03: "poll_error_flag_and_reset_channels", # checks status byte
                                                # [0x403]; while set,
                                                # increments a tick

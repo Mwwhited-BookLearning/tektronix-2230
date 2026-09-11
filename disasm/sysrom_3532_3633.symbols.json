@@ -8841,10 +8841,10 @@
     "notes": null
   },
   "F911C": {
-    "name": "SUB_F911C",
+    "name": "pad_readout_buffer_remainder",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "pad_readout_buffer_remainder",
     "notes": null
   },
   "F9FEE": {
@@ -8911,10 +8911,10 @@
     "notes": null
   },
   "FBBE9": {
-    "name": "SUB_FBBE9",
+    "name": "memset_word_pattern_far",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "memset_word_pattern_far",
     "notes": null
   },
   "FBC09": {
