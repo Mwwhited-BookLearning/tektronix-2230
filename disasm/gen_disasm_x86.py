@@ -2911,6 +2911,40 @@ FUNCTIONAL_NAMES = {
                                                # option is installed -
                                                # a cursor/measurement-
                                                # delta readout updater
+    0xEDFFD: "dispatch_item_handler_if_enabled", # takes no stack args -
+                                               # reads the current item
+                                               # index from global
+                                               # [0x464] and looks up
+                                               # its record at
+                                               # [index*0x10+0x1D10];
+                                               # if the record's [+6]
+                                               # or [+8] field is
+                                               # nonzero and the enable
+                                               # byte [0x466] bit 0x80
+                                               # is set, calls through
+                                               # the handler far
+                                               # pointer at [+6] with a
+                                               # fixed arg (4) - called
+                                               # from tag_position_
+                                               # marker_and_dispatch
+    0xF5D89: "tag_position_marker_and_dispatch", # called from
+                                               # compute_and_draw_scale_
+                                               # marker with (far ptr
+                                               # record, value): tags 2
+                                               # byte fields of the
+                                               # record ([+0xC]/[+0x1A])
+                                               # with a flag byte, and
+                                               # if the record's own 2
+                                               # word fields ([0] vs
+                                               # [2]) differ, calls
+                                               # dispatch_item_handler_
+                                               # if_enabled and ORs its
+                                               # result into `value`;
+                                               # then sets global flags
+                                               # [0x548] bit 1/2 from
+                                               # `value` bits 0x100/
+                                               # 0x200 and returns
+                                               # `value`
     0xF7603: "apply_pending_position_delta",  # reads a signed pending
                                                # adjustment from
                                                # [0x52C] (always reset

@@ -14266,10 +14266,10 @@
     "notes": null
   },
   "EDFFD": {
-    "name": "SUB_EDFFD",
+    "name": "dispatch_item_handler_if_enabled",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "dispatch_item_handler_if_enabled",
     "notes": null
   },
   "EE004": {
@@ -21931,10 +21931,10 @@
     "notes": null
   },
   "F5D89": {
-    "name": "SUB_F5D89",
+    "name": "tag_position_marker_and_dispatch",
     "kind": "sub",
     "ref_count": 6,
-    "functional_name": null,
+    "functional_name": "tag_position_marker_and_dispatch",
     "notes": null
   },
   "F5D8E": {

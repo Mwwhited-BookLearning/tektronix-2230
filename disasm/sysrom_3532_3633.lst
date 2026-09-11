@@ -12495,7 +12495,7 @@ L_EDA9B:
     3633:DA9C  [EDA9C]  bf7604          mov     di, 0x476
     3633:DA9F  [EDA9F]  57              push    di
     3633:DAA0  [EDAA0]  ff76f6          push    word ptr [bp - 0xa]
-    3633:DAA3  [EDAA3]  9ad9039bf5      lcall   SUB_F5D89  ; 0xf59b, 0x3d9
+    3633:DAA3  [EDAA3]  9ad9039bf5      lcall   tag_position_marker_and_dispatch  ; 0xf59b, 0x3d9
     3633:DAA8  [EDAA8]  83c404          add     sp, 4
     3633:DAAB  [EDAAB]  8946f2          mov     word ptr [bp - 0xe], ax
     3633:DAAE  [EDAAE]  8bf8            mov     di, ax
@@ -12553,7 +12553,7 @@ L_EDB55:
     3633:DB57  [EDB57]  5d              pop     bp
     3633:DB58  [EDB58]  ca0200          retf    2
 
-SUB_EDFFD:
+dispatch_item_handler_if_enabled:
     3633:DFFD  [EDFFD]  2b07            sub     ax, word ptr [bx]
     3633:DFFF  [EDFFF]  08f4            or      ah, dh
     3633:E001  [EE001]  83c402          add     sp, 2
@@ -13506,7 +13506,7 @@ L_F5901:
     3532:5913  [F5913]  5d              pop     bp
     3532:5914  [F5914]  cb              retf    
 
-SUB_F5D89:
+tag_position_marker_and_dispatch:
     3532:5D89  [F5D89]  0e              push    cs
     3532:5D8A  [F5D8A]  48              dec     ax
     3532:5D8B  [F5D8B]  050001          add     ax, 0x100
@@ -13520,7 +13520,7 @@ SUB_F5D89:
     3532:5DA6  [F5DA6]  3bc7            cmp     ax, di
     3532:5DA8  [F5DA8]  740b            je      L_F5DB5  ; 0x405
     3532:5DAA  [F5DAA]  ff7606          push    word ptr [bp + 6]
-    3532:5DAD  [F5DAD]  9add05a2ed      lcall   SUB_EDFFD  ; 0xeda2, 0x5dd
+    3532:5DAD  [F5DAD]  9add05a2ed      lcall   dispatch_item_handler_if_enabled  ; 0xeda2, 0x5dd
     3532:5DB2  [F5DB2]  094608          or      word ptr [bp + 8], ax
 L_F5DB5:
     3532:5DB5  [F5DB5]  8b7e08          mov     di, word ptr [bp + 8]
