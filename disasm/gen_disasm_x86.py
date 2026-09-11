@@ -636,6 +636,61 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xE45A6: "compute_range_checksum",         # (seed, start_far_ptr,
+                                               # end_far_ptr) - classic
+                                               # shift-and-add-with-
+                                               # carry running checksum
+                                               # over an inclusive byte
+                                               # range: cx=(cx<<1)+
+                                               # carry-adjusted byte,
+                                               # for each byte from
+                                               # start to end
+    0xE5839: "draw_box_outline",               # draws a rectangle's 4
+                                               # edges via 4 calls to
+                                               # draw_readout_line,
+                                               # connecting the corners
+                                               # implied by its 5 word
+                                               # args (x/y/w/h/style)
+    0xE71C9: "update_plot_retry_counters",     # iterates a 12-entry
+                                               # per-item table: when a
+                                               # per-item countdown at
+                                               # [item+0x744] reaches 0,
+                                               # increments a per-item
+                                               # state/attempt counter
+                                               # at [item+0x1A91] (with
+                                               # bit-masked gating -
+                                               # 0xB0 then 0x40); called
+                                               # from the plot-output
+                                               # task's main loop.
+                                               # Mechanism confirmed
+                                               # (matches the identical
+                                               # inline single-item
+                                               # version at [0x1A9B] =
+                                               # item #10 of the same
+                                               # array); exact meaning
+                                               # of the 12 items and the
+                                               # counter's role (retry
+                                               # limit? backoff timer?)
+                                               # not confirmed
+    0x96CB5: "send_serial_newline",            # comm ROM: sends CR
+                                               # (0xD) via serial_tx_
+                                               # buffer_put, and also
+                                               # sends LF (0xA)
+                                               # afterward if [0x629]
+                                               # is clear AND [0x4EF]
+                                               # (a CR+LF line-ending
+                                               # option) is set -
+                                               # otherwise sends CR only
+    0xE79D3: "putchar_serial_with_newline_handling", # (char) - if
+                                               # char==0x0A (LF),
+                                               # switches DS into the
+                                               # comm ROM's segment via
+                                               # set_ds_return_old and
+                                               # calls send_serial_
+                                               # newline, then restores
+                                               # DS; otherwise sends the
+                                               # byte directly via
+                                               # putchar_serial_seg
     0xF0446: "reset_all_channel_plot_caches",  # resets 8 plot-position
                                                # caches ([0x6B2]/[0x6B4]/
                                                # [0x6E6]/[0x6E8]/[0x6F2]/

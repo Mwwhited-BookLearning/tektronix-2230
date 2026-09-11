@@ -1687,10 +1687,10 @@
     "notes": null
   },
   "96CB5": {
-    "name": "SUB_96CB5",
+    "name": "send_serial_newline",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "send_serial_newline",
     "notes": null
   },
   "96CDB": {
@@ -4858,10 +4858,10 @@
     "notes": null
   },
   "E45A6": {
-    "name": "SUB_E45A6",
+    "name": "compute_range_checksum",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "compute_range_checksum",
     "notes": null
   },
   "E45B7": {
@@ -5208,10 +5208,10 @@
     "notes": null
   },
   "E5839": {
-    "name": "SUB_E5839",
+    "name": "draw_box_outline",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "draw_box_outline",
     "notes": null
   },
   "E58AD": {
@@ -6384,10 +6384,10 @@
     "notes": null
   },
   "E71C9": {
-    "name": "SUB_E71C9",
+    "name": "update_plot_retry_counters",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "update_plot_retry_counters",
     "notes": null
   },
   "E71D7": {
@@ -6797,10 +6797,10 @@
     "notes": null
   },
   "E79D3": {
-    "name": "SUB_E79D3",
+    "name": "putchar_serial_with_newline_handling",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "putchar_serial_with_newline_handling",
     "notes": null
   },
   "E79F9": {

@@ -5719,7 +5719,7 @@ L_E45A1:
     pop bp                                   ; 45A3: pop bp
     retf                                     ; 45A4: retf 
     db 0xff  ; 45A5
-SUB_E45A6:
+compute_range_checksum:
     push bp                                  ; 45A6: push bp
     mov bp, sp                               ; 45A7: mov bp, sp
     sub sp, 6                                ; 45A9: sub sp, 6
@@ -6470,7 +6470,7 @@ L_E5820:
     mov sp, bp                               ; 5833: mov sp, bp
     pop bp                                   ; 5835: pop bp
     retf 4                                   ; 5836: retf 4
-SUB_E5839:
+draw_box_outline:
     push bp                                  ; 5839: push bp
     mov bp, sp                               ; 583A: mov bp, sp
     sub sp, 6                                ; 583C: sub sp, 6
@@ -8359,7 +8359,7 @@ L_E6F27:
     db 0x00, 0x74, 0x18, 0x80, 0x3e, 0xa4, 0x07, 0x00, 0x75, 0x11, 0xa0, 0x98, 0x1a, 0x2a, 0xe4, 0x25  ; 719B
     db 0x0f, 0x00, 0x3d, 0x00, 0x00, 0x75, 0x04, 0xfe, 0x06, 0x98, 0x1a, 0xc6, 0x06, 0x62, 0x07, 0x01  ; 71AB
     db 0x9a, 0x39, 0x01, 0x09, 0xe7, 0x9a, 0x0c, 0x00, 0x95, 0xe6, 0x8b, 0xe5, 0x5d, 0xcb  ; 71BB
-SUB_E71C9:
+update_plot_retry_counters:
     push bp                                  ; 71C9: push bp
     mov bp, sp                               ; 71CA: mov bp, sp
     sub sp, 8                                ; 71CC: sub sp, 8
@@ -8930,7 +8930,7 @@ L_E79CD:
     mov sp, bp                               ; 79CD: mov sp, bp
     pop bp                                   ; 79CF: pop bp
     retf 4                                   ; 79D0: retf 4
-SUB_E79D3:
+putchar_serial_with_newline_handling:
     push bp                                  ; 79D3: push bp
     mov bp, sp                               ; 79D4: mov bp, sp
     sub sp, 6                                ; 79D6: sub sp, 6

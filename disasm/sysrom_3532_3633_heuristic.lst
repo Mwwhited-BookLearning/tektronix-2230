@@ -2477,7 +2477,7 @@ SUB_E1816:
     3633:182A  [E182A]  52              push    dx
     3633:182B  [E182B]  2bdb            sub     bx, bx
     3633:182D  [E182D]  53              push    bx
-    3633:182E  [E182E]  9a06005ae4      lcall   SUB_E45A6  ; 0xe45a, 6
+    3633:182E  [E182E]  9a06005ae4      lcall   compute_range_checksum  ; 0xe45a, 6
     3633:1833  [E1833]  83c408          add     sp, 8
     3633:1836  [E1836]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:1839  [E1839]  c47e1a          les     di, ptr [bp + 0x1a]
@@ -2487,7 +2487,7 @@ SUB_E1816:
     3633:1841  [E1841]  06              push    es
     3633:1842  [E1842]  52              push    dx
     3633:1843  [E1843]  50              push    ax
-    3633:1844  [E1844]  9a06005ae4      lcall   SUB_E45A6  ; 0xe45a, 6
+    3633:1844  [E1844]  9a06005ae4      lcall   compute_range_checksum  ; 0xe45a, 6
     3633:1849  [E1849]  83c408          add     sp, 8
     3633:184C  [E184C]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:184F  [E184F]  c47e0a          les     di, ptr [bp + 0xa]
@@ -7013,7 +7013,7 @@ L_E45A1:
     3633:45A3  [E45A3]  5d              pop     bp
     3633:45A4  [E45A4]  cb              retf    
 
-SUB_E45A6:
+compute_range_checksum:
     3633:45A6  [E45A6]  55              push    bp
     3633:45A7  [E45A7]  8bec            mov     bp, sp
     3633:45A9  [E45A9]  83ec06          sub     sp, 6
@@ -8828,7 +8828,7 @@ SUB_E5676:
     3633:5695  [E5695]  57              push    di
     3633:5696  [E5696]  2bff            sub     di, di
     3633:5698  [E5698]  57              push    di
-    3633:5699  [E5699]  9a69125de4      lcall   SUB_E5839  ; 0xe45d, 0x1269
+    3633:5699  [E5699]  9a69125de4      lcall   draw_box_outline  ; 0xe45d, 0x1269
     3633:569E  [E569E]  83c408          add     sp, 8
     3633:56A1  [E56A1]  c47e06          les     di, ptr [bp + 6]
     3633:56A4  [E56A4]  06              push    es
@@ -8854,7 +8854,7 @@ SUB_E5676:
     3633:56D0  [E56D0]  57              push    di
     3633:56D1  [E56D1]  bf1900          mov     di, 0x19
     3633:56D4  [E56D4]  57              push    di
-    3633:56D5  [E56D5]  9a69125de4      lcall   SUB_E5839  ; 0xe45d, 0x1269
+    3633:56D5  [E56D5]  9a69125de4      lcall   draw_box_outline  ; 0xe45d, 0x1269
     3633:56DA  [E56DA]  83c408          add     sp, 8
     3633:56DD  [E56DD]  c47e06          les     di, ptr [bp + 6]
     3633:56E0  [E56E0]  8d5509          lea     dx, [di + 9]
@@ -8987,7 +8987,7 @@ L_E5820:
     3633:5833  [E5833]  8be5            mov     sp, bp
     3633:5835  [E5835]  5d              pop     bp
     3633:5836  [E5836]  ca0400          retf    4
-SUB_E5839:
+draw_box_outline:
     3633:5839  [E5839]  55              push    bp
     3633:583A  [E583A]  8bec            mov     bp, sp
     3633:583C  [E583C]  83ec06          sub     sp, 6
@@ -10341,14 +10341,14 @@ L_E67BF:
     3633:67BF  [E67BF]  9a0300f0e7      lcall   SUB_E7F03  ; 0xe7f0, 3
     3633:67C4  [E67C4]  3d0000          cmp     ax, 0
     3633:67C7  [E67C7]  7408            je      L_E67D1  ; 0x2b1
-    3633:67C9  [E67C9]  9a390109e7      lcall   SUB_E71C9  ; 0xe709, 0x139
+    3633:67C9  [E67C9]  9a390109e7      lcall   update_plot_retry_counters  ; 0xe709, 0x139
     3633:67CE  [E67CE]  e96f00          jmp     L_E6840  ; 0x320
 L_E67D1:
     3633:67D1  [E67D1]  ff065407        inc     word ptr [0x754]
     3633:67D5  [E67D5]  a19207          mov     ax, word ptr [0x792]
     3633:67D8  [E67D8]  39065407        cmp     word ptr [0x754], ax
     3633:67DC  [E67DC]  7e62            jle     L_E6840  ; 0x320
-    3633:67DE  [E67DE]  9a390109e7      lcall   SUB_E71C9  ; 0xe709, 0x139
+    3633:67DE  [E67DE]  9a390109e7      lcall   update_plot_retry_counters  ; 0xe709, 0x139
     3633:67E3  [E67E3]  c70692076400    mov     word ptr [0x792], 0x64
     3633:67E9  [E67E9]  c70654070000    mov     word ptr [0x754], 0
     3633:67EF  [E67EF]  c43edc1d        les     di, ptr [0x1ddc]
@@ -11103,7 +11103,7 @@ L_E7027:
     3633:702D  [E702D]  e90a00          jmp     L_E703A  ; 0xaa
 L_E7030:
     3633:7030  [E7030]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
-    3633:7035  [E7035]  9a390109e7      lcall   SUB_E71C9  ; 0xe709, 0x139
+    3633:7035  [E7035]  9a390109e7      lcall   update_plot_retry_counters  ; 0xe709, 0x139
 L_E703A:
     3633:703A  [E703A]  803e8d0700      cmp     byte ptr [0x78d], 0
     3633:703F  [E703F]  74ef            je      L_E7030  ; 0xa0
@@ -11243,12 +11243,12 @@ L_E7180:
     3633:71B2  [E71B2]  fe06981a        inc     byte ptr [0x1a98]
 L_E71B6:
     3633:71B6  [E71B6]  c606620701      mov     byte ptr [0x762], 1
-    3633:71BB  [E71BB]  9a390109e7      lcall   SUB_E71C9  ; 0xe709, 0x139
+    3633:71BB  [E71BB]  9a390109e7      lcall   update_plot_retry_counters  ; 0xe709, 0x139
     3633:71C0  [E71C0]  9a0c0095e6      lcall   FUNC_3633_695C  ; 0xe695, 0xc
     3633:71C5  [E71C5]  8be5            mov     sp, bp
     3633:71C7  [E71C7]  5d              pop     bp
     3633:71C8  [E71C8]  cb              retf    
-SUB_E71C9:
+update_plot_retry_counters:
     3633:71C9  [E71C9]  55              push    bp
     3633:71CA  [E71CA]  8bec            mov     bp, sp
     3633:71CC  [E71CC]  83ec08          sub     sp, 8
@@ -12003,7 +12003,7 @@ L_E7923:
     3633:7923  [E7923]  837ef825        cmp     word ptr [bp - 8], 0x25
     3633:7927  [E7927]  7464            je      L_E798D  ; 0x7d
     3633:7929  [E7929]  ff76f8          push    word ptr [bp - 8]
-    3633:792C  [E792C]  9ac30091e7      lcall   SUB_E79D3  ; 0xe791, 0xc3
+    3633:792C  [E792C]  9ac30091e7      lcall   putchar_serial_with_newline_handling  ; 0xe791, 0xc3
     3633:7931  [E7931]  e98300          jmp     L_E79B7  ; 0xa7
 L_E7934:
     3633:7934  [E7934]  c47ef4          les     di, ptr [bp - 0xc]
@@ -12034,7 +12034,7 @@ L_E795E:
     3633:797F  [E797F]  e93500          jmp     L_E79B7  ; 0xa7
 L_E7982:
     3633:7982  [E7982]  ff76f8          push    word ptr [bp - 8]
-    3633:7985  [E7985]  9ac30091e7      lcall   SUB_E79D3  ; 0xe791, 0xc3
+    3633:7985  [E7985]  9ac30091e7      lcall   putchar_serial_with_newline_handling  ; 0xe791, 0xc3
     3633:798A  [E798A]  e92a00          jmp     L_E79B7  ; 0xa7
 L_E798D:
     3633:798D  [E798D]  e90000          jmp     L_E7990  ; 0x80
@@ -12067,7 +12067,7 @@ L_E79CD:
     3633:79CD  [E79CD]  8be5            mov     sp, bp
     3633:79CF  [E79CF]  5d              pop     bp
     3633:79D0  [E79D0]  ca0400          retf    4
-SUB_E79D3:
+putchar_serial_with_newline_handling:
     3633:79D3  [E79D3]  55              push    bp
     3633:79D4  [E79D4]  8bec            mov     bp, sp
     3633:79D6  [E79D6]  83ec06          sub     sp, 6
@@ -12076,7 +12076,7 @@ SUB_E79D3:
     3633:79DF  [E79DF]  bf808f          mov     di, 0x8f80
     3633:79E2  [E79E2]  57              push    di
     3633:79E3  [E79E3]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
-    3633:79E8  [E79E8]  9a45048796      lcall   SUB_96CB5  ; 0x9687, 0x445
+    3633:79E8  [E79E8]  9a45048796      lcall   send_serial_newline  ; 0x9687, 0x445
     3633:79ED  [E79ED]  bf4100          mov     di, 0x41
     3633:79F0  [E79F0]  57              push    di
     3633:79F1  [E79F1]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
