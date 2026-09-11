@@ -8953,7 +8953,7 @@ L_E7A04:
     mov sp, bp                               ; 7A04: mov sp, bp
     pop bp                                   ; 7A06: pop bp
     retf 2                                   ; 7A07: retf 2
-SUB_E7A0A:
+print_string_serial_seg:
     push bp                                  ; 7A0A: push bp
     mov bp, sp                               ; 7A0B: mov bp, sp
     sub sp, 6                                ; 7A0D: sub sp, 6
@@ -9158,7 +9158,7 @@ L_E7EB9:
     db 0xc7, 0x46, 0xf8, 0x00, 0x00, 0xe9, 0x11, 0x00, 0x8b, 0x7e, 0xf8, 0xd1, 0xe7, 0xc4, 0x1e, 0xea  ; 7EDF
     db 0x06, 0x26, 0xc7, 0x01, 0x00, 0x00, 0xff, 0x46, 0xf8, 0x81, 0x7e, 0xf8, 0x00, 0x08, 0x7c, 0xe8  ; 7EEF
     db 0x8b, 0xe5, 0x5d, 0xcb  ; 7EFF
-SUB_E7F03:
+poll_error_flag_and_reset_channels:
     push bp                                  ; 7F03: push bp
     mov bp, sp                               ; 7F04: mov bp, sp
     sub sp, 6                                ; 7F06: sub sp, 6

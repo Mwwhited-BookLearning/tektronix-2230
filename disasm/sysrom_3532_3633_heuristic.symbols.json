@@ -6979,10 +6979,10 @@
     "notes": null
   },
   "E7A0A": {
-    "name": "SUB_E7A0A",
+    "name": "print_string_serial_seg",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "print_string_serial_seg",
     "notes": null
   },
   "E7A13": {
@@ -7322,10 +7322,10 @@
     "notes": null
   },
   "E7F03": {
-    "name": "SUB_E7F03",
+    "name": "poll_error_flag_and_reset_channels",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "poll_error_flag_and_reset_channels",
     "notes": null
   },
   "E7F2C": {

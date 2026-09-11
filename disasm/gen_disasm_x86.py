@@ -2775,6 +2775,31 @@ FUNCTIONAL_NAMES = {
                                                # saturated 0xFFFFFFFF
                                                # result; called only from
                                                # udiv32
+    0xE7A0A: "print_string_serial_seg",       # (far_str_ptr) - loops
+                                               # sending each byte via
+                                               # putchar_serial_seg until
+                                               # a NUL terminator - the
+                                               # putchar_serial_seg
+                                               # counterpart of the
+                                               # confirmed
+                                               # print_string_serial
+                                               # (which uses
+                                               # serial_tx_buffer_put)
+    0xE7F03: "poll_error_flag_and_reset_channels", # checks status byte
+                                               # [0x403]; while set,
+                                               # increments a tick
+                                               # counter [0x728] and once
+                                               # it exceeds 500 (0x1F4)
+                                               # force-clears both
+                                               # channels via
+                                               # clear_channel1_status/
+                                               # clear_channel2_status and
+                                               # resets the counter;
+                                               # returns whether [0x403]
+                                               # was set - another
+                                               # persistent-error watchdog
+                                               # in the same family as
+                                               # escalate_acq_timeout_reset
 }
 
 CALL_MNEMONICS = {"call", "lcall"}

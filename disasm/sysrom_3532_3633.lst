@@ -10417,7 +10417,7 @@ L_E679D:
     3633:67BA  [E67BA]  fec0            inc     al
     3633:67BC  [E67BC]  a29b1a          mov     byte ptr [0x1a9b], al
 L_E67BF:
-    3633:67BF  [E67BF]  9a0300f0e7      lcall   SUB_E7F03  ; 0xe7f0, 3
+    3633:67BF  [E67BF]  9a0300f0e7      lcall   poll_error_flag_and_reset_channels  ; 0xe7f0, 3
     3633:67C4  [E67C4]  3d0000          cmp     ax, 0
     3633:67C7  [E67C7]  7408            je      L_E67D1  ; 0x2b1
     3633:67C9  [E67C9]  9a390109e7      lcall   update_plot_retry_counters  ; 0xe709, 0x139
@@ -11328,7 +11328,7 @@ L_E7946:
     3633:7949  [E7949]  26c415          les     dx, ptr es:[di]
     3633:794C  [E794C]  06              push    es
     3633:794D  [E794D]  52              push    dx
-    3633:794E  [E794E]  9afa0091e7      lcall   SUB_E7A0A  ; 0xe791, 0xfa
+    3633:794E  [E794E]  9afa0091e7      lcall   print_string_serial_seg  ; 0xe791, 0xfa
     3633:7953  [E7953]  8346f402        add     word ptr [bp - 0xc], 2
     3633:7957  [E7957]  8346f402        add     word ptr [bp - 0xc], 2
     3633:795B  [E795B]  e95900          jmp     L_E79B7  ; 0xa7
@@ -11402,7 +11402,7 @@ L_E7A04:
     3633:7A04  [E7A04]  8be5            mov     sp, bp
     3633:7A06  [E7A06]  5d              pop     bp
     3633:7A07  [E7A07]  ca0200          retf    2
-SUB_E7A0A:
+print_string_serial_seg:
     3633:7A0A  [E7A0A]  55              push    bp
     3633:7A0B  [E7A0B]  8bec            mov     bp, sp
     3633:7A0D  [E7A0D]  83ec06          sub     sp, 6
@@ -11551,7 +11551,7 @@ L_E7EB9:
     3633:7EBB  [E7EBB]  5d              pop     bp
     3633:7EBC  [E7EBC]  ca0200          retf    2
 
-SUB_E7F03:
+poll_error_flag_and_reset_channels:
     3633:7F03  [E7F03]  55              push    bp
     3633:7F04  [E7F04]  8bec            mov     bp, sp
     3633:7F06  [E7F06]  83ec06          sub     sp, 6
