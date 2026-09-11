@@ -2359,10 +2359,10 @@
     "notes": null
   },
   "E252A": {
-    "name": "selftest_comm_option_switch",
+    "name": "selftest_tb_divider",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "selftest_comm_option_switch",
+    "functional_name": "selftest_tb_divider",
     "notes": null
   },
   "E2543": {
@@ -2373,10 +2373,10 @@
     "notes": null
   },
   "E255E": {
-    "name": "SUB_E255E",
+    "name": "step_tb_divider_test",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "step_tb_divider_test",
     "notes": null
   },
   "E259A": {

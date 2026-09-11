@@ -5685,7 +5685,7 @@ run_indexed_adc_selftest:
     3633:242A  [E242A]  5d              pop     bp
     3633:242B  [E242B]  ca0200          retf    2
 
-selftest_comm_option_switch:
+selftest_tb_divider:
     3633:252A  [E252A]  55              push    bp
     3633:252B  [E252B]  8bec            mov     bp, sp
     3633:252D  [E252D]  83ec08          sub     sp, 8
@@ -5700,7 +5700,7 @@ selftest_comm_option_switch:
 L_E2543:
     3633:2543  [E2543]  bf0300          mov     di, 3
     3633:2546  [E2546]  57              push    di
-    3633:2547  [E2547]  9ade0048e2      lcall   SUB_E255E  ; 0xe248, 0xde
+    3633:2547  [E2547]  9ade0048e2      lcall   step_tb_divider_test  ; 0xe248, 0xde
     3633:254C  [E254C]  8946f8          mov     word ptr [bp - 8], ax
     3633:254F  [E254F]  258000          and     ax, 0x80
     3633:2552  [E2552]  3d0000          cmp     ax, 0
@@ -5709,7 +5709,7 @@ L_E2543:
     3633:255A  [E255A]  8be5            mov     sp, bp
     3633:255C  [E255C]  5d              pop     bp
     3633:255D  [E255D]  cb              retf    
-SUB_E255E:
+step_tb_divider_test:
     3633:255E  [E255E]  55              push    bp
     3633:255F  [E255F]  8bec            mov     bp, sp
     3633:2561  [E2561]  83ec0c          sub     sp, 0xc
@@ -8273,7 +8273,7 @@ L_E4277:
     3633:4293  [E4293]  803e831b1e      cmp     byte ptr [0x1b83], 0x1e
     3633:4298  [E4298]  750e            jne     L_E42A8  ; 0x798
     3633:429A  [E429A]  c706181b0100    mov     word ptr [0x1b18], 1
-    3633:42A0  [E42A0]  9aaa0048e2      lcall   selftest_comm_option_switch  ; 0xe248, 0xaa
+    3633:42A0  [E42A0]  9aaa0048e2      lcall   selftest_tb_divider  ; 0xe248, 0xaa
     3633:42A5  [E42A5]  0946f6          or      word ptr [bp - 0xa], ax
 L_E42A8:
     3633:42A8  [E42A8]  803e7a1b01      cmp     byte ptr [0x1b7a], 1

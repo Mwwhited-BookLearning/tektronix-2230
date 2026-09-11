@@ -118,7 +118,8 @@ label already catalogued in `STRINGS.md`.
 | `0xE2CFB` | `measure_cursor_delta_time` **(renamed)** | Implementation for `selftest_cursor_delta_time` - calls `wait_stable_measurement` twice | Confirmed |
 | `0xE227E` | `selftest_front_panel_switch_a` **(renamed)** | Front-panel control test, scans `update_menu_position` over range 0-8 | Mechanism confirmed; which physical control not confirmed |
 | `0xE2FC8` | `selftest_front_panel_switch_b` **(renamed)** | Front-panel control test, scans `update_menu_position` over range 0-0x15 | Mechanism confirmed; which physical control not confirmed |
-| `0xE252A` | `selftest_comm_option_switch` **(renamed)** | Conditional on `[0x1B83]==0x1E`; scans `update_menu_position` over range 0-0x18 - likely a comm-board-specific control (GPIB address/baud rate?) | Mechanism confirmed; peripheral not confirmed |
+| `0xE252A` | `selftest_tb_divider` **(renamed, CORRECTED** from `selftest_comm_option_switch`) | Conditional on `[0x1B83]==0x1E`; scans `update_menu_position` over range 0-0x18, calling `step_tb_divider_test` per position - matches the real on-screen name `TB_DIVIDER` confirmed in `HARDWARE.md` | Confirmed |
+| `0xE255E` | `step_tb_divider_test` **(renamed)** | Per-position worker for `selftest_tb_divider`: converts the scanned position into a shifted `0xFFF` threshold mask and calls `verify_timebase_prc` | Confirmed |
 | `0xE0FD0` | `selftest_measure_and_report` **(renamed, previous session)** | Enable/run/disable measurement pattern | Mechanism confirmed; peripheral not confirmed |
 | `0xE44F1` | `check_comm_option_installed` **(renamed, earlier session)** | Comm/GPIB option detect - not OR-folded (informational) | Confirmed |
 | an inline block inside `self_test_dispatcher` itself (no separate address) | (unnamed - not a function) | Runs `configure_measurement_hw` + poll + `clear_selftest_status_flags` directly, gated on `[0x1B7A]!=1`; not OR-folded (informational) | Confirmed |

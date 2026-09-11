@@ -99,13 +99,21 @@ control groups, useful for cross-referencing the self-test/menu work:
 - Misc: `INTENSITY A-B`, `TRACE ROTATION`, `BEAM FIND`, `STORAGE/
   READOUT INTENSITY`, `FOCUS`, `VAR HOLDOFF` (`NORM`/`MAX`), `POWER`.
 
-**Not yet reconciled**: `TODO.md`'s open question of which physical
-control each of the 3 front-panel-switch range-scan self-tests
-(`selftest_front_panel_switch_a`/`_b`, `selftest_comm_option_switch`)
-maps to. This photo is a good reference for that once someone traces
-which `[0x4E7]`/`[0x4E8]` (front-panel button/encoder state, read by
-`update_menu_position`) bit ranges correspond to which physical
-switch bank.
+**Partially reconciled**: one of the 3 original "front-panel-switch
+range-scan self-tests" turned out to be `selftest_tb_divider`
+(`TB_DIVIDER` in the `DIAGNOSTICS/TESTS/ACQUISITION` menu above, not a
+front-panel switch at all - corrected from an earlier `selftest_comm_
+option_switch` guess). The remaining two, `selftest_front_panel_
+switch_a`/`_b`, are still open, though `_a` is now confirmed to verify
+its swept control via **ADC readback** (shares its step helper with
+the dedicated `A_TO_D_TESTS` exerciser) - suggesting an analog/
+potentiometer-based control, with VOLTS/DIV (9-ish detents, matching
+its 0-8 sweep range) as the leading candidate. `_b` (0-0x15, 21
+positions) remains unconfirmed - TIME/DIV is a plausible guess given
+typically more positions, not verified. Tracing which `[0x4E7]`/
+`[0x4E8]` (front-panel button/encoder state, read by `update_menu_
+position`) bit ranges correspond to which physical switch bank would
+settle this.
 
 ## Full menu tree walkthrough (`hardware/photos/`, 2026-09-11 batch)
 

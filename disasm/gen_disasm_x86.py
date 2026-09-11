@@ -2255,17 +2255,46 @@ FUNCTIONAL_NAMES = {
                                                # over range 0-0x15 (21
                                                # positions) via its step
                                                # helper (0xE2FFC)
-    0xE252A: "selftest_comm_option_switch",   # conditional on
+    0xE252A: "selftest_tb_divider",            # **CORRECTED from an
+                                               # earlier wrong name
+                                               # selftest_comm_option_
+                                               # switch**: its step
+                                               # helper (SUB_E255E)
+                                               # calls verify_timebase_
+                                               # prc with a shifted-
+                                               # 0xFFF threshold mask,
+                                               # matching the real
+                                               # on-screen name
+                                               # "TB_DIVIDER" confirmed
+                                               # in HARDWARE.md's
+                                               # DIAGNOSTICS/TESTS/
+                                               # ACQUISITION menu photo.
+                                               # Still conditional on
                                                # [0x1B83]==0x1E (comm
                                                # option RAM/IO
-                                               # confirmed); scans
+                                               # confirmed) - reason
+                                               # for that gate not
+                                               # understood, possibly
+                                               # the timebase divider
+                                               # under test needs the
+                                               # comm board's EXT CLK
+                                               # circuitry; scans
                                                # update_menu_position
                                                # over range 0-0x18 (24
                                                # positions) via its step
-                                               # helper (0xE255E) -
-                                               # likely a comm-board-
-                                               # specific switch (GPIB
-                                               # address/baud rate?)
+                                               # helper, step_tb_
+                                               # divider_test (0xE255E)
+    0xE255E: "step_tb_divider_test",           # per-position worker
+                                               # for selftest_tb_
+                                               # divider: converts the
+                                               # scanned position into
+                                               # a shifted power-of-
+                                               # ~2/~16 threshold mask
+                                               # (0xFFF shifted left or
+                                               # right depending on
+                                               # position vs. 0xC) and
+                                               # calls verify_timebase_
+                                               # prc with it
     0xE0DCC: "configure_measurement_hw",      # (5 params) writes them
                                                # into the shared
                                                # "hardware register"

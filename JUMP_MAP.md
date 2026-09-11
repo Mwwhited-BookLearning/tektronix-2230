@@ -121,7 +121,7 @@ partition "self_test_dispatcher (0xE4244, renamed - was SUB_E4244)" {
   :selftest_acq_ram\n(ACQ_RAM even/odd);
 
   if ([0x1B83]==0x1E?) then (yes)
-    :selftest_comm_option_switch\n(range 0-0x18, comm-board control);
+    :selftest_tb_divider\n(range 0-0x18, TB_DIVIDER - see HARDWARE.md);
   endif
 
   if ([0x1B7A]!=1?) then (yes)

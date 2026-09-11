@@ -2811,7 +2811,7 @@ run_indexed_adc_selftest:
     db 0x00, 0xc7, 0x06, 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x14, 0xff, 0x76, 0x06  ; 24FE
     db 0x9a, 0xde, 0x00, 0x48, 0xe2, 0x89, 0x46, 0xf8, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0xe9, 0x05  ; 250E
     db 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 251E
-selftest_comm_option_switch:
+selftest_tb_divider:
     push bp                                  ; 252A: push bp
     mov bp, sp                               ; 252B: mov bp, sp
     sub sp, 8                                ; 252D: sub sp, 8
@@ -2835,7 +2835,7 @@ L_E2543:
     mov sp, bp                               ; 255A: mov sp, bp
     pop bp                                   ; 255C: pop bp
     retf                                     ; 255D: retf 
-SUB_E255E:
+step_tb_divider_test:
     push bp                                  ; 255E: push bp
     mov bp, sp                               ; 255F: mov bp, sp
     sub sp, 0xc                              ; 2561: sub sp, 0xc

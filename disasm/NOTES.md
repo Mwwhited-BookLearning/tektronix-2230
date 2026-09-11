@@ -1123,7 +1123,7 @@ FUNCTIONAL_NAMES`:
 | `selftest_cursor_delta_time` (`0xE2CEC`) | `CDT` / `PRE-DETRIG` / `TIME-OUT` | Cursor delta-time measurement |
 | `selftest_front_panel_switch_b` (`0xE2FC8`) | (none) | Front-panel control, range 0-0x15 |
 | an **inline block** (no separate sub) | (none) | Runs `configure_measurement_hw`+poll+`clear_selftest_status_flags` directly in `self_test_dispatcher`'s own body, gated on `[0x1B7A]!=1` - result NOT OR-folded (informational, like `check_comm_option_installed`) |
-| `selftest_comm_option_switch` (`0xE252A`, conditional) | (none) | Front-panel/comm-board control, range 0-0x18, only tested if comm option's RAM/IO confirmed |
+| `selftest_tb_divider` (`0xE252A`, conditional) | `TB_DIVIDER` (via `HARDWARE.md` photo, not a code string) | Timebase divider, range 0-0x18, only tested if comm option's RAM/IO confirmed |
 | `selftest_measure_and_report` (`0xE0FD0`) | (none) | Enable/run/disable measurement (identified previous session) |
 | `check_comm_option_installed` (`0xE44F1`) | (n/a, not OR-folded) | Comm/GPIB option detect |
 | `selftest_rom_checksum` (`0xE16EA`) | `ROMS` / `MISMATCH` | Main ROM checksum |
@@ -1138,17 +1138,40 @@ the raw disassembly for the exact sequence, documented in
 `gen_disasm_x86.FUNCTIONAL_NAMES`'s comments.)
 
 The three front-panel-control tests (`selftest_front_panel_switch_a`/
-`_b`/`selftest_comm_option_switch`) don't reference a diagnostic string
+`_b`, and the third one) don't reference a diagnostic string
 directly - identified instead by their distinctive shape: each scans
 `update_menu_position` across a fixed range (0-8, 0-0x15, 0-0x18
 respectively) via a small step-helper, exactly the same mechanism the
 real menu-navigation cursor uses (see "Menu navigation" in
 `VARIABLES.md`). This means they're testing actual front-panel
 controls (knobs/switches) by sweeping them through their full range,
-not reading a fixed diagnostic ID - very plausibly the VOLTS/DIV,
-TIME/DIV, and (for the comm-gated one) a GPIB-address or baud-rate
-selector specific to the comm option board. Not confirmed which
-control is which.
+not reading a fixed diagnostic ID.
+
+**Update - the third one is `selftest_tb_divider`, not a comm-option
+switch.** Tracing `0xE252A`'s step helper (`step_tb_divider_test`,
+`0xE255E`) further shows it calls `verify_timebase_prc` with a
+shifted `0xFFF` threshold mask - matching the real on-screen name
+`TB_DIVIDER` confirmed in the `HARDWARE.md` hardware photos (under
+`DIAGNOSTICS/TESTS/ACQUISITION`). Renamed from the earlier
+`selftest_comm_option_switch` guess. It's still gated on
+`[0x1B83]==0x1E` (comm option confirmed) - possibly the timebase
+divider circuit under test needs the comm board's `EXT CLK` line
+(see the AUX connector in `HARDWARE.md`), but this isn't confirmed;
+the gate doesn't mean the *control* being swept is on the comm board.
+
+**Also found**: `selftest_front_panel_switch_a`'s own step helper
+(`run_adc_selftest_range`, `0xE22AF`) is the *same* function later
+also confirmed as part of the dedicated `A_TO_D_TESTS` A/D exerciser
+(calling `run_indexed_adc_selftest`) - meaning `selftest_front_panel_
+switch_a` verifies its swept control via **ADC readback**, not just a
+digital position read. This is a real clue for "which control": it's
+very plausibly an **analog/potentiometer-based** front-panel control
+(read through the A/D converter) rather than a purely digital rotary
+switch - VOLTS/DIV is the leading candidate given its 9-ish detent
+positions matching the 0-8 sweep range. `selftest_front_panel_switch_b`
+(0-0x15, 21 positions) remains unconfirmed - TIME/DIV is a plausible
+guess given its typically larger number of positions, but not
+verified the same way.
 
 The `selftest_display_irq_idle`/`selftest_display_irq_active`
 (`0xE3F2C`/`0xE3F99`) pair - referenced from a *different* part of the
