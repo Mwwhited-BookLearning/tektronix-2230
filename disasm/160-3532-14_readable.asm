@@ -3097,7 +3097,7 @@ build_print_record_3532:
     mov sp, bp                               ; 8308: mov sp, bp
     pop bp                                   ; 830A: pop bp
     retf 4                                   ; 830B: retf 4
-SUB_F830E:
+read_acq_sample_with_wrap:
     push bp                                  ; 830E: push bp
     mov bp, sp                               ; 830F: mov bp, sp
     sub sp, 0x12                             ; 8311: sub sp, 0x12

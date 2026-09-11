@@ -81,7 +81,13 @@
       shift produces a clean prologue either. Left unrenamed rather
       than guess. See `disasm/NOTES.md` "A second, more puzzling
       decode anomaly: SUB_EAC86" for what's been ruled out and
-      candidate explanations (address-decode alias? dead code?).
+      candidate explanations (address-decode alias? dead code?). Its
+      two neighbors `SUB_F5898`/`SUB_E97DC` (the "TEKTRONIX" boot-
+      splash builder and its shared copy-loop cluster) are coherent,
+      valid code but rely on a `bp`/`si` implicit-register calling
+      convention this project doesn't model yet - also left unnamed;
+      see the "Follow-up" paragraph appended to that same NOTES.md
+      section.
 - [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
       ports, near the confirmed readout/CRT write port) actually are -
       front-panel switch/encoder status and CRT controller status are

@@ -1633,6 +1633,45 @@ other decode subtlety not yet identified. Worth revisiting if the
 `0x90000`-alias-style brute-force technique (documented in
 `CLAUDE.md`) ever gets pointed at this specific address.
 
+**Follow-up while renaming other functions in the same neighborhood:**
+both `SUB_F5898` (`160-3532`, the "small routine near `0xF58B1`"
+mentioned above, sole caller `0xED7F1`) and `SUB_E97DC` (`160-3633`,
+called from `SUB_F5898` and from `0xF4294`) exhibit the *same* anomaly
+shape as `SUB_EAC86` itself, not just proximity to it:
+
+- `SUB_F5898` opens with `les ax, ptr [si]` and immediately uses
+  `[bp-0xC]`/`[bp-0xA]` as locals - with no `push bp; mov bp,sp`
+  anywhere in the proven listing above it, and no stack-passed
+  arguments read via a positive `bp` offset despite being reached via
+  a genuine far call (`0xED7F1`) that pushes a far pointer. It reads
+  as though `bp` and `si` are expected to already hold a caller-
+  established context (a "pass a struct via register instead of the
+  stack" convention) rather than as a self-contained function.
+- `SUB_E97DC` is even more pointed: it opens mid-copy-loop
+  (`movsw`/`add si,N`/`loop`) with no setup for `cx`/`si`/`di`/`ds` at
+  all, and physically sits inside a *cluster* of near-identical
+  copy-loop variants (strides of 2/3/4/6 bytes, separated by `nop`
+  padding) starting around `0xE97BC` - i.e. it is one of several
+  fixed offsets into a shared block, selected by the caller computing
+  the exact entry matching its own field width, and that block itself
+  references `[bp+0x13]` (line `0xE97D6`: `cmp byte [bp+0x13],0`)
+  despite no visible prologue establishing `bp` anywhere nearby either.
+- Both are reached via **clean, unambiguous far calls** (not
+  fallthrough-into-garbage), and both are internally coherent, valid
+  8086 instructions the whole way through - unlike `SUB_EAC86`'s
+  outright garbage. This rules out a decode-drift explanation for
+  *these two*, but reinforces that this whole boot-splash-adjacent
+  code region uses a register/`bp`-passing convention this project's
+  tooling doesn't model (we only track stack-passed far-call args).
+
+**Not renamed**, for the same reason as `SUB_EAC86`: the mechanism
+(what's actually in `bp`/`si` on entry) isn't understood well enough
+to state a purpose with confidence. Recorded here rather than guessed,
+since it strengthens the case that `0xEAC86`'s neighborhood is a
+single coherent (if unusual) subsystem - the "TEKTRONIX" boot-splash
+renderer - built around an implicit-register calling convention, not
+three unrelated anomalies.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to

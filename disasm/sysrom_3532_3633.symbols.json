@@ -1876,10 +1876,10 @@
     "notes": null
   },
   "97905": {
-    "name": "SUB_97905",
+    "name": "parse_next_gpib_command_byte",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "parse_next_gpib_command_byte",
     "notes": null
   },
   "9793C": {
@@ -8673,10 +8673,10 @@
     "notes": null
   },
   "F830E": {
-    "name": "SUB_F830E",
+    "name": "read_acq_sample_with_wrap",
     "kind": "sub",
     "ref_count": 4,
-    "functional_name": null,
+    "functional_name": "read_acq_sample_with_wrap",
     "notes": null
   },
   "F8379": {

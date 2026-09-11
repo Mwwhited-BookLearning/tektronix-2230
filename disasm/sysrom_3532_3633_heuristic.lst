@@ -22573,7 +22573,7 @@ FUNC_3633_EE05:
     3633:EE1B  [EEE1B]  c43e801c        les     di, ptr [0x1c80]
     3633:EE1F  [EEE1F]  06              push    es
     3633:EE20  [EEE20]  57              push    di
-    3633:EE21  [EEE21]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3633:EE21  [EEE21]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3633:EE26  [EEE26]  83c404          add     sp, 4
     3633:EE29  [EEE29]  a35c03          mov     word ptr [0x35c], ax
     3633:EE2C  [EEE2C]  800e5b0301      or      byte ptr [0x35b], 1
@@ -22589,7 +22589,7 @@ L_EEE31:
     3633:EE42  [EEE42]  c43e801c        les     di, ptr [0x1c80]
     3633:EE46  [EEE46]  06              push    es
     3633:EE47  [EEE47]  57              push    di
-    3633:EE48  [EEE48]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3633:EE48  [EEE48]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3633:EE4D  [EEE4D]  83c404          add     sp, 4
     3633:EE50  [EEE50]  a36e03          mov     word ptr [0x36e], ax
     3633:EE53  [EEE53]  800e6d0301      or      byte ptr [0x36d], 1
@@ -24140,7 +24140,7 @@ L_EFCF0:
     3633:FD1D  [EFD1D]  c41e801c        les     bx, ptr [0x1c80]
     3633:FD21  [EFD21]  06              push    es
     3633:FD22  [EFD22]  53              push    bx
-    3633:FD23  [EFD23]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3633:FD23  [EFD23]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3633:FD28  [EFD28]  83c404          add     sp, 4
     3633:FD2B  [EFD2B]  8946f4          mov     word ptr [bp - 0xc], ax
     3633:FD2E  [EFD2E]  c43edc1d        les     di, ptr [0x1ddc]
@@ -24184,7 +24184,7 @@ L_EFD7D:
     3633:FD85  [EFD85]  c41e801c        les     bx, ptr [0x1c80]
     3633:FD89  [EFD89]  06              push    es
     3633:FD8A  [EFD8A]  53              push    bx
-    3633:FD8B  [EFD8B]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3633:FD8B  [EFD8B]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3633:FD90  [EFD90]  83c404          add     sp, 4
     3633:FD93  [EFD93]  8946f4          mov     word ptr [bp - 0xc], ax
     3633:FD96  [EFD96]  c43edc1d        les     di, ptr [0x1ddc]
@@ -24242,7 +24242,7 @@ SUB_EFDC2:
     3633:FDEA  [EFDEA]  c41e801c        les     bx, ptr [0x1c80]
     3633:FDEE  [EFDEE]  06              push    es
     3633:FDEF  [EFDEF]  53              push    bx
-    3633:FDF0  [EFDF0]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3633:FDF0  [EFDF0]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3633:FDF5  [EFDF5]  83c404          add     sp, 4
     3633:FDF8  [EFDF8]  8946f4          mov     word ptr [bp - 0xc], ax
     3633:FDFB  [EFDFB]  c43edc1d        les     di, ptr [0x1ddc]
@@ -29860,7 +29860,7 @@ L_F3F19:
     3532:3F43  [F3F43]  c406801c        les     ax, ptr [0x1c80]
     3532:3F47  [F3F47]  06              push    es
     3532:3F48  [F3F48]  50              push    ax
-    3532:3F49  [F3F49]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:3F49  [F3F49]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
 
 SUB_F3F4C:
     3532:3F4C  [F3F4C]  0af8            or      bh, al
@@ -29881,7 +29881,7 @@ L_F3F5D:
     3532:3F6F  [F3F6F]  c406801c        les     ax, ptr [0x1c80]
     3532:3F73  [F3F73]  06              push    es
     3532:3F74  [F3F74]  50              push    ax
-    3532:3F75  [F3F75]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:3F75  [F3F75]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:3F7A  [F3F7A]  83c404          add     sp, 4
     3532:3F7D  [F3F7D]  5f              pop     di
     3532:3F7E  [F3F7E]  2bc7            sub     ax, di
@@ -29906,7 +29906,7 @@ L_F3F89:
     3532:3FAC  [F3FAC]  c416801c        les     dx, ptr [0x1c80]
     3532:3FB0  [F3FB0]  06              push    es
     3532:3FB1  [F3FB1]  52              push    dx
-    3532:3FB2  [F3FB2]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:3FB2  [F3FB2]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:3FB7  [F3FB7]  83c404          add     sp, 4
     3532:3FBA  [F3FBA]  50              push    ax
     3532:3FBB  [F3FBB]  c47ef0          les     di, ptr [bp - 0x10]
@@ -29915,7 +29915,7 @@ L_F3F89:
     3532:3FC5  [F3FC5]  c416801c        les     dx, ptr [0x1c80]
     3532:3FC9  [F3FC9]  06              push    es
     3532:3FCA  [F3FCA]  52              push    dx
-    3532:3FCB  [F3FCB]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:3FCB  [F3FCB]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:3FD0  [F3FD0]  83c404          add     sp, 4
     3532:3FD3  [F3FD3]  5f              pop     di
     3532:3FD4  [F3FD4]  2bc7            sub     ax, di
@@ -29930,7 +29930,7 @@ L_F3FDC:
     3532:3FE8  [F3FE8]  c41e801c        les     bx, ptr [0x1c80]
     3532:3FEC  [F3FEC]  06              push    es
     3532:3FED  [F3FED]  53              push    bx
-    3532:3FEE  [F3FEE]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:3FEE  [F3FEE]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:3FF3  [F3FF3]  83c404          add     sp, 4
     3532:3FF6  [F3FF6]  50              push    ax
     3532:3FF7  [F3FF7]  c47ef0          les     di, ptr [bp - 0x10]
@@ -29941,7 +29941,7 @@ L_F3FDC:
     3532:4003  [F4003]  c41e801c        les     bx, ptr [0x1c80]
     3532:4007  [F4007]  06              push    es
     3532:4008  [F4008]  53              push    bx
-    3532:4009  [F4009]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:4009  [F4009]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:400E  [F400E]  83c404          add     sp, 4
     3532:4011  [F4011]  5f              pop     di
     3532:4012  [F4012]  2bc7            sub     ax, di
@@ -30058,7 +30058,7 @@ L_F40C9:
     3532:4110  [F4110]  c416801c        les     dx, ptr [0x1c80]
     3532:4114  [F4114]  06              push    es
     3532:4115  [F4115]  52              push    dx
-    3532:4116  [F4116]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:4116  [F4116]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:411B  [F411B]  83c404          add     sp, 4
     3532:411E  [F411E]  5f              pop     di
     3532:411F  [F411F]  2bc7            sub     ax, di
@@ -30076,7 +30076,7 @@ L_F4127:
     3532:413B  [F413B]  c43e801c        les     di, ptr [0x1c80]
     3532:413F  [F413F]  06              push    es
     3532:4140  [F4140]  57              push    di
-    3532:4141  [F4141]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:4141  [F4141]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:4146  [F4146]  83c404          add     sp, 4
     3532:4149  [F4149]  5f              pop     di
     3532:414A  [F414A]  2bc7            sub     ax, di
@@ -30117,7 +30117,7 @@ L_F415B:
     3532:4180  [F4180]  c41e801c        les     bx, ptr [0x1c80]
     3532:4184  [F4184]  06              push    es
     3532:4185  [F4185]  53              push    bx
-    3532:4186  [F4186]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:4186  [F4186]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:418B  [F418B]  83c404          add     sp, 4
     3532:418E  [F418E]  50              push    ax
     3532:418F  [F418F]  c47ef0          les     di, ptr [bp - 0x10]
@@ -30128,7 +30128,7 @@ L_F415B:
     3532:419B  [F419B]  c41e801c        les     bx, ptr [0x1c80]
     3532:419F  [F419F]  06              push    es
     3532:41A0  [F41A0]  53              push    bx
-    3532:41A1  [F41A1]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:41A1  [F41A1]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:41A6  [F41A6]  83c404          add     sp, 4
     3532:41A9  [F41A9]  5f              pop     di
     3532:41AA  [F41AA]  2bc7            sub     ax, di
@@ -30141,7 +30141,7 @@ L_F41B2:
     3532:41BC  [F41BC]  c416801c        les     dx, ptr [0x1c80]
     3532:41C0  [F41C0]  06              push    es
     3532:41C1  [F41C1]  52              push    dx
-    3532:41C2  [F41C2]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:41C2  [F41C2]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:41C7  [F41C7]  83c404          add     sp, 4
     3532:41CA  [F41CA]  50              push    ax
     3532:41CB  [F41CB]  c47ef0          les     di, ptr [bp - 0x10]
@@ -30150,7 +30150,7 @@ L_F41B2:
     3532:41D5  [F41D5]  c416801c        les     dx, ptr [0x1c80]
     3532:41D9  [F41D9]  06              push    es
     3532:41DA  [F41DA]  52              push    dx
-    3532:41DB  [F41DB]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:41DB  [F41DB]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:41E0  [F41E0]  83c404          add     sp, 4
     3532:41E3  [F41E3]  5f              pop     di
     3532:41E4  [F41E4]  2bc7            sub     ax, di
@@ -36654,7 +36654,7 @@ build_print_record_3532:
     3532:8308  [F8308]  8be5            mov     sp, bp
     3532:830A  [F830A]  5d              pop     bp
     3532:830B  [F830B]  ca0400          retf    4
-SUB_F830E:
+read_acq_sample_with_wrap:
     3532:830E  [F830E]  55              push    bp
     3532:830F  [F830F]  8bec            mov     bp, sp
     3532:8311  [F8311]  83ec12          sub     sp, 0x12
@@ -41368,7 +41368,7 @@ L_FB2E2:
     3532:B2E8  [FB2E8]  c43e801c        les     di, ptr [0x1c80]
     3532:B2EC  [FB2EC]  06              push    es
     3532:B2ED  [FB2ED]  57              push    di
-    3532:B2EE  [FB2EE]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B2EE  [FB2EE]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B2F3  [FB2F3]  83c404          add     sp, 4
     3532:B2F6  [FB2F6]  8946f8          mov     word ptr [bp - 8], ax
 L_FB2F9:
@@ -41398,7 +41398,7 @@ L_FB2F9:
     3532:B332  [FB332]  c416801c        les     dx, ptr [0x1c80]
     3532:B336  [FB336]  06              push    es
     3532:B337  [FB337]  52              push    dx
-    3532:B338  [FB338]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B338  [FB338]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B33D  [FB33D]  eb03            jmp     L_FB342  ; 0xb342
 L_FB33F:
     3532:B33F  [FB33F]  e92f00          jmp     L_FB371  ; 0xb371
@@ -41442,7 +41442,7 @@ L_FB39A:
     3532:B3A0  [FB3A0]  c43e801c        les     di, ptr [0x1c80]
     3532:B3A4  [FB3A4]  06              push    es
     3532:B3A5  [FB3A5]  57              push    di
-    3532:B3A6  [FB3A6]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B3A6  [FB3A6]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B3AB  [FB3AB]  83c404          add     sp, 4
     3532:B3AE  [FB3AE]  8946f8          mov     word ptr [bp - 8], ax
 L_FB3B1:
@@ -41472,7 +41472,7 @@ L_FB3B1:
     3532:B3EA  [FB3EA]  c416801c        les     dx, ptr [0x1c80]
     3532:B3EE  [FB3EE]  06              push    es
     3532:B3EF  [FB3EF]  52              push    dx
-    3532:B3F0  [FB3F0]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B3F0  [FB3F0]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B3F5  [FB3F5]  eb03            jmp     L_FB3FA  ; 0xb3fa
 L_FB3F7:
     3532:B3F7  [FB3F7]  e92f00          jmp     L_FB429  ; 0xb429
@@ -41532,7 +41532,7 @@ L_FB47E:
     3532:B484  [FB484]  c43e801c        les     di, ptr [0x1c80]
     3532:B488  [FB488]  06              push    es
     3532:B489  [FB489]  57              push    di
-    3532:B48A  [FB48A]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B48A  [FB48A]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B48F  [FB48F]  83c404          add     sp, 4
     3532:B492  [FB492]  8946f8          mov     word ptr [bp - 8], ax
 L_FB495:
@@ -41572,7 +41572,7 @@ L_FB4E5:
     3532:B4EB  [FB4EB]  c43e801c        les     di, ptr [0x1c80]
     3532:B4EF  [FB4EF]  06              push    es
     3532:B4F0  [FB4F0]  57              push    di
-    3532:B4F1  [FB4F1]  9a6e020af8      lcall   SUB_F830E  ; 0xf80a, 0x26e
+    3532:B4F1  [FB4F1]  9a6e020af8      lcall   read_acq_sample_with_wrap  ; 0xf80a, 0x26e
     3532:B4F6  [FB4F6]  83c404          add     sp, 4
     3532:B4F9  [FB4F9]  8946f8          mov     word ptr [bp - 8], ax
 L_FB4FC:

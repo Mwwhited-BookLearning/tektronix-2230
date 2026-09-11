@@ -24920,10 +24920,10 @@
     "notes": null
   },
   "F830E": {
-    "name": "SUB_F830E",
+    "name": "read_acq_sample_with_wrap",
     "kind": "sub",
     "ref_count": 23,
-    "functional_name": null,
+    "functional_name": "read_acq_sample_with_wrap",
     "notes": null
   },
   "F8379": {

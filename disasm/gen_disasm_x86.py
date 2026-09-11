@@ -2526,6 +2526,63 @@ FUNCTIONAL_NAMES = {
                                                # wraparound (marker
                                                # attribute=2, matches
                                                # mark_readout_delimiter)
+    0xF830E: "read_acq_sample_with_wrap",     # (far_ptr record, type_idx,
+                                               # position) - resolves
+                                               # `position` against the
+                                               # channel's circular
+                                               # acquisition buffer (bound
+                                               # [0x2A], end ptr
+                                               # [record+0x68]),
+                                               # special-casing type_idx==0
+                                               # and ==4/count==8; on
+                                               # out-of-[0,0x2000] range
+                                               # sets clip flag [0x3B0] and
+                                               # returns 0; otherwise reads
+                                               # the byte at the resolved
+                                               # offset and, if
+                                               # [chan*16+0x18C] bit 0x10
+                                               # is set, packs it as a 4-
+                                               # bit nibble (matches the
+                                               # nibble-packing step also
+                                               # seen leading into
+                                               # convert_sample_value) -
+                                               # called 4x in a row from
+                                               # 0xF4186 area computing
+                                               # position(idx+1) -
+                                               # position(idx) deltas for
+                                               # adjacent-sample line
+                                               # drawing
+    0x97905: "parse_next_gpib_command_byte",  # (comm ROM) - the GPIB
+                                               # command-byte-stream
+                                               # cursor: on first entry
+                                               # ([0x61C]==0) resets the
+                                               # read pointer [0x582]/
+                                               # [0x584] to the start of
+                                               # the command buffer
+                                               # [0x586]; otherwise
+                                               # advances it past the
+                                               # current byte using the
+                                               # confirmed device-address
+                                               # table [0x712] to look up
+                                               # a per-device flag first;
+                                               # scans forward to the next
+                                               # non-NUL byte, stores it in
+                                               # [0x580]/[0x581], and (bit
+                                               # 0x80 clear, i.e. not a
+                                               # GPIB address byte) looks
+                                               # up its data byte via
+                                               # [0x712][byte*4+1] into
+                                               # [0x57F]; when [0x629] is
+                                               # set (an RS-232/GPIB comm-
+                                               # mode strap) also folds a
+                                               # bit from [0] into that
+                                               # byte and writes it plus a
+                                               # tag (0x98) to a UART-like
+                                               # register pair via far ptr
+                                               # [0x6D6] - called
+                                               # unconditionally as the
+                                               # first step of
+                                               # process_gpib_command_byte
 }
 
 CALL_MNEMONICS = {"call", "lcall"}
