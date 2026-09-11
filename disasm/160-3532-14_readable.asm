@@ -2829,7 +2829,7 @@ L_F76B8:
     db 0x03, 0xf8, 0x83, 0xc7, 0x02, 0x89, 0x7e, 0xee, 0x8c, 0x46, 0xf0, 0xc4, 0x7e, 0xee, 0x06, 0x57  ; 807C
     db 0xc4, 0x7e, 0xf2, 0x06, 0x57, 0xff, 0x76, 0xf8, 0x2b, 0xff, 0x57, 0x9a, 0x69, 0x05, 0xfc, 0xfa  ; 808C
     db 0x83, 0xc4, 0x0a, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00, 0xff  ; 809C
-SUB_F80A6:
+build_print_record_sequence:
     push bp                                  ; 80A6: push bp
     mov bp, sp                               ; 80A7: mov bp, sp
     sub sp, 0x10                             ; 80A9: sub sp, 0x10
@@ -3009,7 +3009,7 @@ L_F8182:
     mov sp, bp                               ; 8230: mov sp, bp
     pop bp                                   ; 8232: pop bp
     retf                                     ; 8233: retf 
-SUB_F8234:
+load_print_record_templates:
     push bp                                  ; 8234: push bp
     mov bp, sp                               ; 8235: mov bp, sp
     sub sp, 8                                ; 8237: sub sp, 8

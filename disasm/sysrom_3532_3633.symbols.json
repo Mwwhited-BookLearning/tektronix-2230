@@ -8638,10 +8638,10 @@
     "notes": null
   },
   "F80A6": {
-    "name": "SUB_F80A6",
+    "name": "build_print_record_sequence",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "build_print_record_sequence",
     "notes": null
   },
   "F815F": {
@@ -8659,10 +8659,10 @@
     "notes": null
   },
   "F8234": {
-    "name": "SUB_F8234",
+    "name": "load_print_record_templates",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "load_print_record_templates",
     "notes": null
   },
   "F8272": {

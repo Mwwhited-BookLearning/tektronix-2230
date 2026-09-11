@@ -2785,6 +2785,33 @@ FUNCTIONAL_NAMES = {
                                                # print_string_serial
                                                # (which uses
                                                # serial_tx_buffer_put)
+    0xF8234: "load_print_record_templates",   # copies 2 fixed 0xAA
+                                               # (170)-byte compiled-in
+                                               # template blocks (from
+                                               # [0x1C9C]/[0x1CA0]) via
+                                               # memcpy_far into the
+                                               # scratch far-pointer
+                                               # slots [0x1E8]/[0x1EC] -
+                                               # loads the source
+                                               # templates that
+                                               # build_print_record_
+                                               # sequence's
+                                               # build_print_record_3532
+                                               # calls read from
+    0xF80A6: "build_print_record_sequence",   # builds a row of print/
+                                               # plot-job records via
+                                               # repeated
+                                               # build_print_record_3532
+                                               # calls, each reading from
+                                               # a growing offset into
+                                               # the templates loaded by
+                                               # load_print_record_
+                                               # templates ([0x1E8]+0,
+                                               # +0x22, ...) and writing
+                                               # to a growing offset into
+                                               # the destination array
+                                               # at [0x1DDC]+0x5A
+                                               # (+9 per record)
     0xFBBE9: "memset_word_pattern_far",       # (far_ptr dest, byte_count,
                                                # fill_lo, fill_hi) - word-
                                                # granularity sibling of
@@ -2804,7 +2831,9 @@ FUNCTIONAL_NAMES = {
                                                # into fixed scratch vars
                                                # [0x1E8]/[0x1EA] and
                                                # [0x1EC]/[0x1EE], calls
-                                               # SUB_F8234/SUB_F80A6, then
+                                               # load_print_record_
+                                               # templates/build_print_
+                                               # record_sequence, then
                                                # memset_word_pattern_far's
                                                # 0x4800 bytes from the
                                                # buffer's current end

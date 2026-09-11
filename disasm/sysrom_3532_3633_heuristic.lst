@@ -36386,7 +36386,7 @@ FUNC_3532_802B:
     3532:80A1  [F80A1]  5d              pop     bp
     3532:80A2  [F80A2]  ca0200          retf    2
 
-SUB_F80A6:
+build_print_record_sequence:
     3532:80A6  [F80A6]  55              push    bp
     3532:80A7  [F80A7]  8bec            mov     bp, sp
     3532:80A9  [F80A9]  83ec10          sub     sp, 0x10
@@ -36566,7 +36566,7 @@ L_F8182:
     3532:8230  [F8230]  8be5            mov     sp, bp
     3532:8232  [F8232]  5d              pop     bp
     3532:8233  [F8233]  cb              retf    
-SUB_F8234:
+load_print_record_templates:
     3532:8234  [F8234]  55              push    bp
     3532:8235  [F8235]  8bec            mov     bp, sp
     3532:8237  [F8237]  83ec08          sub     sp, 8
@@ -38112,12 +38112,12 @@ pad_readout_buffer_remainder:
     3532:9136  [F9136]  8d8751c8        lea     ax, [bx - 0x37af]
     3532:913A  [F913A]  a3ec01          mov     word ptr [0x1ec], ax
     3532:913D  [F913D]  8c06ee01        mov     word ptr [0x1ee], es
-    3532:9141  [F9141]  9a94010af8      lcall   SUB_F8234  ; 0xf80a, 0x194
+    3532:9141  [F9141]  9a94010af8      lcall   load_print_record_templates  ; 0xf80a, 0x194
 
     3532:9142  [F9142]  94              xchg    sp, ax
     3532:9143  [F9143]  010a            add     word ptr [bp + si], cx
     3532:9145  [F9145]  f8              clc     
-    3532:9146  [F9146]  9a06000af8      lcall   SUB_F80A6  ; 0xf80a, 6
+    3532:9146  [F9146]  9a06000af8      lcall   build_print_record_sequence  ; 0xf80a, 6
     3532:914B  [F914B]  bf0100          mov     di, 1
     3532:914E  [F914E]  57              push    di
     3532:914F  [F914F]  57              push    di
@@ -47837,8 +47837,8 @@ L_FF720:
     3532:F727  [FF727]  75f2            jne     L_FF71B  ; 0xf71b
     3532:F729  [FF729]  9a0500d1e5      lcall   SUB_E5D15  ; 0xe5d1, 5
     3532:F72E  [FF72E]  c606330203      mov     byte ptr [0x233], 3
-    3532:F733  [FF733]  9a94010af8      lcall   SUB_F8234  ; 0xf80a, 0x194
-    3532:F738  [FF738]  9a06000af8      lcall   SUB_F80A6  ; 0xf80a, 6
+    3532:F733  [FF733]  9a94010af8      lcall   load_print_record_templates  ; 0xf80a, 0x194
+    3532:F738  [FF738]  9a06000af8      lcall   build_print_record_sequence  ; 0xf80a, 6
     3532:F73D  [FF73D]  9a000068fc      lcall   FUNC_3532_C680  ; 0xfc68, 0
     3532:F742  [FF742]  9a0800c8fd      lcall   FUNC_3532_DC88  ; 0xfdc8, 8
     3532:F747  [FF747]  9a02004aff      lcall   FUNC_3532_F4A2  ; 0xff4a, 2
