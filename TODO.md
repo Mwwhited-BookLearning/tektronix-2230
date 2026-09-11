@@ -2,6 +2,18 @@
 
 ## Next up
 
+- [ ] **User request**: decode the readout's stroke/vector font glyph
+      table into SVG files + a catalog, and use recognizable drawn
+      shapes for additional naming/context. Mechanism is fully
+      understood (`draw_readout_char`'s pen/coarse/fine bit-packing,
+      see `disasm/NOTES.md` "Attempted: locating the stroke-font glyph
+      table"), but the table's physical address (`[0x1DB0]`'s value)
+      hasn't been found - a heuristic binary scan found a false
+      positive (real code + the menu string table, not glyph data).
+      Next attempt should either trace `boot_init`'s data-driven init
+      loop(s) to find what sets `[0x1DB0]`/`[0x1CC4]`, or render
+      scan candidates and visually check for real letterforms instead
+      of just checking byte-run length.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,

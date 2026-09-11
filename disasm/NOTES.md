@@ -612,6 +612,54 @@ pointer it feeds (`[0x1AF4]`/`[0x1AF6]`, `[0x1C02]`) lines up with the
 same `0x4000`-segment readout memory documented above, so it's the
 working assumption pending that write site being found.
 
+## Attempted: locating the stroke-font glyph table for SVG extraction
+
+Per the user's request (they noticed vector graphics/icons on the CRT
+in the hardware photos and asked whether the ROM's raw-data segments
+might be this kind of vector data, wanting SVGs + a catalog if it can
+be decoded): the mechanism is fully understood and already reflected
+in the naming above (`draw_readout_char` reads a per-character far
+pointer from a table at `[0x1DB0]`, indexed `(char & 0x7F) * 4`; each
+stroke byte packs pen-up/down (`0x80`), a coarse component (`(byte &
+0x70) >> 4`, 0-7), and a fine component (`byte & 0xF`, 0-15), consumed
+one byte at a time until a `0x00` terminator - confirmed by directly
+tracing `plot_readout_point`'s parameter order: `[bp+6]` = Y
+(coarse + a baseline captured once per character from `[0x1AF8]`),
+`[bp+8]` = X (the raw fine nibble), `[bp+0xa]` = a pen attribute
+derived from both the stroke's own bit 7 and the character code's own
+bit 7).
+
+**What's missing**: `[0x1DB0]`'s actual value (i.e. where the glyph
+table physically lives) - no write to it was found in the
+proven-reachable code, so it's presumably set during an early boot
+step not yet traced (`boot_init` does have a generic table-driven
+initialization loop around physical `0xE0155`/`0xE017D`/`0xE01AF` in
+`160-3633`, but it turned out to be a RAM-sizing/fill routine keyed by
+a flag byte, not a simple pointer-copy table - not fully traced
+further).
+
+**Tried and ruled out**: wrote a script to scan both ROMs for a
+128-entry far-pointer-array signature (segment mostly constant,
+offsets mostly ascending, each pointing to a short byte run terminated
+by `0x00`). It found a strong-looking candidate at physical `0xF1A30`
+in `160-3532` (pointing into `160-3633` at segment `0xE9C3`) - but
+directly reading that target region as raw bytes shows it's real
+compiled code immediately followed by the plain-ASCII menu string
+table (`HEAD\0ACQ_MODE_SETUP_TABLE\0SELECT_MODE\0SWP_...`), not glyph
+data. The "table" was a coincidental byte-pattern match, not real
+pointers - confirmed false positive, not pursued further as a lead.
+
+**Next steps if resuming this**: either (a) trace `boot_init`'s
+data-driven initialization loop(s) fully to find whatever sets
+`[0x1DB0]` (and `[0x1CC4]`, also never found being written - likely
+set by the same or a nearby step), or (b) tighten the heuristic search
+to also validate that decoded strokes, when actually rendered,
+produce a coherent connected shape for known letters (e.g. render
+candidate glyphs for `'A'`/`'H'`/`'O'` and check visually/
+programmatically for a plausible letterform) rather than just
+checking byte-run length. No SVGs or catalog were produced this pass -
+don't claim otherwise if this note is read out of context.
+
 ## The 0x90000+ region: fully resolved (see above)
 
 This used to be a substantial open question ("`~0x80000-0x97000`,
