@@ -5136,7 +5136,7 @@ clear_measurement_mode_bit:
     db 0x8b, 0xe5  ; DB61: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; DB63: pop bp
     retf                                     ; DB64: retf 
-SUB_FDB65:
+engage_selftest_mode_bit_and_sample:
     push bp                                  ; DB65: push bp
     db 0x8b, 0xec  ; DB66: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; DB68: sub sp, 8
@@ -5153,7 +5153,7 @@ SUB_FDB65:
     db 0x8b, 0xe5  ; DB8B: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; DB8D: pop bp
     retf                                     ; DB8E: retf 
-SUB_FDB8F:
+poll_comm_probe_until_match:
     push bp                                  ; DB8F: push bp
     db 0x8b, 0xec  ; DB90: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; DB92: sub sp, 8
@@ -5622,7 +5622,7 @@ sync_status_byte_to_hw:
     db 0x3c, 0x00, 0x74, 0x09, 0xa0, 0x28, 0x02, 0xa2, 0x27, 0x02, 0xe9, 0x0f, 0x00, 0x8a, 0x56, 0xf7  ; F447
     db 0x8b, 0x7e, 0xf8, 0x08, 0x95, 0x68, 0x02, 0xc6, 0x06, 0x27, 0x02, 0x00, 0x8b, 0xe5, 0x5d, 0xca  ; F457
     db 0x02, 0x00  ; F467
-SUB_FF469:
+clear_item_flag_bit_all:
     push bp                                  ; F469: push bp
     db 0x8b, 0xec  ; F46A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; F46C: sub sp, 0xa

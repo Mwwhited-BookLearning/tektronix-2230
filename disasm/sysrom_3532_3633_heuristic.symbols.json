@@ -30296,17 +30296,17 @@
     "notes": null
   },
   "FDB65": {
-    "name": "SUB_FDB65",
+    "name": "engage_selftest_mode_bit_and_sample",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "engage_selftest_mode_bit_and_sample",
     "notes": null
   },
   "FDB8F": {
-    "name": "SUB_FDB8F",
+    "name": "poll_comm_probe_until_match",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "poll_comm_probe_until_match",
     "notes": null
   },
   "FDBC1": {
@@ -32144,10 +32144,10 @@
     "notes": null
   },
   "FF469": {
-    "name": "SUB_FF469",
+    "name": "clear_item_flag_bit_all",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "clear_item_flag_bit_all",
     "notes": null
   },
   "FF47C": {

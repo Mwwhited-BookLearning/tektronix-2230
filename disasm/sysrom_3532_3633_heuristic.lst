@@ -9905,7 +9905,7 @@ run_continuous_selftest_tick:
     3633:6300  [E6300]  a29507          mov     byte ptr [0x795], al
     3633:6303  [E6303]  e90b00          jmp     L_E6311  ; 0x31
 L_E6306:
-    3633:6306  [E6306]  9a5f00b3fd      lcall   SUB_FDB8F  ; 0xfdb3, 0x5f
+    3633:6306  [E6306]  9a5f00b3fd      lcall   poll_comm_probe_until_match  ; 0xfdb3, 0x5f
     3633:630B  [E630B]  8bd0            mov     dx, ax
     3633:630D  [E630D]  88169507        mov     byte ptr [0x795], dl
 L_E6311:
@@ -11560,7 +11560,7 @@ L_E74CE:
 L_E7501:
     3633:7501  [E7501]  803e781b00      cmp     byte ptr [0x1b78], 0
     3633:7506  [E7506]  755f            jne     L_E7567  ; 0x157
-    3633:7508  [E7508]  9a3500b3fd      lcall   SUB_FDB65  ; 0xfdb3, 0x35
+    3633:7508  [E7508]  9a3500b3fd      lcall   engage_selftest_mode_bit_and_sample  ; 0xfdb3, 0x35
     3633:750D  [E750D]  c746f82400      mov     word ptr [bp - 8], 0x24
     3633:7512  [E7512]  e91500          jmp     L_E752A  ; 0x11a
 L_E7515:
@@ -44932,7 +44932,7 @@ FUNC_3532_D94F:
     3532:D96C  [FD96C]  7508            jne     L_FD976  ; 0x576
     3532:D96E  [FD96E]  2bff            sub     di, di
     3532:D970  [FD970]  57              push    di
-    3532:D971  [FD971]  9aa9003cff      lcall   SUB_FF469  ; 0xff3c, 0xa9
+    3532:D971  [FD971]  9aa9003cff      lcall   clear_item_flag_bit_all  ; 0xff3c, 0xa9
 L_FD976:
     3532:D976  [FD976]  a00006          mov     al, byte ptr [0x600]
     3532:D979  [FD979]  2401            and     al, 1
@@ -44997,7 +44997,7 @@ L_FD9F6:
     3532:DA0D  [FDA0D]  7509            jne     L_FDA18  ; 0x618
     3532:DA0F  [FDA0F]  bf0100          mov     di, 1
     3532:DA12  [FDA12]  57              push    di
-    3532:DA13  [FDA13]  9aa9003cff      lcall   SUB_FF469  ; 0xff3c, 0xa9
+    3532:DA13  [FDA13]  9aa9003cff      lcall   clear_item_flag_bit_all  ; 0xff3c, 0xa9
 L_FDA18:
     3532:DA18  [FDA18]  a00006          mov     al, byte ptr [0x600]
     3532:DA1B  [FDA1B]  2402            and     al, 2
@@ -45116,7 +45116,7 @@ clear_measurement_mode_bit:
     3532:DB61  [FDB61]  8be5            mov     sp, bp
     3532:DB63  [FDB63]  5d              pop     bp
     3532:DB64  [FDB64]  cb              retf    
-SUB_FDB65:
+engage_selftest_mode_bit_and_sample:
     3532:DB65  [FDB65]  55              push    bp
     3532:DB66  [FDB66]  8bec            mov     bp, sp
     3532:DB68  [FDB68]  83ec08          sub     sp, 8
@@ -45133,7 +45133,7 @@ SUB_FDB65:
     3532:DB8B  [FDB8B]  8be5            mov     sp, bp
     3532:DB8D  [FDB8D]  5d              pop     bp
     3532:DB8E  [FDB8E]  cb              retf    
-SUB_FDB8F:
+poll_comm_probe_until_match:
     3532:DB8F  [FDB8F]  55              push    bp
     3532:DB90  [FDB90]  8bec            mov     bp, sp
     3532:DB92  [FDB92]  83ec08          sub     sp, 8
@@ -47569,7 +47569,7 @@ L_FF463:
     3532:F463  [FF463]  8be5            mov     sp, bp
     3532:F465  [FF465]  5d              pop     bp
     3532:F466  [FF466]  ca0200          retf    2
-SUB_FF469:
+clear_item_flag_bit_all:
     3532:F469  [FF469]  55              push    bp
     3532:F46A  [FF46A]  8bec            mov     bp, sp
     3532:F46C  [FF46C]  83ec0a          sub     sp, 0xa

@@ -2785,6 +2785,46 @@ FUNCTIONAL_NAMES = {
                                                # print_string_serial
                                                # (which uses
                                                # serial_tx_buffer_put)
+    0xFDB65: "engage_selftest_mode_bit_and_sample", # clears bit 4 and
+                                               # sets bit 1 of the shared
+                                               # comm self-test control
+                                               # byte [0x258], writes it
+                                               # to hardware via far ptr
+                                               # [0x336] (the same
+                                               # register
+                                               # sync_status_byte_to_hw
+                                               # writes, and one of
+                                               # init_selftest_register_
+                                               # group's confirmed
+                                               # register family), then
+                                               # takes one readback
+                                               # sample from far ptr
+                                               # [0x31E]+0x1000
+    0xFDB8F: "poll_comm_probe_until_match",   # the fallback
+                                               # run_continuous_selftest_
+                                               # tick dispatches to when
+                                               # [0x1B5E] is clear: while
+                                               # [0x258] bit 0x10 is set,
+                                               # loops calling
+                                               # ack_comm_hw_status_bits
+                                               # and comparing [0x262]
+                                               # against a live read of
+                                               # the confirmed comm probe
+                                               # register (physical
+                                               # 0x40377E) until they
+                                               # match, then updates
+                                               # [0x266]/[0x1A] and gates
+                                               # the result on
+                                               # [0x1B76] bit 2
+    0xFF469: "clear_item_flag_bit_all",       # (which_bit) - clears bit
+                                               # 0 (if `which_bit==0`) or
+                                               # bit 1 (otherwise) of
+                                               # `[i+0x268]` for all 165
+                                               # (`0xA5`) entries `i` -
+                                               # a bulk per-item flag
+                                               # clear, called with
+                                               # `di=1` from the boot/
+                                               # reinit sequence
     0xF8234: "load_print_record_templates",   # copies 2 fixed 0xAA
                                                # (170)-byte compiled-in
                                                # template blocks (from
