@@ -13126,7 +13126,7 @@ L_F0C8F:
     3532:0C9D  [F0C9D]  5d              pop     bp
     3532:0C9E  [F0C9E]  ca0200          retf    2
 
-SUB_F0CCC:
+start_plot_output_task:
     3532:0CCC  [F0CCC]  0100            add     word ptr [bx + si], ax
     3532:0CCE  [F0CCE]  91              xchg    cx, ax
     3532:0CCF  [F0CCF]  e783            out     0x83, ax
@@ -13665,7 +13665,7 @@ L_F70F3:
     3532:70F3  [F70F3]  c606821b01      mov     byte ptr [0x1b82], 1
     3532:70F8  [F70F8]  c706ec1b0010    mov     word ptr [0x1bec], 0x1000
 L_F70FE:
-    3532:70FE  [F70FE]  9a0c00ccf0      lcall   SUB_F0CCC  ; 0xf0cc, 0xc
+    3532:70FE  [F70FE]  9a0c00ccf0      lcall   start_plot_output_task  ; 0xf0cc, 0xc
 L_F7103:
     3532:7103  [F7103]  a0fc04          mov     al, byte ptr [0x4fc]
     3532:7106  [F7106]  2420            and     al, 0x20
@@ -13725,7 +13725,7 @@ L_F7198:
     3532:7198  [F7198]  8026761bfe      and     byte ptr [0x1b76], 0xfe
     3532:719D  [F719D]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
 L_F71A2:
-    3532:71A2  [F71A2]  9a0c00ccf0      lcall   SUB_F0CCC  ; 0xf0cc, 0xc
+    3532:71A2  [F71A2]  9a0c00ccf0      lcall   start_plot_output_task  ; 0xf0cc, 0xc
 L_F71A7:
     3532:71A7  [F71A7]  a0f704          mov     al, byte ptr [0x4f7]
     3532:71AA  [F71AA]  2ae4            sub     ah, ah
@@ -13792,7 +13792,7 @@ L_F7244:
 L_F7265:
     3532:7265  [F7265]  c606ed0301      mov     byte ptr [0x3ed], 1
 L_F726A:
-    3532:726A  [F726A]  9a0c00ccf0      lcall   SUB_F0CCC  ; 0xf0cc, 0xc
+    3532:726A  [F726A]  9a0c00ccf0      lcall   start_plot_output_task  ; 0xf0cc, 0xc
 L_F726F:
     3532:726F  [F726F]  8be5            mov     sp, bp
     3532:7271  [F7271]  5d              pop     bp

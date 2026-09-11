@@ -8029,10 +8029,10 @@
     "notes": null
   },
   "F0CCC": {
-    "name": "SUB_F0CCC",
+    "name": "start_plot_output_task",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "start_plot_output_task",
     "notes": null
   },
   "F0DE9": {

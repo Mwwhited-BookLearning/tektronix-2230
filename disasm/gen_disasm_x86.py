@@ -636,6 +636,23 @@ FUNCTIONAL_NAMES = {
                                                # from 0000:0xC0 (bytes
                                                # 0xC0-0xFF) - see
                                                # scan_low_ram_chunk0
+    0xF0CCC: "start_plot_output_task",         # calls SUB_E8E03(2), then
+                                               # format_string_va("%c%c",
+                                               # 0x1B, 0x40) - sends an
+                                               # ESC @ device-reset
+                                               # sequence (standard
+                                               # printer/plotter reset) -
+                                               # then falls through to
+                                               # a shared tail that
+                                               # clears the HPGL PU/PD
+                                               # mode var [0x6CA], sets
+                                               # a countdown [0x792]=
+                                               # 0x64 and ready-flag
+                                               # [0x78D]=1, and spawns a
+                                               # background task via
+                                               # create_task - restarts
+                                               # the plotter/hardcopy
+                                               # output job
     0x9751A: "get_xon_xoff_byte",              # comm ROM: checks [0x460]
                                                # flow-control-request
                                                # bits - bit 2 -> clears
