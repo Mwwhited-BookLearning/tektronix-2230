@@ -666,6 +666,28 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0xFC624: "ack_comm_hw_status_bits",        # (out_status_ptr,
+                                               # req_byte_ptr) - reads
+                                               # the comm-option hw
+                                               # status register at
+                                               # physical 0x40377E into
+                                               # *out_status_ptr, then
+                                               # for each of 3 request
+                                               # bits (0x80/0x20/0x40)
+                                               # in *req_byte_ptr, if
+                                               # both the request bit
+                                               # and the matching status
+                                               # bit are set, clears the
+                                               # bit and writes the
+                                               # updated byte to the
+                                               # comm-option hw control
+                                               # register at physical
+                                               # 0x4007DE - same address
+                                               # pair as detect_comm_
+                                               # option_hw; returns a
+                                               # bitmask of which
+                                               # request bits were
+                                               # acknowledged
     0x95F69: "init_comm_device_table",         # comm ROM: zeroes bytes
                                                # 0-9 and sets byte 0xA=1
                                                # (an "enabled" default?)

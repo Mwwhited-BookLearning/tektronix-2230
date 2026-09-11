@@ -9086,10 +9086,10 @@
     "notes": null
   },
   "FC624": {
-    "name": "SUB_FC624",
+    "name": "ack_comm_hw_status_bits",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "ack_comm_hw_status_bits",
     "notes": null
   },
   "FC654": {

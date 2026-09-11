@@ -43095,7 +43095,7 @@ L_FC615:
     3532:C61E  [FC61E]  8be5            mov     sp, bp
     3532:C620  [FC620]  5d              pop     bp
     3532:C621  [FC621]  ca0400          retf    4
-SUB_FC624:
+ack_comm_hw_status_bits:
     3532:C624  [FC624]  55              push    bp
     3532:C625  [FC625]  8bec            mov     bp, sp
     3532:C627  [FC627]  b80040          mov     ax, 0x4000
@@ -45149,7 +45149,7 @@ SUB_FDB8F:
     3532:DBA9  [FDBA9]  83c202          add     dx, 2
     3532:DBAC  [FDBAC]  1e              push    ds
     3532:DBAD  [FDBAD]  52              push    dx
-    3532:DBAE  [FDBAE]  9a040062fc      lcall   SUB_FC624  ; 0xfc62, 4
+    3532:DBAE  [FDBAE]  9a040062fc      lcall   ack_comm_hw_status_bits  ; 0xfc62, 4
     3532:DBB3  [FDBB3]  83c404          add     sp, 4
     3532:DBB6  [FDBB6]  8946f8          mov     word ptr [bp - 8], ax
     3532:DBB9  [FDBB9]  3d0000          cmp     ax, 0
@@ -45164,7 +45164,7 @@ L_FDBC1:
     3532:DBCC  [FDBCC]  83c202          add     dx, 2
     3532:DBCF  [FDBCF]  1e              push    ds
     3532:DBD0  [FDBD0]  52              push    dx
-    3532:DBD1  [FDBD1]  9a040062fc      lcall   SUB_FC624  ; 0xfc62, 4
+    3532:DBD1  [FDBD1]  9a040062fc      lcall   ack_comm_hw_status_bits  ; 0xfc62, 4
     3532:DBD6  [FDBD6]  83c404          add     sp, 4
     3532:DBD9  [FDBD9]  0946f8          or      word ptr [bp - 8], ax
 L_FDBDC:
