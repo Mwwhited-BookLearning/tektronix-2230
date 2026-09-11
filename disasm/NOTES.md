@@ -1746,6 +1746,22 @@ but a much better-fitting explanation than a tooling/decode bug at
 this point - worth pursuing before assuming any single instance is
 unique.
 
+**Partial counter-evidence found immediately after writing the above**:
+traced `SUB_F750A`'s and `SUB_F7603`'s actual caller (`0xEF467`-ish, in
+`160-3633`) and both are called as **ordinary sibling subroutines** -
+regular pushed args, `add sp,N` cleanup after each - from the same
+enclosing function, not as sequential steps of one un-returning
+sequence. That weakens the "one open frame, multiple step entries"
+theory as literally stated. Raw-byte-verified (via a direct Python read
+of `160-3532-14.bin`) that there is genuinely no `55 8B EC`-style
+prologue hiding at either address - the compiled bytes really do start
+mid-body. Still unexplained: **most likely explanation now is some
+compiler/toolchain frame-sharing optimization for tightly-coupled
+static helper functions** (each "helper" reuses its caller's `bp`
+layout by convention, established at compile time rather than
+literally sharing one runtime frame across multiple calls) - but this
+is speculation, not confirmed. Still not renaming any of these.
+
 ## Open questions / next steps
 
 1. Widen code coverage further. Jump-table dispatch doesn't appear to
