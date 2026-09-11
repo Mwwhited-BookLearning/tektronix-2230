@@ -1641,7 +1641,7 @@ reset_comm_parser_state:
     db 0x8b, 0xe5  ; 5267: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 5269: pop bp
     retf                                     ; 526A: retf 
-SUB_8526B:
+process_gpib_command_byte:
     push bp                                  ; 526B: push bp
     db 0x8b, 0xec  ; 526C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 526E: sub sp, 8

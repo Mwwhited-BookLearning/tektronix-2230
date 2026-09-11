@@ -378,7 +378,7 @@ reset_comm_parser_state:
     2998:5267  [85267]  8be5            mov     sp, bp
     2998:5269  [85269]  5d              pop     bp
     2998:526A  [8526A]  cb              retf    
-SUB_8526B:
+process_gpib_command_byte:
     2998:526B  [8526B]  55              push    bp
     2998:526C  [8526C]  8bec            mov     bp, sp
     2998:526E  [8526E]  83ec08          sub     sp, 8
@@ -2065,7 +2065,7 @@ L_963F2:
 L_963F5:
     2998_alias_90000:63F5  [963F5]  e99601          jmp     L_9658E  ; 0x30e
 L_963F8:
-    2998_alias_90000:63F8  [963F8]  9a5b011185      lcall   SUB_8526B  ; 0x8511, 0x15b
+    2998_alias_90000:63F8  [963F8]  9a5b011185      lcall   process_gpib_command_byte  ; 0x8511, 0x15b
     2998_alias_90000:63FD  [963FD]  a0f104          mov     al, byte ptr [0x4f1]
     2998_alias_90000:6400  [96400]  2480            and     al, 0x80
     2998_alias_90000:6402  [96402]  3c00            cmp     al, 0
@@ -2074,7 +2074,7 @@ L_963F8:
     2998_alias_90000:640B  [9640B]  e90a00          jmp     L_96418  ; 0x198
 L_9640E:
     2998_alias_90000:640E  [9640E]  c606060001      mov     byte ptr [6], 1
-    2998_alias_90000:6413  [96413]  9a5b011185      lcall   SUB_8526B  ; 0x8511, 0x15b
+    2998_alias_90000:6413  [96413]  9a5b011185      lcall   process_gpib_command_byte  ; 0x8511, 0x15b
 L_96418:
     2998_alias_90000:6418  [96418]  9ab10bf596      lcall   reinit_comm_channel  ; 0x96f5, 0xbb1
     2998_alias_90000:641D  [9641D]  a0f104          mov     al, byte ptr [0x4f1]

@@ -1639,7 +1639,7 @@ reset_comm_parser_state:
     mov sp, bp                               ; 5267: mov sp, bp
     pop bp                                   ; 5269: pop bp
     retf                                     ; 526A: retf 
-SUB_8526B:
+process_gpib_command_byte:
     push bp                                  ; 526B: push bp
     mov bp, sp                               ; 526C: mov bp, sp
     sub sp, 8                                ; 526E: sub sp, 8

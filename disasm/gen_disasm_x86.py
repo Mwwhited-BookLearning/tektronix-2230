@@ -666,6 +666,42 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x8526B: "process_gpib_command_byte",       # comm ROM: handles a
+                                               # received GPIB command/
+                                               # data byte at [6] under
+                                               # the comm critical-
+                                               # section lock ([0x5A3]
+                                               # saved/engaged/
+                                               # restored directly,
+                                               # like set_comm_
+                                               # critical_flag but
+                                               # inline): if bit 0x80
+                                               # is set (address/
+                                               # command byte), sets
+                                               # [0x590]=0x80; else
+                                               # clamps [6] to a valid
+                                               # range (max 0x42, else
+                                               # reset to 0x26) and
+                                               # records it into a per-
+                                               # row lookup slot in the
+                                               # scratch buffer at
+                                               # [0x586], indexed via
+                                               # the address-to-index
+                                               # table at [0x712] (same
+                                               # table service_comm_tx_
+                                               # queue/process_gpib_
+                                               # command_byte both use).
+                                               # Always calls SUB_97905;
+                                               # if in GPIB mode with
+                                               # [0x61C]/[0x57F] set,
+                                               # triggers a query
+                                               # response via print_
+                                               # param_list_response.
+                                               # Mechanism confirmed;
+                                               # exact GPIB protocol
+                                               # semantics (command vs.
+                                               # data byte handling)
+                                               # not confirmed
     0x96EC6: "release_comm_hold_critical",      # comm ROM: RS-232-only
                                                # ([0x629]==0) wrapper -
                                                # under DS switch to

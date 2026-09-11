@@ -287,10 +287,10 @@
     "notes": null
   },
   "8526B": {
-    "name": "SUB_8526B",
+    "name": "process_gpib_command_byte",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "process_gpib_command_byte",
     "notes": null
   },
   "8528D": {
