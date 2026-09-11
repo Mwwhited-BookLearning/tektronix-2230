@@ -1169,11 +1169,11 @@ print_char:
     3633:0B3B  [E0B3B]  8be5            mov     sp, bp
     3633:0B3D  [E0B3D]  5d              pop     bp
     3633:0B3E  [E0B3E]  ca0200          retf    2
-SUB_E0B41:
+reset_readout_port:
     3633:0B41  [E0B41]  55              push    bp
     3633:0B42  [E0B42]  8bec            mov     bp, sp
     3633:0B44  [E0B44]  83ec06          sub     sp, 6
-    3633:0B47  [E0B47]  9abc046be0      lcall   SUB_E0B6C  ; 0xe06b, 0x4bc
+    3633:0B47  [E0B47]  9abc046be0      lcall   init_readout_port_config  ; 0xe06b, 0x4bc
     3633:0B4C  [E0B4C]  8be5            mov     sp, bp
     3633:0B4E  [E0B4E]  5d              pop     bp
     3633:0B4F  [E0B4F]  cb              retf    
@@ -1190,7 +1190,7 @@ write_readout_port_byte:
     3633:0B66  [E0B66]  8be5            mov     sp, bp
     3633:0B68  [E0B68]  5d              pop     bp
     3633:0B69  [E0B69]  ca0200          retf    2
-SUB_E0B6C:
+init_readout_port_config:
     3633:0B6C  [E0B6C]  55              push    bp
     3633:0B6D  [E0B6D]  8bec            mov     bp, sp
     3633:0B6F  [E0B6F]  83ec06          sub     sp, 6
@@ -1367,7 +1367,7 @@ L_E0CFD:
     3633:0D00  [E0D00]  8be5            mov     sp, bp
     3633:0D02  [E0D02]  5d              pop     bp
     3633:0D03  [E0D03]  ca0200          retf    2
-SUB_E0D06:
+save_restore_measurement_settings:
     3633:0D06  [E0D06]  55              push    bp
     3633:0D07  [E0D07]  8bec            mov     bp, sp
     3633:0D09  [E0D09]  83ec06          sub     sp, 6
@@ -1521,7 +1521,7 @@ L_E0EB3:
     3633:0EB6  [E0EB6]  57              push    di
     3633:0EB7  [E0EB7]  57              push    di
     3633:0EB8  [E0EB8]  ff7606          push    word ptr [bp + 6]
-    3633:0EBB  [E0EBB]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:0EBB  [E0EBB]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:0EC0  [E0EC0]  83c406          add     sp, 6
     3633:0EC3  [E0EC3]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:0EC9  [E0EC9]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -1562,7 +1562,7 @@ L_E0F1F:
     3633:0F22  [E0F22]  57              push    di
     3633:0F23  [E0F23]  57              push    di
     3633:0F24  [E0F24]  ff7606          push    word ptr [bp + 6]
-    3633:0F27  [E0F27]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:0F27  [E0F27]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:0F2C  [E0F2C]  83c406          add     sp, 6
     3633:0F2F  [E0F2F]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:0F35  [E0F35]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -1603,7 +1603,7 @@ L_E0F8B:
     3633:0F8E  [E0F8E]  57              push    di
     3633:0F8F  [E0F8F]  57              push    di
     3633:0F90  [E0F90]  ff7606          push    word ptr [bp + 6]
-    3633:0F93  [E0F93]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:0F93  [E0F93]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:0F98  [E0F98]  83c406          add     sp, 6
     3633:0F9B  [E0F9B]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:0FA1  [E0FA1]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -1673,7 +1673,7 @@ L_E1047:
     3633:104A  [E104A]  57              push    di
     3633:104B  [E104B]  57              push    di
     3633:104C  [E104C]  ff7606          push    word ptr [bp + 6]
-    3633:104F  [E104F]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:104F  [E104F]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1054  [E1054]  83c406          add     sp, 6
     3633:1057  [E1057]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:105D  [E105D]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -1724,7 +1724,7 @@ L_E10D1:
     3633:10D4  [E10D4]  57              push    di
     3633:10D5  [E10D5]  57              push    di
     3633:10D6  [E10D6]  ff7606          push    word ptr [bp + 6]
-    3633:10D9  [E10D9]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:10D9  [E10D9]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:10DE  [E10DE]  83c406          add     sp, 6
     3633:10E1  [E10E1]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:10E7  [E10E7]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -1901,7 +1901,7 @@ L_E1284:
     3633:1287  [E1287]  8be5            mov     sp, bp
     3633:1289  [E1289]  5d              pop     bp
     3633:128A  [E128A]  ca0400          retf    4
-SUB_E128D:
+verify_adc_control_toggle:
     3633:128D  [E128D]  55              push    bp
     3633:128E  [E128E]  8bec            mov     bp, sp
     3633:1290  [E1290]  83ec0a          sub     sp, 0xa
@@ -2187,7 +2187,7 @@ L_E156B:
     3633:156E  [E156E]  57              push    di
     3633:156F  [E156F]  57              push    di
     3633:1570  [E1570]  ff7606          push    word ptr [bp + 6]
-    3633:1573  [E1573]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1573  [E1573]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1578  [E1578]  83c406          add     sp, 6
     3633:157B  [E157B]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1581  [E1581]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2252,7 +2252,7 @@ L_E1608:
     3633:160B  [E160B]  57              push    di
     3633:160C  [E160C]  57              push    di
     3633:160D  [E160D]  ff7606          push    word ptr [bp + 6]
-    3633:1610  [E1610]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1610  [E1610]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1615  [E1615]  83c406          add     sp, 6
     3633:1618  [E1618]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:161E  [E161E]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2317,7 +2317,7 @@ L_E16A5:
     3633:16A8  [E16A8]  57              push    di
     3633:16A9  [E16A9]  57              push    di
     3633:16AA  [E16AA]  ff7606          push    word ptr [bp + 6]
-    3633:16AD  [E16AD]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:16AD  [E16AD]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:16B2  [E16B2]  83c406          add     sp, 6
     3633:16B5  [E16B5]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:16BB  [E16BB]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2642,7 +2642,7 @@ L_E19A1:
     3633:19A4  [E19A4]  57              push    di
     3633:19A5  [E19A5]  57              push    di
     3633:19A6  [E19A6]  ff7606          push    word ptr [bp + 6]
-    3633:19A9  [E19A9]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:19A9  [E19A9]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:19AE  [E19AE]  83c406          add     sp, 6
     3633:19B1  [E19B1]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:19B7  [E19B7]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2701,7 +2701,7 @@ L_E1A32:
     3633:1A35  [E1A35]  57              push    di
     3633:1A36  [E1A36]  57              push    di
     3633:1A37  [E1A37]  ff7606          push    word ptr [bp + 6]
-    3633:1A3A  [E1A3A]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1A3A  [E1A3A]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1A3F  [E1A3F]  83c406          add     sp, 6
     3633:1A42  [E1A42]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1A48  [E1A48]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2766,7 +2766,7 @@ L_E1AD1:
     3633:1AD4  [E1AD4]  57              push    di
     3633:1AD5  [E1AD5]  57              push    di
     3633:1AD6  [E1AD6]  ff7606          push    word ptr [bp + 6]
-    3633:1AD9  [E1AD9]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1AD9  [E1AD9]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1ADE  [E1ADE]  83c406          add     sp, 6
     3633:1AE1  [E1AE1]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1AE7  [E1AE7]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -2995,7 +2995,7 @@ L_E1CE3:
     3633:1CE6  [E1CE6]  57              push    di
     3633:1CE7  [E1CE7]  57              push    di
     3633:1CE8  [E1CE8]  ff7606          push    word ptr [bp + 6]
-    3633:1CEB  [E1CEB]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1CEB  [E1CEB]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1CF0  [E1CF0]  83c406          add     sp, 6
     3633:1CF3  [E1CF3]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1CF9  [E1CF9]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -3051,7 +3051,7 @@ L_E1D6E:
     3633:1D71  [E1D71]  57              push    di
     3633:1D72  [E1D72]  57              push    di
     3633:1D73  [E1D73]  ff7606          push    word ptr [bp + 6]
-    3633:1D76  [E1D76]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1D76  [E1D76]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1D7B  [E1D7B]  83c406          add     sp, 6
     3633:1D7E  [E1D7E]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1D84  [E1D84]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -3107,7 +3107,7 @@ L_E1DF9:
     3633:1DFC  [E1DFC]  57              push    di
     3633:1DFD  [E1DFD]  57              push    di
     3633:1DFE  [E1DFE]  ff7606          push    word ptr [bp + 6]
-    3633:1E01  [E1E01]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:1E01  [E1E01]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1E06  [E1E06]  83c406          add     sp, 6
     3633:1E09  [E1E09]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:1E0F  [E1E0F]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -3579,7 +3579,7 @@ L_E223D:
     3633:2240  [E2240]  57              push    di
     3633:2241  [E2241]  57              push    di
     3633:2242  [E2242]  ff7606          push    word ptr [bp + 6]
-    3633:2245  [E2245]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:2245  [E2245]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:224A  [E224A]  83c406          add     sp, 6
     3633:224D  [E224D]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:2253  [E2253]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -3812,7 +3812,7 @@ L_E24E9:
     3633:24EC  [E24EC]  57              push    di
     3633:24ED  [E24ED]  57              push    di
     3633:24EE  [E24EE]  ff7606          push    word ptr [bp + 6]
-    3633:24F1  [E24F1]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:24F1  [E24F1]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:24F6  [E24F6]  83c406          add     sp, 6
     3633:24F9  [E24F9]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:24FF  [E24FF]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -4870,7 +4870,7 @@ L_E2F87:
     3633:2F8A  [E2F8A]  57              push    di
     3633:2F8B  [E2F8B]  57              push    di
     3633:2F8C  [E2F8C]  ff7606          push    word ptr [bp + 6]
-    3633:2F8F  [E2F8F]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:2F8F  [E2F8F]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:2F94  [E2F94]  83c406          add     sp, 6
     3633:2F97  [E2F97]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:2F9D  [E2F9D]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -6078,7 +6078,7 @@ run_selftest_sequence:
     3633:3B5A  [E3B5A]  50              push    ax
     3633:3B5B  [E3B5B]  9a3309b1e3      lcall   SUB_E4443  ; 0xe3b1, 0x933
     3633:3B60  [E3B60]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
-    3633:3B65  [E3B65]  9a0d04e8e0      lcall   SUB_E128D  ; 0xe0e8, 0x40d
+    3633:3B65  [E3B65]  9a0d04e8e0      lcall   verify_adc_control_toggle  ; 0xe0e8, 0x40d
     3633:3B6A  [E3B6A]  a05807          mov     al, byte ptr [0x758]
     3633:3B6D  [E3B6D]  2ae4            sub     ah, ah
     3633:3B6F  [E3B6F]  256300          and     ax, 0x63
@@ -6574,7 +6574,7 @@ print_boot_rom_id_banner:
     3633:40D1  [E40D1]  83ec06          sub     sp, 6
     3633:40D4  [E40D4]  803e481b00      cmp     byte ptr [0x1b48], 0
     3633:40D9  [E40D9]  7474            je      L_E414F  ; 0x63f
-    3633:40DB  [E40DB]  9a91046be0      lcall   SUB_E0B41  ; 0xe06b, 0x491
+    3633:40DB  [E40DB]  9a91046be0      lcall   reset_readout_port  ; 0xe06b, 0x491
     3633:40E0  [E40E0]  bf7bff          mov     di, 0xff7b
     3633:40E3  [E40E3]  57              push    di
     3633:40E4  [E40E4]  ba1e05          mov     dx, 0x51e
@@ -7063,7 +7063,7 @@ FUNC_3633_45DD:
     3633:460C  [E460C]  57              push    di
     3633:460D  [E460D]  57              push    di
     3633:460E  [E460E]  ff7606          push    word ptr [bp + 6]
-    3633:4611  [E4611]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:4611  [E4611]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:4616  [E4616]  83c406          add     sp, 6
     3633:4619  [E4619]  bf2800          mov     di, 0x28
     3633:461C  [E461C]  57              push    di
@@ -7085,7 +7085,7 @@ L_E4632:
     3633:4640  [E4640]  57              push    di
     3633:4641  [E4641]  57              push    di
     3633:4642  [E4642]  ff7606          push    word ptr [bp + 6]
-    3633:4645  [E4645]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:4645  [E4645]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:464A  [E464A]  83c406          add     sp, 6
     3633:464D  [E464D]  e92a00          jmp     L_E467A  ; 0x467a
 L_E4650:
@@ -8140,7 +8140,7 @@ FUNC_3633_4FEF:
     3633:5008  [E5008]  57              push    di
     3633:5009  [E5009]  57              push    di
     3633:500A  [E500A]  ff7606          push    word ptr [bp + 6]
-    3633:500D  [E500D]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:500D  [E500D]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:5012  [E5012]  83c406          add     sp, 6
 L_E5015:
     3633:5015  [E5015]  837e0602        cmp     word ptr [bp + 6], 2
@@ -8151,7 +8151,7 @@ L_E5015:
     3633:5023  [E5023]  57              push    di
     3633:5024  [E5024]  57              push    di
     3633:5025  [E5025]  ff7606          push    word ptr [bp + 6]
-    3633:5028  [E5028]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:5028  [E5028]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:502D  [E502D]  83c406          add     sp, 6
 L_E5030:
     3633:5030  [E5030]  837e0604        cmp     word ptr [bp + 6], 4

@@ -717,6 +717,52 @@ FUNCTIONAL_NAMES = {
                                                # readout display-list
                                                # entry for the self-
                                                # test report
+    0xE0D06: "save_restore_measurement_settings", # (mode) - mode==1
+                                               # copies the current
+                                               # measurement-settings
+                                               # block ([0x256]-
+                                               # [0x264], 5 bytes + 5
+                                               # words) into a backup
+                                               # area ([0x1B20]-
+                                               # [0x1B32]); mode==2
+                                               # copies it back -
+                                               # a save/restore
+                                               # snapshot, likely used
+                                               # to preserve the user's
+                                               # settings around
+                                               # running self-tests
+    0xE128D: "verify_adc_control_toggle",       # sets a control byte
+                                               # to 0x10 then back to 0
+                                               # (also mirrored to a
+                                               # far-ptr target at
+                                               # [0x326]), writing
+                                               # [0x259] to the
+                                               # measurement channel
+                                               # register each time and
+                                               # reading back bit
+                                               # 0x1000 of a status
+                                               # word at far ptr
+                                               # [0x332]; stores
+                                               # whether the readback
+                                               # changed between the
+                                               # two states into
+                                               # [0x1B4E] - a hardware
+                                               # sanity check called
+                                               # right before run_adc_
+                                               # selftest
+    0xE0B6C: "init_readout_port_config",        # writes 3 fixed config
+                                               # bytes directly to the
+                                               # readout port structure
+                                               # at physical
+                                               # 0x40000+0x6F0+1/+2/+3
+                                               # (0x29/0x23/6) - resets
+                                               # the readout/CRT
+                                               # character-generator
+                                               # hardware to a known
+                                               # initial state
+    0xE0B41: "reset_readout_port",             # thin wrapper: calls
+                                               # init_readout_port_
+                                               # config
     0xE0A23: "scroll_selftest_report_display",  # called periodically;
                                                # decrements a countdown
                                                # byte at report-record

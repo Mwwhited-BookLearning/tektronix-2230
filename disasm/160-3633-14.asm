@@ -770,7 +770,7 @@ print_char:
     db 0x8b, 0xe5  ; 0B3B: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0B3D: pop bp
     retf 2                                   ; 0B3E: retf 2
-SUB_E0B41:
+reset_readout_port:
     push bp                                  ; 0B41: push bp
     db 0x8b, 0xec  ; 0B42: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0B44: sub sp, 6
@@ -791,7 +791,7 @@ write_readout_port_byte:
     db 0x8b, 0xe5  ; 0B66: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0B68: pop bp
     retf 2                                   ; 0B69: retf 2
-SUB_E0B6C:
+init_readout_port_config:
     push bp                                  ; 0B6C: push bp
     db 0x8b, 0xec  ; 0B6D: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0B6F: sub sp, 6
@@ -968,7 +968,7 @@ L_E0CFD:
     db 0x8b, 0xe5  ; 0D00: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 0D02: pop bp
     retf 2                                   ; 0D03: retf 2
-SUB_E0D06:
+save_restore_measurement_settings:
     push bp                                  ; 0D06: push bp
     db 0x8b, 0xec  ; 0D07: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 0D09: sub sp, 6
@@ -1358,7 +1358,7 @@ L_E1284:
     db 0x8b, 0xe5  ; 1287: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 1289: pop bp
     retf 4                                   ; 128A: retf 4
-SUB_E128D:
+verify_adc_control_toggle:
     push bp                                  ; 128D: push bp
     db 0x8b, 0xec  ; 128E: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 1290: sub sp, 0xa

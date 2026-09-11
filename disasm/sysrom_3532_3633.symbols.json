@@ -2555,10 +2555,10 @@
     "notes": null
   },
   "E0B41": {
-    "name": "SUB_E0B41",
+    "name": "reset_readout_port",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "reset_readout_port",
     "notes": null
   },
   "E0B50": {
@@ -2569,10 +2569,10 @@
     "notes": null
   },
   "E0B6C": {
-    "name": "SUB_E0B6C",
+    "name": "init_readout_port_config",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "init_readout_port_config",
     "notes": null
   },
   "E0BA3": {
@@ -2688,10 +2688,10 @@
     "notes": null
   },
   "E0D06": {
-    "name": "SUB_E0D06",
+    "name": "save_restore_measurement_settings",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "save_restore_measurement_settings",
     "notes": null
   },
   "E0D58": {
@@ -2870,10 +2870,10 @@
     "notes": null
   },
   "E128D": {
-    "name": "SUB_E128D",
+    "name": "verify_adc_control_toggle",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "verify_adc_control_toggle",
     "notes": null
   },
   "E12E7": {

@@ -3761,11 +3761,11 @@ print_char:
     3633:0B3B  [E0B3B]  8be5            mov     sp, bp
     3633:0B3D  [E0B3D]  5d              pop     bp
     3633:0B3E  [E0B3E]  ca0200          retf    2
-SUB_E0B41:
+reset_readout_port:
     3633:0B41  [E0B41]  55              push    bp
     3633:0B42  [E0B42]  8bec            mov     bp, sp
     3633:0B44  [E0B44]  83ec06          sub     sp, 6
-    3633:0B47  [E0B47]  9abc046be0      lcall   SUB_E0B6C  ; 0xe06b, 0x4bc
+    3633:0B47  [E0B47]  9abc046be0      lcall   init_readout_port_config  ; 0xe06b, 0x4bc
     3633:0B4C  [E0B4C]  8be5            mov     sp, bp
     3633:0B4E  [E0B4E]  5d              pop     bp
     3633:0B4F  [E0B4F]  cb              retf    
@@ -3782,7 +3782,7 @@ write_readout_port_byte:
     3633:0B66  [E0B66]  8be5            mov     sp, bp
     3633:0B68  [E0B68]  5d              pop     bp
     3633:0B69  [E0B69]  ca0200          retf    2
-SUB_E0B6C:
+init_readout_port_config:
     3633:0B6C  [E0B6C]  55              push    bp
     3633:0B6D  [E0B6D]  8bec            mov     bp, sp
     3633:0B6F  [E0B6F]  83ec06          sub     sp, 6
@@ -3959,7 +3959,7 @@ L_E0CFD:
     3633:0D00  [E0D00]  8be5            mov     sp, bp
     3633:0D02  [E0D02]  5d              pop     bp
     3633:0D03  [E0D03]  ca0200          retf    2
-SUB_E0D06:
+save_restore_measurement_settings:
     3633:0D06  [E0D06]  55              push    bp
     3633:0D07  [E0D07]  8bec            mov     bp, sp
     3633:0D09  [E0D09]  83ec06          sub     sp, 6
@@ -4143,7 +4143,7 @@ L_E1047:
     3633:104A  [E104A]  57              push    di
     3633:104B  [E104B]  57              push    di
     3633:104C  [E104C]  ff7606          push    word ptr [bp + 6]
-    3633:104F  [E104F]  9a56066be0      lcall   SUB_E0D06  ; 0xe06b, 0x656
+    3633:104F  [E104F]  9a56066be0      lcall   save_restore_measurement_settings  ; 0xe06b, 0x656
     3633:1054  [E1054]  83c406          add     sp, 6
     3633:1057  [E1057]  c7065a1b0000    mov     word ptr [0x1b5a], 0
     3633:105D  [E105D]  c7065c1b0000    mov     word ptr [0x1b5c], 0
@@ -4321,7 +4321,7 @@ L_E1284:
     3633:1287  [E1287]  8be5            mov     sp, bp
     3633:1289  [E1289]  5d              pop     bp
     3633:128A  [E128A]  ca0400          retf    4
-SUB_E128D:
+verify_adc_control_toggle:
     3633:128D  [E128D]  55              push    bp
     3633:128E  [E128E]  8bec            mov     bp, sp
     3633:1290  [E1290]  83ec0a          sub     sp, 0xa
@@ -7609,7 +7609,7 @@ run_selftest_sequence:
     3633:3B5A  [E3B5A]  50              push    ax
     3633:3B5B  [E3B5B]  9a3309b1e3      lcall   SUB_E4443  ; 0xe3b1, 0x933
     3633:3B60  [E3B60]  9a00005ce7      lcall   detect_comm_option_hw  ; 0xe75c, 0
-    3633:3B65  [E3B65]  9a0d04e8e0      lcall   SUB_E128D  ; 0xe0e8, 0x40d
+    3633:3B65  [E3B65]  9a0d04e8e0      lcall   verify_adc_control_toggle  ; 0xe0e8, 0x40d
     3633:3B6A  [E3B6A]  a05807          mov     al, byte ptr [0x758]
     3633:3B6D  [E3B6D]  2ae4            sub     ah, ah
     3633:3B6F  [E3B6F]  256300          and     ax, 0x63
@@ -8105,7 +8105,7 @@ print_boot_rom_id_banner:
     3633:40D1  [E40D1]  83ec06          sub     sp, 6
     3633:40D4  [E40D4]  803e481b00      cmp     byte ptr [0x1b48], 0
     3633:40D9  [E40D9]  7474            je      L_E414F  ; 0x63f
-    3633:40DB  [E40DB]  9a91046be0      lcall   SUB_E0B41  ; 0xe06b, 0x491
+    3633:40DB  [E40DB]  9a91046be0      lcall   reset_readout_port  ; 0xe06b, 0x491
     3633:40E0  [E40E0]  bf7bff          mov     di, 0xff7b
     3633:40E3  [E40E3]  57              push    di
     3633:40E4  [E40E4]  ba1e05          mov     dx, 0x51e
