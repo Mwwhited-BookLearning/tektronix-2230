@@ -666,6 +666,40 @@ FUNCTIONAL_NAMES = {
                                                # a stack buffer, then
                                                # prints the resulting
                                                # string via SUB_82D01
+    0x82D01: "print_string_serial",            # (far_str_ptr) - loops
+                                               # sending each byte via
+                                               # serial_tx_buffer_put
+                                               # until a null terminator
+    0x82D2B: "print_padded_label",             # prints a run of `si`
+                                               # characters (source
+                                               # picked from either a
+                                               # table at [0x6EE] or a
+                                               # far ptr [0x60A],
+                                               # depending on [0x4F2]),
+                                               # uppercasing lowercase
+                                               # letters, then a
+                                               # trailing space -
+                                               # prints a fixed-width
+                                               # GPIB-style field label
+    0x82EB9: "print_param_list_response",      # loops calling get_
+                                               # next_param_value and
+                                               # printing each result
+                                               # via print_signed_
+                                               # decimal_serial,
+                                               # separated by `,`
+                                               # (0x2C) while more
+                                               # values remain
+                                               # ([0x580]!=[0x590]),
+                                               # terminated by `;`
+                                               # (0x3B) - classic IEEE-
+                                               # 488/GPIB query-response
+                                               # value-list formatting
+    0x82F14: "get_next_param_value",           # saves the previous
+                                               # [0x580] into [0x581],
+                                               # then fetches a value
+                                               # via SUB_97905([0x57F])
+                                               # and returns it masked
+                                               # to a byte
     0xFC624: "ack_comm_hw_status_bits",        # (out_status_ptr,
                                                # req_byte_ptr) - reads
                                                # the comm-option hw

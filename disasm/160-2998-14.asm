@@ -892,7 +892,7 @@ L_82251:
     db 0x55, 0x8b, 0xec, 0x83, 0xec, 0x06, 0x8a, 0x56, 0x06, 0x80, 0xe2, 0x0f, 0x80, 0xc2, 0x30, 0x88  ; 2CD7
     db 0x16, 0x05, 0x00, 0x80, 0x3e, 0x05, 0x00, 0x39, 0x76, 0x05, 0x80, 0x06, 0x05, 0x00, 0x07, 0x9a  ; 2CE7
     db 0xf8, 0x02, 0x87, 0x96, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 2CF7
-SUB_82D01:
+print_string_serial:
     push bp                                  ; 2D01: push bp
     db 0x8b, 0xec  ; 2D02: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 2D04: sub sp, 6
@@ -910,7 +910,7 @@ L_82D1C:
     db 0x8b, 0xe5  ; 2D25: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2D27: pop bp
     retf 4                                   ; 2D28: retf 4
-SUB_82D2B:
+print_padded_label:
     push bp                                  ; 2D2B: push bp
     db 0x8b, 0xec  ; 2D2C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 2D2E: sub sp, 6
@@ -973,7 +973,7 @@ L_82D84:
     db 0x57, 0xbb, 0x0a, 0x00, 0x53, 0x8b, 0x46, 0x06, 0x8b, 0x56, 0x08, 0x9a, 0x1d, 0x01, 0x72, 0xe7  ; 2E8B
     db 0x89, 0x46, 0x06, 0x89, 0x56, 0x08, 0x9a, 0x33, 0x00, 0x72, 0xe7, 0x72, 0xc1, 0x8d, 0x52, 0xee  ; 2E9B
     db 0x16, 0x52, 0x9a, 0x71, 0x00, 0xc9, 0x82, 0x5e, 0x8b, 0xe5, 0x5d, 0xca, 0x04, 0x00  ; 2EAB
-SUB_82EB9:
+print_param_list_response:
     push bp                                  ; 2EB9: push bp
     db 0x8b, 0xec  ; 2EBA: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 2EBC: sub sp, 8
@@ -1008,7 +1008,7 @@ L_82F06:
     db 0x8b, 0xe5  ; 2F10: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2F12: pop bp
     retf                                     ; 2F13: retf 
-SUB_82F14:
+get_next_param_value:
     push bp                                  ; 2F14: push bp
     db 0x8b, 0xec  ; 2F15: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 2F17: sub sp, 6
