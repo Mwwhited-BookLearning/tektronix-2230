@@ -1667,6 +1667,15 @@ other decode subtlety not yet identified. Worth revisiting if the
 `0x90000`-alias-style brute-force technique (documented in
 `CLAUDE.md`) ever gets pointed at this specific address.
 
+**Follow-up: `SUB_F5898`'s sole caller is now named.** `0xED7F1` is
+inside `draw_boot_splash_and_option_icon` (`SUB_ED7DF`, renamed),
+called once from the comm ROM's own boot sequence (`0x839E3`) - direct
+confirmation this really is boot-time splash-screen code, not a
+speculative label. That function also draws a second, position-
+computed graphic via `SUB_F6382` right after the splash logo, gated by
+a flag byte - likely an installed-option indicator icon alongside the
+"TEKTRONIX" logo.
+
 **Follow-up while renaming other functions in the same neighborhood:**
 both `SUB_F5898` (`160-3532`, the "small routine near `0xF58B1`"
 mentioned above, sole caller `0xED7F1`) and `SUB_E97DC` (`160-3633`,

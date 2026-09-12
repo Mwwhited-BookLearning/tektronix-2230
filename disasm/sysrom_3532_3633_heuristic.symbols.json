@@ -13517,10 +13517,10 @@
     "notes": null
   },
   "ED7DF": {
-    "name": "SUB_ED7DF",
+    "name": "draw_boot_splash_and_option_icon",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "draw_boot_splash_and_option_icon",
     "notes": null
   },
   "ED7F9": {

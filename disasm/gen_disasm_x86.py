@@ -2945,6 +2945,29 @@ FUNCTIONAL_NAMES = {
                                                # `value` bits 0x100/
                                                # 0x200 and returns
                                                # `value`
+    0xED7DF: "draw_boot_splash_and_option_icon", # called once from
+                                               # the comm ROM's boot
+                                               # sequence (0x839E3):
+                                               # calls SUB_F5898 (the
+                                               # "TEKTRONIX" boot-
+                                               # splash stroke-data
+                                               # builder) to draw the
+                                               # logo, then checks a
+                                               # far-pointer flag byte
+                                               # ([bp+0xA]); if set,
+                                               # clears it and computes
+                                               # a screen position from
+                                               # [0x3C2]/[0x3C6] (column/
+                                               # row-like scaling by
+                                               # 0x80/0x32) to draw a
+                                               # second graphic element
+                                               # via SUB_F6382 (the same
+                                               # drawing primitive
+                                               # compute_and_draw_scale_
+                                               # marker uses) - likely
+                                               # an installed-option
+                                               # indicator icon on the
+                                               # boot splash screen
     0xEEA58: "clear_readout_attrs_for_item",  # (item, count) - reads
                                                # a far ptr base from
                                                # [0x36] plus a per-item

@@ -20163,7 +20163,7 @@ L_ED7CD:
     3633:D7DB  [ED7DB]  52              push    dx
     3633:D7DC  [ED7DC]  9a780622f5      lcall   SUB_F5898  ; 0xf522, 0x678
 
-SUB_ED7DF:
+draw_boot_splash_and_option_icon:
     3633:D7DF  [ED7DF]  22f5            and     dh, ch
     3633:D7E1  [ED7E1]  83c402          add     sp, 2
     3633:D7E4  [ED7E4]  8346eece        add     word ptr [bp - 0x12], -0x32
@@ -28106,7 +28106,7 @@ L_F2D90:
     3532:2D9C  [F2D9C]  250010          and     ax, 0x1000
     3532:2D9F  [F2D9F]  3d0000          cmp     ax, 0
     3532:2DA2  [F2DA2]  745a            je      L_F2DFE  ; 0x2dfe
-    3532:2DA4  [F2DA4]  9adf2ad0ea      lcall   SUB_ED7DF  ; 0xead0, 0x2adf
+    3532:2DA4  [F2DA4]  9adf2ad0ea      lcall   draw_boot_splash_and_option_icon  ; 0xead0, 0x2adf
     3532:2DA9  [F2DA9]  bf1200          mov     di, 0x12
     3532:2DAC  [F2DAC]  57              push    di
     3532:2DAD  [F2DAD]  ba1000          mov     dx, 0x10
@@ -28642,7 +28642,7 @@ L_F32EF:
     3532:32FB  [F32FB]  250010          and     ax, 0x1000
     3532:32FE  [F32FE]  3d0000          cmp     ax, 0
     3532:3301  [F3301]  7418            je      L_F331B  ; 0x331b
-    3532:3303  [F3303]  9adf2ad0ea      lcall   SUB_ED7DF  ; 0xead0, 0x2adf
+    3532:3303  [F3303]  9adf2ad0ea      lcall   draw_boot_splash_and_option_icon  ; 0xead0, 0x2adf
     3532:3308  [F3308]  e91000          jmp     L_F331B  ; 0x331b
 L_F330B:
     3532:330B  [F330B]  bf2900          mov     di, 0x29

@@ -347,7 +347,7 @@ comm_call_main_rom:
     2998:39DA  [839DA]  57              push    di
     2998:39DB  [839DB]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998:39E0  [839E0]  8946f8          mov     word ptr [bp - 8], ax
-    2998:39E3  [839E3]  9adf2ad0ea      lcall   SUB_ED7DF  ; 0xead0, 0x2adf
+    2998:39E3  [839E3]  9adf2ad0ea      lcall   draw_boot_splash_and_option_icon  ; 0xead0, 0x2adf
     2998:39E8  [839E8]  ff76f8          push    word ptr [bp - 8]
     2998:39EB  [839EB]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998:39F0  [839F0]  8be5            mov     sp, bp
@@ -12355,7 +12355,7 @@ L_ED0C6:
     3633:D0C8  [ED0C8]  5d              pop     bp
     3633:D0C9  [ED0C9]  cb              retf    
 
-SUB_ED7DF:
+draw_boot_splash_and_option_icon:
     3633:D7DF  [ED7DF]  22f5            and     dh, ch
     3633:D7E1  [ED7E1]  83c402          add     sp, 2
     3633:D7E4  [ED7E4]  8346eece        add     word ptr [bp - 0x12], -0x32
