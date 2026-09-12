@@ -2044,6 +2044,87 @@ and 2 more transitively-found functions from roughly an hour of
 targeted analysis; it's a much higher-yield technique than reading
 through the remaining un-prologued-entry cluster function-by-function.
 
+## `SUB_EAC86` fully resolved: it's the *same* non-code data blob as the `SUB_F173E`→`0xEA13B` finding above
+
+Following up on finding #4 above (`SUB_F173E`'s `LCALL` landing on a
+string table at `0xEA13B`), traced how far that non-code region
+actually extends - and it turns out to be much bigger than the
+already-documented `0xEA1A0-0xEA615` heuristic "decode-drift cluster"
+(see "The main ROM has a heuristic layer too"), and it directly
+contains the project's oldest, most-discussed anomaly.
+
+**The full extent of the non-code region, confirmed two ways**:
+- The proven symbol table has **zero labels of any kind** between
+  `L_EA697` (the last address the proven walk's own garbage-decode
+  fallthrough reaches) and the next real call target, and between that
+  and `snapshot_index_and_format_number` (`0xED0AE`) - a ~9.7KB span
+  with nothing proven in it except call targets that themselves decode
+  as garbage.
+- The heuristic push-bp scanner independently confirms where **real
+  code actually resumes**: nothing resembling a function start exists
+  anywhere in this span until `0xEB132`, where a completely ordinary
+  `push bp; mov bp,sp; sub sp,0xa` prologue appears out of nowhere.
+  So the true non-code region is `0xEA13B`-`0xEB131` (**~4083 bytes**),
+  not the ~1655 bytes originally estimated.
+
+**What's actually in those ~4083 bytes**:
+1. `0xEA13B`-`~0xEA5E6` (~1200 bytes): the already-catalogued readout
+   help/description text (`"Points before trigger, PRE or POST"`,
+   `"Display formatting"`, ... through `"CENTER POS:PRESS CURSOR
+   SEL:ADJ BAL"`) - confirmed exact string-for-string match against
+   `strings_160-3633.json`/`STRINGS.md`.
+2. `~0xEA5E6`-`0xEB131` (~2890 bytes): **not text** (mostly non-
+   printable bytes) but also not random garbage - it has a
+   suspiciously regular structure: paired byte values where one side
+   of the pair increments steadily while the other forms a symmetric
+   zigzag (e.g. `03,02 / 04,01 / 05,00 / 06,01 / 07,02 / 08,03 ...`),
+   and elsewhere a run of 16-bit little-endian values stepping by
+   `0x100` each entry. This is genuine structured data, not decode
+   noise - and a paired "steadily increasing coordinate + symmetric
+   zigzag" shape is exactly what vector pen-stroke `(dx,dy)` data would
+   look like. **Flagged as a real lead for the still-unlocated stroke-
+   font glyph table (see the `TODO.md` item), not a confirmed
+   identification** - the size (~2890 bytes) is a plausible fit for a
+   compact 96-ish-character stroke font, but this hasn't been decoded
+   character-by-character or cross-checked against `draw_readout_char`'s
+   actual bit-packing scheme yet.
+
+**`SUB_EAC86` and `SUB_EAD08` are both confirmed to land inside this
+exact region**, called from genuinely legitimate compiled code:
+- `SUB_EAC86` (`0xEAC86`): the original, most-discussed anomaly in this
+  project (see "A second, more puzzling decode anomaly" above) - its 4
+  real external callers (3 in `160-3532`, 1 from the comm ROM) are
+  unaffected by this finding, but the "why is the target garbage" part
+  of that open question is now answered: it's not a decode-tooling bug
+  or an address-decode alias, it's a real `LCALL` landing inside this
+  same non-code blob, exactly like `SUB_F173E`→`0xEA13B`.
+- `SUB_EAD08` (`0xEAD08`): a **4th confirmed instance**, found this
+  pass - a genuine, unambiguous `lcall SUB_EAD08` from `0xE6BD0` (real,
+  ordinary compiled code, immediately followed by a normal epilogue
+  that doesn't check any return value).
+- `SUB_EADA0` (`0xEADA0`) is a weaker, different case: its only
+  "caller" (`call SUB_EADA0` at `0xEACBD`) is itself *inside* `SUB_
+  EAC86`'s own cascading garbage decode - a coincidental `E8 E0 00`
+  byte pattern within the data, not a genuine reference from real
+  compiled code. Worth keeping this distinction: `SUB_EAC86`/`SUB_
+  EAD08` are proven real call targets into data; `SUB_EADA0` is just
+  another address inside the same data that happens to get
+  auto-discovered as a side effect.
+
+**This closes out the old `0xEA1A0-0xEA615` decode-drift-cluster TODO
+item** (it undersold the region's true size by ~2.5x and mischaracterized
+it as a mysterious missing function boundary) **and substantially
+answers the long-open `SUB_EAC86` question**: it, and now 3 of its
+siblings, are unambiguously real call targets into a real, identifiable
+(if not 100% catalogued) non-code data region - the same "call lands on
+data, not code" phenomenon as `SUB_F173E`, just discovered years... err,
+sessions earlier, before the connection between the two was made. This
+is now 4 independent confirmed instances (`SUB_EAC86`×1 target/4
+callers, `SUB_EAD08`, `SUB_F173E`→`0xEA13B`, plus the still-uncertain
+`SUB_EADA0`) of the same shape - strong, repeated evidence for dead/
+stale call sites left in the shipped ROM rather than any kind of
+decode-tooling artifact.
+
 ## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
 
 Built in response to a direct question: of the many `L_XXXXX` branch

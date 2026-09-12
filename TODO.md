@@ -21,7 +21,18 @@
       should either trace `boot_init`'s data-driven init loop(s) to find
       what sets `[0x1DB0]`/`[0x1CC4]`, or render scan candidates and
       visually check for real letterforms instead of just checking
-      byte-run length.
+      byte-run length. **New lead 2026-09-12**: the ~2890-byte
+      structured (paired-value, not text) binary region at physical
+      `0xEA5E6`-`0xEB131` in `160-3633` - found immediately after the
+      already-catalogued help-text string table, in the same region
+      that resolved the `SUB_EAC86` mystery (see `disasm/NOTES.md`
+      "`SUB_EAC86` fully resolved") - is a plausible size/shape fit for
+      a compact stroke font (paired incrementing/zigzag byte values,
+      consistent with `(dx,dy)` pen-stroke data), but **not decoded or
+      confirmed** - no literal reference to this address exists anywhere
+      in proven or heuristic code, so it isn't proven to be *this*
+      table specifically. Worth a dedicated decode-and-render attempt
+      against `draw_readout_char`'s exact bit-packing scheme.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,
@@ -62,13 +73,17 @@
       HEX waveform-data coding but only the ASCII path
       (`print_signed_decimal_serial`/`print_param_list_response`) has
       been identified in code so far - find the binary/hex one(s).
-- [ ] Handle the ~39-instruction decode-drift cluster in `3633` around
+- [x] Handle the ~39-instruction decode-drift cluster in `3633` around
       physical `0xEA1A0-0xEA615` (386-only features that can't be real
-      on this 8086/8088 - see `disasm/NOTES.md`). Doesn't threaten the
-      buildable `.asm`'s correctness (safety net already excludes it),
-      but reaching it via pure fallthrough with no owning label means
-      there's a real function boundary nearby the recursive descent
-      doesn't know about - worth finding for a cleaner listing.
+      on this 8086/8088). **Resolved 2026-09-12**: it undersold the
+      real region's size - the true non-code span is `0xEA13B`-`0xEB131`
+      (~4083 bytes, real code resumes cleanly at `0xEB132` with a normal
+      prologue). Identified as: already-catalogued help text (`0xEA13B`-
+      `~0xEA5E6`) plus a structurally regular, not-yet-decoded binary
+      table (`~0xEA5E6`-`0xEB131`, a real lead for the stroke-font glyph
+      table - see the first item in this file). See `disasm/NOTES.md`
+      "`SUB_EAC86` fully resolved: it's the *same* non-code data blob as
+      the `SUB_F173E`→`0xEA13B` finding above".
 - [x] Investigate whether capstone is misdecoding the undocumented
       8086 1-byte opcode `0x0F` (`POP CS`) as a 286+-style SSE/MMX
       two-byte escape prefix - found at `SUB_F6382` (`160-3532`).
@@ -111,36 +126,34 @@
       a candidate is a deliberate dual entry rather than an accidental
       near-miss). See `disasm/NOTES.md`'s "Systematic landing-artifact
       sweep" section for the full writeup.
-- [ ] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
+- [x] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
       unambiguous garbage (including an impossible SSE instruction)
       despite being a **clean, unambiguous far-call target** reached
       identically from 3 separate places across 2 ROMs (`160-3532` x2,
-      comm ROM x1). Different and more puzzling than the
-      `0xEA1A0-0xEA615` fallthrough cluster above - no nearby byte
-      shift produces a clean prologue either. Left unrenamed rather
-      than guess. See `disasm/NOTES.md` "A second, more puzzling
-      decode anomaly: SUB_EAC86" for what's been ruled out and
-      candidate explanations (address-decode alias? dead code?). Its
-      two neighbors `SUB_F5898`/`SUB_E97DC` (the "TEKTRONIX" boot-
-      splash builder and its shared copy-loop cluster) are coherent,
-      valid code but rely on a `bp`/`si` implicit-register calling
-      convention this project doesn't model yet - also left unnamed;
-      see the "Follow-up" paragraph appended to that same NOTES.md
-      section. **Update**: this isn't localized to the boot-splash
-      area - `SUB_E99DF`/`SUB_EADA0` (outright garbage, like
-      `SUB_EAC86`) and `SUB_E8E03`/`SUB_E8E29`/`SUB_ED9BC`/`SUB_EEA58`
-      (coherent code, ambiguous entry, like `SUB_F5898`) are further
-      instances found elsewhere in `160-3633`, including one inside the
-      acquisition/plot scale-clamp subsystem. See the "not confined to
-      the boot-splash neighborhood" paragraph in the same NOTES.md
-      section. **Second independent instance found 2026-09-12**: `SUB_
-      F173E` makes an equally unambiguous `LCALL` to `0xEA13B`, which
-      decodes as the start of an (already-catalogued, in `STRINGS.md`)
-      string table, not code - finding this exact shape twice,
-      independently, is the strongest evidence yet that this is real
-      dead/never-executed code left in the shipped ROM, not a decode-
-      tooling bug. `SUB_EA13B`/`SUB_EA2D6` (transitively reached past
-      that string table) remain unnamed.
+      comm ROM x1). **Substantially resolved 2026-09-12**: `SUB_EAC86`
+      lands inside the same large (~4083-byte) non-code data region as
+      the `SUB_F173E`→`0xEA13B` finding below - not a decode-tooling
+      bug or address-decode alias, just a real, unambiguous `LCALL`
+      into data, now confirmed as the 3rd-4th such instance (alongside
+      a newly-found `SUB_EAD08`, also a genuine external-lcall target
+      into the same blob). See `disasm/NOTES.md` "`SUB_EAC86` fully
+      resolved" for the full trace. Its two neighbors `SUB_F5898`/`SUB_
+      E97DC` (the "TEKTRONIX" boot-splash builder and its shared copy-
+      loop cluster) are a **separate** phenomenon (coherent, valid code
+      relying on an unmodeled `bp`/`si` implicit-register calling
+      convention, not data) - still left unnamed; see the "Follow-up"
+      paragraph in the original "A second, more puzzling decode
+      anomaly: SUB_EAC86" NOTES.md section. Likewise `SUB_E8E03`/`SUB_
+      E8E29`/`SUB_ED9BC`/`SUB_EEA58` (coherent code, ambiguous entry)
+      are that same separate class, not data. `SUB_EADA0` is a weaker,
+      distinct case (only "called" from a coincidental byte pattern
+      inside `SUB_EAC86`'s own garbage decode, not real external code)
+      - see NOTES.md for the exact distinction. None of these get
+      renamed - the point of this item was explaining *why* the bytes
+      are garbage, which is now answered, not assigning them names.
+      `SUB_EA13B`/`SUB_EA2D6` (transitively reached past the string
+      table) remain unnamed for the same reason - they're inside the
+      data blob too, not real functions.
 - [ ] **New 2026-09-12**: `init_far_pointer_table_sysrom`'s own embedded
       82-entry `(dest_offset, far_ptr)` RAM-init table (targets `ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new `ENTRY_POINTS` and
