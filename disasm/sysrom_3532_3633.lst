@@ -12344,7 +12344,7 @@ SUB_EADA0:
     3633:AE60  [EAE60]  110f            adc     word ptr [bx], cx
     3633:AE62  [EAE62]  100f            adc     byte ptr [bx], cl
 
-SUB_ED0AE:
+snapshot_index_and_format_number:
     3633:D0AE  [ED0AE]  a16404          mov     ax, word ptr [0x464]
     3633:D0B1  [ED0B1]  a36c04          mov     word ptr [0x46c], ax
     3633:D0B4  [ED0B4]  9aa404cef4      lcall   SUB_F5184  ; 0xf4ce, 0x4a4
@@ -13322,7 +13322,7 @@ L_F4267:
     3532:4278  [F4278]  b80100          mov     ax, 1
     3532:427B  [F427B]  50              push    ax
     3532:427C  [F427C]  57              push    di
-    3532:427D  [F427D]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:427D  [F427D]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:4282  [F4282]  83c406          add     sp, 6
     3532:4285  [F4285]  803e860600      cmp     byte ptr [0x686], 0
     3532:428A  [F428A]  752d            jne     L_F42B9  ; 0x239

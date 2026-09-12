@@ -19499,7 +19499,7 @@ FUNC_3633_D058:
     3633:D0A6  [ED0A6]  26ff5906        lcall   es:[bx + di + 6]
 L_ED0AA:
     3633:D0AA  [ED0AA]  ff066204        inc     word ptr [0x462]
-SUB_ED0AE:
+snapshot_index_and_format_number:
     3633:D0AE  [ED0AE]  a16404          mov     ax, word ptr [0x464]
     3633:D0B1  [ED0B1]  a36c04          mov     word ptr [0x46c], ax
     3633:D0B4  [ED0B4]  9aa404cef4      lcall   SUB_F5184  ; 0xf4ce, 0x4a4
@@ -29658,7 +29658,7 @@ L_F3D1D:
     3532:3D1D  [F3D1D]  ba0200          mov     dx, 2
     3532:3D20  [F3D20]  52              push    dx
     3532:3D21  [F3D21]  ff76f8          push    word ptr [bp - 8]
-    3532:3D24  [F3D24]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:3D24  [F3D24]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:3D29  [F3D29]  83c406          add     sp, 6
     3532:3D2C  [F3D2C]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3532:3D31  [F3D31]  7408            je      L_F3D3B  ; 0x3d3b
@@ -29983,7 +29983,7 @@ SUB_F405D:
 
     3532:4062  [F4062]  50              push    ax
     3532:4063  [F4063]  57              push    di
-    3532:4064  [F4064]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:4064  [F4064]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
 
     3532:4065  [F4065]  ae              scasb   al, byte ptr es:[di]
     3532:4066  [F4066]  23d0            and     dx, ax
@@ -30211,7 +30211,7 @@ L_F4267:
     3532:4278  [F4278]  b80100          mov     ax, 1
     3532:427B  [F427B]  50              push    ax
     3532:427C  [F427C]  57              push    di
-    3532:427D  [F427D]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:427D  [F427D]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:4282  [F4282]  83c406          add     sp, 6
     3532:4285  [F4285]  803e860600      cmp     byte ptr [0x686], 0
     3532:428A  [F428A]  752d            jne     L_F42B9  ; 0x239
@@ -30274,7 +30274,7 @@ FUNC_3532_42E6:
     3532:4317  [F4317]  057eff          add     ax, 0xff7e
     3532:431A  [F431A]  d1e0            shl     ax, 1
     3532:431C  [F431C]  50              push    ax
-    3532:431D  [F431D]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:431D  [F431D]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:4322  [F4322]  83c406          add     sp, 6
     3532:4325  [F4325]  e95e00          jmp     L_F4386  ; 0x4386
 L_F4328:
@@ -30298,7 +30298,7 @@ L_F4328:
     3532:4353  [F4353]  057eff          add     ax, 0xff7e
     3532:4356  [F4356]  d1f8            sar     ax, 1
     3532:4358  [F4358]  50              push    ax
-    3532:4359  [F4359]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:4359  [F4359]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:435E  [F435E]  83c406          add     sp, 6
     3532:4361  [F4361]  e92200          jmp     L_F4386  ; 0x4386
 L_F4364:
@@ -30314,7 +30314,7 @@ L_F4364:
     3532:4378  [F4378]  057eff          add     ax, 0xff7e
     3532:437B  [F437B]  d1f8            sar     ax, 1
     3532:437D  [F437D]  50              push    ax
-    3532:437E  [F437E]  9aae23d0ea      lcall   SUB_ED0AE  ; 0xead0, 0x23ae
+    3532:437E  [F437E]  9aae23d0ea      lcall   snapshot_index_and_format_number  ; 0xead0, 0x23ae
     3532:4383  [F4383]  83c406          add     sp, 6
 L_F4386:
     3532:4386  [F4386]  803e860600      cmp     byte ptr [0x686], 0

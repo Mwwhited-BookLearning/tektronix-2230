@@ -7511,10 +7511,10 @@
     "notes": null
   },
   "ED0AE": {
-    "name": "SUB_ED0AE",
+    "name": "snapshot_index_and_format_number",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "snapshot_index_and_format_number",
     "notes": null
   },
   "ED0C6": {

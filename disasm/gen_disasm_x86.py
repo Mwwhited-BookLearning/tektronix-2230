@@ -3132,6 +3132,22 @@ FUNCTIONAL_NAMES = {
                                                # reinit-time GPIB
                                                # record-table integrity
                                                # scrub
+    0xED0AE: "snapshot_index_and_format_number", # saves the current
+                                               # item index [0x464]
+                                               # into [0x46C] (a
+                                               # snapshot for whatever
+                                               # the formatter below
+                                               # reads next), then
+                                               # calls into the
+                                               # decimal-number-plus-
+                                               # units-suffix formatter
+                                               # (SUB_F5184/L_F50FA -
+                                               # see NOTES.md "Found: a
+                                               # decimal-formatting
+                                               # engine" for the full
+                                               # writeup); called from
+                                               # compute_and_format_
+                                               # sample_delta_readout
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

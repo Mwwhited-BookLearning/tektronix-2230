@@ -1868,11 +1868,29 @@ the exact function boundaries here are genuinely ambiguous (this is a
 shared digit-formatting engine used from several `bp-relative-context`
 callers per the "outlined helper" theory above), and forcing a name on
 `SUB_F5184`/`L_F50FA` specifically would overclaim precision this
-investigation doesn't have. Worth revisiting together with `SUB_ED0AE`
-if a future session wants to fully map this formatting engine (likely
-a per-channel/per-item decimal-place-configurable number formatter,
-akin to `format_number` but with a variable decimal-point position
-read from a table instead of a fixed format).
+investigation doesn't have.
+
+**Follow-up: the format table's full shape is now clear, even though
+`SUB_F5184`/`L_F50FA` themselves stay unrenamed.** After the 5-digit
+`idiv`-by-10 loop (`L_F518B`'s `cmp [bp-8],5`), the tail at `L_F5197`
+indexes a **format-spec table** by `[bp+8]*6` and appends 2 more
+characters to the output buffer (`[bp+0xA]`/`[bp+0xC]`, a far pointer,
+incremented after each write, NUL-terminated at the end):
+`[table+0x63D]` only if nonzero, then `[table+0x63C]` unconditionally.
+Combined with the decimal-point position already found at
+`[table+0x63A]` (compared against the digit-loop's position counter
+`[bp-8]`), this is a complete **per-format-index number formatter**:
+decimal-point position + a 1-or-2-character units suffix, all driven
+by one 6-byte-stride table entry (`[0x63A]`=dp position, `[0x63C]`/
+`[0x63D]`=suffix chars) selected by `[bp+8]`. This is almost certainly
+how the firmware renders values like "1.23mV" or "500ns" with the
+correct decimal placement and unit for whatever's being measured.
+`SUB_ED0AE` was renamed to `snapshot_index_and_format_number` on the
+strength of this (see `FUNCTIONS.md`) even though `SUB_F5184`/
+`L_F50FA` remain unrenamed - their *behavior* is now fully understood,
+just not their exact standalone entry-point boundaries, which is a
+narrower and more honest thing to leave unresolved than the mechanism
+itself.
 
 ## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
 
