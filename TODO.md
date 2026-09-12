@@ -61,17 +61,39 @@
       but reaching it via pure fallthrough with no owning label means
       there's a real function boundary nearby the recursive descent
       doesn't know about - worth finding for a cleaner listing.
-- [ ] Investigate whether capstone is misdecoding the undocumented
+- [x] Investigate whether capstone is misdecoding the undocumented
       8086 1-byte opcode `0x0F` (`POP CS`) as a 286+-style SSE/MMX
-      two-byte escape prefix - found at `SUB_F6382` (`160-3532`),
-      where reading `0x0F` as `pop cs` instead of the start of `movd`
-      makes a separate fallthrough path and the far-call entry cleanly
-      reconverge a few bytes later, which doesn't happen under
-      capstone's decode. See `disasm/NOTES.md` "A third decode
-      anomaly: SUB_F6382, likely capstone misreading opcode 0x0F". If
-      confirmed, worth checking whether this also explains other
-      `0x0F`-led decode oddities elsewhere (it does *not* explain
-      `SUB_EAC86`, which doesn't start with `0x0F`).
+      two-byte escape prefix - found at `SUB_F6382` (`160-3532`).
+      **Resolved 2026-09-12**: named anyway (`draw_marker_box_and_
+      update_position`) since the rest of the body is coherent despite
+      the single misdecoded opcode; the capstone-mismatch explanation
+      stands undisputed. Confirmed it does *not* explain `SUB_EAC86` or
+      any of the broader landing-artifact family below - those are a
+      different, unrelated phenomenon.
+- [ ] **Landing-artifact phenomenon - now the leading theory for `SUB_
+      EAC86` and its relatives**: a genuine, unambiguous compiled
+      `CALL`/`LCALL`/`JMP`/`LJMP` target lands 1-4 bytes *before* where
+      coherent code actually resumes, so the disassembler decodes a
+      coincidentally-valid (or garbage) instruction at the "short"
+      address before reconverging. Confirmed instances now span `SUB_
+      E90A5`/`SUB_E92B0` (original), `SUB_F6382` fallthrough, `L_EDA0A`
+      (`SUB_F1581` → `compute_and_draw_scale_marker`, resolved 2026-09-
+      11), `SUB_F6F4A`, `SUB_F1254`, and `0x88729` (the exact target of
+      `SUB_E99DF`'s garbage `ljmp` - a real, isolated, but statically-
+      unresolvable `ljmp [bp+di]` indexed off the caller `SUB_F4150`'s
+      `bp`/`di`, not meaningless garbage as first assumed). Root-cause
+      lead (not confirmed): landing 1 byte short very often lands on
+      `0x00`, which is both an extremely common displacement/immediate
+      byte AND a valid `ADD r/m8,r8` opcode, forming a spurious 2-byte
+      `add` instruction that happens to look plausible. `disasm/find_
+      landing_artifacts.py` systematically found ~49 candidates total
+      (checks every call-target's own instruction for byte-overlap with
+      any other independently-reached instruction); only ~7 individually
+      examined so far (EBC3A, EC2E6, EE319, F3132, F4CE8, F784D, F6891) -
+      **continue working through the remaining ~42 candidates** to see
+      how many are genuinely this class vs. already-known shared-entry
+      clusters vs. something new. See `disasm/NOTES.md`'s "Found:
+      indirect jumps/calls through computed pointers" section.
 - [ ] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
       unambiguous garbage (including an impossible SSE instruction)
       despite being a **clean, unambiguous far-call target** reached
@@ -94,7 +116,31 @@
       instances found elsewhere in `160-3633`, including one inside the
       acquisition/plot scale-clamp subsystem. See the "not confined to
       the boot-splash neighborhood" paragraph in the same NOTES.md
-      section.
+      section. **Second independent instance found 2026-09-12**: `SUB_
+      F173E` makes an equally unambiguous `LCALL` to `0xEA13B`, which
+      decodes as the start of an (already-catalogued, in `STRINGS.md`)
+      string table, not code - finding this exact shape twice,
+      independently, is the strongest evidence yet that this is real
+      dead/never-executed code left in the shipped ROM, not a decode-
+      tooling bug. `SUB_EA13B`/`SUB_EA2D6` (transitively reached past
+      that string table) remain unnamed.
+- [ ] **New 2026-09-12**: `init_far_pointer_table_sysrom`'s own embedded
+      82-entry `(dest_offset, far_ptr)` RAM-init table (targets `ES=
+      0x209`, physical `0x2090-0x21F0`) led to 15 new `ENTRY_POINTS` and
+      4 more transitively-found functions, all verified byte-identical.
+      Two things still open: (1) **no code anywhere in the corpus loads
+      `ES`/`DS`=`0x209` via a literal immediate** - how (or whether)
+      these 15 functions actually get invoked in practice isn't proven;
+      (2) most are still unnamed - a plot-position/pen-drawing family
+      (`SUB_F09C0`/`F09C6`/`F09EA`/`F0A4A`/`F0A4E`/`F0AAA`/`F0B06`/
+      `F0B62`/`F0BC2`/`F0BC6`/`F0BE2`/`F0BFA`/`F0C26`) touching the same
+      variables as `draw_pending_line_segment`/`reset_plot_home_or_acq`,
+      plus `SUB_F173E` above. Also 2 new far pointers `[0x1DB8]`/
+      `[0x1DBC]` sitting right next to the still-unlocated stroke-font
+      pointer `[0x1DB0]` (see the first item in this file) - worth
+      checking whether either of these is actually the font table.
+      See `disasm/NOTES.md` "Found: a whole family of never-reached
+      functions via the RAM far-pointer init table" and `FUNCTIONS.md`.
 - [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
       ports, near the confirmed readout/CRT write port) actually are -
       front-panel switch/encoder status and CRT controller status are
@@ -123,9 +169,11 @@
       opportunistically** (explicit user request: "keep going, don't
       stop until everything is renamed"). Working through the
       proven-only set (`sysrom_3532_3633.symbols.json`) ordered by
-      reference count, highest first - 136/278 named as of the latest
-      session (see `disasm/NOTES.md`'s dated session entries and
-      `changes/` for the running list and confidence notes). The
+      reference count, highest first - 261/282 named as of the latest
+      session (2026-09-12; the total grew from 278 to 282 after the
+      RAM far-pointer-table discovery added new entry points - see
+      below). See `disasm/NOTES.md`'s dated session entries and
+      `changes/` for the running list and confidence notes. The
       heuristic-only layer (tens of thousands more, across all 3 ROMs)
       is a much lower-confidence, much larger tail - realistic goal is
       "every proven-reachable routine named," not literally every
