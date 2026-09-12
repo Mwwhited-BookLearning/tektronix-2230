@@ -3034,6 +3034,33 @@ FUNCTIONAL_NAMES = {
                                                # `[bp+0xA]` - exact
                                                # semantics of the 2
                                                # records not confirmed
+    0x951AA: "validate_gpib_record_consistency", # (comm ROM) (index) -
+                                               # cross-checks a
+                                               # parameter record
+                                               # against 3 linked
+                                               # tables ([0x73E] stride
+                                               # 0xC, [0x742] stride
+                                               # 0x4E, [0x74A] a base
+                                               # far pointer): far-
+                                               # pointer equality
+                                               # checks, range checks
+                                               # against [0,0x6800],
+                                               # and several cross-
+                                               # field comparisons;
+                                               # each failure ORs a
+                                               # distinct bit into an
+                                               # accumulator and
+                                               # records a diagnostic
+                                               # code (0x387, 0x38F,
+                                               # 0x39B, ... 0x3F6) into
+                                               # [0x690]; returns the
+                                               # accumulated failure
+                                               # bitmask - a parameter-
+                                               # table consistency
+                                               # validator, sibling to
+                                               # SUB_95B69/SUB_96DBE
+                                               # which use the same 3
+                                               # tables
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

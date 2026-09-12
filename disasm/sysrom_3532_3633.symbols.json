@@ -497,10 +497,10 @@
     "notes": null
   },
   "951AA": {
-    "name": "SUB_951AA",
+    "name": "validate_gpib_record_consistency",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "validate_gpib_record_consistency",
     "notes": null
   },
   "95246": {

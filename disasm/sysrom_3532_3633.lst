@@ -742,7 +742,7 @@ build_gpib_message_checksum:
     2998_alias_90000:51A4  [951A4]  8be5            mov     sp, bp
     2998_alias_90000:51A6  [951A6]  5d              pop     bp
     2998_alias_90000:51A7  [951A7]  ca0200          retf    2
-SUB_951AA:
+validate_gpib_record_consistency:
     2998_alias_90000:51AA  [951AA]  55              push    bp
     2998_alias_90000:51AB  [951AB]  8bec            mov     bp, sp
     2998_alias_90000:51AD  [951AD]  83ec2a          sub     sp, 0x2a
@@ -1161,7 +1161,7 @@ L_95629:
     2998_alias_90000:566E  [9566E]  e98800          jmp     L_956F9  ; 0xfe9
 L_95671:
     2998_alias_90000:5671  [95671]  ffb656ff        push    word ptr [bp - 0xaa]
-    2998_alias_90000:5675  [95675]  9a9a0a7194      lcall   SUB_951AA  ; 0x9471, 0xa9a
+    2998_alias_90000:5675  [95675]  9a9a0a7194      lcall   validate_gpib_record_consistency  ; 0x9471, 0xa9a
     2998_alias_90000:567A  [9567A]  89864eff        mov     word ptr [bp - 0xb2], ax
     2998_alias_90000:567E  [9567E]  3d0000          cmp     ax, 0
     2998_alias_90000:5681  [95681]  7476            je      L_956F9  ; 0xfe9
