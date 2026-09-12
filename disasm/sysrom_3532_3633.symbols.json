@@ -623,10 +623,10 @@
     "notes": null
   },
   "95476": {
-    "name": "SUB_95476",
+    "name": "scan_and_repair_gpib_records",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scan_and_repair_gpib_records",
     "notes": null
   },
   "954CB": {

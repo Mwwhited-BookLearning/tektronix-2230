@@ -3108,6 +3108,30 @@ FUNCTIONAL_NAMES = {
                                                # called from
                                                # init_comm_channel_
                                                # state_a
+    0x95476: "scan_and_repair_gpib_records",  # (comm ROM) - a large
+                                               # (184-byte local frame)
+                                               # loop over the GPIB
+                                               # record table [0x73E]
+                                               # (index*0xC stride,
+                                               # matches its confirmed
+                                               # 12-byte record size):
+                                               # for each entry, calls
+                                               # validate_gpib_record_
+                                               # consistency; on
+                                               # failure, increments an
+                                               # error counter and
+                                               # accumulates the
+                                               # failure bitmask into
+                                               # [0x746]+0xA/+0xC, then
+                                               # either calls init_gpib_
+                                               # record to reset a
+                                               # minor failure or takes
+                                               # a more elaborate
+                                               # recovery path for more
+                                               # severe ones - a boot/
+                                               # reinit-time GPIB
+                                               # record-table integrity
+                                               # scrub
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

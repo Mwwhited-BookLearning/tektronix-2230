@@ -1003,7 +1003,7 @@ L_9546B:
     2998_alias_90000:5470  [95470]  8be5            mov     sp, bp
     2998_alias_90000:5472  [95472]  5d              pop     bp
     2998_alias_90000:5473  [95473]  ca0200          retf    2
-SUB_95476:
+scan_and_repair_gpib_records:
     2998_alias_90000:5476  [95476]  55              push    bp
     2998_alias_90000:5477  [95477]  8bec            mov     bp, sp
     2998_alias_90000:5479  [95479]  81ecb800        sub     sp, 0xb8
@@ -5227,7 +5227,7 @@ L_E1F34:
     3633:1F5E  [E1F5E]  b80200          mov     ax, 2
     3633:1F61  [E1F61]  e95300          jmp     L_E1FB7  ; 0x307
 L_E1F64:
-    3633:1F64  [E1F64]  9a660d7194      lcall   SUB_95476  ; 0x9471, 0xd66
+    3633:1F64  [E1F64]  9a660d7194      lcall   scan_and_repair_gpib_records  ; 0x9471, 0xd66
     3633:1F69  [E1F69]  8bf0            mov     si, ax
     3633:1F6B  [E1F6B]  bf4100          mov     di, 0x41
     3633:1F6E  [E1F6E]  57              push    di
