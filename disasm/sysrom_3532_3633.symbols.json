@@ -8288,17 +8288,17 @@
     "notes": null
   },
   "F635E": {
-    "name": "SUB_F635E",
+    "name": "draw_wide_marker_box",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "draw_wide_marker_box",
     "notes": null
   },
   "F6382": {
-    "name": "SUB_F6382",
+    "name": "draw_marker_box_and_update_position",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "draw_marker_box_and_update_position",
     "notes": null
   },
   "F63A7": {

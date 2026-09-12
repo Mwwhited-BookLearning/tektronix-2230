@@ -2968,6 +2968,51 @@ FUNCTIONAL_NAMES = {
                                                # an installed-option
                                                # indicator icon on the
                                                # boot splash screen
+    0xF6382: "draw_marker_box_and_update_position", # (far ptr record)
+                                               # centered at [bp-0xA]:
+                                               # writes a +/-0x32 box
+                                               # (start/end X) into the
+                                               # record's [0]/[2]
+                                               # fields when [0x1B83]
+                                               # ==0x14 (the same
+                                               # detect_comm_option_hw
+                                               # result value
+                                               # draw_display_test_
+                                               # pattern also checks -
+                                               # NOT confirmed to be
+                                               # cursor-related), then
+                                               # (shared tail with
+                                               # SUB_F635E, L_F63A7) if
+                                               # [0x1B83]==0x14 AND the
+                                               # record's [+2] matches
+                                               # [0x576], stores it
+                                               # into position globals
+                                               # [0x5C8]/[0x590] and
+                                               # sets change flags
+                                               # [0x560]/[0x55C] bit
+                                               # 0x100 - a marker/box
+                                               # drawing primitive
+                                               # (also used generically
+                                               # by compute_and_draw_
+                                               # scale_marker for its
+                                               # own, differently-
+                                               # centered box). Opens
+                                               # with the already-
+                                               # documented `0x0F`
+                                               # capstone-decode
+                                               # anomaly (see NOTES.md)
+                                               # but the body from
+                                               # there on is coherent
+    0xF635E: "draw_wide_marker_box",          # sibling of
+                                               # draw_marker_box_and_
+                                               # update_position
+                                               # sharing its L_F63A7
+                                               # tail: writes a wider
+                                               # +/-0x1FF box into the
+                                               # same record shape -
+                                               # exact use vs. the
+                                               # narrower box not
+                                               # confirmed
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

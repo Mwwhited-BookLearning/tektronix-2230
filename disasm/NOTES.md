@@ -1548,14 +1548,25 @@ return address - isn't resolved; possibly the routine's own `retf 4`
 stack cleanup account for it, or this entry point is never actually
 exercised on real hardware. Not pursued further.)
 
-**Not renamed** pending a firmer resolution (either fix the generator
-to treat bare `0x0F` as `pop cs` on this specific address and see if
-the surrounding disassembly cleans up, or find corroborating evidence
-this instruction is genuinely reached). Distinct from `SUB_EAC86`:
-that one decodes as incoherent garbage for many consecutive
-instructions with no clean reconvergence at any nearby byte shift,
-while this one is a single misdecoded opcode immediately followed by
-clean code.
+**Follow-up: renamed anyway.** The single misdecoded opcode doesn't
+block understanding the rest of the function, which is completely
+coherent - `SUB_F6382` is now `draw_marker_box_and_update_position`
+(and its sibling `SUB_F635E` is `draw_wide_marker_box`): together they
+write a small box (`+/-0x32` or `+/-0x1FF`) into a far-pointer record
+centered at `[bp-0xA]`, and under a specific `[0x1B83]==0x14`
+condition also copy a matched field into position globals `[0x5C8]`/
+`[0x590]` with change flags. **Caution**: don't assume `[0x1B83]==
+0x14` here means anything cursor/measurement-related just because the
+"update position" shape resembles a cursor update - `[0x1B83]` is
+`detect_comm_option_hw`'s result value (0x14 vs 0x1E), and the already-
+named `draw_display_test_pattern` gates on the exact same `==0x14`
+value for an unrelated interrupt-line test pattern. What `[0x1B83]==
+0x14` specifically enables in *this* function isn't confirmed - see
+`FUNCTIONS.md`'s hedged wording. Distinct from `SUB_EAC86`: that one
+decodes as incoherent garbage for many consecutive instructions with
+no clean reconvergence at any nearby byte shift, while this one is a
+single misdecoded opcode immediately followed by clean code - which is
+exactly why it was safe to name despite the anomaly.
 
 ## Found: the acquisition mode-change dispatcher (handle_acq_mode_change)
 

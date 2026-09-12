@@ -10816,7 +10816,7 @@ L_E6E30:
 L_E6E3E:
     3633:6E3E  [E6E3E]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
     3633:6E43  [E6E43]  c6068d0701      mov     byte ptr [0x78d], 1
-    3633:6E48  [E6E48]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
+    3633:6E48  [E6E48]  9a0e04f5f5      lcall   draw_wide_marker_box  ; 0xf5f5, 0x40e
     3633:6E4D  [E6E4D]  c606971a00      mov     byte ptr [0x1a97], 0
     3633:6E52  [E6E52]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6E57  [E6E57]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
@@ -12389,7 +12389,7 @@ draw_boot_splash_and_option_icon:
     3633:D834  [ED834]  c41efc1c        les     bx, ptr [0x1cfc]
     3633:D838  [ED838]  06              push    es
     3633:D839  [ED839]  53              push    bx
-    3633:D83A  [ED83A]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:D83A  [ED83A]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:D83F  [ED83F]  83c404          add     sp, 4
 L_ED842:
     3633:D842  [ED842]  8be5            mov     sp, bp
@@ -12525,7 +12525,7 @@ L_EDACC:
     3633:DAF4  [EDAF4]  c43e001d        les     di, ptr [0x1d00]
     3633:DAF8  [EDAF8]  06              push    es
     3633:DAF9  [EDAF9]  57              push    di
-    3633:DAFA  [EDAFA]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:DAFA  [EDAFA]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:DAFF  [EDAFF]  83c404          add     sp, 4
     3633:DB02  [EDB02]  e92700          jmp     L_EDB2C  ; 0x17c
 L_EDB05:
@@ -12543,7 +12543,7 @@ L_EDB05:
     3633:DB1E  [EDB1E]  c41e001d        les     bx, ptr [0x1d00]
     3633:DB22  [EDB22]  06              push    es
     3633:DB23  [EDB23]  53              push    bx
-    3633:DB24  [EDB24]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:DB24  [EDB24]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:DB29  [EDB29]  83c404          add     sp, 4
 L_EDB2C:
     3633:DB2C  [EDB2C]  e92600          jmp     L_EDB55  ; 0x1a5
@@ -13565,7 +13565,7 @@ L_F6132:
     3532:6137  [F6137]  5d              pop     bp
     3532:6138  [F6138]  ca0200          retf    2
 
-SUB_F635E:
+draw_wide_marker_box:
     3532:635E  [F635E]  831b14          sbb     word ptr [bp + di], 0x14
     3532:6361  [F6361]  7544            jne     L_F63A7  ; 0x457
     3532:6363  [F6363]  8b7ef6          mov     di, word ptr [bp - 0xa]
@@ -13577,7 +13577,7 @@ SUB_F635E:
     3532:6377  [F6377]  26895702        mov     word ptr es:[bx + 2], dx
     3532:637B  [F637B]  e92900          jmp     L_F63A7  ; 0x457
 
-SUB_F6382:
+draw_marker_box_and_update_position:
     3532:6382  [F6382]  0f7e05          movd    dword ptr [di], mm0
     3532:6385  [F6385]  c746f69a0f      mov     word ptr [bp - 0xa], 0xf9a
     3532:638A  [F638A]  803e831b14      cmp     byte ptr [0x1b83], 0x14

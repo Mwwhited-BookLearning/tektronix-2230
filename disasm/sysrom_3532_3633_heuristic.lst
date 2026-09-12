@@ -10943,7 +10943,7 @@ L_E6E30:
 L_E6E3E:
     3633:6E3E  [E6E3E]  9a8402a8e6      lcall   reset_display_if_idle  ; 0xe6a8, 0x284
     3633:6E43  [E6E43]  c6068d0701      mov     byte ptr [0x78d], 1
-    3633:6E48  [E6E48]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
+    3633:6E48  [E6E48]  9a0e04f5f5      lcall   draw_wide_marker_box  ; 0xf5f5, 0x40e
     3633:6E4D  [E6E4D]  c606971a00      mov     byte ptr [0x1a97], 0
     3633:6E52  [E6E52]  9a1800d1e5      lcall   sync_and_enable_interrupts  ; 0xe5d1, 0x18
     3633:6E57  [E6E57]  9a7d04a8e6      lcall   notify_comm_rom_b  ; 0xe6a8, 0x47d
@@ -18922,7 +18922,7 @@ L_ECB6B:
     3633:CB6B  [ECB6B]  e93200          jmp     L_ECBA0  ; 0xcba0
 L_ECB6E:
     3633:CB6E  [ECB6E]  c606000400      mov     byte ptr [0x400], 0
-    3633:CB73  [ECB73]  9a0e04f5f5      lcall   SUB_F635E  ; 0xf5f5, 0x40e
+    3633:CB73  [ECB73]  9a0e04f5f5      lcall   draw_wide_marker_box  ; 0xf5f5, 0x40e
 L_ECB78:
     3633:CB78  [ECB78]  bf7bff          mov     di, 0xff7b
     3633:CB7B  [ECB7B]  57              push    di
@@ -20198,7 +20198,7 @@ L_ED7F9:
     3633:D834  [ED834]  c41efc1c        les     bx, ptr [0x1cfc]
     3633:D838  [ED838]  06              push    es
     3633:D839  [ED839]  53              push    bx
-    3633:D83A  [ED83A]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:D83A  [ED83A]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:D83F  [ED83F]  83c404          add     sp, 4
 L_ED842:
     3633:D842  [ED842]  8be5            mov     sp, bp
@@ -20499,7 +20499,7 @@ L_EDACC:
     3633:DAF4  [EDAF4]  c43e001d        les     di, ptr [0x1d00]
     3633:DAF8  [EDAF8]  06              push    es
     3633:DAF9  [EDAF9]  57              push    di
-    3633:DAFA  [EDAFA]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:DAFA  [EDAFA]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:DAFF  [EDAFF]  83c404          add     sp, 4
     3633:DB02  [EDB02]  e92700          jmp     L_EDB2C  ; 0x10c
 L_EDB05:
@@ -20517,7 +20517,7 @@ L_EDB05:
     3633:DB1E  [EDB1E]  c41e001d        les     bx, ptr [0x1d00]
     3633:DB22  [EDB22]  06              push    es
     3633:DB23  [EDB23]  53              push    bx
-    3633:DB24  [EDB24]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:DB24  [EDB24]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:DB29  [EDB29]  83c404          add     sp, 4
 L_EDB2C:
     3633:DB2C  [EDB2C]  e92600          jmp     L_EDB55  ; 0x135
@@ -21288,7 +21288,7 @@ L_EE218:
     3633:E225  [EE225]  c406f41c        les     ax, ptr [0x1cf4]
     3633:E229  [EE229]  06              push    es
     3633:E22A  [EE22A]  50              push    ax
-    3633:E22B  [EE22B]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:E22B  [EE22B]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:E230  [EE230]  83c404          add     sp, 4
     3633:E233  [EE233]  eb06            jmp     L_EE23B  ; 0x81b
 L_EE235:
@@ -21315,7 +21315,7 @@ L_EE23E:
     3633:E261  [EE261]  c416f81c        les     dx, ptr [0x1cf8]
     3633:E265  [EE265]  06              push    es
     3633:E266  [EE266]  52              push    dx
-    3633:E267  [EE267]  9a020038f6      lcall   SUB_F6382  ; 0xf638, 2
+    3633:E267  [EE267]  9a020038f6      lcall   draw_marker_box_and_update_position  ; 0xf638, 2
     3633:E26C  [EE26C]  83c404          add     sp, 4
 L_EE26F:
     3633:E26F  [EE26F]  ff760a          push    word ptr [bp + 0xa]
@@ -33511,7 +33511,7 @@ L_F634A:
 L_F635C:
     3532:635C  [F635C]  803e831b14      cmp     byte ptr [0x1b83], 0x14
 
-SUB_F635E:
+draw_wide_marker_box:
     3532:635E  [F635E]  831b14          sbb     word ptr [bp + di], 0x14
     3532:6361  [F6361]  7544            jne     L_F63A7  ; 0x457
     3532:6363  [F6363]  8b7ef6          mov     di, word ptr [bp - 0xa]
@@ -33525,7 +33525,7 @@ SUB_F635E:
 L_F637E:
     3532:637E  [F637E]  817ef69a0f      cmp     word ptr [bp - 0xa], 0xf9a
 
-SUB_F6382:
+draw_marker_box_and_update_position:
     3532:6382  [F6382]  0f7e05          movd    dword ptr [di], mm0
 
     3532:6383  [F6383]  7e05            jle     L_F638A  ; 0x638a
