@@ -965,17 +965,20 @@ one x87 `fmul`, still unhandled - see `TODO.md`).
 
 ## Current coverage
 
-**Proven-only** (official, what `sysrom_3532_3633.lst` shows): 13,510
-instruction-start bytes (~10% of the 128KB main-ROM pair, including
-the comm ROM's `0x90000` alias region), from 8 seed
-entry points (reset vector, 2 discovered while tracing the reset path,
-4 interrupt handlers found via IVT-write tracing, and the comm-ROM
-boot-stub target). Zero unresolved indirect jmp/call instructions
-exist anywhere in the reached code - this codebase appears to prefer
-cmp+je dispatch chains over jump tables, at least in what's been seen,
-so that's confirmed *not* to be the lever for growing this further;
-finding more independent entry points (the way the interrupt handlers
-were found) is.
+**Proven-only** (official, what `sysrom_3532_3633.lst` shows): now
+14,799 instruction-start bytes, from 23 seed entry points (the
+original 8, plus 15 found this session via the RAM far-pointer init
+table - see below).
+
+**Correction to an old claim**: earlier sessions asserted "zero
+unresolved indirect jmp/call instructions exist anywhere in the
+reached code" as evidence this codebase prefers `cmp`+`je` dispatch
+chains over jump tables. **That's no longer accurate** - see "Found:
+indirect jumps/calls through computed pointers" below for the full,
+current picture (several *are* resolved dispatch tables; a few are
+genuinely unresolved; and a cluster of them turned out to be the same
+landing-artifact anomaly already documented elsewhere, not real jump
+tables at all).
 
 **With the heuristic layer** (both ROMs' `55 8B EC` push-bp/mov-bp,sp
 signature scan, plus the confirmed real address-decode alias -
@@ -2124,11 +2127,80 @@ that `update_display_mode_flags` is the one that *sets* the
 `L_EDA0A` region reads - connecting two previously-separate
 investigation threads.
 
+## Found: indirect jumps/calls through computed pointers - some resolved, some not, some a decoy
+
+Asked directly: does this codebase use jump tables (computed `jmp`/
+`call` through a pointer, the classic compiled-`switch` pattern) rather
+than fixed addresses? A full sweep of both `.lst` files for any
+`jmp`/`ljmp`/`call`/`lcall` whose operand is a register or memory
+reference (not a literal address) found:
+
+**Already-understood, resolved dispatch** (found in earlier passes,
+not new): `lcall es:[bx]` in `switch_to_next_task` - the task
+scheduler's per-task entry-point table at segment `0xE628`+`0xE`+
+`task_idx*4`; and the many `lcall es:[bx+di+6]` sites - the per-item
+handler table at `[0x1D10]` that `dispatch_item_handler_if_enabled`
+and several self-test/menu-item handlers use. Both have a fully
+enumerable target set (a real table with a small number of live
+entries), so "resolved" here means genuinely understood, not just
+"found."
+
+**Two more turned up this sweep** (`ljmp [bp+di]` at `0x88729`, and
+`jmp word ptr [bx+si]` in `SUB_F6F4A`) - but neither is a clean jump
+table. Both are **the same landing-artifact anomaly documented
+elsewhere in this file, just manifesting as a coincidentally-valid
+jump/call opcode instead of a coincidentally-valid data-looking one**:
+
+- `0x88729`: this is the *exact* target of `SUB_E99DF`'s `ljmp`
+  (`0xE99E2`, one of the confirmed `SUB_EAC86`-class garbage openers,
+  `int1`/`add cl,dl`/`ljmp 0x830A:0x5689`) - previously assumed to be
+  a meaningless garbage target, never actually checked. It isn't
+  garbage: `0x88729` holds a real, isolated `ljmp [bp+di]` instruction
+  with no other code around it (a huge unreached gap on both sides).
+  Since `SUB_E99DF` never sets up its own `bp` (no prologue), `[bp+di]`
+  at that point resolves against whatever the *caller*
+  (`compute_and_format_sample_delta_readout`) had in `bp`/`di` at the
+  time of the call - i.e. this is a real indirect jump, but indexed
+  off the caller's own stack frame rather than a fixed table in ROM,
+  and its behavior can't be statically resolved without knowing what
+  `SUB_F4150` leaves in `di` at that call site.
+- `SUB_F6F4A`: a **third/fourth instance** of the `SUB_E90A5`/
+  `SUB_E92B0`-class "lands 1 byte into a legitimate instruction"
+  anomaly. The byte right before it (`0xF6F49`) is the last byte of a
+  `cmp di,0x20` instruction belonging to the *real* surrounding
+  function (an `update_display_mode_flags`-family bit-check chain,
+  setting `[0x1B79]` etc.) - reading from `0xF6F4A` instead decodes
+  the trailing `FF 20` bytes of that same `cmp` as `jmp word ptr
+  [bx+si]`. Genuinely called via a real, unambiguous `lcall` from 2
+  places (`0xEB322`/`0xEB518`), landing exactly 1 byte before where the
+  real code continues. `SUB_F1254` (`call word ptr [di-0x75]`) is a
+  **fifth instance** of the same thing - it's 1 byte before a genuine
+  `55 8B EC` prologue (`FUNC_3532_1255`), called via a real `lcall`
+  from `0xE8EEF` (inside the `convert_sample_value`/`assert_and_halt`
+  tag-dispatch neighborhood, the same family `SUB_E90A5`/`SUB_E92B0`
+  came from).
+
+**This raises the "landing artifact" count to 5+ independent
+instances across 2 unrelated code neighborhoods** (the `convert_
+sample_value` tag-dispatch area, and the `update_display_mode_flags`
+bit-check area), each a **real, unambiguous, compiled `CALL`/`LCALL`/
+`JMP`** landing exactly 1-4 bytes before where the surrounding,
+coherent code clearly intends execution to resume. This is now the
+single strongest piece of evidence in the whole project for the
+"stale call site left over from a slightly different build" theory
+over "decode tooling bug" - a tooling bug could explain one address
+being misread, not five independent, unambiguous encoded call/jump
+targets all landing a few bytes short of their real destination.
+**Not resolved**: whether this is a genuine off-by-N linker/relocation
+defect in this specific ROM revision (worth checking against the
+`-13` revision if it's ever dumped), or some other systematic cause.
+
 ## Open questions / next steps
 
-1. Widen code coverage further. Jump-table dispatch doesn't appear to
-   be in use in what's been reached (0 unresolved indirect jmp/call
-   sites), so the next lever isn't jump tables - it's finding more
+1. Widen code coverage further. Jump-table dispatch does exist in a
+   couple of places (see "Found: indirect jumps/calls through computed
+   pointers" above - the task-scheduler and per-item-handler tables),
+   but isn't the main lever for growing coverage further - finding more
    entry points nothing in-graph calls directly (interrupt handlers,
    as above, are one source; worth checking for others e.g. timer
    ISRs, or simply reading through `INT1_HANDLER`/`INT255_HANDLER_*`/
