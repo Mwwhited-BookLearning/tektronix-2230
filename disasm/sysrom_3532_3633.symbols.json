@@ -1708,10 +1708,10 @@
     "notes": null
   },
   "96DBE": {
-    "name": "SUB_96DBE",
+    "name": "sync_rs232_control_bit",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "sync_rs232_control_bit",
     "notes": null
   },
   "96DE1": {

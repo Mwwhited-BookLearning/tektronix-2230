@@ -3090,6 +3090,24 @@ FUNCTIONAL_NAMES = {
                                                # internal logic not
                                                # exhaustively traced
                                                # given its size
+    0x96DBE: "sync_rs232_control_bit",        # (comm ROM) - when the
+                                               # RS-232 strap [0x629]
+                                               # is set, folds bit
+                                               # 0x10 from [0] into
+                                               # [0x57F] (keeping other
+                                               # bits, clearing bit
+                                               # 0x40) and writes the
+                                               # result to the UART-
+                                               # like register pair at
+                                               # far ptr [0x6D6]+5 -
+                                               # the same register
+                                               # family
+                                               # parse_next_gpib_
+                                               # command_byte writes
+                                               # [+3] of with tag 0x98;
+                                               # called from
+                                               # init_comm_channel_
+                                               # state_a
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

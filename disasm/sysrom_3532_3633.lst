@@ -2217,7 +2217,7 @@ init_comm_channel_state_a:
     2998_alias_90000:6600  [96600]  c606020000      mov     byte ptr [2], 0
     2998_alias_90000:6605  [96605]  803e290600      cmp     byte ptr [0x629], 0
     2998_alias_90000:660A  [9660A]  7424            je      L_96630  ; 0x3b0
-    2998_alias_90000:660C  [9660C]  9a4e058796      lcall   SUB_96DBE  ; 0x9687, 0x54e
+    2998_alias_90000:660C  [9660C]  9a4e058796      lcall   sync_rs232_control_bit  ; 0x9687, 0x54e
     2998_alias_90000:6611  [96611]  a0f104          mov     al, byte ptr [0x4f1]
     2998_alias_90000:6614  [96614]  2ae4            sub     ah, ah
     2998_alias_90000:6616  [96616]  252000          and     ax, 0x20
@@ -2628,7 +2628,7 @@ L_96CE0:
     2998_alias_90000:6CE7  [96CE7]  5d              pop     bp
     2998_alias_90000:6CE8  [96CE8]  cb              retf    
 
-SUB_96DBE:
+sync_rs232_control_bit:
     2998_alias_90000:6DBE  [96DBE]  55              push    bp
     2998_alias_90000:6DBF  [96DBF]  8bec            mov     bp, sp
     2998_alias_90000:6DC1  [96DC1]  83ec06          sub     sp, 6
