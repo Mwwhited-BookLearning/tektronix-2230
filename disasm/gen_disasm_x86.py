@@ -3061,6 +3061,35 @@ FUNCTIONAL_NAMES = {
                                                # SUB_95B69/SUB_96DBE
                                                # which use the same 3
                                                # tables
+    0x95B69: "validate_gpib_device_records",  # (comm ROM) (count,
+                                               # far ptr device_array)
+                                               # - called during GPIB
+                                               # device-table setup
+                                               # (sibling checks in the
+                                               # same caller reset via
+                                               # init_comm_device_table
+                                               # on failure); large
+                                               # function (~1000
+                                               # lines) that searches
+                                               # the caller-given
+                                               # device array for a
+                                               # matching/available
+                                               # entry, cross-
+                                               # referencing the
+                                               # [0x73E] GPIB record
+                                               # table (same one
+                                               # validate_gpib_record_
+                                               # consistency/build_
+                                               # gpib_message_checksum
+                                               # use, bound by the same
+                                               # 0x6800 range) and
+                                               # writing diagnostic
+                                               # codes to [0x690];
+                                               # returns nonzero on
+                                               # failure - full
+                                               # internal logic not
+                                               # exhaustively traced
+                                               # given its size
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

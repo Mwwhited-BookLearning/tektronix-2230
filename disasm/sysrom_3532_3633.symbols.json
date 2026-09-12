@@ -966,10 +966,10 @@
     "notes": null
   },
   "95B69": {
-    "name": "SUB_95B69",
+    "name": "validate_gpib_device_records",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "validate_gpib_device_records",
     "notes": null
   },
   "95B88": {

@@ -1547,7 +1547,7 @@ L_95AF5:
     2998_alias_90000:5B04  [95B04]  8db65eff        lea     si, [bp - 0xa2]
     2998_alias_90000:5B08  [95B08]  16              push    ss
     2998_alias_90000:5B09  [95B09]  56              push    si
-    2998_alias_90000:5B0A  [95B0A]  9a59147194      lcall   SUB_95B69  ; 0x9471, 0x1459
+    2998_alias_90000:5B0A  [95B0A]  9a59147194      lcall   validate_gpib_device_records  ; 0x9471, 0x1459
     2998_alias_90000:5B0F  [95B0F]  83c402          add     sp, 2
     2998_alias_90000:5B12  [95B12]  3d0000          cmp     ax, 0
     2998_alias_90000:5B15  [95B15]  741e            je      L_95B35  ; 0x1425
@@ -1577,7 +1577,7 @@ L_95B63:
     2998_alias_90000:5B65  [95B65]  8be5            mov     sp, bp
     2998_alias_90000:5B67  [95B67]  5d              pop     bp
     2998_alias_90000:5B68  [95B68]  cb              retf    
-SUB_95B69:
+validate_gpib_device_records:
     2998_alias_90000:5B69  [95B69]  55              push    bp
     2998_alias_90000:5B6A  [95B6A]  8bec            mov     bp, sp
     2998_alias_90000:5B6C  [95B6C]  83ec22          sub     sp, 0x22
