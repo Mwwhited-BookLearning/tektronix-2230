@@ -82,18 +82,27 @@
       `SUB_E99DF`'s garbage `ljmp` - a real, isolated, but statically-
       unresolvable `ljmp [bp+di]` indexed off the caller `SUB_F4150`'s
       `bp`/`di`, not meaningless garbage as first assumed). Root-cause
-      lead (not confirmed): landing 1 byte short very often lands on
-      `0x00`, which is both an extremely common displacement/immediate
-      byte AND a valid `ADD r/m8,r8` opcode, forming a spurious 2-byte
-      `add` instruction that happens to look plausible. `disasm/find_
-      landing_artifacts.py` systematically found ~49 candidates total
-      (checks every call-target's own instruction for byte-overlap with
-      any other independently-reached instruction); only ~7 individually
-      examined so far (EBC3A, EC2E6, EE319, F3132, F4CE8, F784D, F6891) -
-      **continue working through the remaining ~42 candidates** to see
-      how many are genuinely this class vs. already-known shared-entry
-      clusters vs. something new. See `disasm/NOTES.md`'s "Found:
-      indirect jumps/calls through computed pointers" section.
+      root cause **confirmed statistically 2026-09-12**: `disasm/find_
+      landing_artifacts.py` found 49 candidates total (every call-
+      target whose own instruction byte-overlaps an independently-
+      reached instruction 1-4 bytes later); 24/49 land on an `ADD`-
+      family opcode (`0x00`/`0x02`/`0x04`), far above chance - landing
+      1 byte short overwhelmingly lands on a displacement/immediate
+      filler byte (`0x00` most commonly) that also happens to be a
+      valid `ADD` opcode. **One candidate resolved into something more
+      interesting than a landing artifact**: `write_hw_shift_register`
+      (`0xEE13B`) turned out to be a genuine, deliberate secondary entry
+      point sharing bytes with `dispatch_item_handler_if_enabled`
+      (reached by 8 real `lcall`s, both readings reconverge byte-exactly
+      at `0xEE148`) - the same "two valid divergent decodes" class as
+      `SUB_E8E29`/`SUB_E8E03`, not a stale/near-miss call site. Updated
+      `FUNCTIONS.md`'s entry accordingly. The remaining ~47 candidates
+      were not individually traced (that level of effort doesn't scale
+      to all of them) - worth a look only if one stands out (e.g. many
+      independent call sites, like this one had, is the best tell that
+      a candidate is a deliberate dual entry rather than an accidental
+      near-miss). See `disasm/NOTES.md`'s "Systematic landing-artifact
+      sweep" section for the full writeup.
 - [ ] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
       unambiguous garbage (including an impossible SSE instruction)
       despite being a **clean, unambiguous far-call target** reached
