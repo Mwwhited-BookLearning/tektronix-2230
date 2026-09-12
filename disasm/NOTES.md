@@ -1892,6 +1892,35 @@ just not their exact standalone entry-point boundaries, which is a
 narrower and more honest thing to leave unresolved than the mechanism
 itself.
 
+## Found: the print-record character-cell-copy engine (SUB_EF346/SUB_EF393/SUB_EF440)
+
+A second entangled-but-now-mostly-understood region, in the same style
+as the decimal-formatting engine above. `SUB_EF346`/`SUB_EF393` are a
+**position-wraparound-clamp preamble**: given a cell index `[bp+6]`
+(compared against 8 to pick a shift amount) and an in/out position
+`[bp+0xA]`, they compute a half-width around a reference tick `[0x72]`
+(halved again if channel flag `[0x18C]` bit `4` is set) and wrap
+`[bp+0xA]` into range against it - the exact same wraparound-clamp
+shape as `read_acq_sample_with_wrap`'s buffer-position math, just for
+a different (character-cell display) context. Optionally rounds the
+result to an even address (`[0x20]` bit `4`, gated by `[0x1B8B]`).
+
+That preamble feeds `SUB_EF440` (**renamed** to `copy_char_cell_
+template_and_sync`): once the position settles, it copies a `[0x34]`-
+byte (`0xA`=10, the same constant `init_default_print_cell_dimensions`
+sets) template chunk between two slots of a shared char-cell table at
+`[0x1C14]` via `memcpy_far`, gated by a per-channel config nibble at
+`[dest_idx*16+0x18F]`, then calls `sync_shift_register_output`. This
+is also reachable **directly**, bypassing the wraparound preamble
+entirely (`SUB_E8E03` calls it with a fixed arg `0`) - the two halves
+are only loosely coupled, which is why `SUB_EF346`/`SUB_EF393` stay
+unrenamed even though `SUB_EF440` is now confidently named: the
+preamble's *output* is well understood (a clamped position), but its
+own entry-point boundaries have the same dual/overlapping-decode
+ambiguity documented elsewhere in this cluster (`SUB_EF393`'s first
+instruction is a `jle` that lands mid-loop inside `SUB_EF346`'s body,
+matching the shared-tail shape, not a fresh call convention).
+
 ## New tool: `analyze_loops_vs_functions.py` - separating local control flow from shared code
 
 Built in response to a direct question: of the many `L_XXXXX` branch

@@ -13531,7 +13531,7 @@ SUB_E8E03:
     3633:8E0C  [E8E0C]  3d8000          cmp     ax, 0x80
     3633:8E0F  [E8E0F]  7505            jne     L_E8E16  ; 0x176
 L_E8E11:
-    3633:8E11  [E8E11]  9a000044ef      lcall   SUB_EF440  ; 0xef44, 0
+    3633:8E11  [E8E11]  9a000044ef      lcall   copy_char_cell_template_and_sync  ; 0xef44, 0
 L_E8E16:
     3633:8E16  [E8E16]  9a060034ef      lcall   SUB_EF346  ; 0xef34, 6
     3633:8E1B  [E8E1B]  9a530034ef      lcall   SUB_EF393  ; 0xef34, 0x53
@@ -23213,7 +23213,7 @@ L_EF403:
     3633:F438  [EF438]  83c406          add     sp, 6
     3633:F43B  [EF43B]  8b7e06          mov     di, word ptr [bp + 6]
     3633:F43E  [EF43E]  d1ff            sar     di, 1
-SUB_EF440:
+copy_char_cell_template_and_sync:
     3633:F440  [EF440]  d1e7            shl     di, 1
     3633:F442  [EF442]  d1e7            shl     di, 1
     3633:F444  [EF444]  d1e7            shl     di, 1

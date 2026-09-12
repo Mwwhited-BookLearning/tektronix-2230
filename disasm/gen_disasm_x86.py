@@ -3148,6 +3148,33 @@ FUNCTIONAL_NAMES = {
                                                # writeup); called from
                                                # compute_and_format_
                                                # sample_delta_readout
+    0xEF440: "copy_char_cell_template_and_sync", # (dest_idx=[bp+6],
+                                               # src_idx=[bp+8]) -
+                                               # checks a per-channel
+                                               # config nibble
+                                               # ([dest_idx*16+0x18F]
+                                               # bits 0-3/bit 3); if
+                                               # not gated off, copies
+                                               # a [0x34]-byte (10-byte)
+                                               # template chunk between
+                                               # slots `src_idx+1` and
+                                               # `dest_idx+1` in the
+                                               # shared char-cell table
+                                               # at [0x1C14] via
+                                               # memcpy_far, then calls
+                                               # sync_shift_register_
+                                               # output(dest_idx,
+                                               # src_idx, 0, far ptr
+                                               # [bp-0x1C]) - part of
+                                               # the print-record
+                                               # character-row-copy
+                                               # engine near
+                                               # SUB_EF346/SUB_EF393
+                                               # (called separately with
+                                               # arg 0 from SUB_E8E03,
+                                               # skipping that engine's
+                                               # position-wraparound
+                                               # preamble entirely)
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

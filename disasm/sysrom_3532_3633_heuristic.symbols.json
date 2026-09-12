@@ -15687,10 +15687,10 @@
     "notes": null
   },
   "EF440": {
-    "name": "SUB_EF440",
+    "name": "copy_char_cell_template_and_sync",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "copy_char_cell_template_and_sync",
     "notes": null
   },
   "EF464": {

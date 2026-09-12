@@ -12181,7 +12181,7 @@ L_EF403:
     add sp, 6                                ; F438: add sp, 6
     mov di, word [bp + 6]                    ; F43B: mov di, word ptr [bp + 6]
     sar di, 1                                ; F43E: sar di, 1
-SUB_EF440:
+copy_char_cell_template_and_sync:
     shl di, 1                                ; F440: shl di, 1
     shl di, 1                                ; F442: shl di, 1
     shl di, 1                                ; F444: shl di, 1
