@@ -12642,7 +12642,7 @@ write_hw_shift_register:
     3633:E17F  [EE17F]  47              inc     di
     3633:E180  [EE180]  57              push    di
     3633:E181  [EE181]  ff76f6          push    word ptr [bp - 0xa]
-    3633:E184  [EE184]  9aa701f5f5      lcall   SUB_F60F7  ; 0xf5f5, 0x1a7
+    3633:E184  [EE184]  9aa701f5f5      lcall   clamp_position_counter_across_records  ; 0xf5f5, 0x1a7
     3633:E189  [EE189]  83c404          add     sp, 4
     3633:E18C  [EE18C]  89460a          mov     word ptr [bp + 0xa], ax
     3633:E18F  [EE18F]  e9c301          jmp     L_EE355  ; 0x935
@@ -13540,7 +13540,7 @@ L_F5DD9:
     3532:5DDE  [F5DDE]  5d              pop     bp
     3532:5DDF  [F5DDF]  ca0200          retf    2
 
-SUB_F60F7:
+clamp_position_counter_across_records:
     3532:60F7  [F60F7]  007d06          add     byte ptr [di + 6], bh
     3532:60FA  [F60FA]  26c745040000    mov     word ptr es:[di + 4], 0
     3532:6100  [F6100]  c47ef0          les     di, ptr [bp - 0x10]

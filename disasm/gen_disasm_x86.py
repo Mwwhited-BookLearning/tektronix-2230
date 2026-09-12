@@ -3013,6 +3013,27 @@ FUNCTIONAL_NAMES = {
                                                # exact use vs. the
                                                # narrower box not
                                                # confirmed
+    0xF60F7: "clamp_position_counter_across_records", # called from
+                                               # write_hw_shift_
+                                               # register right after
+                                               # compute_and_format_
+                                               # sample_delta_readout,
+                                               # with (running position
+                                               # counter [bp+0xA],
+                                               # index+1, delta value);
+                                               # compares 2 linked
+                                               # records' `[+4]` fields
+                                               # (one possibly offset
+                                               # by the delta) and
+                                               # clamps one to the
+                                               # other if it would
+                                               # exceed it; returns the
+                                               # (possibly unmodified)
+                                               # counter, which becomes
+                                               # the next iteration's
+                                               # `[bp+0xA]` - exact
+                                               # semantics of the 2
+                                               # records not confirmed
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

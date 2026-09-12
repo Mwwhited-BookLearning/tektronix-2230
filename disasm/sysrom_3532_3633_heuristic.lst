@@ -21074,7 +21074,7 @@ L_EE058:
     3633:E066  [EE066]  57              push    di
     3633:E067  [EE067]  2bd2            sub     dx, dx
     3633:E069  [EE069]  52              push    dx
-    3633:E06A  [EE06A]  9aa701f5f5      lcall   SUB_F60F7  ; 0xf5f5, 0x1a7
+    3633:E06A  [EE06A]  9aa701f5f5      lcall   clamp_position_counter_across_records  ; 0xf5f5, 0x1a7
     3633:E06F  [EE06F]  83c404          add     sp, 4
     3633:E072  [EE072]  8946f6          mov     word ptr [bp - 0xa], ax
     3633:E075  [EE075]  a16404          mov     ax, word ptr [0x464]
@@ -21214,7 +21214,7 @@ L_EE161:
     3633:E17F  [EE17F]  47              inc     di
     3633:E180  [EE180]  57              push    di
     3633:E181  [EE181]  ff76f6          push    word ptr [bp - 0xa]
-    3633:E184  [EE184]  9aa701f5f5      lcall   SUB_F60F7  ; 0xf5f5, 0x1a7
+    3633:E184  [EE184]  9aa701f5f5      lcall   clamp_position_counter_across_records  ; 0xf5f5, 0x1a7
     3633:E189  [EE189]  83c404          add     sp, 4
     3633:E18C  [EE18C]  89460a          mov     word ptr [bp + 0xa], ax
     3633:E18F  [EE18F]  e9c301          jmp     L_EE355  ; 0x935
@@ -21323,7 +21323,7 @@ L_EE26F:
     3633:E275  [EE275]  47              inc     di
     3633:E276  [EE276]  57              push    di
     3633:E277  [EE277]  ff76f4          push    word ptr [bp - 0xc]
-    3633:E27A  [EE27A]  9aa701f5f5      lcall   SUB_F60F7  ; 0xf5f5, 0x1a7
+    3633:E27A  [EE27A]  9aa701f5f5      lcall   clamp_position_counter_across_records  ; 0xf5f5, 0x1a7
     3633:E27F  [EE27F]  83c404          add     sp, 4
     3633:E282  [EE282]  89460a          mov     word ptr [bp + 0xa], ax
     3633:E285  [EE285]  e91400          jmp     L_EE29C  ; 0x87c
@@ -33275,7 +33275,7 @@ L_F60F0:
     3532:60F0  [F60F0]  c47ef4          les     di, ptr [bp - 0xc]
     3532:60F3  [F60F3]  26837d0400      cmp     word ptr es:[di + 4], 0
 
-SUB_F60F7:
+clamp_position_counter_across_records:
     3532:60F7  [F60F7]  007d06          add     byte ptr [di + 6], bh
 
     3532:60F8  [F60F8]  7d06            jge     L_F6100  ; 0x6100

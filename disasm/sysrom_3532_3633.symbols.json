@@ -8274,10 +8274,10 @@
     "notes": null
   },
   "F60F7": {
-    "name": "SUB_F60F7",
+    "name": "clamp_position_counter_across_records",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "clamp_position_counter_across_records",
     "notes": null
   },
   "F6132": {
