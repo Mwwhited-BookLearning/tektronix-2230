@@ -10,10 +10,18 @@
       table"), but the table's physical address (`[0x1DB0]`'s value)
       hasn't been found - a heuristic binary scan found a false
       positive (real code + the menu string table, not glyph data).
-      Next attempt should either trace `boot_init`'s data-driven init
-      loop(s) to find what sets `[0x1DB0]`/`[0x1CC4]`, or render
-      scan candidates and visually check for real letterforms instead
-      of just checking byte-run length.
+      **Ruled out 2026-09-12**: `[0x1DB8]`/`[0x1DBC]` (found via the RAM
+      far-pointer-table discovery, right next to `[0x1DB0]`) are simple
+      per-record byte-value caches for plot-scale clamping, NOT font
+      data - confirmed via a full byte trace, see `VARIABLES.md`
+      "Acquisition/plot scaling". `[0x1DB0]` itself is structurally
+      different (a far pointer to a 128-entry table of far pointers,
+      confirmed via `draw_readout_char`'s exact `char*4` indexing) and
+      remains the best candidate - just still unlocated. Next attempt
+      should either trace `boot_init`'s data-driven init loop(s) to find
+      what sets `[0x1DB0]`/`[0x1CC4]`, or render scan candidates and
+      visually check for real letterforms instead of just checking
+      byte-run length.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,
@@ -140,16 +148,23 @@
       Two things still open: (1) **no code anywhere in the corpus loads
       `ES`/`DS`=`0x209` via a literal immediate** - how (or whether)
       these 15 functions actually get invoked in practice isn't proven;
-      (2) most are still unnamed - a plot-position/pen-drawing family
-      (`SUB_F09C0`/`F09C6`/`F09EA`/`F0A4A`/`F0A4E`/`F0AAA`/`F0B06`/
-      `F0B62`/`F0BC2`/`F0BC6`/`F0BE2`/`F0BFA`/`F0C26`) touching the same
-      variables as `draw_pending_line_segment`/`reset_plot_home_or_acq`,
-      plus `SUB_F173E` above. Also 2 new far pointers `[0x1DB8]`/
-      `[0x1DBC]` sitting right next to the still-unlocated stroke-font
-      pointer `[0x1DB0]` (see the first item in this file) - worth
-      checking whether either of these is actually the font table.
-      See `disasm/NOTES.md` "Found: a whole family of never-reached
-      functions via the RAM far-pointer init table" and `FUNCTIONS.md`.
+      (2) most are still unnamed. **Clarified 2026-09-12**: `SUB_F09C0`/
+      `F09C6`/`F09EA`/`F0A4A`/`F0A4E`/`F0AAA`/`F0B06`/`F0B62`/`F0BC2`/
+      `F0BC6`/`F0BE2`/`F0BFA`/`F0C26` aren't 7-ish separate sibling
+      functions - they're ~10 different skip-points into one continuous,
+      previously-unreached preamble immediately before `draw_pending_
+      line_segment` (`0xF0C2A`) that computes plot scale factors, see
+      `VARIABLES.md`'s new "Acquisition/plot scaling" section for the
+      variables. `SUB_F0A4A` specifically is itself a landing artifact
+      (1 byte short of the real target `0xF0A4B`, already flagged in
+      `FUNCTIONS.md` from the original pass). The `[0x1DB8]`/`[0x1DBC]`
+      pointers turned out to be simple plot-clamp byte caches, NOT font
+      data (see the stroke-font item above) - ruled out, not still open.
+      Naming any individual skip-point isn't likely to be worth it (no
+      single clean entry boundary); the preamble's overall mechanism is
+      now understood well enough to leave as-is. See `disasm/NOTES.md`
+      "Found: a whole family of never-reached functions via the RAM
+      far-pointer init table" and `FUNCTIONS.md`.
 - [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
       ports, near the confirmed readout/CRT write port) actually are -
       front-panel switch/encoder status and CRT controller status are
