@@ -998,6 +998,32 @@ against garbage bytes, instead of being silently skipped as
 "unconverted" the way they were before; this is the validator working
 as intended, not a new problem.)
 
+**Corrected/deduplicated re-measurement** (`disasm/compute_coverage.py`,
+new): the 85.6% figure above double-counts the comm ROM, since
+`2998_alias_90000` is the *same underlying bytes* as the upper half of
+`2998`, not separate physical storage - it treats what's really
+3×64KB=196,608 total bytes as if it were 229,376. Folding the alias
+hits back onto `2998`'s own bytes gives a cleaner picture:
+
+| | proven-only | proven + heuristic |
+|---|---|---|
+| `3633` | 37.4% (24,495 B) | 89.9% (58,896 B) |
+| `3532` | 7.6% (4,967 B) | 90.6% (59,372 B) |
+| `2998` | 13.0% (8,525 B) | 91.7% (60,092 B) |
+| **all 3 chips** | **19.3% (37,987 / 196,608 B)** | **90.7% (178,360 / 196,608 B)** |
+
+So: the 278-function *proven* set this session's renaming pass has been
+working through is a call-graph-verified ~19% of the total ROM bytes.
+Layering the lower-confidence heuristic push-bp scan on top reaches
+~91% of all bytes. The remaining **~9.3% (~18,250 bytes)** across the
+3 chips isn't reached by either method - almost certainly a mix of
+data tables (string tables, the stroke-font/print-record templates,
+menu-string blobs already catalogued in `STRINGS.md`) and genuinely
+unreached code (dead code, or code behind an entry point not yet
+found). Not further broken down byte-by-byte; `compute_coverage.py`
+re-derives these numbers on demand rather than needing to be kept
+in sync by hand.
+
 The former "12 call targets resolve to addresses in the 0x80000-0x97000
 range" open item is resolved - see "The comm ROM is NOT bank-switched"
 and "The 0x90000-0x97FFF region is fully resolved" above.
