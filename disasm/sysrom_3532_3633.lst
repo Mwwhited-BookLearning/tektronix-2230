@@ -12060,6 +12060,66 @@ SUB_E92B0:
     3633:92CF  [E92CF]  5d              pop     bp
     3633:92D0  [E92D0]  cb              retf    
 
+L_E93FF:
+    3633:93FF  [E93FF]  803e300500      cmp     byte ptr [0x530], 0
+
+merge_record_flags_if_changed:
+    3633:9472  [E9472]  803f00          cmp     byte ptr [bx], 0
+    3633:9475  [E9475]  7445            je      L_E94BC  ; 0x4c
+    3633:9477  [E9477]  268a4703        mov     al, byte ptr es:[bx + 3]
+    3633:947B  [E947B]  3ad0            cmp     dl, al
+    3633:947D  [E947D]  7530            jne     L_E94AF  ; 0x3f
+    3633:947F  [E947F]  268a4701        mov     al, byte ptr es:[bx + 1]
+    3633:9483  [E9483]  32c2            xor     al, dl
+    3633:9485  [E9485]  26884702        mov     byte ptr es:[bx + 2], al
+    3633:9489  [E9489]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3633:948C  [E948C]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:948F  [E948F]  eb03            jmp     L_E9494  ; 0x24
+
+L_E9494:
+    3633:9494  [E9494]  26885501        mov     byte ptr es:[di + 1], dl
+    3633:9498  [E9498]  26c60500        mov     byte ptr es:[di], 0
+    3633:949C  [E949C]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:949F  [E949F]  26807d0200      cmp     byte ptr es:[di + 2], 0
+    3633:94A4  [E94A4]  742f            je      L_E94D5  ; 0x65
+    3633:94A6  [E94A6]  c70632050100    mov     word ptr [0x532], 1
+    3633:94AC  [E94AC]  e92600          jmp     L_E94D5  ; 0x65
+L_E94AF:
+    3633:94AF  [E94AF]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3633:94B2  [E94B2]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:94B5  [E94B5]  26885503        mov     byte ptr es:[di + 3], dl
+    3633:94B9  [E94B9]  e91900          jmp     L_E94D5  ; 0x65
+L_E94BC:
+    3633:94BC  [E94BC]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3633:94BF  [E94BF]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:94C2  [E94C2]  268a5d03        mov     bl, byte ptr es:[di + 3]
+    3633:94C6  [E94C6]  3ad3            cmp     dl, bl
+    3633:94C8  [E94C8]  740b            je      L_E94D5  ; 0x65
+    3633:94CA  [E94CA]  26885503        mov     byte ptr es:[di + 3], dl
+    3633:94CE  [E94CE]  c45ef0          les     bx, ptr [bp - 0x10]
+    3633:94D1  [E94D1]  26c60701        mov     byte ptr es:[bx], 1
+L_E94D5:
+    3633:94D5  [E94D5]  ff46f4          inc     word ptr [bp - 0xc]
+    3633:94D8  [E94D8]  8b7eea          mov     di, word ptr [bp - 0x16]
+    3633:94DB  [E94DB]  397ef4          cmp     word ptr [bp - 0xc], di
+    3633:94DE  [E94DE]  7f03            jg      L_E94E3  ; 0x73
+    3633:94E0  [E94E0]  e91cff          jmp     L_E93FF  ; 0xffffff8f
+L_E94E3:
+    3633:94E3  [E94E3]  a0f104          mov     al, byte ptr [0x4f1]
+    3633:94E6  [E94E6]  2ae4            sub     ah, ah
+    3633:94E8  [E94E8]  251000          and     ax, 0x10
+    3633:94EB  [E94EB]  3d0000          cmp     ax, 0
+    3633:94EE  [E94EE]  7406            je      L_E94F6  ; 0x86
+    3633:94F0  [E94F0]  ba0100          mov     dx, 1
+    3633:94F3  [E94F3]  e90200          jmp     L_E94F8  ; 0x88
+L_E94F6:
+    3633:94F6  [E94F6]  2bd2            sub     dx, dx
+L_E94F8:
+    3633:94F8  [E94F8]  8816741b        mov     byte ptr [0x1b74], dl
+    3633:94FC  [E94FC]  8be5            mov     sp, bp
+    3633:94FE  [E94FE]  5d              pop     bp
+    3633:94FF  [E94FF]  cb              retf    
+
 SUB_E97DC:
     3633:97DC  [E97DC]  a5              movsw   word ptr es:[di], word ptr [si]
     3633:97DD  [E97DD]  83c604          add     si, 4
@@ -12205,6 +12265,1178 @@ SUB_E99DF:
     3633:99DF  [E99DF]  f1              int1    
     3633:99E0  [E99E0]  00d1            add     cl, dl
     3633:99E2  [E99E2]  ea89560a83      ljmp    L_88729  ; 0x830a:0x5689
+
+SUB_EA13B:
+    3633:A13B  [EA13B]  6f              outsw   dx, word ptr [si]
+    3633:A13C  [EA13C]  7220            jb      L_EA15E  ; 0x2e
+    3633:A13E  [EA13E]  50              push    ax
+    3633:A13F  [EA13F]  4f              dec     di
+    3633:A140  [EA140]  53              push    bx
+    3633:A141  [EA141]  54              push    sp
+    3633:A142  [EA142]  004469          add     byte ptr [si + 0x69], al
+    3633:A145  [EA145]  7370            jae     L_EA1B7  ; 0x87
+    3633:A147  [EA147]  6c              insb    byte ptr es:[di], dx
+    3633:A148  [EA148]  61              popaw   
+    3633:A149  [EA149]  7920            jns     L_EA16B  ; 0x3b
+    3633:A14B  [EA14B]  666f            outsd   dx, dword ptr [si]
+    3633:A14D  [EA14D]  726d            jb      L_EA1BC  ; 0x8c
+    3633:A14F  [EA14F]  61              popaw   
+    3633:A150  [EA150]  7474            je      L_EA1C6  ; 0x96
+    3633:A152  [EA152]  696e670064      imul    bp, word ptr [bp + 0x67], 0x6400
+    3633:A157  [EA157]  656c            insb    byte ptr es:[di], dx
+    3633:A159  [EA159]  7461            je      L_EA1BC  ; 0x8c
+    3633:A15B  [EA15B]  207469          and     byte ptr [si + 0x69], dh
+L_EA15E:
+    3633:A15E  [EA15E]  6d              insw    word ptr es:[di], dx
+    3633:A15F  [EA15F]  65206f72        and     byte ptr gs:[bx + 0x72], ch
+    3633:A163  [EA163]  2031            and     byte ptr [bx + di], dh
+    3633:A165  [EA165]  2f              das     
+    3633:A166  [EA166]  64656c          insb    byte ptr es:[di], dx
+    3633:A169  [EA169]  7461            je      L_EA1CC  ; 0x9c
+L_EA16B:
+    3633:A16B  [EA16B]  5f              pop     di
+    3633:A16C  [EA16C]  7469            je      L_EA1D7  ; 0xa7
+    3633:A16E  [EA16E]  6d              insw    word ptr es:[di], dx
+    3633:A16F  [EA16F]  65006469        add     byte ptr gs:[si + 0x69], ah
+    3633:A173  [EA173]  7370            jae     L_EA1E5  ; 0xb5
+    3633:A175  [EA175]  6c              insb    byte ptr es:[di], dx
+    3633:A176  [EA176]  61              popaw   
+    3633:A177  [EA177]  7920            jns     L_EA199  ; 0x69
+    3633:A179  [EA179]  6c              insb    byte ptr es:[di], dx
+    3633:A17A  [EA17A]  696e65206f      imul    bp, word ptr [bp + 0x65], 0x6f20
+    3633:A17F  [EA17F]  7220            jb      L_EA1A1  ; 0x71
+    3633:A181  [EA181]  646f            outsw   dx, word ptr fs:[si]
+    3633:A183  [EA183]  7473            je      L_EA1F8  ; 0xc8
+    3633:A185  [EA185]  004e6f          add     byte ptr [bp + 0x6f], cl
+    3633:A188  [EA188]  7420            je      L_EA1AA  ; 0x7a
+    3633:A18A  [EA18A]  646f            outsw   dx, word ptr fs:[si]
+    3633:A18C  [EA18C]  6e              outsb   dx, byte ptr [si]
+    3633:A18D  [EA18D]  6520696e        and     byte ptr gs:[bx + di + 0x6e], ch
+    3633:A191  [EA191]  205245          and     byte ptr [bp + si + 0x45], dl
+    3633:A194  [EA194]  50              push    ax
+    3633:A195  [EA195]  45              inc     bp
+    3633:A196  [EA196]  54              push    sp
+    3633:A197  [EA197]  49              dec     cx
+    3633:A198  [EA198]  54              push    sp
+L_EA199:
+    3633:A199  [EA199]  49              dec     cx
+    3633:A19A  [EA19A]  56              push    si
+    3633:A19B  [EA19B]  45              inc     bp
+    3633:A19C  [EA19C]  206d6f          and     byte ptr [di + 0x6f], ch
+    3633:A19F  [EA19F]  6465005661      add     byte ptr gs:[bp + 0x61], dl
+
+L_EA1A1:
+    3633:A1A1  [EA1A1]  005661          add     byte ptr [bp + 0x61], dl
+    3633:A1A4  [EA1A4]  6c              insb    byte ptr es:[di], dx
+    3633:A1A5  [EA1A5]  6964206f6e      imul    sp, word ptr [si + 0x20], 0x6e6f
+L_EA1AA:
+    3633:A1AA  [EA1AA]  6c              insb    byte ptr es:[di], dx
+    3633:A1AB  [EA1AB]  7920            jns     L_EA1CD  ; 0x9d
+    3633:A1AD  [EA1AD]  696e205045      imul    bp, word ptr [bp + 0x20], 0x4550
+    3633:A1B2  [EA1B2]  41              inc     cx
+    3633:A1B3  [EA1B3]  4b              dec     bx
+    3633:A1B4  [EA1B4]  44              inc     sp
+    3633:A1B5  [EA1B5]  45              inc     bp
+    3633:A1B6  [EA1B6]  54              push    sp
+L_EA1B7:
+    3633:A1B7  [EA1B7]  20616e          and     byte ptr [bx + di + 0x6e], ah
+    3633:A1BA  [EA1BA]  64204143        and     byte ptr fs:[bx + di + 0x43], al
+
+L_EA1BC:
+    3633:A1BC  [EA1BC]  41              inc     cx
+    3633:A1BD  [EA1BD]  43              inc     bx
+    3633:A1BE  [EA1BE]  43              inc     bx
+    3633:A1BF  [EA1BF]  50              push    ax
+    3633:A1C0  [EA1C0]  45              inc     bp
+    3633:A1C1  [EA1C1]  41              inc     cx
+    3633:A1C2  [EA1C2]  4b              dec     bx
+    3633:A1C3  [EA1C3]  004355          add     byte ptr [bp + di + 0x55], al
+L_EA1C6:
+    3633:A1C6  [EA1C6]  52              push    dx
+    3633:A1C7  [EA1C7]  53              push    bx
+    3633:A1C8  [EA1C8]  4f              dec     di
+    3633:A1C9  [EA1C9]  52              push    dx
+    3633:A1CA  [EA1CA]  205345          and     byte ptr [bp + di + 0x45], dl
+
+L_EA1CC:
+    3633:A1CC  [EA1CC]  45              inc     bp
+L_EA1CD:
+    3633:A1CD  [EA1CD]  4c              dec     sp
+    3633:A1CE  [EA1CE]  45              inc     bp
+    3633:A1CF  [EA1CF]  43              inc     bx
+    3633:A1D0  [EA1D0]  54              push    sp
+    3633:A1D1  [EA1D1]  207265          and     byte ptr [bp + si + 0x65], dh
+    3633:A1D4  [EA1D4]  7374            jae     L_EA24A  ; 0x11a
+    3633:A1D6  [EA1D6]  6f              outsw   dx, word ptr [si]
+L_EA1D7:
+    3633:A1D7  [EA1D7]  7265            jb      L_EA23E  ; 0x10e
+    3633:A1D9  [EA1D9]  7320            jae     L_EA1FB  ; 0xcb
+    3633:A1DB  [EA1DB]  6d              insw    word ptr es:[di], dx
+    3633:A1DC  [EA1DC]  656e            outsb   dx, byte ptr gs:[si]
+    3633:A1DE  [EA1DE]  7520            jne     L_EA200  ; 0xd0
+    3633:A1E0  [EA1E0]  64656661        popal   
+    3633:A1E4  [EA1E4]  756c            jne     L_EA252  ; 0x122
+
+L_EA1E5:
+    3633:A1E5  [EA1E5]  6c              insb    byte ptr es:[di], dx
+    3633:A1E6  [EA1E6]  7473            je      L_EA25B  ; 0x12b
+    3633:A1E8  [EA1E8]  00416c          add     byte ptr [bx + di + 0x6c], al
+    3633:A1EB  [EA1EB]  7465            je      L_EA252  ; 0x122
+    3633:A1ED  [EA1ED]  7220            jb      L_EA20F  ; 0xdf
+    3633:A1EF  [EA1EF]  646973706c61    imul    si, word ptr fs:[bp + di + 0x70], 0x616c
+    3633:A1F5  [EA1F5]  7920            jns     L_EA217  ; 0xe7
+    3633:A1F7  [EA1F7]  6f              outsw   dx, word ptr [si]
+L_EA1F8:
+    3633:A1F8  [EA1F8]  66205341        and     byte ptr [bp + di + 0x41], dl
+
+L_EA1FB:
+    3633:A1FB  [EA1FB]  41              inc     cx
+    3633:A1FC  [EA1FC]  56              push    si
+    3633:A1FD  [EA1FD]  45              inc     bp
+    3633:A1FE  [EA1FE]  2d5245          sub     ax, 0x4552
+
+L_EA200:
+    3633:A200  [EA200]  45              inc     bp
+    3633:A201  [EA201]  46              inc     si
+    3633:A202  [EA202]  7300            jae     L_EA204  ; 0xd4
+L_EA204:
+    3633:A204  [EA204]  43              inc     bx
+    3633:A205  [EA205]  55              push    bp
+    3633:A206  [EA206]  52              push    dx
+    3633:A207  [EA207]  206b6e          and     byte ptr [bp + di + 0x6e], ch
+    3633:A20A  [EA20A]  6f              outsw   dx, word ptr [si]
+    3633:A20B  [EA20B]  6220            bound   sp, dword ptr [bx + si]
+    3633:A20D  [EA20D]  666f            outsd   dx, dword ptr [si]
+L_EA20F:
+    3633:A20F  [EA20F]  7220            jb      L_EA231  ; 0x101
+    3633:A211  [EA211]  7265            jb      L_EA278  ; 0x148
+    3633:A213  [EA213]  66657265        jb      L_EA27C  ; 0x14c
+L_EA217:
+    3633:A217  [EA217]  6e              outsb   dx, byte ptr [si]
+    3633:A218  [EA218]  63652c          arpl    word ptr [di + 0x2c], sp
+    3633:A21B  [EA21B]  205345          and     byte ptr [bp + di + 0x45], dl
+    3633:A21E  [EA21E]  4c              dec     sp
+    3633:A21F  [EA21F]  20666f          and     byte ptr [bp + 0x6f], ah
+    3633:A222  [EA222]  7220            jb      L_EA244  ; 0x114
+    3633:A224  [EA224]  43              inc     bx
+    3633:A225  [EA225]  68616e          push    0x6e61
+    3633:A228  [EA228]  6e              outsb   dx, byte ptr [si]
+    3633:A229  [EA229]  656c            insb    byte ptr es:[di], dx
+    3633:A22B  [EA22B]  004355          add     byte ptr [bp + di + 0x55], al
+    3633:A22E  [EA22E]  52              push    dx
+    3633:A22F  [EA22F]  206b6e          and     byte ptr [bp + di + 0x6e], ch
+
+L_EA231:
+    3633:A231  [EA231]  6e              outsb   dx, byte ptr [si]
+    3633:A232  [EA232]  6f              outsw   dx, word ptr [si]
+    3633:A233  [EA233]  6220            bound   sp, dword ptr [bx + si]
+    3633:A235  [EA235]  666f            outsd   dx, dword ptr [si]
+    3633:A237  [EA237]  7220            jb      L_EA259  ; 0x129
+    3633:A239  [EA239]  6761            popaw   
+    3633:A23B  [EA23B]  696e2c2053      imul    bp, word ptr [bp + 0x2c], 0x5320
+
+L_EA23E:
+    3633:A23E  [EA23E]  205345          and     byte ptr [bp + di + 0x45], dl
+
+    3633:A240  [EA240]  45              inc     bp
+    3633:A241  [EA241]  4c              dec     sp
+    3633:A242  [EA242]  20666f          and     byte ptr [bp + 0x6f], ah
+
+L_EA244:
+    3633:A244  [EA244]  6f              outsw   dx, word ptr [si]
+    3633:A245  [EA245]  7220            jb      L_EA267  ; 0x137
+    3633:A247  [EA247]  43              inc     bx
+    3633:A248  [EA248]  68616e          push    0x6e61
+
+L_EA24A:
+    3633:A24A  [EA24A]  6e              outsb   dx, byte ptr [si]
+    3633:A24B  [EA24B]  6e              outsb   dx, byte ptr [si]
+    3633:A24C  [EA24C]  656c            insb    byte ptr es:[di], dx
+    3633:A24E  [EA24E]  004355          add     byte ptr [bp + di + 0x55], al
+    3633:A251  [EA251]  52              push    dx
+L_EA252:
+    3633:A252  [EA252]  206b6e          and     byte ptr [bp + di + 0x6e], ch
+    3633:A255  [EA255]  6f              outsw   dx, word ptr [si]
+    3633:A256  [EA256]  6220            bound   sp, dword ptr [bx + si]
+    3633:A258  [EA258]  666f            outsd   dx, dword ptr [si]
+
+L_EA259:
+    3633:A259  [EA259]  6f              outsw   dx, word ptr [si]
+    3633:A25A  [EA25A]  7220            jb      L_EA27C  ; 0x14c
+
+L_EA25B:
+    3633:A25B  [EA25B]  20706f          and     byte ptr [bx + si + 0x6f], dh
+
+    3633:A25C  [EA25C]  706f            jo      L_EA2CD  ; 0x19d
+    3633:A25E  [EA25E]  7369            jae     L_EA2C9  ; 0x199
+    3633:A260  [EA260]  7469            je      L_EA2CB  ; 0x19b
+    3633:A262  [EA262]  6f              outsw   dx, word ptr [si]
+    3633:A263  [EA263]  6e              outsb   dx, byte ptr [si]
+    3633:A264  [EA264]  2c20            sub     al, 0x20
+    3633:A266  [EA266]  53              push    bx
+L_EA267:
+    3633:A267  [EA267]  45              inc     bp
+    3633:A268  [EA268]  4c              dec     sp
+    3633:A269  [EA269]  20666f          and     byte ptr [bp + 0x6f], ah
+    3633:A26C  [EA26C]  7220            jb      L_EA28E  ; 0x15e
+    3633:A26E  [EA26E]  43              inc     bx
+    3633:A26F  [EA26F]  68616e          push    0x6e61
+    3633:A272  [EA272]  6e              outsb   dx, byte ptr [si]
+    3633:A273  [EA273]  656c            insb    byte ptr es:[di], dx
+    3633:A275  [EA275]  004355          add     byte ptr [bp + di + 0x55], al
+L_EA278:
+    3633:A278  [EA278]  52              push    dx
+    3633:A279  [EA279]  206b6e          and     byte ptr [bp + di + 0x6e], ch
+L_EA27C:
+    3633:A27C  [EA27C]  6f              outsw   dx, word ptr [si]
+    3633:A27D  [EA27D]  6220            bound   sp, dword ptr [bx + si]
+    3633:A27F  [EA27F]  666f            outsd   dx, dword ptr [si]
+    3633:A281  [EA281]  7220            jb      L_EA2A3  ; 0x173
+    3633:A283  [EA283]  3130            xor     word ptr [bx + si], si
+    3633:A285  [EA285]  58              pop     ax
+    3633:A286  [EA286]  204d41          and     byte ptr [di + 0x41], cl
+    3633:A289  [EA289]  47              inc     di
+    3633:A28A  [EA28A]  00436f          add     byte ptr [bp + di + 0x6f], al
+    3633:A28D  [EA28D]  6e              outsb   dx, byte ptr [si]
+L_EA28E:
+    3633:A28E  [EA28E]  7472            je      L_EA302  ; 0x1d2
+    3633:A290  [EA290]  6f              outsw   dx, word ptr [si]
+    3633:A291  [EA291]  6c              insb    byte ptr es:[di], dx
+    3633:A292  [EA292]  207468          and     byte ptr [si + 0x68], dh
+    3633:A295  [EA295]  65205859        and     byte ptr gs:[bx + si + 0x59], bl
+    3633:A299  [EA299]  20706c          and     byte ptr [bx + si + 0x6c], dh
+    3633:A29C  [EA29C]  6f              outsw   dx, word ptr [si]
+    3633:A29D  [EA29D]  7474            je      L_EA313  ; 0x1e3
+    3633:A29F  [EA29F]  657200          jb      L_EA2A2  ; 0x172
+L_EA2A2:
+    3633:A2A2  [EA2A2]  53              push    bx
+L_EA2A3:
+    3633:A2A3  [EA2A3]  657420          je      L_EA2C6  ; 0x196
+    3633:A2A6  [EA2A6]  7065            jo      L_EA30D  ; 0x1dd
+    3633:A2A8  [EA2A8]  6e              outsb   dx, byte ptr [si]
+    3633:A2A9  [EA2A9]  207370          and     byte ptr [bp + di + 0x70], dh
+    3633:A2AC  [EA2AC]  65656420666f    and     byte ptr fs:[bp + 0x6f], ah
+    3633:A2B2  [EA2B2]  7220            jb      L_EA2D4  ; 0x1a4
+    3633:A2B4  [EA2B4]  706c            jo      L_EA322  ; 0x1f2
+    3633:A2B6  [EA2B6]  6f              outsw   dx, word ptr [si]
+    3633:A2B7  [EA2B7]  7400            je      L_EA2B9  ; 0x189
+L_EA2B9:
+    3633:A2B9  [EA2B9]  50              push    ax
+    3633:A2BA  [EA2BA]  7265            jb      L_EA321  ; 0x1f1
+    3633:A2BC  [EA2BC]  7373            jae     L_EA331  ; 0x201
+    3633:A2BE  [EA2BE]  204355          and     byte ptr [bp + di + 0x55], al
+    3633:A2C1  [EA2C1]  52              push    dx
+    3633:A2C2  [EA2C2]  53              push    bx
+    3633:A2C3  [EA2C3]  4f              dec     di
+    3633:A2C4  [EA2C4]  52              push    dx
+    3633:A2C5  [EA2C5]  205345          and     byte ptr [bp + di + 0x45], dl
+
+L_EA2C6:
+    3633:A2C6  [EA2C6]  53              push    bx
+    3633:A2C7  [EA2C7]  45              inc     bp
+    3633:A2C8  [EA2C8]  4c              dec     sp
+L_EA2C9:
+    3633:A2C9  [EA2C9]  45              inc     bp
+    3633:A2CA  [EA2CA]  43              inc     bx
+L_EA2CB:
+    3633:A2CB  [EA2CB]  54              push    sp
+    3633:A2CC  [EA2CC]  20746f          and     byte ptr [si + 0x6f], dh
+
+L_EA2CD:
+    3633:A2CD  [EA2CD]  746f            je      L_EA33E  ; 0x20e
+    3633:A2CF  [EA2CF]  205374          and     byte ptr [bp + di + 0x74], dl
+    3633:A2D2  [EA2D2]  61              popaw   
+    3633:A2D3  [EA2D3]  7274            jb      L_EA349  ; 0x219
+
+L_EA2D4:
+    3633:A2D4  [EA2D4]  7420            je      L_EA2F6  ; 0x1c6
+
+    3633:A2D5  [EA2D5]  206120          and     byte ptr [bx + di + 0x20], ah
+
+SUB_EA2D6:
+    3633:A2D6  [EA2D6]  61              popaw   
+    3633:A2D7  [EA2D7]  20504c          and     byte ptr [bx + si + 0x4c], dl
+
+    3633:A2D8  [EA2D8]  50              push    ax
+    3633:A2D9  [EA2D9]  4c              dec     sp
+    3633:A2DA  [EA2DA]  4f              dec     di
+    3633:A2DB  [EA2DB]  54              push    sp
+    3633:A2DC  [EA2DC]  00456e          add     byte ptr [di + 0x6e], al
+    3633:A2DF  [EA2DF]  61              popaw   
+    3633:A2E0  [EA2E0]  626c65          bound   bp, dword ptr [si + 0x65]
+    3633:A2E3  [EA2E3]  20706c          and     byte ptr [bx + si + 0x6c], dh
+    3633:A2E6  [EA2E6]  6f              outsw   dx, word ptr [si]
+    3633:A2E7  [EA2E7]  7474            je      L_EA35D  ; 0x22d
+    3633:A2E9  [EA2E9]  696e67206f      imul    bp, word ptr [bp + 0x67], 0x6f20
+    3633:A2EE  [EA2EE]  66206772        and     byte ptr [bx + 0x72], ah
+    3633:A2F2  [EA2F2]  61              popaw   
+    3633:A2F3  [EA2F3]  7469            je      L_EA35E  ; 0x22e
+    3633:A2F5  [EA2F5]  63756c          arpl    word ptr [di + 0x6c], si
+
+L_EA2F6:
+    3633:A2F6  [EA2F6]  756c            jne     L_EA364  ; 0x234
+    3633:A2F8  [EA2F8]  65005365        add     byte ptr gs:[bp + di + 0x65], dl
+    3633:A2FC  [EA2FC]  6c              insb    byte ptr es:[di], dx
+    3633:A2FD  [EA2FD]  65637420        arpl    word ptr gs:[si + 0x20], si
+    3633:A301  [EA301]  41              inc     cx
+L_EA302:
+    3633:A302  [EA302]  55              push    bp
+    3633:A303  [EA303]  54              push    sp
+    3633:A304  [EA304]  4f              dec     di
+    3633:A305  [EA305]  2d504c          sub     ax, 0x4c50
+    3633:A308  [EA308]  4f              dec     di
+    3633:A309  [EA309]  54              push    sp
+    3633:A30A  [EA30A]  206d6f          and     byte ptr [di + 0x6f], ch
+L_EA30D:
+    3633:A30D  [EA30D]  6465005365      add     byte ptr gs:[bp + di + 0x65], dl
+    3633:A312  [EA312]  6c              insb    byte ptr es:[di], dx
+L_EA313:
+    3633:A313  [EA313]  65637420        arpl    word ptr gs:[si + 0x20], si
+    3633:A317  [EA317]  706c            jo      L_EA385  ; 0x255
+    3633:A319  [EA319]  6f              outsw   dx, word ptr [si]
+    3633:A31A  [EA31A]  7474            je      L_EA390  ; 0x260
+    3633:A31C  [EA31C]  657220          jb      L_EA33F  ; 0x20f
+    3633:A31F  [EA31F]  636f6e          arpl    word ptr [bx + 0x6e], bp
+
+L_EA321:
+    3633:A321  [EA321]  6e              outsb   dx, byte ptr [si]
+L_EA322:
+    3633:A322  [EA322]  7472            je      L_EA396  ; 0x266
+    3633:A324  [EA324]  6f              outsw   dx, word ptr [si]
+    3633:A325  [EA325]  6c              insb    byte ptr es:[di], dx
+    3633:A326  [EA326]  00416e          add     byte ptr [bx + di + 0x6e], al
+    3633:A329  [EA329]  61              popaw   
+    3633:A32A  [EA32A]  6c              insb    byte ptr es:[di], dx
+    3633:A32B  [EA32B]  6f              outsw   dx, word ptr [si]
+    3633:A32C  [EA32C]  67205859        and     byte ptr [eax + 0x59], bl
+    3633:A330  [EA330]  20706c          and     byte ptr [bx + si + 0x6c], dh
+
+L_EA331:
+    3633:A331  [EA331]  706c            jo      L_EA39F  ; 0x26f
+    3633:A333  [EA333]  6f              outsw   dx, word ptr [si]
+    3633:A334  [EA334]  7474            je      L_EA3AA  ; 0x27a
+    3633:A336  [EA336]  657200          jb      L_EA339  ; 0x209
+L_EA339:
+    3633:A339  [EA339]  43              inc     bx
+    3633:A33A  [EA33A]  4f              dec     di
+    3633:A33B  [EA33B]  4d              dec     bp
+    3633:A33C  [EA33C]  4d              dec     bp
+    3633:A33D  [EA33D]  20706f          and     byte ptr [bx + si + 0x6f], dh
+
+L_EA33E:
+    3633:A33E  [EA33E]  706f            jo      L_EA3AF  ; 0x27f
+
+L_EA33F:
+    3633:A33F  [EA33F]  6f              outsw   dx, word ptr [si]
+    3633:A340  [EA340]  7274            jb      L_EA3B6  ; 0x286
+    3633:A342  [EA342]  2c20            sub     al, 0x20
+    3633:A344  [EA344]  48              dec     ax
+    3633:A345  [EA345]  50              push    ax
+    3633:A346  [EA346]  47              inc     di
+    3633:A347  [EA347]  4c              dec     sp
+    3633:A348  [EA348]  20666f          and     byte ptr [bp + 0x6f], ah
+
+L_EA349:
+    3633:A349  [EA349]  666f            outsd   dx, dword ptr [si]
+    3633:A34B  [EA34B]  726d            jb      L_EA3BA  ; 0x28a
+    3633:A34D  [EA34D]  61              popaw   
+    3633:A34E  [EA34E]  7400            je      L_EA350  ; 0x220
+L_EA350:
+    3633:A350  [EA350]  43              inc     bx
+    3633:A351  [EA351]  4f              dec     di
+    3633:A352  [EA352]  4d              dec     bp
+    3633:A353  [EA353]  4d              dec     bp
+    3633:A354  [EA354]  20706f          and     byte ptr [bx + si + 0x6f], dh
+    3633:A357  [EA357]  7274            jb      L_EA3CD  ; 0x29d
+    3633:A359  [EA359]  2c20            sub     al, 0x20
+    3633:A35B  [EA35B]  45              inc     bp
+    3633:A35C  [EA35C]  7073            jo      L_EA3D1  ; 0x2a1
+
+L_EA35D:
+    3633:A35D  [EA35D]  736f            jae     L_EA3CE  ; 0x29e
+
+L_EA35E:
+    3633:A35E  [EA35E]  6f              outsw   dx, word ptr [si]
+    3633:A35F  [EA35F]  6e              outsb   dx, byte ptr [si]
+    3633:A360  [EA360]  2037            and     byte ptr [bx], dh
+    3633:A362  [EA362]  206269          and     byte ptr [bp + si + 0x69], ah
+
+L_EA364:
+    3633:A364  [EA364]  697420666f      imul    si, word ptr [si + 0x20], 0x6f66
+
+    3633:A365  [EA365]  7420            je      L_EA387  ; 0x257
+    3633:A367  [EA367]  666f            outsd   dx, dword ptr [si]
+    3633:A369  [EA369]  726d            jb      L_EA3D8  ; 0x2a8
+    3633:A36B  [EA36B]  61              popaw   
+    3633:A36C  [EA36C]  7400            je      L_EA36E  ; 0x23e
+L_EA36E:
+    3633:A36E  [EA36E]  43              inc     bx
+    3633:A36F  [EA36F]  4f              dec     di
+    3633:A370  [EA370]  4d              dec     bp
+    3633:A371  [EA371]  4d              dec     bp
+    3633:A372  [EA372]  20706f          and     byte ptr [bx + si + 0x6f], dh
+    3633:A375  [EA375]  7274            jb      L_EA3EB  ; 0x2bb
+    3633:A377  [EA377]  2c20            sub     al, 0x20
+    3633:A379  [EA379]  45              inc     bp
+    3633:A37A  [EA37A]  7073            jo      L_EA3EF  ; 0x2bf
+    3633:A37C  [EA37C]  6f              outsw   dx, word ptr [si]
+    3633:A37D  [EA37D]  6e              outsb   dx, byte ptr [si]
+    3633:A37E  [EA37E]  2038            and     byte ptr [bx + si], bh
+    3633:A380  [EA380]  206269          and     byte ptr [bp + si + 0x69], ah
+    3633:A383  [EA383]  7420            je      L_EA3A5  ; 0x275
+L_EA385:
+    3633:A385  [EA385]  666f            outsd   dx, dword ptr [si]
+L_EA387:
+    3633:A387  [EA387]  726d            jb      L_EA3F6  ; 0x2c6
+    3633:A389  [EA389]  61              popaw   
+    3633:A38A  [EA38A]  7400            je      L_EA38C  ; 0x25c
+L_EA38C:
+    3633:A38C  [EA38C]  43              inc     bx
+    3633:A38D  [EA38D]  4f              dec     di
+    3633:A38E  [EA38E]  4d              dec     bp
+    3633:A38F  [EA38F]  4d              dec     bp
+L_EA390:
+    3633:A390  [EA390]  20706f          and     byte ptr [bx + si + 0x6f], dh
+    3633:A393  [EA393]  7274            jb      L_EA409  ; 0x2d9
+    3633:A395  [EA395]  2c20            sub     al, 0x20
+
+L_EA396:
+    3633:A396  [EA396]  204850          and     byte ptr [bx + si + 0x50], cl
+
+    3633:A397  [EA397]  48              dec     ax
+    3633:A398  [EA398]  50              push    ax
+    3633:A399  [EA399]  205468          and     byte ptr [si + 0x68], dl
+    3633:A39C  [EA39C]  696e6b4a65      imul    bp, word ptr [bp + 0x6b], 0x654a
+
+L_EA39F:
+    3633:A39F  [EA39F]  4a              dec     dx
+    3633:A3A0  [EA3A0]  657420          je      L_EA3C3  ; 0x293
+
+    3633:A3A1  [EA3A1]  7420            je      L_EA3C3  ; 0x293
+    3633:A3A3  [EA3A3]  666f            outsd   dx, dword ptr [si]
+L_EA3A5:
+    3633:A3A5  [EA3A5]  726d            jb      L_EA414  ; 0x2e4
+    3633:A3A7  [EA3A7]  61              popaw   
+    3633:A3A8  [EA3A8]  7400            je      L_EA3AA  ; 0x27a
+L_EA3AA:
+    3633:A3AA  [EA3AA]  53              push    bx
+    3633:A3AB  [EA3AB]  657420          je      L_EA3CE  ; 0x29e
+    3633:A3AE  [EA3AE]  706c            jo      L_EA41C  ; 0x2ec
+
+L_EA3AF:
+    3633:A3AF  [EA3AF]  6c              insb    byte ptr es:[di], dx
+    3633:A3B0  [EA3B0]  6f              outsw   dx, word ptr [si]
+    3633:A3B1  [EA3B1]  7474            je      L_EA427  ; 0x2f7
+    3633:A3B3  [EA3B3]  657220          jb      L_EA3D6  ; 0x2a6
+L_EA3B6:
+    3633:A3B6  [EA3B6]  6761            popaw   
+    3633:A3B8  [EA3B8]  696e20616e      imul    bp, word ptr [bp + 0x20], 0x6e61
+
+L_EA3BA:
+    3633:A3BA  [EA3BA]  20616e          and     byte ptr [bx + di + 0x6e], ah
+    3633:A3BD  [EA3BD]  64206f66        and     byte ptr fs:[bx + 0x66], ch
+    3633:A3C1  [EA3C1]  667365          jae     L_EA429  ; 0x2f9
+
+L_EA3C3:
+    3633:A3C3  [EA3C3]  657400          je      L_EA3C6  ; 0x296
+
+    3633:A3C4  [EA3C4]  7400            je      L_EA3C6  ; 0x296
+L_EA3C6:
+    3633:A3C6  [EA3C6]  43              inc     bx
+    3633:A3C7  [EA3C7]  68616e          push    0x6e61
+    3633:A3CA  [EA3CA]  6765206e6f      and     byte ptr gs:[esi + 0x6f], ch
+
+L_EA3CD:
+    3633:A3CD  [EA3CD]  6e              outsb   dx, byte ptr [si]
+L_EA3CE:
+    3633:A3CE  [EA3CE]  6f              outsw   dx, word ptr [si]
+    3633:A3CF  [EA3CF]  6e              outsb   dx, byte ptr [si]
+    3633:A3D0  [EA3D0]  2d766f          sub     ax, 0x6f76
+
+L_EA3D1:
+    3633:A3D1  [EA3D1]  766f            jbe     L_EA442  ; 0x312
+    3633:A3D3  [EA3D3]  6c              insb    byte ptr es:[di], dx
+    3633:A3D4  [EA3D4]  61              popaw   
+    3633:A3D5  [EA3D5]  7469            je      L_EA440  ; 0x310
+
+L_EA3D6:
+    3633:A3D6  [EA3D6]  696c652072      imul    bp, word ptr [si + 0x65], 0x7220
+
+    3633:A3D7  [EA3D7]  6c              insb    byte ptr es:[di], dx
+L_EA3D8:
+    3633:A3D8  [EA3D8]  65207265        and     byte ptr gs:[bp + si + 0x65], dh
+
+    3633:A3DB  [EA3DB]  6566206d65      and     byte ptr gs:[di + 0x65], ch
+
+    3633:A3DC  [EA3DC]  66206d65        and     byte ptr [di + 0x65], ch
+    3633:A3E0  [EA3E0]  6d              insw    word ptr es:[di], dx
+    3633:A3E1  [EA3E1]  6f              outsw   dx, word ptr [si]
+    3633:A3E2  [EA3E2]  7269            jb      L_EA44D  ; 0x31d
+    3633:A3E4  [EA3E4]  657300          jae     L_EA3E7  ; 0x2b7
+L_EA3E7:
+    3633:A3E7  [EA3E7]  53              push    bx
+    3633:A3E8  [EA3E8]  657475          je      L_EA460  ; 0x330
+L_EA3EB:
+    3633:A3EB  [EA3EB]  7020            jo      L_EA40D  ; 0x2dd
+    3633:A3ED  [EA3ED]  686f73          push    0x736f
+
+L_EA3EF:
+    3633:A3EF  [EA3EF]  7374            jae     L_EA465  ; 0x335
+
+    3633:A3F0  [EA3F0]  7420            je      L_EA412  ; 0x2e2
+
+    3633:A3F1  [EA3F1]  20636f          and     byte ptr [bp + di + 0x6f], ah
+
+    3633:A3F2  [EA3F2]  636f6d          arpl    word ptr [bx + 0x6d], bp
+
+    3633:A3F4  [EA3F4]  6d              insw    word ptr es:[di], dx
+    3633:A3F5  [EA3F5]  6d              insw    word ptr es:[di], dx
+L_EA3F6:
+    3633:A3F6  [EA3F6]  756e            jne     L_EA466  ; 0x336
+    3633:A3F8  [EA3F8]  6963617469      imul    sp, word ptr [bp + di + 0x61], 0x6974
+    3633:A3FD  [EA3FD]  6f              outsw   dx, word ptr [si]
+    3633:A3FE  [EA3FE]  6e              outsb   dx, byte ptr [si]
+    3633:A3FF  [EA3FF]  7300            jae     L_EA401  ; 0x2d1
+L_EA401:
+    3633:A401  [EA401]  53              push    bx
+    3633:A402  [EA402]  657475          je      L_EA47A  ; 0x34a
+    3633:A405  [EA405]  7020            jo      L_EA427  ; 0x2f7
+    3633:A407  [EA407]  6461            popaw   
+L_EA409:
+    3633:A409  [EA409]  7461            je      L_EA46C  ; 0x33c
+    3633:A40B  [EA40B]  207472          and     byte ptr [si + 0x72], dh
+
+L_EA40D:
+    3633:A40D  [EA40D]  7261            jb      L_EA470  ; 0x340
+
+    3633:A40E  [EA40E]  61              popaw   
+    3633:A40F  [EA40F]  6e              outsb   dx, byte ptr [si]
+    3633:A410  [EA410]  736d            jae     L_EA47F  ; 0x34f
+L_EA412:
+    3633:A412  [EA412]  697373696f      imul    si, word ptr [bp + di + 0x73], 0x6f69
+
+L_EA414:
+    3633:A414  [EA414]  7369            jae     L_EA47F  ; 0x34f
+    3633:A416  [EA416]  6f              outsw   dx, word ptr [si]
+    3633:A417  [EA417]  6e              outsb   dx, byte ptr [si]
+    3633:A418  [EA418]  207061          and     byte ptr [bx + si + 0x61], dh
+    3633:A41B  [EA41B]  7261            jb      L_EA47E  ; 0x34e
+
+L_EA41C:
+    3633:A41C  [EA41C]  61              popaw   
+    3633:A41D  [EA41D]  6d              insw    word ptr es:[di], dx
+    3633:A41E  [EA41E]  657465          je      L_EA486  ; 0x356
+    3633:A421  [EA421]  7273            jb      L_EA496  ; 0x366
+    3633:A423  [EA423]  005365          add     byte ptr [bp + di + 0x65], dl
+    3633:A426  [EA426]  6c              insb    byte ptr es:[di], dx
+L_EA427:
+    3633:A427  [EA427]  65637420        arpl    word ptr gs:[si + 0x20], si
+
+L_EA429:
+    3633:A429  [EA429]  7420            je      L_EA44B  ; 0x31b
+    3633:A42B  [EA42B]  636f64          arpl    word ptr [bx + 0x64], bp
+    3633:A42E  [EA42E]  696e672066      imul    bp, word ptr [bp + 0x67], 0x6620
+    3633:A433  [EA433]  6f              outsw   dx, word ptr [si]
+    3633:A434  [EA434]  726d            jb      L_EA4A3  ; 0x373
+    3633:A436  [EA436]  61              popaw   
+    3633:A437  [EA437]  7400            je      L_EA439  ; 0x309
+L_EA439:
+    3633:A439  [EA439]  55              push    bp
+    3633:A43A  [EA43A]  7365            jae     L_EA4A1  ; 0x371
+    3633:A43C  [EA43C]  206375          and     byte ptr [bp + di + 0x75], ah
+    3633:A43F  [EA43F]  7273            jb      L_EA4B4  ; 0x384
+
+L_EA440:
+    3633:A440  [EA440]  736f            jae     L_EA4B1  ; 0x381
+
+    3633:A441  [EA441]  6f              outsw   dx, word ptr [si]
+L_EA442:
+    3633:A442  [EA442]  7220            jb      L_EA464  ; 0x334
+    3633:A444  [EA444]  746f            je      L_EA4B5  ; 0x385
+    3633:A446  [EA446]  207365          and     byte ptr [bp + di + 0x65], dh
+    3633:A449  [EA449]  6c              insb    byte ptr es:[di], dx
+    3633:A44A  [EA44A]  65637420        arpl    word ptr gs:[si + 0x20], si
+
+L_EA44B:
+    3633:A44B  [EA44B]  637420          arpl    word ptr [si + 0x20], si
+
+L_EA44D:
+    3633:A44D  [EA44D]  20736f          and     byte ptr [bp + di + 0x6f], dh
+
+    3633:A44E  [EA44E]  736f            jae     L_EA4BF  ; 0x38f
+    3633:A450  [EA450]  7572            jne     L_EA4C4  ; 0x394
+    3633:A452  [EA452]  636500          arpl    word ptr [di], sp
+    3633:A455  [EA455]  53              push    bx
+    3633:A456  [EA456]  656c            insb    byte ptr es:[di], dx
+    3633:A458  [EA458]  65637420        arpl    word ptr gs:[si + 0x20], si
+    3633:A45C  [EA45C]  636861          arpl    word ptr [bx + si + 0x61], bp
+    3633:A45F  [EA45F]  6e              outsb   dx, byte ptr [si]
+L_EA460:
+    3633:A460  [EA460]  6e              outsb   dx, byte ptr [si]
+    3633:A461  [EA461]  656c            insb    byte ptr es:[di], dx
+    3633:A463  [EA463]  005573          add     byte ptr [di + 0x73], dl
+
+L_EA464:
+    3633:A464  [EA464]  55              push    bp
+L_EA465:
+    3633:A465  [EA465]  7365            jae     L_EA4CC  ; 0x39c
+
+L_EA466:
+    3633:A466  [EA466]  65206375        and     byte ptr gs:[bp + di + 0x75], ah
+
+    3633:A467  [EA467]  206375          and     byte ptr [bp + di + 0x75], ah
+    3633:A46A  [EA46A]  7273            jb      L_EA4DF  ; 0x3af
+L_EA46C:
+    3633:A46C  [EA46C]  6f              outsw   dx, word ptr [si]
+    3633:A46D  [EA46D]  7220            jb      L_EA48F  ; 0x35f
+    3633:A46F  [EA46F]  636f6e          arpl    word ptr [bx + 0x6e], bp
+
+L_EA470:
+    3633:A470  [EA470]  6f              outsw   dx, word ptr [si]
+    3633:A471  [EA471]  6e              outsb   dx, byte ptr [si]
+    3633:A472  [EA472]  7472            je      L_EA4E6  ; 0x3b6
+    3633:A474  [EA474]  6f              outsw   dx, word ptr [si]
+    3633:A475  [EA475]  6c              insb    byte ptr es:[di], dx
+    3633:A476  [EA476]  20746f          and     byte ptr [si + 0x6f], dh
+    3633:A479  [EA479]  206164          and     byte ptr [bx + di + 0x64], ah
+
+L_EA47A:
+    3633:A47A  [EA47A]  61              popaw   
+    3633:A47B  [EA47B]  646a75          push    0x75
+
+    3633:A47C  [EA47C]  6a75            push    0x75
+L_EA47E:
+    3633:A47E  [EA47E]  7374            jae     L_EA4F4  ; 0x3c4
+
+L_EA47F:
+    3633:A47F  [EA47F]  7400            je      L_EA481  ; 0x351
+
+    3633:A480  [EA480]  005573          add     byte ptr [di + 0x73], dl
+
+L_EA481:
+    3633:A481  [EA481]  55              push    bp
+    3633:A482  [EA482]  7365            jae     L_EA4E9  ; 0x3b9
+
+    3633:A483  [EA483]  65206375        and     byte ptr gs:[bp + di + 0x75], ah
+
+    3633:A484  [EA484]  206375          and     byte ptr [bp + di + 0x75], ah
+
+L_EA486:
+    3633:A486  [EA486]  7572            jne     L_EA4FA  ; 0x3ca
+
+    3633:A487  [EA487]  7273            jb      L_EA4FC  ; 0x3cc
+
+    3633:A488  [EA488]  736f            jae     L_EA4F9  ; 0x3c9
+
+    3633:A489  [EA489]  6f              outsw   dx, word ptr [si]
+    3633:A48A  [EA48A]  7220            jb      L_EA4AC  ; 0x37c
+    3633:A48C  [EA48C]  746f            je      L_EA4FD  ; 0x3cd
+    3633:A48E  [EA48E]  207365          and     byte ptr [bp + di + 0x65], dh
+
+L_EA48F:
+    3633:A48F  [EA48F]  7365            jae     L_EA4F6  ; 0x3c6
+    3633:A491  [EA491]  6c              insb    byte ptr es:[di], dx
+    3633:A492  [EA492]  65637420        arpl    word ptr gs:[si + 0x20], si
+L_EA496:
+    3633:A496  [EA496]  666c            insb    byte ptr es:[di], dx
+    3633:A498  [EA498]  6f              outsw   dx, word ptr [si]
+    3633:A499  [EA499]  7720            ja      L_EA4BB  ; 0x38b
+    3633:A49B  [EA49B]  636f6e          arpl    word ptr [bx + 0x6e], bp
+    3633:A49E  [EA49E]  7472            je      L_EA512  ; 0x3e2
+    3633:A4A0  [EA4A0]  6f              outsw   dx, word ptr [si]
+L_EA4A1:
+    3633:A4A1  [EA4A1]  6c              insb    byte ptr es:[di], dx
+    3633:A4A2  [EA4A2]  005472          add     byte ptr [si + 0x72], dl
+
+L_EA4A3:
+    3633:A4A3  [EA4A3]  54              push    sp
+    3633:A4A4  [EA4A4]  7265            jb      L_EA50B  ; 0x3db
+
+    3633:A4A5  [EA4A5]  6565207374      and     byte ptr gs:[bp + di + 0x74], dh
+
+    3633:A4A6  [EA4A6]  65207374        and     byte ptr gs:[bp + di + 0x74], dh
+    3633:A4AA  [EA4AA]  7275            jb      L_EA521  ; 0x3f1
+L_EA4AC:
+    3633:A4AC  [EA4AC]  637475          arpl    word ptr [si + 0x75], si
+    3633:A4AF  [EA4AF]  7265            jb      L_EA516  ; 0x3e6
+L_EA4B1:
+    3633:A4B1  [EA4B1]  64206163        and     byte ptr fs:[bx + di + 0x63], ah
+
+L_EA4B4:
+    3633:A4B4  [EA4B4]  637175          arpl    word ptr [bx + di + 0x75], si
+
+L_EA4B5:
+    3633:A4B5  [EA4B5]  7175            jno     L_EA52C  ; 0x3fc
+    3633:A4B7  [EA4B7]  6973697469      imul    si, word ptr [bp + di + 0x69], 0x6974
+
+L_EA4BB:
+    3633:A4BB  [EA4BB]  696f6e2073      imul    bp, word ptr [bx + 0x6e], 0x7320
+
+    3633:A4BC  [EA4BC]  6f              outsw   dx, word ptr [si]
+    3633:A4BD  [EA4BD]  6e              outsb   dx, byte ptr [si]
+    3633:A4BE  [EA4BE]  207365          and     byte ptr [bp + di + 0x65], dh
+
+L_EA4BF:
+    3633:A4BF  [EA4BF]  7365            jae     L_EA526  ; 0x3f6
+
+    3633:A4C0  [EA4C0]  657475          je      L_EA538  ; 0x408
+
+    3633:A4C1  [EA4C1]  7475            je      L_EA538  ; 0x408
+    3633:A4C3  [EA4C3]  7000            jo      L_EA4C5  ; 0x395
+
+L_EA4C4:
+    3633:A4C4  [EA4C4]  002e3035        add     byte ptr [0x3530], ch
+
+L_EA4C5:
+    3633:A4C5  [EA4C5]  2e3035          xor     byte ptr cs:[di], dh
+    3633:A4C8  [EA4C8]  20746f          and     byte ptr [si + 0x6f], dh
+    3633:A4CB  [EA4CB]  2032            and     byte ptr [bp + si], dh
+
+L_EA4CC:
+    3633:A4CC  [EA4CC]  3220            xor     ah, byte ptr [bx + si]
+
+    3633:A4CD  [EA4CD]  207553          and     byte ptr [di + 0x53], dh
+
+    3633:A4CE  [EA4CE]  7553            jne     L_EA523  ; 0x3f3
+    3633:A4D0  [EA4D0]  65632f          arpl    word ptr gs:[bx], bp
+    3633:A4D3  [EA4D3]  44              inc     sp
+    3633:A4D4  [EA4D4]  6976005341      imul    si, word ptr [bp], 0x4153
+    3633:A4D9  [EA4D9]  4d              dec     bp
+    3633:A4DA  [EA4DA]  50              push    ax
+    3633:A4DB  [EA4DB]  6c              insb    byte ptr es:[di], dx
+    3633:A4DC  [EA4DC]  65004163        add     byte ptr gs:[bx + di + 0x63], al
+
+L_EA4DF:
+    3633:A4DF  [EA4DF]  636375          arpl    word ptr [bp + di + 0x75], sp
+
+    3633:A4E0  [EA4E0]  63756d          arpl    word ptr [di + 0x6d], si
+
+    3633:A4E2  [EA4E2]  6d              insw    word ptr es:[di], dx
+    3633:A4E3  [EA4E3]  756c            jne     L_EA551  ; 0x421
+    3633:A4E5  [EA4E5]  61              popaw   
+L_EA4E6:
+    3633:A4E6  [EA4E6]  7465            je      L_EA54D  ; 0x41d
+    3633:A4E8  [EA4E8]  207065          and     byte ptr [bx + si + 0x65], dh
+
+L_EA4E9:
+    3633:A4E9  [EA4E9]  7065            jo      L_EA550  ; 0x420
+    3633:A4EB  [EA4EB]  61              popaw   
+    3633:A4EC  [EA4EC]  6b206f          imul    sp, word ptr [bx + si], 0x6f
+    3633:A4EF  [EA4EF]  7665            jbe     L_EA556  ; 0x426
+    3633:A4F1  [EA4F1]  7220            jb      L_EA513  ; 0x3e3
+    3633:A4F3  [EA4F3]  6d              insw    word ptr es:[di], dx
+L_EA4F4:
+    3633:A4F4  [EA4F4]  61              popaw   
+    3633:A4F5  [EA4F5]  6e              outsb   dx, byte ptr [si]
+L_EA4F6:
+    3633:A4F6  [EA4F6]  7920            jns     L_EA518  ; 0x3e8
+    3633:A4F8  [EA4F8]  7472            je      L_EA56C  ; 0x43c
+
+L_EA4F9:
+    3633:A4F9  [EA4F9]  7269            jb      L_EA564  ; 0x434
+
+L_EA4FA:
+    3633:A4FA  [EA4FA]  6967676572      imul    sp, word ptr [bx + 0x67], 0x7265
+
+    3633:A4FB  [EA4FB]  6767657273      jb      L_EA573  ; 0x443
+
+L_EA4FC:
+    3633:A4FC  [EA4FC]  67657273        jb      L_EA573  ; 0x443
+
+L_EA4FD:
+    3633:A4FD  [EA4FD]  657273          jb      L_EA573  ; 0x443
+
+    3633:A4FF  [EA4FF]  7300            jae     L_EA501  ; 0x3d1
+
+    3633:A500  [EA500]  004e75          add     byte ptr [bp + 0x75], cl
+
+L_EA501:
+    3633:A501  [EA501]  4e              dec     si
+    3633:A502  [EA502]  756d            jne     L_EA571  ; 0x441
+
+    3633:A503  [EA503]  6d              insw    word ptr es:[di], dx
+    3633:A504  [EA504]  626572          bound   sp, dword ptr [di + 0x72]
+    3633:A507  [EA507]  206f66          and     byte ptr [bx + 0x66], ch
+    3633:A50A  [EA50A]  207472          and     byte ptr [si + 0x72], dh
+
+L_EA50B:
+    3633:A50B  [EA50B]  7472            je      L_EA57F  ; 0x44f
+    3633:A50D  [EA50D]  6967676572      imul    sp, word ptr [bx + 0x67], 0x7265
+L_EA512:
+    3633:A512  [EA512]  7320            jae     L_EA534  ; 0x404
+
+L_EA513:
+    3633:A513  [EA513]  206265          and     byte ptr [bp + si + 0x65], ah
+
+    3633:A514  [EA514]  626566          bound   sp, dword ptr [di + 0x66]
+
+L_EA516:
+    3633:A516  [EA516]  666f            outsd   dx, dword ptr [si]
+
+    3633:A517  [EA517]  6f              outsw   dx, word ptr [si]
+L_EA518:
+    3633:A518  [EA518]  7265            jb      L_EA57F  ; 0x44f
+    3633:A51A  [EA51A]  206861          and     byte ptr [bx + si + 0x61], ch
+    3633:A51D  [EA51D]  6c              insb    byte ptr es:[di], dx
+    3633:A51E  [EA51E]  7400            je      L_EA520  ; 0x3f0
+L_EA520:
+    3633:A520  [EA520]  43              inc     bx
+L_EA521:
+    3633:A521  [EA521]  7572            jne     L_EA595  ; 0x465
+L_EA523:
+    3633:A523  [EA523]  736f            jae     L_EA594  ; 0x464
+    3633:A525  [EA525]  7220            jb      L_EA547  ; 0x417
+
+L_EA526:
+    3633:A526  [EA526]  207365          and     byte ptr [bp + di + 0x65], dh
+
+    3633:A527  [EA527]  7365            jae     L_EA58E  ; 0x45e
+    3633:A529  [EA529]  7473            je      L_EA59E  ; 0x46e
+    3633:A52B  [EA52B]  207765          and     byte ptr [bx + 0x65], dh
+
+L_EA52C:
+    3633:A52C  [EA52C]  7765            ja      L_EA593  ; 0x463
+    3633:A52E  [EA52E]  6967687420      imul    sp, word ptr [bx + 0x68], 0x2074
+    3633:A533  [EA533]  6f              outsw   dx, word ptr [si]
+L_EA534:
+    3633:A534  [EA534]  66206c61        and     byte ptr [si + 0x61], ch
+L_EA538:
+    3633:A538  [EA538]  7374            jae     L_EA5AE  ; 0x47e
+    3633:A53A  [EA53A]  207361          and     byte ptr [bp + di + 0x61], dh
+    3633:A53D  [EA53D]  6d              insw    word ptr es:[di], dx
+    3633:A53E  [EA53E]  706c            jo      L_EA5AC  ; 0x47c
+    3633:A540  [EA540]  650035          add     byte ptr gs:[di], dh
+    3633:A543  [EA543]  20746f          and     byte ptr [si + 0x6f], dh
+    3633:A546  [EA546]  2031            and     byte ptr [bx + di], dh
+
+L_EA547:
+    3633:A547  [EA547]  3130            xor     word ptr [bx + si], si
+
+    3633:A548  [EA548]  3020            xor     byte ptr [bx + si], ah
+
+    3633:A549  [EA549]  207553          and     byte ptr [di + 0x53], dh
+
+    3633:A54A  [EA54A]  7553            jne     L_EA59F  ; 0x46f
+    3633:A54C  [EA54C]  65632f          arpl    word ptr gs:[bx], bp
+
+L_EA54D:
+    3633:A54D  [EA54D]  632f            arpl    word ptr [bx], bp
+    3633:A54F  [EA54F]  44              inc     sp
+L_EA550:
+    3633:A550  [EA550]  6976003230      imul    si, word ptr [bp], 0x3032
+
+L_EA551:
+    3633:A551  [EA551]  7600            jbe     L_EA553  ; 0x423
+L_EA553:
+    3633:A553  [EA553]  3230            xor     dh, byte ptr [bx + si]
+    3633:A555  [EA555]  7553            jne     L_EA5AA  ; 0x47a
+
+L_EA556:
+    3633:A556  [EA556]  53              push    bx
+    3633:A557  [EA557]  656320          arpl    word ptr gs:[bx + si], sp
+    3633:A55A  [EA55A]  746f            je      L_EA5CB  ; 0x49b
+    3633:A55C  [EA55C]  2035            and     byte ptr [di], dh
+    3633:A55E  [EA55E]  3020            xor     byte ptr [bx + si], ah
+    3633:A560  [EA560]  6d              insw    word ptr es:[di], dx
+    3633:A561  [EA561]  53              push    bx
+    3633:A562  [EA562]  65632f          arpl    word ptr gs:[bx], bp
+
+L_EA564:
+    3633:A564  [EA564]  2f              das     
+    3633:A565  [EA565]  44              inc     sp
+    3633:A566  [EA566]  697600302e      imul    si, word ptr [bp], 0x2e30
+    3633:A56B  [EA56B]  3120            xor     word ptr [bx + si], sp
+
+L_EA56C:
+    3633:A56C  [EA56C]  20746f          and     byte ptr [si + 0x6f], dh
+
+    3633:A56D  [EA56D]  746f            je      L_EA5DE  ; 0x4ae
+    3633:A56F  [EA56F]  2035            and     byte ptr [di], dh
+L_EA571:
+    3633:A571  [EA571]  205365          and     byte ptr [bp + di + 0x65], dl
+
+L_EA573:
+    3633:A573  [EA573]  65632f          arpl    word ptr gs:[bx], bp
+
+    3633:A574  [EA574]  632f            arpl    word ptr [bx], bp
+    3633:A576  [EA576]  44              inc     sp
+    3633:A577  [EA577]  6976206f72      imul    si, word ptr [bp + 0x20], 0x726f
+    3633:A57C  [EA57C]  204558          and     byte ptr [di + 0x58], al
+L_EA57F:
+    3633:A57F  [EA57F]  54              push    sp
+    3633:A580  [EA580]  20434c          and     byte ptr [bp + di + 0x4c], al
+    3633:A583  [EA583]  4f              dec     di
+    3633:A584  [EA584]  43              inc     bx
+    3633:A585  [EA585]  4b              dec     bx
+    3633:A586  [EA586]  005573          add     byte ptr [di + 0x73], dl
+    3633:A589  [EA589]  65206375        and     byte ptr gs:[bp + di + 0x75], ah
+    3633:A58D  [EA58D]  7273            jb      L_EA602  ; 0x4d2
+
+L_EA58E:
+    3633:A58E  [EA58E]  736f            jae     L_EA5FF  ; 0x4cf
+
+    3633:A58F  [EA58F]  6f              outsw   dx, word ptr [si]
+    3633:A590  [EA590]  7220            jb      L_EA5B2  ; 0x482
+    3633:A592  [EA592]  7365            jae     L_EA5F9  ; 0x4c9
+
+L_EA593:
+    3633:A593  [EA593]  656c            insb    byte ptr es:[di], dx
+
+L_EA594:
+    3633:A594  [EA594]  6c              insb    byte ptr es:[di], dx
+L_EA595:
+    3633:A595  [EA595]  65637420        arpl    word ptr gs:[si + 0x20], si
+    3633:A599  [EA599]  746f            je      L_EA60A  ; 0x4da
+    3633:A59B  [EA59B]  207275          and     byte ptr [bp + si + 0x75], dh
+L_EA59E:
+    3633:A59E  [EA59E]  6e              outsb   dx, byte ptr [si]
+L_EA59F:
+    3633:A59F  [EA59F]  005573          add     byte ptr [di + 0x73], dl
+    3633:A5A2  [EA5A2]  65204375        and     byte ptr gs:[bp + di + 0x75], al
+    3633:A5A6  [EA5A6]  7273            jb      L_EA61B  ; 0x4eb
+    3633:A5A8  [EA5A8]  6f              outsw   dx, word ptr [si]
+    3633:A5A9  [EA5A9]  7220            jb      L_EA5CB  ; 0x49b
+
+L_EA5AA:
+    3633:A5AA  [EA5AA]  207365          and     byte ptr [bp + di + 0x65], dh
+
+    3633:A5AB  [EA5AB]  7365            jae     L_EA612  ; 0x4e2
+
+L_EA5AC:
+    3633:A5AC  [EA5AC]  656c            insb    byte ptr es:[di], dx
+
+    3633:A5AD  [EA5AD]  6c              insb    byte ptr es:[di], dx
+L_EA5AE:
+    3633:A5AE  [EA5AE]  65637420        arpl    word ptr gs:[si + 0x20], si
+L_EA5B2:
+    3633:A5B2  [EA5B2]  746f            je      L_EA623  ; 0x4f3
+    3633:A5B4  [EA5B4]  20686f          and     byte ptr [bx + si + 0x6f], ch
+    3633:A5B7  [EA5B7]  6c              insb    byte ptr es:[di], dx
+    3633:A5B8  [EA5B8]  642d7365        sub     ax, 0x6573
+    3633:A5BC  [EA5BC]  6c              insb    byte ptr es:[di], dx
+    3633:A5BD  [EA5BD]  65637400        arpl    word ptr gs:[si], si
+    3633:A5C1  [EA5C1]  43              inc     bx
+    3633:A5C2  [EA5C2]  45              inc     bp
+    3633:A5C3  [EA5C3]  4e              dec     si
+    3633:A5C4  [EA5C4]  54              push    sp
+    3633:A5C5  [EA5C5]  45              inc     bp
+    3633:A5C6  [EA5C6]  52              push    dx
+    3633:A5C7  [EA5C7]  20504f          and     byte ptr [bx + si + 0x4f], dl
+    3633:A5CA  [EA5CA]  53              push    bx
+L_EA5CB:
+    3633:A5CB  [EA5CB]  3a5052          cmp     dl, byte ptr [bx + si + 0x52]
+    3633:A5CE  [EA5CE]  45              inc     bp
+    3633:A5CF  [EA5CF]  53              push    bx
+    3633:A5D0  [EA5D0]  53              push    bx
+    3633:A5D1  [EA5D1]  204355          and     byte ptr [bp + di + 0x55], al
+    3633:A5D4  [EA5D4]  52              push    dx
+    3633:A5D5  [EA5D5]  53              push    bx
+    3633:A5D6  [EA5D6]  4f              dec     di
+    3633:A5D7  [EA5D7]  52              push    dx
+    3633:A5D8  [EA5D8]  205345          and     byte ptr [bp + di + 0x45], dl
+    3633:A5DB  [EA5DB]  4c              dec     sp
+    3633:A5DC  [EA5DC]  3a4144          cmp     al, byte ptr [bx + di + 0x44]
+
+L_EA5DE:
+    3633:A5DE  [EA5DE]  44              inc     sp
+    3633:A5DF  [EA5DF]  4a              dec     dx
+    3633:A5E0  [EA5E0]  204241          and     byte ptr [bp + si + 0x41], al
+    3633:A5E3  [EA5E3]  4c              dec     sp
+    3633:A5E4  [EA5E4]  0008            add     byte ptr [bx + si], cl
+    3633:A5E6  [EA5E6]  00d8            add     al, bl
+    3633:A5E8  [EA5E8]  f1              int1    
+    3633:A5E9  [EA5E9]  0100            add     word ptr [bx + si], ax
+    3633:A5EB  [EA5EB]  0000            add     byte ptr [bx + si], al
+    3633:A5ED  [EA5ED]  0000            add     byte ptr [bx + si], al
+    3633:A5EF  [EA5EF]  0000            add     byte ptr [bx + si], al
+    3633:A5F1  [EA5F1]  0000            add     byte ptr [bx + si], al
+    3633:A5F3  [EA5F3]  0000            add     byte ptr [bx + si], al
+    3633:A5F5  [EA5F5]  0d00d8          or      ax, 0xd800
+    3633:A5F8  [EA5F8]  f1              int1    
+L_EA5F9:
+    3633:A5F9  [EA5F9]  0205            add     al, byte ptr [di]
+    3633:A5FB  [EA5FB]  0000            add     byte ptr [bx + si], al
+    3633:A5FD  [EA5FD]  0000            add     byte ptr [bx + si], al
+L_EA5FF:
+    3633:A5FF  [EA5FF]  40              inc     ax
+    3633:A600  [EA600]  03d8            add     bx, ax
+L_EA602:
+    3633:A602  [EA602]  f1              int1    
+    3633:A603  [EA603]  0000            add     byte ptr [bx + si], al
+    3633:A605  [EA605]  2200            and     al, byte ptr [bx + si]
+    3633:A607  [EA607]  d8f1            fdiv    st(1)
+    3633:A609  [EA609]  0003            add     byte ptr [bp + di], al
+
+L_EA60A:
+    3633:A60A  [EA60A]  030e0022        add     cx, word ptr [0x2200]
+
+    3633:A60B  [EA60B]  0e              push    cs
+    3633:A60C  [EA60C]  0022            add     byte ptr [bp + si], ah
+    3633:A60E  [EA60E]  f5              cmc     
+    3633:A60F  [EA60F]  0000            add     byte ptr [bx + si], al
+    3633:A611  [EA611]  0000            add     byte ptr [bx + si], al
+
+L_EA612:
+    3633:A612  [EA612]  0004            add     byte ptr [si], al
+
+    3633:A613  [EA613]  0400            add     al, 0
+
+    3633:A614  [EA614]  002e00d8        add     byte ptr [0xd800], ch
+
+    3633:A615  [EA615]  2e00d8          add     al, bl
+    3633:A618  [EA618]  f1              int1    
+    3633:A619  [EA619]  0004            add     byte ptr [si], al
+L_EA61B:
+    3633:A61B  [EA61B]  49              dec     cx
+    3633:A61C  [EA61C]  029bf563        add     bl, byte ptr [bp + di + 0x63f5]
+    3633:A620  [EA620]  03d8            add     bx, ax
+    3633:A622  [EA622]  f1              int1    
+L_EA623:
+    3633:A623  [EA623]  0900            or      word ptr [bx + si], ax
+    3633:A625  [EA625]  3800            cmp     byte ptr [bx + si], al
+    3633:A627  [EA627]  d8f1            fdiv    st(1)
+    3633:A629  [EA629]  0000            add     byte ptr [bx + si], al
+    3633:A62B  [EA62B]  ab              stosw   word ptr es:[di], ax
+    3633:A62C  [EA62C]  019bf57d        add     word ptr [bp + di + 0x7df5], bx
+    3633:A630  [EA630]  03d8            add     bx, ax
+    3633:A632  [EA632]  f1              int1    
+    3633:A633  [EA633]  0900            or      word ptr [bx + si], ax
+    3633:A635  [EA635]  3f              aas     
+    3633:A636  [EA636]  00d8            add     al, bl
+    3633:A638  [EA638]  f1              int1    
+    3633:A639  [EA639]  00060400        add     byte ptr [4], al
+    3633:A63D  [EA63D]  9b              wait    
+    3633:A63E  [EA63E]  f5              cmc     
+    3633:A63F  [EA63F]  a003d8          mov     al, byte ptr [0xd803]
+    3633:A642  [EA642]  f1              int1    
+    3633:A643  [EA643]  0900            or      word ptr [bx + si], ax
+    3633:A645  [EA645]  4a              dec     dx
+    3633:A646  [EA646]  00d8            add     al, bl
+    3633:A648  [EA648]  f1              int1    
+    3633:A649  [EA649]  07              pop     es
+    3633:A64A  [EA64A]  1000            adc     byte ptr [bx + si], al
+    3633:A64C  [EA64C]  0000            add     byte ptr [bx + si], al
+    3633:A64E  [EA64E]  00c3            add     bl, al
+    3633:A650  [EA650]  03d8            add     bx, ax
+    3633:A652  [EA652]  f1              int1    
+    3633:A653  [EA653]  0000            add     byte ptr [bx + si], al
+    3633:A655  [EA655]  52              push    dx
+    3633:A656  [EA656]  00d8            add     al, bl
+    3633:A658  [EA658]  f1              int1    
+    3633:A659  [EA659]  080a            or      byte ptr [bp + si], cl
+    3633:A65B  [EA65B]  0000            add     byte ptr [bx + si], al
+    3633:A65D  [EA65D]  0000            add     byte ptr [bx + si], al
+    3633:A65F  [EA65F]  d6              salc    
+    3633:A660  [EA660]  03d8            add     bx, ax
+    3633:A662  [EA662]  f1              int1    
+    3633:A663  [EA663]  0000            add     byte ptr [bx + si], al
+    3633:A665  [EA665]  5f              pop     di
+    3633:A666  [EA666]  00d8            add     al, bl
+    3633:A668  [EA668]  f1              int1    
+    3633:A669  [EA669]  0009            add     byte ptr [bx + di], cl
+    3633:A66B  [EA66B]  0000            add     byte ptr [bx + si], al
+    3633:A66D  [EA66D]  0000            add     byte ptr [bx + si], al
+    3633:A66F  [EA66F]  0000            add     byte ptr [bx + si], al
+    3633:A671  [EA671]  0000            add     byte ptr [bx + si], al
+    3633:A673  [EA673]  0200            add     al, byte ptr [bx + si]
+    3633:A675  [EA675]  6a00            push    0
+    3633:A677  [EA677]  d8f1            fdiv    st(1)
+    3633:A679  [EA679]  0000            add     byte ptr [bx + si], al
+    3633:A67B  [EA67B]  0000            add     byte ptr [bx + si], al
+    3633:A67D  [EA67D]  0000            add     byte ptr [bx + si], al
+    3633:A67F  [EA67F]  0000            add     byte ptr [bx + si], al
+    3633:A681  [EA681]  0000            add     byte ptr [bx + si], al
+    3633:A683  [EA683]  0200            add     al, byte ptr [bx + si]
+    3633:A685  [EA685]  7700            ja      L_EA687  ; 0x557
+L_EA687:
+    3633:A687  [EA687]  d8f1            fdiv    st(1)
+    3633:A689  [EA689]  0b0d            or      cx, word ptr [di]
+    3633:A68B  [EA68B]  0000            add     byte ptr [bx + si], al
+    3633:A68D  [EA68D]  0000            add     byte ptr [bx + si], al
+    3633:A68F  [EA68F]  f1              int1    
+    3633:A690  [EA690]  03d8            add     bx, ax
+    3633:A692  [EA692]  f1              int1    
+    3633:A693  [EA693]  0000            add     byte ptr [bx + si], al
+    3633:A695  [EA695]  7f00            jg      L_EA697  ; 0x567
+L_EA697:
+    3633:A697  [EA697]  d8f1            fdiv    st(1)
+    3633:A699  [EA699]  000c            add     byte ptr [si], cl
+    3633:A69B  [EA69B]  0000            add     byte ptr [bx + si], al
+    3633:A69D  [EA69D]  0000            add     byte ptr [bx + si], al
+    3633:A69F  [EA69F]  0000            add     byte ptr [bx + si], al
+    3633:A6A1  [EA6A1]  0000            add     byte ptr [bx + si], al
+    3633:A6A3  [EA6A3]  0200            add     al, byte ptr [bx + si]
+    3633:A6A5  [EA6A5]  8300d8          add     word ptr [bx + si], -0x28
+    3633:A6A8  [EA6A8]  f1              int1    
+    3633:A6A9  [EA6A9]  0000            add     byte ptr [bx + si], al
+    3633:A6AB  [EA6AB]  0000            add     byte ptr [bx + si], al
+    3633:A6AD  [EA6AD]  0000            add     byte ptr [bx + si], al
+    3633:A6AF  [EA6AF]  06              push    es
+    3633:A6B0  [EA6B0]  04d8            add     al, 0xd8
+    3633:A6B2  [EA6B2]  f1              int1    
+    3633:A6B3  [EA6B3]  0200            add     al, byte ptr [bx + si]
+    3633:A6B5  [EA6B5]  8600            xchg    byte ptr [bx + si], al
+    3633:A6B7  [EA6B7]  d8f1            fdiv    st(1)
+    3633:A6B9  [EA6B9]  0e              push    cs
+    3633:A6BA  [EA6BA]  0000            add     byte ptr [bx + si], al
+    3633:A6BC  [EA6BC]  0000            add     byte ptr [bx + si], al
+    3633:A6BE  [EA6BE]  0000            add     byte ptr [bx + si], al
+    3633:A6C0  [EA6C0]  0000            add     byte ptr [bx + si], al
+    3633:A6C2  [EA6C2]  0000            add     byte ptr [bx + si], al
+    3633:A6C4  [EA6C4]  007f00          add     byte ptr [bx], bh
+    3633:A6C7  [EA6C7]  d8f1            fdiv    st(1)
+    3633:A6C9  [EA6C9]  000f            add     byte ptr [bx], cl
+    3633:A6CB  [EA6CB]  0000            add     byte ptr [bx + si], al
+    3633:A6CD  [EA6CD]  0000            add     byte ptr [bx + si], al
+    3633:A6CF  [EA6CF]  0000            add     byte ptr [bx + si], al
+    3633:A6D1  [EA6D1]  0000            add     byte ptr [bx + si], al
+    3633:A6D3  [EA6D3]  0200            add     al, byte ptr [bx + si]
+    3633:A6D5  [EA6D5]  8300d8          add     word ptr [bx + si], -0x28
+    3633:A6D8  [EA6D8]  f1              int1    
+    3633:A6D9  [EA6D9]  0000            add     byte ptr [bx + si], al
+    3633:A6DB  [EA6DB]  0000            add     byte ptr [bx + si], al
+    3633:A6DD  [EA6DD]  0000            add     byte ptr [bx + si], al
+    3633:A6DF  [EA6DF]  2204            and     al, byte ptr [si]
+    3633:A6E1  [EA6E1]  d8f1            fdiv    st(1)
+    3633:A6E3  [EA6E3]  0200            add     al, byte ptr [bx + si]
+    3633:A6E5  [EA6E5]  8d00            lea     ax, [bx + si]
+    3633:A6E7  [EA6E7]  d8f1            fdiv    st(1)
+    3633:A6E9  [EA6E9]  0011            add     byte ptr [bx + di], dl
+    3633:A6EB  [EA6EB]  3000            xor     byte ptr [bx + si], al
+    3633:A6ED  [EA6ED]  e4f5            in      al, 0xf5
+    3633:A6EF  [EA6EF]  44              inc     sp
+    3633:A6F0  [EA6F0]  04d8            add     al, 0xd8
+    3633:A6F2  [EA6F2]  f1              int1    
+    3633:A6F3  [EA6F3]  1000            adc     byte ptr [bx + si], al
+    3633:A6F5  [EA6F5]  95              xchg    bp, ax
+    3633:A6F6  [EA6F6]  00d8            add     al, bl
+    3633:A6F8  [EA6F8]  f1              int1    
+    3633:A6F9  [EA6F9]  1217            adc     dl, byte ptr [bx]
+    3633:A6FB  [EA6FB]  0000            add     byte ptr [bx + si], al
+    3633:A6FD  [EA6FD]  0000            add     byte ptr [bx + si], al
+    3633:A6FF  [EA6FF]  6904d8f1        imul    ax, word ptr [si], 0xf1d8
+    3633:A703  [EA703]  0000            add     byte ptr [bx + si], al
+    3633:A705  [EA705]  a000d8          mov     al, byte ptr [0xd800]
+    3633:A708  [EA708]  f1              int1    
+    3633:A709  [EA709]  0013            add     byte ptr [bp + di], dl
+    3633:A70B  [EA70B]  0200            add     al, byte ptr [bx + si]
+    3633:A70D  [EA70D]  13f3            adc     si, bx
+    3633:A70F  [EA70F]  8404            test    byte ptr [si], al
+    3633:A711  [EA711]  d8f1            fdiv    st(1)
+    3633:A713  [EA713]  0400            add     al, 0
+    3633:A715  [EA715]  b100            mov     cl, 0
+    3633:A717  [EA717]  d8f1            fdiv    st(1)
+    3633:A719  [EA719]  0014            add     byte ptr [si], dl
+    3633:A71B  [EA71B]  260213          add     dl, byte ptr es:[bp + di]
+    3633:A71E  [EA71E]  f3ac            rep lodsb al, byte ptr [si]
+    3633:A720  [EA720]  04d8            add     al, 0xd8
+    3633:A722  [EA722]  f1              int1    
+    3633:A723  [EA723]  0400            add     al, 0
+    3633:A725  [EA725]  b700            mov     bh, 0
+    3633:A727  [EA727]  d8f1            fdiv    st(1)
+    3633:A729  [EA729]  0015            add     byte ptr [di], dl
+    3633:A72B  [EA72B]  2d0113          sub     ax, 0x1301
+    3633:A72E  [EA72E]  f3cf            iret    
 
 SUB_EAC86:
     3633:AC86  [EAC86]  02d8            add     bl, al
@@ -13075,11 +14307,278 @@ L_F0678:
 L_F08E4:
     3532:08E4  [F08E4]  8b7ef8          mov     di, word ptr [bp - 8]
 
+SUB_F09C0:
+    3532:09C0  [F09C0]  c43eb41d        les     di, ptr [0x1db4]
+    3532:09C4  [F09C4]  8bd8            mov     bx, ax
+SUB_F09C6:
+    3532:09C6  [F09C6]  268a4101        mov     al, byte ptr es:[bx + di + 1]
+    3532:09CA  [F09CA]  2ae4            sub     ah, ah
+    3532:09CC  [F09CC]  a31a07          mov     word ptr [0x71a], ax
+    3532:09CF  [F09CF]  a11e07          mov     ax, word ptr [0x71e]
+    3532:09D2  [F09D2]  d1e0            shl     ax, 1
+    3532:09D4  [F09D4]  c43eb41d        les     di, ptr [0x1db4]
+    3532:09D8  [F09D8]  8bd8            mov     bx, ax
+    3532:09DA  [F09DA]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:09DD  [F09DD]  2af6            sub     dh, dh
+    3532:09DF  [F09DF]  89161607        mov     word ptr [0x716], dx
+    3532:09E3  [F09E3]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:09E6  [F09E6]  47              inc     di
+    3532:09E7  [F09E7]  2bd2            sub     dx, dx
+    3532:09E9  [F09E9]  8ec2            mov     es, dx
+
+SUB_F09EA:
+    3532:09EA  [F09EA]  c2268b          ret     0x8b26
+
+    3532:09EB  [F09EB]  268b05          mov     ax, word ptr es:[di]
+    3532:09EE  [F09EE]  d1e8            shr     ax, 1
+    3532:09F0  [F09F0]  d1e8            shr     ax, 1
+    3532:09F2  [F09F2]  d1e8            shr     ax, 1
+    3532:09F4  [F09F4]  d1e8            shr     ax, 1
+    3532:09F6  [F09F6]  d1e8            shr     ax, 1
+    3532:09F8  [F09F8]  a32407          mov     word ptr [0x724], ax
+    3532:09FB  [F09FB]  a12407          mov     ax, word ptr [0x724]
+    3532:09FE  [F09FE]  250004          and     ax, 0x400
+    3532:0A01  [F0A01]  3d0000          cmp     ax, 0
+    3532:0A04  [F0A04]  7409            je      L_F0A0F  ; 0x4f
+    3532:0A06  [F0A06]  a12407          mov     ax, word ptr [0x724]
+    3532:0A09  [F0A09]  0d00fc          or      ax, 0xfc00
+    3532:0A0C  [F0A0C]  a32407          mov     word ptr [0x724], ax
+L_F0A0F:
+    3532:0A0F  [F0A0F]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:0A12  [F0A12]  83c703          add     di, 3
+    3532:0A15  [F0A15]  2bd2            sub     dx, dx
+    3532:0A17  [F0A17]  8ec2            mov     es, dx
+    3532:0A19  [F0A19]  268b1d          mov     bx, word ptr es:[di]
+    3532:0A1C  [F0A1C]  d1eb            shr     bx, 1
+    3532:0A1E  [F0A1E]  d1eb            shr     bx, 1
+    3532:0A20  [F0A20]  d1eb            shr     bx, 1
+    3532:0A22  [F0A22]  d1eb            shr     bx, 1
+    3532:0A24  [F0A24]  d1eb            shr     bx, 1
+    3532:0A26  [F0A26]  891e2207        mov     word ptr [0x722], bx
+    3532:0A2A  [F0A2A]  a12207          mov     ax, word ptr [0x722]
+    3532:0A2D  [F0A2D]  250004          and     ax, 0x400
+    3532:0A30  [F0A30]  3d0000          cmp     ax, 0
+    3532:0A33  [F0A33]  7409            je      L_F0A3E  ; 0x7e
+    3532:0A35  [F0A35]  a12207          mov     ax, word ptr [0x722]
+    3532:0A38  [F0A38]  0d00fc          or      ax, 0xfc00
+    3532:0A3B  [F0A3B]  a32207          mov     word ptr [0x722], ax
+L_F0A3E:
+    3532:0A3E  [F0A3E]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:0A41  [F0A41]  83c707          add     di, 7
+    3532:0A44  [F0A44]  2bd2            sub     dx, dx
+    3532:0A46  [F0A46]  8ec2            mov     es, dx
+    3532:0A48  [F0A48]  268b1d          mov     bx, word ptr es:[di]
+
+SUB_F0A4A:
+    3532:0A4A  [F0A4A]  1d895e          sbb     ax, 0x5e89
+
+    3532:0A4B  [F0A4B]  895ef6          mov     word ptr [bp - 0xa], bx
+
+    3532:0A4D  [F0A4D]  f68b46f805      test    byte ptr [bp + di - 0x7ba], 5
+
+SUB_F0A4E:
+    3532:0A4E  [F0A4E]  8b46f8          mov     ax, word ptr [bp - 8]
+    3532:0A51  [F0A51]  050500          add     ax, 5
+
+    3532:0A52  [F0A52]  05008b          add     ax, 0x8b00
+
+    3532:0A54  [F0A54]  8bf8            mov     di, ax
+
+    3532:0A55  [F0A55]  f8              clc     
+    3532:0A56  [F0A56]  268b1d          mov     bx, word ptr es:[di]
+    3532:0A59  [F0A59]  895ef4          mov     word ptr [bp - 0xc], bx
+    3532:0A5C  [F0A5C]  891ec206        mov     word ptr [0x6c2], bx
+    3532:0A60  [F0A60]  c7061207ffff    mov     word ptr [0x712], 0xffff
+    3532:0A66  [F0A66]  c746f20100      mov     word ptr [bp - 0xe], 1
+    3532:0A6B  [F0A6B]  c606c10600      mov     byte ptr [0x6c1], 0
 L_F0A70:
     3532:0A70  [F0A70]  a0c106          mov     al, byte ptr [0x6c1]
 
+SUB_F0AAA:
+    3532:0AAA  [F0AAA]  a11207          mov     ax, word ptr [0x712]
+    3532:0AAD  [F0AAD]  25ff03          and     ax, 0x3ff
+    3532:0AB0  [F0AB0]  8bf8            mov     di, ax
+    3532:0AB2  [F0AB2]  a11607          mov     ax, word ptr [0x716]
+    3532:0AB5  [F0AB5]  f7ef            imul    di
+    3532:0AB7  [F0AB7]  99              cdq     
+    3532:0AB8  [F0AB8]  f73e1a07        idiv    word ptr [0x71a]
+    3532:0ABC  [F0ABC]  8b3e2207        mov     di, word ptr [0x722]
+    3532:0AC0  [F0AC0]  03f8            add     di, ax
+    3532:0AC2  [F0AC2]  893ebc06        mov     word ptr [0x6bc], di
+    3532:0AC6  [F0AC6]  a11c07          mov     ax, word ptr [0x71c]
+    3532:0AC9  [F0AC9]  39061807        cmp     word ptr [0x718], ax
+    3532:0ACD  [F0ACD]  7e1c            jle     L_F0AEB  ; 0x4b
+    3532:0ACF  [F0ACF]  a11407          mov     ax, word ptr [0x714]
+    3532:0AD2  [F0AD2]  25ff03          and     ax, 0x3ff
+    3532:0AD5  [F0AD5]  8b3e2407        mov     di, word ptr [0x724]
+    3532:0AD9  [F0AD9]  03f8            add     di, ax
+    3532:0ADB  [F0ADB]  a11807          mov     ax, word ptr [0x718]
+    3532:0ADE  [F0ADE]  f7ef            imul    di
+    3532:0AE0  [F0AE0]  99              cdq     
+    3532:0AE1  [F0AE1]  f73e1c07        idiv    word ptr [0x71c]
+    3532:0AE5  [F0AE5]  a3be06          mov     word ptr [0x6be], ax
+    3532:0AE8  [F0AE8]  e91c00          jmp     L_F0B07  ; 0x67
+L_F0AEB:
+    3532:0AEB  [F0AEB]  a11407          mov     ax, word ptr [0x714]
+    3532:0AEE  [F0AEE]  25ff03          and     ax, 0x3ff
+    3532:0AF1  [F0AF1]  8bf8            mov     di, ax
+    3532:0AF3  [F0AF3]  a11807          mov     ax, word ptr [0x718]
+    3532:0AF6  [F0AF6]  f7ef            imul    di
+    3532:0AF8  [F0AF8]  99              cdq     
+    3532:0AF9  [F0AF9]  f73e1c07        idiv    word ptr [0x71c]
+    3532:0AFD  [F0AFD]  8b3e2407        mov     di, word ptr [0x724]
+    3532:0B01  [F0B01]  03f8            add     di, ax
+    3532:0B03  [F0B03]  893ebe06        mov     word ptr [0x6be], di
+
+SUB_F0B06:
+    3532:0B06  [F0B06]  06              push    es
+L_F0B07:
+    3532:0B07  [F0B07]  833ebc0600      cmp     word ptr [0x6bc], 0
+    3532:0B0C  [F0B0C]  7e07            jle     L_F0B15  ; 0x15
+    3532:0B0E  [F0B0E]  8b3ebc06        mov     di, word ptr [0x6bc]
+    3532:0B12  [F0B12]  e90200          jmp     L_F0B17  ; 0x17
+L_F0B15:
+    3532:0B15  [F0B15]  2bff            sub     di, di
+L_F0B17:
+    3532:0B17  [F0B17]  81ffff03        cmp     di, 0x3ff
+    3532:0B1B  [F0B1B]  7d13            jge     L_F0B30  ; 0x30
+    3532:0B1D  [F0B1D]  833ebc0600      cmp     word ptr [0x6bc], 0
+    3532:0B22  [F0B22]  7e07            jle     L_F0B2B  ; 0x2b
+    3532:0B24  [F0B24]  8b3ebc06        mov     di, word ptr [0x6bc]
+    3532:0B28  [F0B28]  e90200          jmp     L_F0B2D  ; 0x2d
+L_F0B2B:
+    3532:0B2B  [F0B2B]  2bff            sub     di, di
+L_F0B2D:
+    3532:0B2D  [F0B2D]  e90300          jmp     L_F0B33  ; 0x33
+L_F0B30:
+    3532:0B30  [F0B30]  bfff03          mov     di, 0x3ff
+L_F0B33:
+    3532:0B33  [F0B33]  893ebc06        mov     word ptr [0x6bc], di
+    3532:0B37  [F0B37]  833ebe0600      cmp     word ptr [0x6be], 0
+    3532:0B3C  [F0B3C]  7e07            jle     L_F0B45  ; 0x45
+    3532:0B3E  [F0B3E]  8b16be06        mov     dx, word ptr [0x6be]
+    3532:0B42  [F0B42]  e90200          jmp     L_F0B47  ; 0x47
+L_F0B45:
+    3532:0B45  [F0B45]  2bd2            sub     dx, dx
+L_F0B47:
+    3532:0B47  [F0B47]  81faff03        cmp     dx, 0x3ff
+    3532:0B4B  [F0B4B]  7d15            jge     SUB_F0B62  ; 0x62
+    3532:0B4D  [F0B4D]  833ebe0600      cmp     word ptr [0x6be], 0
+    3532:0B52  [F0B52]  7e07            jle     L_F0B5B  ; 0x5b
+    3532:0B54  [F0B54]  8b3ebe06        mov     di, word ptr [0x6be]
+    3532:0B58  [F0B58]  e90200          jmp     L_F0B5D  ; 0x5d
+L_F0B5B:
+    3532:0B5B  [F0B5B]  2bff            sub     di, di
+L_F0B5D:
+    3532:0B5D  [F0B5D]  8bd7            mov     dx, di
+    3532:0B5F  [F0B5F]  e90300          jmp     L_F0B65  ; 0x65
+SUB_F0B62:
+    3532:0B62  [F0B62]  baff03          mov     dx, 0x3ff
+L_F0B65:
+    3532:0B65  [F0B65]  8916be06        mov     word ptr [0x6be], dx
+    3532:0B69  [F0B69]  837ef200        cmp     word ptr [bp - 0xe], 0
+    3532:0B6D  [F0B6D]  7415            je      L_F0B84  ; 0x24
+    3532:0B6F  [F0B6F]  ff36be06        push    word ptr [0x6be]
+    3532:0B73  [F0B73]  ff36bc06        push    word ptr [0x6bc]
+    3532:0B77  [F0B77]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
+    3532:0B7C  [F0B7C]  83c402          add     sp, 2
+    3532:0B7F  [F0B7F]  c746f20000      mov     word ptr [bp - 0xe], 0
+L_F0B84:
+    3532:0B84  [F0B84]  a0c106          mov     al, byte ptr [0x6c1]
+    3532:0B87  [F0B87]  2ae4            sub     ah, ah
+    3532:0B89  [F0B89]  250100          and     ax, 1
+    3532:0B8C  [F0B8C]  3d0100          cmp     ax, 1
+    3532:0B8F  [F0B8F]  7577            jne     L_F0C08  ; 0xa8
+    3532:0B91  [F0B91]  837e0600        cmp     word ptr [bp + 6], 0
+    3532:0B95  [F0B95]  7474            je      L_F0C0B  ; 0xab
+    3532:0B97  [F0B97]  a1be06          mov     ax, word ptr [0x6be]
+    3532:0B9A  [F0B9A]  d1f8            sar     ax, 1
+    3532:0B9C  [F0B9C]  d1f8            sar     ax, 1
+    3532:0B9E  [F0B9E]  d1f8            sar     ax, 1
+    3532:0BA0  [F0BA0]  d1f8            sar     ax, 1
+    3532:0BA2  [F0BA2]  d1f8            sar     ax, 1
+    3532:0BA4  [F0BA4]  d1f8            sar     ax, 1
+    3532:0BA6  [F0BA6]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BAA  [F0BAA]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0BAD  [F0BAD]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:0BB0  [F0BB0]  2af6            sub     dh, dh
+    3532:0BB2  [F0BB2]  3bd0            cmp     dx, ax
+    3532:0BB4  [F0BB4]  7e0e            jle     L_F0BC4  ; 0x64
+    3532:0BB6  [F0BB6]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BBA  [F0BBA]  268a01          mov     al, byte ptr es:[bx + di]
+    3532:0BBD  [F0BBD]  2ae4            sub     ah, ah
+    3532:0BBF  [F0BBF]  8bf8            mov     di, ax
+    3532:0BC1  [F0BC1]  e91100          jmp     L_F0BD5  ; 0x75
+
+SUB_F0BC2:
+    3532:0BC2  [F0BC2]  1100            adc     word ptr [bx + si], ax
+L_F0BC4:
+    3532:0BC4  [F0BC4]  a1be06          mov     ax, word ptr [0x6be]
+
+SUB_F0BC6:
+    3532:0BC6  [F0BC6]  06              push    es
+    3532:0BC7  [F0BC7]  d1f8            sar     ax, 1
+    3532:0BC9  [F0BC9]  d1f8            sar     ax, 1
+    3532:0BCB  [F0BCB]  d1f8            sar     ax, 1
+    3532:0BCD  [F0BCD]  d1f8            sar     ax, 1
+    3532:0BCF  [F0BCF]  d1f8            sar     ax, 1
+    3532:0BD1  [F0BD1]  d1f8            sar     ax, 1
+    3532:0BD3  [F0BD3]  8bf8            mov     di, ax
+L_F0BD5:
+    3532:0BD5  [F0BD5]  8bd7            mov     dx, di
+    3532:0BD7  [F0BD7]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BDB  [F0BDB]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0BDE  [F0BDE]  268811          mov     byte ptr es:[bx + di], dl
+    3532:0BE1  [F0BE1]  a1be06          mov     ax, word ptr [0x6be]
+
+SUB_F0BE2:
+    3532:0BE2  [F0BE2]  be06d1          mov     si, 0xd106
+
+    3532:0BE4  [F0BE4]  d1f8            sar     ax, 1
+
+    3532:0BE5  [F0BE5]  f8              clc     
+    3532:0BE6  [F0BE6]  d1f8            sar     ax, 1
+    3532:0BE8  [F0BE8]  d1f8            sar     ax, 1
+    3532:0BEA  [F0BEA]  d1f8            sar     ax, 1
+    3532:0BEC  [F0BEC]  d1f8            sar     ax, 1
+    3532:0BEE  [F0BEE]  d1f8            sar     ax, 1
+    3532:0BF0  [F0BF0]  c43ebc1d        les     di, ptr [0x1dbc]
+    3532:0BF4  [F0BF4]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:0BF7  [F0BF7]  2af6            sub     dh, dh
+    3532:0BF9  [F0BF9]  3bd0            cmp     dx, ax
+
+SUB_F0BFA:
+    3532:0BFA  [F0BFA]  d07d14          sar     byte ptr [di + 0x14], 1
+
+    3532:0BFB  [F0BFB]  7d14            jge     L_F0C11  ; 0x31
+    3532:0BFD  [F0BFD]  c43ebc1d        les     di, ptr [0x1dbc]
+    3532:0C01  [F0C01]  268a01          mov     al, byte ptr es:[bx + di]
+    3532:0C04  [F0C04]  2ae4            sub     ah, ah
+    3532:0C06  [F0C06]  eb06            jmp     L_F0C0E  ; 0x1e
+L_F0C08:
+    3532:0C08  [F0C08]  e95100          jmp     L_F0C5C  ; 0xfc
+L_F0C0B:
+    3532:0C0B  [F0C0B]  e91e00          jmp     L_F0C2C  ; 0xcc
+L_F0C0E:
+    3532:0C0E  [F0C0E]  e90f00          jmp     L_F0C20  ; 0x30
+L_F0C11:
+    3532:0C11  [F0C11]  a1be06          mov     ax, word ptr [0x6be]
+    3532:0C14  [F0C14]  d1f8            sar     ax, 1
+    3532:0C16  [F0C16]  d1f8            sar     ax, 1
+    3532:0C18  [F0C18]  d1f8            sar     ax, 1
+    3532:0C1A  [F0C1A]  d1f8            sar     ax, 1
+    3532:0C1C  [F0C1C]  d1f8            sar     ax, 1
+    3532:0C1E  [F0C1E]  d1f8            sar     ax, 1
+L_F0C20:
+    3532:0C20  [F0C20]  8bd0            mov     dx, ax
+    3532:0C22  [F0C22]  c43ebc1d        les     di, ptr [0x1dbc]
+SUB_F0C26:
+    3532:0C26  [F0C26]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0C29  [F0C29]  268811          mov     byte ptr es:[bx + di], dl
+
 draw_pending_line_segment:
     3532:0C2A  [F0C2A]  8811            mov     byte ptr [bx + di], dl
+L_F0C2C:
     3532:0C2C  [F0C2C]  a0c006          mov     al, byte ptr [0x6c0]
     3532:0C2F  [F0C2F]  2ae4            sub     ah, ah
     3532:0C31  [F0C31]  251000          and     ax, 0x10
@@ -13095,7 +14594,11 @@ L_F0C49:
     3532:0C51  [F0C51]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3532:0C56  [F0C56]  83c402          add     sp, 2
     3532:0C59  [F0C59]  e91000          jmp     L_F0C6C  ; 0x4c
-
+L_F0C5C:
+    3532:0C5C  [F0C5C]  ff36be06        push    word ptr [0x6be]
+    3532:0C60  [F0C60]  ff36bc06        push    word ptr [0x6bc]
+    3532:0C64  [F0C64]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
+    3532:0C69  [F0C69]  83c402          add     sp, 2
 L_F0C6C:
     3532:0C6C  [F0C6C]  a0c106          mov     al, byte ptr [0x6c1]
     3532:0C6F  [F0C6F]  2ae4            sub     ah, ah
@@ -13199,6 +14702,27 @@ L_F15C2:
 
 halt_cpu:
     3532:1611  [F1611]  f4              hlt     
+
+SUB_F173E:
+    3532:173E  [F173E]  52              push    dx
+    3532:173F  [F173F]  9a0b0013ea      lcall   SUB_EA13B  ; 0xea13, 0xb
+    3532:1744  [F1744]  0106aa06        add     word ptr [0x6aa], ax
+    3532:1748  [F1748]  c47ef4          les     di, ptr [bp - 0xc]
+    3532:174B  [F174B]  ff46f4          inc     word ptr [bp - 0xc]
+    3532:174E  [F174E]  268a15          mov     dl, byte ptr es:[di]
+    3532:1751  [F1751]  8856f9          mov     byte ptr [bp - 7], dl
+    3532:1754  [F1754]  80fa00          cmp     dl, 0
+    3532:1757  [F1757]  75e0            jne     9
+    3532:1759  [F1759]  ff36aa06        push    word ptr [0x6aa]
+    3532:175D  [F175D]  ff367806        push    word ptr [0x678]
+    3532:1761  [F1761]  9aa60113ea      lcall   SUB_EA2D6  ; 0xea13, 0x1a6
+    3532:1766  [F1766]  83c402          add     sp, 2
+    3532:1769  [F1769]  c47e0e          les     di, ptr [bp + 0xe]
+    3532:176C  [F176C]  a1aa06          mov     ax, word ptr [0x6aa]
+    3532:176F  [F176F]  268905          mov     word ptr es:[di], ax
+    3532:1772  [F1772]  8be5            mov     sp, bp
+    3532:1774  [F1774]  5d              pop     bp
+    3532:1775  [F1775]  ca0400          retf    4
 
 compute_and_format_sample_delta_readout:
     3532:4150  [F4150]  97              xchg    di, ax
@@ -14497,6 +16021,131 @@ pad_readout_buffer_remainder:
     3532:9164  [F9164]  5d              pop     bp
     3532:9165  [F9165]  cb              retf    
 
+    3532:9404  [F9404]  57              push    di
+    3532:9405  [F9405]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
+    3532:940A  [F940A]  83c408          add     sp, 8
+    3532:940D  [F940D]  c47e06          les     di, ptr [bp + 6]
+    3532:9410  [F9410]  268a5506        mov     dl, byte ptr es:[di + 6]
+    3532:9414  [F9414]  2af6            sub     dh, dh
+    3532:9416  [F9416]  52              push    dx
+    3532:9417  [F9417]  2bdb            sub     bx, bx
+    3532:9419  [F9419]  53              push    bx
+    3532:941A  [F941A]  268a4508        mov     al, byte ptr es:[di + 8]
+    3532:941E  [F941E]  2ae4            sub     ah, ah
+    3532:9420  [F9420]  50              push    ax
+    3532:9421  [F9421]  53              push    bx
+    3532:9422  [F9422]  c47eee          les     di, ptr [bp - 0x12]
+    3532:9425  [F9425]  8d550a          lea     dx, [di + 0xa]
+    3532:9428  [F9428]  06              push    es
+    3532:9429  [F9429]  52              push    dx
+    3532:942A  [F942A]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
+    3532:942F  [F942F]  83c408          add     sp, 8
+    3532:9432  [F9432]  c47e06          les     di, ptr [bp + 6]
+    3532:9435  [F9435]  06              push    es
+    3532:9436  [F9436]  57              push    di
+    3532:9437  [F9437]  c456ee          les     dx, ptr [bp - 0x12]
+    3532:943A  [F943A]  06              push    es
+    3532:943B  [F943B]  52              push    dx
+    3532:943C  [F943C]  9af00416f9      lcall   compute_print_cell_size  ; 0xf916, 0x4f0
+    3532:9441  [F9441]  83c404          add     sp, 4
+    3532:9444  [F9444]  2bff            sub     di, di
+    3532:9446  [F9446]  57              push    di
+    3532:9447  [F9447]  57              push    di
+    3532:9448  [F9448]  c45e06          les     bx, ptr [bp + 6]
+    3532:944B  [F944B]  26ff770e        push    word ptr es:[bx + 0xe]
+    3532:944F  [F944F]  c456e6          les     dx, ptr [bp - 0x1a]
+    3532:9452  [F9452]  06              push    es
+    3532:9453  [F9453]  52              push    dx
+    3532:9454  [F9454]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
+    3532:9459  [F9459]  83c406          add     sp, 6
+    3532:945C  [F945C]  bf0100          mov     di, 1
+    3532:945F  [F945F]  57              push    di
+    3532:9460  [F9460]  57              push    di
+    3532:9461  [F9461]  c47e06          les     di, ptr [bp + 6]
+    3532:9464  [F9464]  26ff750e        push    word ptr es:[di + 0xe]
+    3532:9468  [F9468]  c456e2          les     dx, ptr [bp - 0x1e]
+    3532:946B  [F946B]  06              push    es
+    3532:946C  [F946C]  52              push    dx
+    3532:946D  [F946D]  9a0900befb      lcall   memset_word_pattern_far  ; 0xfbbe, 9
+
+compute_print_cell_size:
+    3532:9650  [F9650]  55              push    bp
+    3532:9651  [F9651]  8bec            mov     bp, sp
+    3532:9653  [F9653]  83ec08          sub     sp, 8
+    3532:9656  [F9656]  c47e0a          les     di, ptr [bp + 0xa]
+    3532:9659  [F9659]  268a15          mov     dl, byte ptr es:[di]
+    3532:965C  [F965C]  8856f9          mov     byte ptr [bp - 7], dl
+    3532:965F  [F965F]  80e208          and     dl, 8
+    3532:9662  [F9662]  80fa00          cmp     dl, 0
+    3532:9665  [F9665]  7553            jne     L_F96BA  ; 0x55a
+    3532:9667  [F9667]  26837d1200      cmp     word ptr es:[di + 0x12], 0
+    3532:966C  [F966C]  750b            jne     L_F9679  ; 0x519
+    3532:966E  [F966E]  c45e06          les     bx, ptr [bp + 6]
+    3532:9671  [F9671]  26c6470700      mov     byte ptr es:[bx + 7], 0
+    3532:9676  [F9676]  e93d00          jmp     L_F96B6  ; 0x556
+L_F9679:
+    3532:9679  [F9679]  c47e06          les     di, ptr [bp + 6]
+    3532:967C  [F967C]  26c6450701      mov     byte ptr es:[di + 7], 1
+    3532:9681  [F9681]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3532:9684  [F9684]  80e204          and     dl, 4
+    3532:9687  [F9687]  80fa00          cmp     dl, 0
+    3532:968A  [F968A]  7418            je      L_F96A4  ; 0x544
+    3532:968C  [F968C]  c45e0a          les     bx, ptr [bp + 0xa]
+    3532:968F  [F968F]  268b7f12        mov     di, word ptr es:[bx + 0x12]
+    3532:9693  [F9693]  d1ff            sar     di, 1
+    3532:9695  [F9695]  d1ff            sar     di, 1
+    3532:9697  [F9697]  d1ff            sar     di, 1
+    3532:9699  [F9699]  d1ff            sar     di, 1
+    3532:969B  [F969B]  d1ff            sar     di, 1
+    3532:969D  [F969D]  d1ff            sar     di, 1
+    3532:969F  [F969F]  8bd7            mov     dx, di
+    3532:96A1  [F96A1]  e90b00          jmp     L_F96AF  ; 0x54f
+L_F96A4:
+    3532:96A4  [F96A4]  c47e0a          les     di, ptr [bp + 0xa]
+    3532:96A7  [F96A7]  268b5512        mov     dx, word ptr es:[di + 0x12]
+    3532:96AB  [F96AB]  d1e2            shl     dx, 1
+    3532:96AD  [F96AD]  d1e2            shl     dx, 1
+L_F96AF:
+    3532:96AF  [F96AF]  c47e06          les     di, ptr [bp + 6]
+    3532:96B2  [F96B2]  26895508        mov     word ptr es:[di + 8], dx
+L_F96B6:
+    3532:96B6  [F96B6]  8346060a        add     word ptr [bp + 6], 0xa
+L_F96BA:
+    3532:96BA  [F96BA]  c47e0a          les     di, ptr [bp + 0xa]
+    3532:96BD  [F96BD]  26837d1000      cmp     word ptr es:[di + 0x10], 0
+    3532:96C2  [F96C2]  750b            jne     L_F96CF  ; 0x56f
+    3532:96C4  [F96C4]  c45e06          les     bx, ptr [bp + 6]
+    3532:96C7  [F96C7]  26c6470700      mov     byte ptr es:[bx + 7], 0
+    3532:96CC  [F96CC]  e93b00          jmp     L_F970A  ; 0x5aa
+L_F96CF:
+    3532:96CF  [F96CF]  c47e06          les     di, ptr [bp + 6]
+    3532:96D2  [F96D2]  26c6450701      mov     byte ptr es:[di + 7], 1
+    3532:96D7  [F96D7]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3532:96DA  [F96DA]  80e204          and     dl, 4
+    3532:96DD  [F96DD]  80fa00          cmp     dl, 0
+    3532:96E0  [F96E0]  7416            je      L_F96F8  ; 0x598
+    3532:96E2  [F96E2]  c45e0a          les     bx, ptr [bp + 0xa]
+    3532:96E5  [F96E5]  268b5710        mov     dx, word ptr es:[bx + 0x10]
+    3532:96E9  [F96E9]  d1fa            sar     dx, 1
+    3532:96EB  [F96EB]  d1fa            sar     dx, 1
+    3532:96ED  [F96ED]  d1fa            sar     dx, 1
+    3532:96EF  [F96EF]  d1fa            sar     dx, 1
+    3532:96F1  [F96F1]  d1fa            sar     dx, 1
+    3532:96F3  [F96F3]  d1fa            sar     dx, 1
+    3532:96F5  [F96F5]  e90b00          jmp     L_F9703  ; 0x5a3
+L_F96F8:
+    3532:96F8  [F96F8]  c47e0a          les     di, ptr [bp + 0xa]
+    3532:96FB  [F96FB]  268b5510        mov     dx, word ptr es:[di + 0x10]
+    3532:96FF  [F96FF]  d1e2            shl     dx, 1
+    3532:9701  [F9701]  d1e2            shl     dx, 1
+L_F9703:
+    3532:9703  [F9703]  c47e06          les     di, ptr [bp + 6]
+    3532:9706  [F9706]  26895508        mov     word ptr es:[di + 8], dx
+L_F970A:
+    3532:970A  [F970A]  8be5            mov     sp, bp
+    3532:970C  [F970C]  5d              pop     bp
+    3532:970D  [F970D]  ca0400          retf    4
+
 clear_channel2_status:
     3532:9FEE  [F9FEE]  55              push    bp
     3532:9FEF  [F9FEF]  8bec            mov     bp, sp
@@ -14525,6 +16174,38 @@ clear_channel1_status:
     3532:A026  [FA026]  8be5            mov     sp, bp
     3532:A028  [FA028]  5d              pop     bp
     3532:A029  [FA029]  cb              retf    
+
+init_print_record_fields:
+    3532:AD6E  [FAD6E]  55              push    bp
+    3532:AD6F  [FAD6F]  8bec            mov     bp, sp
+    3532:AD71  [FAD71]  83ec08          sub     sp, 8
+    3532:AD74  [FAD74]  c47e06          les     di, ptr [bp + 6]
+    3532:AD77  [FAD77]  8b560a          mov     dx, word ptr [bp + 0xa]
+    3532:AD7A  [FAD7A]  268915          mov     word ptr es:[di], dx
+    3532:AD7D  [FAD7D]  26895502        mov     word ptr es:[di + 2], dx
+    3532:AD81  [FAD81]  8a5e0c          mov     bl, byte ptr [bp + 0xc]
+    3532:AD84  [FAD84]  c47e06          les     di, ptr [bp + 6]
+    3532:AD87  [FAD87]  26885d06        mov     byte ptr es:[di + 6], bl
+    3532:AD8B  [FAD8B]  8a560e          mov     dl, byte ptr [bp + 0xe]
+    3532:AD8E  [FAD8E]  2af6            sub     dh, dh
+    3532:AD90  [FAD90]  81e28000        and     dx, 0x80
+    3532:AD94  [FAD94]  83fa00          cmp     dx, 0
+    3532:AD97  [FAD97]  750c            jne     L_FADA5  ; 0x2f5
+    3532:AD99  [FAD99]  8a560e          mov     dl, byte ptr [bp + 0xe]
+    3532:AD9C  [FAD9C]  025610          add     dl, byte ptr [bp + 0x10]
+    3532:AD9F  [FAD9F]  8856f9          mov     byte ptr [bp - 7], dl
+    3532:ADA2  [FADA2]  e90600          jmp     L_FADAB  ; 0x2fb
+L_FADA5:
+    3532:ADA5  [FADA5]  8a5610          mov     dl, byte ptr [bp + 0x10]
+    3532:ADA8  [FADA8]  8856f9          mov     byte ptr [bp - 7], dl
+L_FADAB:
+    3532:ADAB  [FADAB]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3532:ADAE  [FADAE]  c47e06          les     di, ptr [bp + 6]
+    3532:ADB1  [FADB1]  26885504        mov     byte ptr es:[di + 4], dl
+    3532:ADB5  [FADB5]  26885505        mov     byte ptr es:[di + 5], dl
+    3532:ADB9  [FADB9]  8be5            mov     sp, bp
+    3532:ADBB  [FADBB]  5d              pop     bp
+    3532:ADBC  [FADBC]  ca0400          retf    4
 
 clear_readout_attrs_and_flag_dirty:
     3532:B8E8  [FB8E8]  55              push    bp

@@ -7198,7 +7198,7 @@
   "E7D7D": {
     "name": "update_plot_position",
     "kind": "sub",
-    "ref_count": 5,
+    "ref_count": 7,
     "functional_name": "update_plot_position",
     "notes": null
   },
@@ -8553,9 +8553,37 @@
     "functional_name": null,
     "notes": null
   },
+  "E9472": {
+    "name": "merge_record_flags_if_changed",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": "merge_record_flags_if_changed",
+    "notes": null
+  },
+  "E9494": {
+    "name": "L_E9494",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E94AF": {
+    "name": "L_E94AF",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "E94B2": {
     "name": "SUB_E94B2",
     "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E94BC": {
+    "name": "L_E94BC",
+    "kind": "loc",
     "ref_count": 1,
     "functional_name": null,
     "notes": null
@@ -8570,7 +8598,7 @@
   "E94D5": {
     "name": "L_E94D5",
     "kind": "loc",
-    "ref_count": 1,
+    "ref_count": 4,
     "functional_name": null,
     "notes": null
   },
@@ -9599,7 +9627,7 @@
   "EA13B": {
     "name": "SUB_EA13B",
     "kind": "sub",
-    "ref_count": 8,
+    "ref_count": 9,
     "functional_name": null,
     "notes": null
   },
@@ -16904,10 +16932,262 @@
     "functional_name": null,
     "notes": null
   },
+  "F09C0": {
+    "name": "SUB_F09C0",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F09C6": {
+    "name": "SUB_F09C6",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F09EA": {
+    "name": "SUB_F09EA",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0A0F": {
+    "name": "L_F0A0F",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0A3E": {
+    "name": "L_F0A3E",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0A4A": {
+    "name": "SUB_F0A4A",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0A4E": {
+    "name": "SUB_F0A4E",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
   "F0A70": {
     "name": "L_F0A70",
     "kind": "loc",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0AAA": {
+    "name": "SUB_F0AAA",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0AEB": {
+    "name": "L_F0AEB",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B06": {
+    "name": "SUB_F0B06",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B07": {
+    "name": "L_F0B07",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B15": {
+    "name": "L_F0B15",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B17": {
+    "name": "L_F0B17",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B2B": {
+    "name": "L_F0B2B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B2D": {
+    "name": "L_F0B2D",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B30": {
+    "name": "L_F0B30",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B33": {
+    "name": "L_F0B33",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B45": {
+    "name": "L_F0B45",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B47": {
+    "name": "L_F0B47",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B5B": {
+    "name": "L_F0B5B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B5D": {
+    "name": "L_F0B5D",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B62": {
+    "name": "SUB_F0B62",
+    "kind": "entry",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B65": {
+    "name": "L_F0B65",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0B84": {
+    "name": "L_F0B84",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BC2": {
+    "name": "SUB_F0BC2",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BC4": {
+    "name": "L_F0BC4",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BC6": {
+    "name": "SUB_F0BC6",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BD5": {
+    "name": "L_F0BD5",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BE2": {
+    "name": "SUB_F0BE2",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0BFA": {
+    "name": "SUB_F0BFA",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C08": {
+    "name": "L_F0C08",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C0B": {
+    "name": "L_F0C0B",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C0E": {
+    "name": "L_F0C0E",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C11": {
+    "name": "L_F0C11",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C20": {
+    "name": "L_F0C20",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C26": {
+    "name": "SUB_F0C26",
+    "kind": "entry",
+    "ref_count": 0,
     "functional_name": null,
     "notes": null
   },
@@ -16918,8 +17198,22 @@
     "functional_name": "draw_pending_line_segment",
     "notes": null
   },
+  "F0C2C": {
+    "name": "L_F0C2C",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "F0C49": {
     "name": "L_F0C49",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F0C5C": {
+    "name": "L_F0C5C",
     "kind": "loc",
     "ref_count": 1,
     "functional_name": null,
@@ -17881,6 +18175,13 @@
     "name": "L_F1739",
     "kind": "loc",
     "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "F173E": {
+    "name": "SUB_F173E",
+    "kind": "entry",
+    "ref_count": 0,
     "functional_name": null,
     "notes": null
   },
@@ -25781,10 +26082,10 @@
     "notes": null
   },
   "F9650": {
-    "name": "FUNC_3532_9650",
+    "name": "compute_print_cell_size",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "compute_print_cell_size",
     "notes": null
   },
   "F9679": {
@@ -27391,10 +27692,10 @@
     "notes": null
   },
   "FAD6E": {
-    "name": "FUNC_3532_AD6E",
+    "name": "init_print_record_fields",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "init_print_record_fields",
     "notes": null
   },
   "FADA5": {

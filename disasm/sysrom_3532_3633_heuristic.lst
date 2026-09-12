@@ -14006,16 +14006,50 @@ L_E93F2:
 L_E93FF:
     3633:93FF  [E93FF]  803e300500      cmp     byte ptr [0x530], 0
 
+merge_record_flags_if_changed:
+    3633:9472  [E9472]  803f00          cmp     byte ptr [bx], 0
+    3633:9475  [E9475]  7445            je      L_E94BC  ; 0x4c
+    3633:9477  [E9477]  268a4703        mov     al, byte ptr es:[bx + 3]
+    3633:947B  [E947B]  3ad0            cmp     dl, al
+    3633:947D  [E947D]  7530            jne     L_E94AF  ; 0x3f
+    3633:947F  [E947F]  268a4701        mov     al, byte ptr es:[bx + 1]
+    3633:9483  [E9483]  32c2            xor     al, dl
+    3633:9485  [E9485]  26884702        mov     byte ptr es:[bx + 2], al
+    3633:9489  [E9489]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3633:948C  [E948C]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:948F  [E948F]  eb03            jmp     L_E9494  ; 0x24
+
+L_E9494:
+    3633:9494  [E9494]  26885501        mov     byte ptr es:[di + 1], dl
+    3633:9498  [E9498]  26c60500        mov     byte ptr es:[di], 0
+    3633:949C  [E949C]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:949F  [E949F]  26807d0200      cmp     byte ptr es:[di + 2], 0
+    3633:94A4  [E94A4]  742f            je      L_E94D5  ; 0x65
+    3633:94A6  [E94A6]  c70632050100    mov     word ptr [0x532], 1
+    3633:94AC  [E94AC]  e92600          jmp     L_E94D5  ; 0x65
+L_E94AF:
+    3633:94AF  [E94AF]  8a56f9          mov     dl, byte ptr [bp - 7]
 SUB_E94B2:
     3633:94B2  [E94B2]  c47ef0          les     di, ptr [bp - 0x10]
     3633:94B5  [E94B5]  26885503        mov     byte ptr es:[di + 3], dl
     3633:94B9  [E94B9]  e91900          jmp     L_E94D5  ; 0x25
+L_E94BC:
+    3633:94BC  [E94BC]  8a56f9          mov     dl, byte ptr [bp - 7]
+    3633:94BF  [E94BF]  c47ef0          les     di, ptr [bp - 0x10]
+    3633:94C2  [E94C2]  268a5d03        mov     bl, byte ptr es:[di + 3]
+    3633:94C6  [E94C6]  3ad3            cmp     dl, bl
+    3633:94C8  [E94C8]  740b            je      L_E94D5  ; 0x65
+    3633:94CA  [E94CA]  26885503        mov     byte ptr es:[di + 3], dl
 
 SUB_E94CC:
     3633:94CC  [E94CC]  55              push    bp
     3633:94CD  [E94CD]  03c4            add     ax, sp
+
+    3633:94CE  [E94CE]  c45ef0          les     bx, ptr [bp - 0x10]
+
     3633:94CF  [E94CF]  5e              pop     si
 
+    3633:94D1  [E94D1]  26c60701        mov     byte ptr es:[bx], 1
 L_E94D5:
     3633:94D5  [E94D5]  ff46f4          inc     word ptr [bp - 0xc]
 L_E94D8:
@@ -25272,11 +25306,278 @@ FUNC_3532_08CB:
 L_F08E4:
     3532:08E4  [F08E4]  8b7ef8          mov     di, word ptr [bp - 8]
 
+SUB_F09C0:
+    3532:09C0  [F09C0]  c43eb41d        les     di, ptr [0x1db4]
+    3532:09C4  [F09C4]  8bd8            mov     bx, ax
+SUB_F09C6:
+    3532:09C6  [F09C6]  268a4101        mov     al, byte ptr es:[bx + di + 1]
+    3532:09CA  [F09CA]  2ae4            sub     ah, ah
+    3532:09CC  [F09CC]  a31a07          mov     word ptr [0x71a], ax
+    3532:09CF  [F09CF]  a11e07          mov     ax, word ptr [0x71e]
+    3532:09D2  [F09D2]  d1e0            shl     ax, 1
+    3532:09D4  [F09D4]  c43eb41d        les     di, ptr [0x1db4]
+    3532:09D8  [F09D8]  8bd8            mov     bx, ax
+    3532:09DA  [F09DA]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:09DD  [F09DD]  2af6            sub     dh, dh
+    3532:09DF  [F09DF]  89161607        mov     word ptr [0x716], dx
+    3532:09E3  [F09E3]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:09E6  [F09E6]  47              inc     di
+    3532:09E7  [F09E7]  2bd2            sub     dx, dx
+    3532:09E9  [F09E9]  8ec2            mov     es, dx
+
+SUB_F09EA:
+    3532:09EA  [F09EA]  c2268b          ret     0x8b26
+
+    3532:09EB  [F09EB]  268b05          mov     ax, word ptr es:[di]
+    3532:09EE  [F09EE]  d1e8            shr     ax, 1
+    3532:09F0  [F09F0]  d1e8            shr     ax, 1
+    3532:09F2  [F09F2]  d1e8            shr     ax, 1
+    3532:09F4  [F09F4]  d1e8            shr     ax, 1
+    3532:09F6  [F09F6]  d1e8            shr     ax, 1
+    3532:09F8  [F09F8]  a32407          mov     word ptr [0x724], ax
+    3532:09FB  [F09FB]  a12407          mov     ax, word ptr [0x724]
+    3532:09FE  [F09FE]  250004          and     ax, 0x400
+    3532:0A01  [F0A01]  3d0000          cmp     ax, 0
+    3532:0A04  [F0A04]  7409            je      L_F0A0F  ; 0x4f
+    3532:0A06  [F0A06]  a12407          mov     ax, word ptr [0x724]
+    3532:0A09  [F0A09]  0d00fc          or      ax, 0xfc00
+    3532:0A0C  [F0A0C]  a32407          mov     word ptr [0x724], ax
+L_F0A0F:
+    3532:0A0F  [F0A0F]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:0A12  [F0A12]  83c703          add     di, 3
+    3532:0A15  [F0A15]  2bd2            sub     dx, dx
+    3532:0A17  [F0A17]  8ec2            mov     es, dx
+    3532:0A19  [F0A19]  268b1d          mov     bx, word ptr es:[di]
+    3532:0A1C  [F0A1C]  d1eb            shr     bx, 1
+    3532:0A1E  [F0A1E]  d1eb            shr     bx, 1
+    3532:0A20  [F0A20]  d1eb            shr     bx, 1
+    3532:0A22  [F0A22]  d1eb            shr     bx, 1
+    3532:0A24  [F0A24]  d1eb            shr     bx, 1
+    3532:0A26  [F0A26]  891e2207        mov     word ptr [0x722], bx
+    3532:0A2A  [F0A2A]  a12207          mov     ax, word ptr [0x722]
+    3532:0A2D  [F0A2D]  250004          and     ax, 0x400
+    3532:0A30  [F0A30]  3d0000          cmp     ax, 0
+    3532:0A33  [F0A33]  7409            je      L_F0A3E  ; 0x7e
+    3532:0A35  [F0A35]  a12207          mov     ax, word ptr [0x722]
+    3532:0A38  [F0A38]  0d00fc          or      ax, 0xfc00
+    3532:0A3B  [F0A3B]  a32207          mov     word ptr [0x722], ax
+L_F0A3E:
+    3532:0A3E  [F0A3E]  8b7ef8          mov     di, word ptr [bp - 8]
+    3532:0A41  [F0A41]  83c707          add     di, 7
+    3532:0A44  [F0A44]  2bd2            sub     dx, dx
+    3532:0A46  [F0A46]  8ec2            mov     es, dx
+    3532:0A48  [F0A48]  268b1d          mov     bx, word ptr es:[di]
+
+SUB_F0A4A:
+    3532:0A4A  [F0A4A]  1d895e          sbb     ax, 0x5e89
+
+    3532:0A4B  [F0A4B]  895ef6          mov     word ptr [bp - 0xa], bx
+
+    3532:0A4D  [F0A4D]  f68b46f805      test    byte ptr [bp + di - 0x7ba], 5
+
+SUB_F0A4E:
+    3532:0A4E  [F0A4E]  8b46f8          mov     ax, word ptr [bp - 8]
+    3532:0A51  [F0A51]  050500          add     ax, 5
+
+    3532:0A52  [F0A52]  05008b          add     ax, 0x8b00
+
+    3532:0A54  [F0A54]  8bf8            mov     di, ax
+
+    3532:0A55  [F0A55]  f8              clc     
+    3532:0A56  [F0A56]  268b1d          mov     bx, word ptr es:[di]
+    3532:0A59  [F0A59]  895ef4          mov     word ptr [bp - 0xc], bx
+    3532:0A5C  [F0A5C]  891ec206        mov     word ptr [0x6c2], bx
+    3532:0A60  [F0A60]  c7061207ffff    mov     word ptr [0x712], 0xffff
+    3532:0A66  [F0A66]  c746f20100      mov     word ptr [bp - 0xe], 1
+    3532:0A6B  [F0A6B]  c606c10600      mov     byte ptr [0x6c1], 0
 L_F0A70:
     3532:0A70  [F0A70]  a0c106          mov     al, byte ptr [0x6c1]
 
+SUB_F0AAA:
+    3532:0AAA  [F0AAA]  a11207          mov     ax, word ptr [0x712]
+    3532:0AAD  [F0AAD]  25ff03          and     ax, 0x3ff
+    3532:0AB0  [F0AB0]  8bf8            mov     di, ax
+    3532:0AB2  [F0AB2]  a11607          mov     ax, word ptr [0x716]
+    3532:0AB5  [F0AB5]  f7ef            imul    di
+    3532:0AB7  [F0AB7]  99              cdq     
+    3532:0AB8  [F0AB8]  f73e1a07        idiv    word ptr [0x71a]
+    3532:0ABC  [F0ABC]  8b3e2207        mov     di, word ptr [0x722]
+    3532:0AC0  [F0AC0]  03f8            add     di, ax
+    3532:0AC2  [F0AC2]  893ebc06        mov     word ptr [0x6bc], di
+    3532:0AC6  [F0AC6]  a11c07          mov     ax, word ptr [0x71c]
+    3532:0AC9  [F0AC9]  39061807        cmp     word ptr [0x718], ax
+    3532:0ACD  [F0ACD]  7e1c            jle     L_F0AEB  ; 0x4b
+    3532:0ACF  [F0ACF]  a11407          mov     ax, word ptr [0x714]
+    3532:0AD2  [F0AD2]  25ff03          and     ax, 0x3ff
+    3532:0AD5  [F0AD5]  8b3e2407        mov     di, word ptr [0x724]
+    3532:0AD9  [F0AD9]  03f8            add     di, ax
+    3532:0ADB  [F0ADB]  a11807          mov     ax, word ptr [0x718]
+    3532:0ADE  [F0ADE]  f7ef            imul    di
+    3532:0AE0  [F0AE0]  99              cdq     
+    3532:0AE1  [F0AE1]  f73e1c07        idiv    word ptr [0x71c]
+    3532:0AE5  [F0AE5]  a3be06          mov     word ptr [0x6be], ax
+    3532:0AE8  [F0AE8]  e91c00          jmp     L_F0B07  ; 0x67
+L_F0AEB:
+    3532:0AEB  [F0AEB]  a11407          mov     ax, word ptr [0x714]
+    3532:0AEE  [F0AEE]  25ff03          and     ax, 0x3ff
+    3532:0AF1  [F0AF1]  8bf8            mov     di, ax
+    3532:0AF3  [F0AF3]  a11807          mov     ax, word ptr [0x718]
+    3532:0AF6  [F0AF6]  f7ef            imul    di
+    3532:0AF8  [F0AF8]  99              cdq     
+    3532:0AF9  [F0AF9]  f73e1c07        idiv    word ptr [0x71c]
+    3532:0AFD  [F0AFD]  8b3e2407        mov     di, word ptr [0x724]
+    3532:0B01  [F0B01]  03f8            add     di, ax
+    3532:0B03  [F0B03]  893ebe06        mov     word ptr [0x6be], di
+
+SUB_F0B06:
+    3532:0B06  [F0B06]  06              push    es
+L_F0B07:
+    3532:0B07  [F0B07]  833ebc0600      cmp     word ptr [0x6bc], 0
+    3532:0B0C  [F0B0C]  7e07            jle     L_F0B15  ; 0x15
+    3532:0B0E  [F0B0E]  8b3ebc06        mov     di, word ptr [0x6bc]
+    3532:0B12  [F0B12]  e90200          jmp     L_F0B17  ; 0x17
+L_F0B15:
+    3532:0B15  [F0B15]  2bff            sub     di, di
+L_F0B17:
+    3532:0B17  [F0B17]  81ffff03        cmp     di, 0x3ff
+    3532:0B1B  [F0B1B]  7d13            jge     L_F0B30  ; 0x30
+    3532:0B1D  [F0B1D]  833ebc0600      cmp     word ptr [0x6bc], 0
+    3532:0B22  [F0B22]  7e07            jle     L_F0B2B  ; 0x2b
+    3532:0B24  [F0B24]  8b3ebc06        mov     di, word ptr [0x6bc]
+    3532:0B28  [F0B28]  e90200          jmp     L_F0B2D  ; 0x2d
+L_F0B2B:
+    3532:0B2B  [F0B2B]  2bff            sub     di, di
+L_F0B2D:
+    3532:0B2D  [F0B2D]  e90300          jmp     L_F0B33  ; 0x33
+L_F0B30:
+    3532:0B30  [F0B30]  bfff03          mov     di, 0x3ff
+L_F0B33:
+    3532:0B33  [F0B33]  893ebc06        mov     word ptr [0x6bc], di
+    3532:0B37  [F0B37]  833ebe0600      cmp     word ptr [0x6be], 0
+    3532:0B3C  [F0B3C]  7e07            jle     L_F0B45  ; 0x45
+    3532:0B3E  [F0B3E]  8b16be06        mov     dx, word ptr [0x6be]
+    3532:0B42  [F0B42]  e90200          jmp     L_F0B47  ; 0x47
+L_F0B45:
+    3532:0B45  [F0B45]  2bd2            sub     dx, dx
+L_F0B47:
+    3532:0B47  [F0B47]  81faff03        cmp     dx, 0x3ff
+    3532:0B4B  [F0B4B]  7d15            jge     SUB_F0B62  ; 0x62
+    3532:0B4D  [F0B4D]  833ebe0600      cmp     word ptr [0x6be], 0
+    3532:0B52  [F0B52]  7e07            jle     L_F0B5B  ; 0x5b
+    3532:0B54  [F0B54]  8b3ebe06        mov     di, word ptr [0x6be]
+    3532:0B58  [F0B58]  e90200          jmp     L_F0B5D  ; 0x5d
+L_F0B5B:
+    3532:0B5B  [F0B5B]  2bff            sub     di, di
+L_F0B5D:
+    3532:0B5D  [F0B5D]  8bd7            mov     dx, di
+    3532:0B5F  [F0B5F]  e90300          jmp     L_F0B65  ; 0x65
+SUB_F0B62:
+    3532:0B62  [F0B62]  baff03          mov     dx, 0x3ff
+L_F0B65:
+    3532:0B65  [F0B65]  8916be06        mov     word ptr [0x6be], dx
+    3532:0B69  [F0B69]  837ef200        cmp     word ptr [bp - 0xe], 0
+    3532:0B6D  [F0B6D]  7415            je      L_F0B84  ; 0x24
+    3532:0B6F  [F0B6F]  ff36be06        push    word ptr [0x6be]
+    3532:0B73  [F0B73]  ff36bc06        push    word ptr [0x6bc]
+    3532:0B77  [F0B77]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
+    3532:0B7C  [F0B7C]  83c402          add     sp, 2
+    3532:0B7F  [F0B7F]  c746f20000      mov     word ptr [bp - 0xe], 0
+L_F0B84:
+    3532:0B84  [F0B84]  a0c106          mov     al, byte ptr [0x6c1]
+    3532:0B87  [F0B87]  2ae4            sub     ah, ah
+    3532:0B89  [F0B89]  250100          and     ax, 1
+    3532:0B8C  [F0B8C]  3d0100          cmp     ax, 1
+    3532:0B8F  [F0B8F]  7577            jne     L_F0C08  ; 0xa8
+    3532:0B91  [F0B91]  837e0600        cmp     word ptr [bp + 6], 0
+    3532:0B95  [F0B95]  7474            je      L_F0C0B  ; 0xab
+    3532:0B97  [F0B97]  a1be06          mov     ax, word ptr [0x6be]
+    3532:0B9A  [F0B9A]  d1f8            sar     ax, 1
+    3532:0B9C  [F0B9C]  d1f8            sar     ax, 1
+    3532:0B9E  [F0B9E]  d1f8            sar     ax, 1
+    3532:0BA0  [F0BA0]  d1f8            sar     ax, 1
+    3532:0BA2  [F0BA2]  d1f8            sar     ax, 1
+    3532:0BA4  [F0BA4]  d1f8            sar     ax, 1
+    3532:0BA6  [F0BA6]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BAA  [F0BAA]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0BAD  [F0BAD]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:0BB0  [F0BB0]  2af6            sub     dh, dh
+    3532:0BB2  [F0BB2]  3bd0            cmp     dx, ax
+    3532:0BB4  [F0BB4]  7e0e            jle     L_F0BC4  ; 0x64
+    3532:0BB6  [F0BB6]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BBA  [F0BBA]  268a01          mov     al, byte ptr es:[bx + di]
+    3532:0BBD  [F0BBD]  2ae4            sub     ah, ah
+    3532:0BBF  [F0BBF]  8bf8            mov     di, ax
+    3532:0BC1  [F0BC1]  e91100          jmp     L_F0BD5  ; 0x75
+
+SUB_F0BC2:
+    3532:0BC2  [F0BC2]  1100            adc     word ptr [bx + si], ax
+L_F0BC4:
+    3532:0BC4  [F0BC4]  a1be06          mov     ax, word ptr [0x6be]
+
+SUB_F0BC6:
+    3532:0BC6  [F0BC6]  06              push    es
+    3532:0BC7  [F0BC7]  d1f8            sar     ax, 1
+    3532:0BC9  [F0BC9]  d1f8            sar     ax, 1
+    3532:0BCB  [F0BCB]  d1f8            sar     ax, 1
+    3532:0BCD  [F0BCD]  d1f8            sar     ax, 1
+    3532:0BCF  [F0BCF]  d1f8            sar     ax, 1
+    3532:0BD1  [F0BD1]  d1f8            sar     ax, 1
+    3532:0BD3  [F0BD3]  8bf8            mov     di, ax
+L_F0BD5:
+    3532:0BD5  [F0BD5]  8bd7            mov     dx, di
+    3532:0BD7  [F0BD7]  c43eb81d        les     di, ptr [0x1db8]
+    3532:0BDB  [F0BDB]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0BDE  [F0BDE]  268811          mov     byte ptr es:[bx + di], dl
+    3532:0BE1  [F0BE1]  a1be06          mov     ax, word ptr [0x6be]
+
+SUB_F0BE2:
+    3532:0BE2  [F0BE2]  be06d1          mov     si, 0xd106
+
+    3532:0BE4  [F0BE4]  d1f8            sar     ax, 1
+
+    3532:0BE5  [F0BE5]  f8              clc     
+    3532:0BE6  [F0BE6]  d1f8            sar     ax, 1
+    3532:0BE8  [F0BE8]  d1f8            sar     ax, 1
+    3532:0BEA  [F0BEA]  d1f8            sar     ax, 1
+    3532:0BEC  [F0BEC]  d1f8            sar     ax, 1
+    3532:0BEE  [F0BEE]  d1f8            sar     ax, 1
+    3532:0BF0  [F0BF0]  c43ebc1d        les     di, ptr [0x1dbc]
+    3532:0BF4  [F0BF4]  268a11          mov     dl, byte ptr es:[bx + di]
+    3532:0BF7  [F0BF7]  2af6            sub     dh, dh
+    3532:0BF9  [F0BF9]  3bd0            cmp     dx, ax
+
+SUB_F0BFA:
+    3532:0BFA  [F0BFA]  d07d14          sar     byte ptr [di + 0x14], 1
+
+    3532:0BFB  [F0BFB]  7d14            jge     L_F0C11  ; 0x31
+    3532:0BFD  [F0BFD]  c43ebc1d        les     di, ptr [0x1dbc]
+    3532:0C01  [F0C01]  268a01          mov     al, byte ptr es:[bx + di]
+    3532:0C04  [F0C04]  2ae4            sub     ah, ah
+    3532:0C06  [F0C06]  eb06            jmp     L_F0C0E  ; 0x1e
+L_F0C08:
+    3532:0C08  [F0C08]  e95100          jmp     L_F0C5C  ; 0xfc
+L_F0C0B:
+    3532:0C0B  [F0C0B]  e91e00          jmp     L_F0C2C  ; 0xcc
+L_F0C0E:
+    3532:0C0E  [F0C0E]  e90f00          jmp     L_F0C20  ; 0x30
+L_F0C11:
+    3532:0C11  [F0C11]  a1be06          mov     ax, word ptr [0x6be]
+    3532:0C14  [F0C14]  d1f8            sar     ax, 1
+    3532:0C16  [F0C16]  d1f8            sar     ax, 1
+    3532:0C18  [F0C18]  d1f8            sar     ax, 1
+    3532:0C1A  [F0C1A]  d1f8            sar     ax, 1
+    3532:0C1C  [F0C1C]  d1f8            sar     ax, 1
+    3532:0C1E  [F0C1E]  d1f8            sar     ax, 1
+L_F0C20:
+    3532:0C20  [F0C20]  8bd0            mov     dx, ax
+    3532:0C22  [F0C22]  c43ebc1d        les     di, ptr [0x1dbc]
+SUB_F0C26:
+    3532:0C26  [F0C26]  8b5ef0          mov     bx, word ptr [bp - 0x10]
+    3532:0C29  [F0C29]  268811          mov     byte ptr es:[bx + di], dl
+
 draw_pending_line_segment:
     3532:0C2A  [F0C2A]  8811            mov     byte ptr [bx + di], dl
+L_F0C2C:
     3532:0C2C  [F0C2C]  a0c006          mov     al, byte ptr [0x6c0]
     3532:0C2F  [F0C2F]  2ae4            sub     ah, ah
     3532:0C31  [F0C31]  251000          and     ax, 0x10
@@ -25292,7 +25593,11 @@ L_F0C49:
     3532:0C51  [F0C51]  9a9d00d7e7      lcall   plot_line_to  ; 0xe7d7, 0x9d
     3532:0C56  [F0C56]  83c402          add     sp, 2
     3532:0C59  [F0C59]  e91000          jmp     L_F0C6C  ; 0x4c
-
+L_F0C5C:
+    3532:0C5C  [F0C5C]  ff36be06        push    word ptr [0x6be]
+    3532:0C60  [F0C60]  ff36bc06        push    word ptr [0x6bc]
+    3532:0C64  [F0C64]  9a0d00d7e7      lcall   update_plot_position  ; 0xe7d7, 0xd
+    3532:0C69  [F0C69]  83c402          add     sp, 2
 L_F0C6C:
     3532:0C6C  [F0C6C]  a0c106          mov     al, byte ptr [0x6c1]
     3532:0C6F  [F0C6F]  2ae4            sub     ah, ah
@@ -26433,6 +26738,9 @@ FUNC_3532_1704:
 L_F1739:
     3532:1739  [F1739]  8a56f9          mov     dl, byte ptr [bp - 7]
 
+SUB_F173E:
+    3532:173E  [F173E]  52              push    dx
+    3532:173F  [F173F]  9a0b0013ea      lcall   SUB_EA13B  ; 0xea13, 0xb
 SUB_F1744:
     3532:1744  [F1744]  0106aa06        add     word ptr [0x6aa], ax
 L_F1748:
@@ -38287,7 +38595,7 @@ FUNC_3532_930D:
     3532:93D5  [F93D5]  c47eee          les     di, ptr [bp - 0x12]
     3532:93D8  [F93D8]  06              push    es
     3532:93D9  [F93D9]  57              push    di
-    3532:93DA  [F93DA]  9abe02abfa      lcall   FUNC_3532_AD6E  ; 0xfaab, 0x2be
+    3532:93DA  [F93DA]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
     3532:93DF  [F93DF]  83c408          add     sp, 8
     3532:93E2  [F93E2]  83c402          add     sp, 2
     3532:93E5  [F93E5]  83c402          add     sp, 2
@@ -38306,7 +38614,7 @@ L_F93EB:
     3532:9400  [F9400]  c47eee          les     di, ptr [bp - 0x12]
     3532:9403  [F9403]  06              push    es
     3532:9404  [F9404]  57              push    di
-    3532:9405  [F9405]  9abe02abfa      lcall   FUNC_3532_AD6E  ; 0xfaab, 0x2be
+    3532:9405  [F9405]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
     3532:940A  [F940A]  83c408          add     sp, 8
     3532:940D  [F940D]  c47e06          les     di, ptr [bp + 6]
     3532:9410  [F9410]  268a5506        mov     dl, byte ptr es:[di + 6]
@@ -38322,7 +38630,7 @@ L_F93EB:
     3532:9425  [F9425]  8d550a          lea     dx, [di + 0xa]
     3532:9428  [F9428]  06              push    es
     3532:9429  [F9429]  52              push    dx
-    3532:942A  [F942A]  9abe02abfa      lcall   FUNC_3532_AD6E  ; 0xfaab, 0x2be
+    3532:942A  [F942A]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
     3532:942F  [F942F]  83c408          add     sp, 8
 L_F9432:
     3532:9432  [F9432]  c47e06          les     di, ptr [bp + 6]
@@ -38331,7 +38639,7 @@ L_F9432:
     3532:9437  [F9437]  c456ee          les     dx, ptr [bp - 0x12]
     3532:943A  [F943A]  06              push    es
     3532:943B  [F943B]  52              push    dx
-    3532:943C  [F943C]  9af00416f9      lcall   FUNC_3532_9650  ; 0xf916, 0x4f0
+    3532:943C  [F943C]  9af00416f9      lcall   compute_print_cell_size  ; 0xf916, 0x4f0
     3532:9441  [F9441]  83c404          add     sp, 4
     3532:9444  [F9444]  2bff            sub     di, di
     3532:9446  [F9446]  57              push    di
@@ -38528,7 +38836,7 @@ L_F964A:
     3532:964A  [F964A]  8be5            mov     sp, bp
     3532:964C  [F964C]  5d              pop     bp
     3532:964D  [F964D]  ca0200          retf    2
-FUNC_3532_9650:
+compute_print_cell_size:
     3532:9650  [F9650]  55              push    bp
     3532:9651  [F9651]  8bec            mov     bp, sp
     3532:9653  [F9653]  83ec08          sub     sp, 8
@@ -38537,19 +38845,19 @@ FUNC_3532_9650:
     3532:965C  [F965C]  8856f9          mov     byte ptr [bp - 7], dl
     3532:965F  [F965F]  80e208          and     dl, 8
     3532:9662  [F9662]  80fa00          cmp     dl, 0
-    3532:9665  [F9665]  7553            jne     L_F96BA  ; 0x96ba
+    3532:9665  [F9665]  7553            jne     L_F96BA  ; 0x55a
     3532:9667  [F9667]  26837d1200      cmp     word ptr es:[di + 0x12], 0
-    3532:966C  [F966C]  750b            jne     L_F9679  ; 0x9679
+    3532:966C  [F966C]  750b            jne     L_F9679  ; 0x519
     3532:966E  [F966E]  c45e06          les     bx, ptr [bp + 6]
     3532:9671  [F9671]  26c6470700      mov     byte ptr es:[bx + 7], 0
-    3532:9676  [F9676]  e93d00          jmp     L_F96B6  ; 0x96b6
+    3532:9676  [F9676]  e93d00          jmp     L_F96B6  ; 0x556
 L_F9679:
     3532:9679  [F9679]  c47e06          les     di, ptr [bp + 6]
     3532:967C  [F967C]  26c6450701      mov     byte ptr es:[di + 7], 1
     3532:9681  [F9681]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:9684  [F9684]  80e204          and     dl, 4
     3532:9687  [F9687]  80fa00          cmp     dl, 0
-    3532:968A  [F968A]  7418            je      L_F96A4  ; 0x96a4
+    3532:968A  [F968A]  7418            je      L_F96A4  ; 0x544
     3532:968C  [F968C]  c45e0a          les     bx, ptr [bp + 0xa]
     3532:968F  [F968F]  268b7f12        mov     di, word ptr es:[bx + 0x12]
     3532:9693  [F9693]  d1ff            sar     di, 1
@@ -38559,7 +38867,7 @@ L_F9679:
     3532:969B  [F969B]  d1ff            sar     di, 1
     3532:969D  [F969D]  d1ff            sar     di, 1
     3532:969F  [F969F]  8bd7            mov     dx, di
-    3532:96A1  [F96A1]  e90b00          jmp     L_F96AF  ; 0x96af
+    3532:96A1  [F96A1]  e90b00          jmp     L_F96AF  ; 0x54f
 L_F96A4:
     3532:96A4  [F96A4]  c47e0a          les     di, ptr [bp + 0xa]
     3532:96A7  [F96A7]  268b5512        mov     dx, word ptr es:[di + 0x12]
@@ -38573,17 +38881,17 @@ L_F96B6:
 L_F96BA:
     3532:96BA  [F96BA]  c47e0a          les     di, ptr [bp + 0xa]
     3532:96BD  [F96BD]  26837d1000      cmp     word ptr es:[di + 0x10], 0
-    3532:96C2  [F96C2]  750b            jne     L_F96CF  ; 0x96cf
+    3532:96C2  [F96C2]  750b            jne     L_F96CF  ; 0x56f
     3532:96C4  [F96C4]  c45e06          les     bx, ptr [bp + 6]
     3532:96C7  [F96C7]  26c6470700      mov     byte ptr es:[bx + 7], 0
-    3532:96CC  [F96CC]  e93b00          jmp     L_F970A  ; 0x970a
+    3532:96CC  [F96CC]  e93b00          jmp     L_F970A  ; 0x5aa
 L_F96CF:
     3532:96CF  [F96CF]  c47e06          les     di, ptr [bp + 6]
     3532:96D2  [F96D2]  26c6450701      mov     byte ptr es:[di + 7], 1
     3532:96D7  [F96D7]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:96DA  [F96DA]  80e204          and     dl, 4
     3532:96DD  [F96DD]  80fa00          cmp     dl, 0
-    3532:96E0  [F96E0]  7416            je      L_F96F8  ; 0x96f8
+    3532:96E0  [F96E0]  7416            je      L_F96F8  ; 0x598
     3532:96E2  [F96E2]  c45e0a          les     bx, ptr [bp + 0xa]
     3532:96E5  [F96E5]  268b5710        mov     dx, word ptr es:[bx + 0x10]
     3532:96E9  [F96E9]  d1fa            sar     dx, 1
@@ -38592,7 +38900,7 @@ L_F96CF:
     3532:96EF  [F96EF]  d1fa            sar     dx, 1
     3532:96F1  [F96F1]  d1fa            sar     dx, 1
     3532:96F3  [F96F3]  d1fa            sar     dx, 1
-    3532:96F5  [F96F5]  e90b00          jmp     L_F9703  ; 0x9703
+    3532:96F5  [F96F5]  e90b00          jmp     L_F9703  ; 0x5a3
 L_F96F8:
     3532:96F8  [F96F8]  c47e0a          les     di, ptr [bp + 0xa]
     3532:96FB  [F96FB]  268b5510        mov     dx, word ptr es:[di + 0x10]
@@ -40685,7 +40993,7 @@ L_FAB84:
     3532:ABE9  [FABE9]  c47ef2          les     di, ptr [bp - 0xe]
     3532:ABEC  [FABEC]  06              push    es
     3532:ABED  [FABED]  57              push    di
-    3532:ABEE  [FABEE]  9abe02abfa      lcall   FUNC_3532_AD6E  ; 0xfaab, 0x2be
+    3532:ABEE  [FABEE]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
     3532:ABF3  [FABF3]  83c408          add     sp, 8
     3532:ABF6  [FABF6]  8346f20a        add     word ptr [bp - 0xe], 0xa
     3532:ABFA  [FABFA]  a06e1b          mov     al, byte ptr [0x1b6e]
@@ -40701,7 +41009,7 @@ L_FAB84:
     3532:AC10  [FAC10]  c47ef2          les     di, ptr [bp - 0xe]
     3532:AC13  [FAC13]  06              push    es
     3532:AC14  [FAC14]  57              push    di
-    3532:AC15  [FAC15]  9abe02abfa      lcall   FUNC_3532_AD6E  ; 0xfaab, 0x2be
+    3532:AC15  [FAC15]  9abe02abfa      lcall   init_print_record_fields  ; 0xfaab, 0x2be
     3532:AC1A  [FAC1A]  83c408          add     sp, 8
     3532:AC1D  [FAC1D]  810e48050c00    or      word ptr [0x548], 0xc
     3532:AC23  [FAC23]  8be5            mov     sp, bp
@@ -40828,7 +41136,7 @@ L_FAD68:
     3532:AD68  [FAD68]  8be5            mov     sp, bp
     3532:AD6A  [FAD6A]  5d              pop     bp
     3532:AD6B  [FAD6B]  ca0200          retf    2
-FUNC_3532_AD6E:
+init_print_record_fields:
     3532:AD6E  [FAD6E]  55              push    bp
     3532:AD6F  [FAD6F]  8bec            mov     bp, sp
     3532:AD71  [FAD71]  83ec08          sub     sp, 8

@@ -316,6 +316,21 @@ range-scan tests corresponds to.
 | `0xF8234` | `load_print_record_templates` **(renamed)** | Copies 2 fixed `0xAA` (170)-byte compiled-in template blocks (from `[0x1C9C]`/`[0x1CA0]`) via `memcpy_far` into the scratch far-pointer slots `[0x1E8]`/`[0x1EC]` - loads the source templates `build_print_record_sequence`'s `build_print_record_3532` calls read from | Confirmed |
 | `0xF80A6` | `build_print_record_sequence` **(renamed)** | Builds a row of print/plot-job records via repeated `build_print_record_3532` calls, each reading from a growing offset into the templates loaded by `load_print_record_templates` (`[0x1E8]+0`, `+0x22`, ...) and writing to a growing offset into the destination array at `[0x1DDC]+0x5A` (`+9` per record) | Confirmed |
 
+### Found via decoding `init_far_pointer_table_sysrom`'s embedded RAM-init table
+
+See `disasm/NOTES.md` "Found: a whole family of never-reached functions via the RAM far-pointer init table" for the full writeup - these 15 `ENTRY_POINTS` and 2 transitively-discovered functions were unreachable by both the proven call graph and the heuristic push-bp scan; they were found only by decoding the data table and checking what's at each target address.
+
+| Address | Label | Purpose | Confidence |
+|---|---|---|---|
+| `0xE9472` | `merge_record_flags_if_changed` **(renamed)** | Compares a record's byte 0 against 0 and byte 3 against `DL`; if equal, XORs byte 1 into byte 2 of the same record, then writes a caller-given flag byte into the far ptr record at `[bp-0x10]` and sets global flag `[0x532]=1` if a secondary field is nonzero - sibling of `update_indexed_value_if_changed` | Mechanism confirmed |
+| `0xFAD6E` | `init_print_record_fields` **(renamed)** | `(far ptr record, pos, type, attr1, attr2)` - builds a small record: `[0]`/`[2]`=pos (dup'd), `[6]`=type; `[4]`/`[5]` get `attr1+attr2` or just `attr2` depending on `attr1` bit `0x80` - matches `build_print_record_3532`'s field layout | Confirmed |
+| `0xF9650` | `compute_print_cell_size` **(renamed)** | `(far ptr dest, far ptr src)` - reads a flag byte from `src`; if bit `0x8` clear, checks `src`'s word field `[+0x12]`: if zero, marks `dest` "empty" (`[+7]=0`); else marks `dest` "used" (`[+7]=1`) and computes `dest[+8]` as `src[+0x12]` scaled by `>>6` (if `src` flag bit `0x4` set) or `<<2` (otherwise) - a print-record cell-size scaler | Mechanism confirmed |
+| `0xF09C0`/`0xF09C6`/`0xF09EA` | `SUB_F09C0`/`SUB_F09C6`/`SUB_F09EA` | A 2-entry-point (`F09C0` falls through into `F09C6`) scale-factor reader against far ptr `[0x1DB4]`, feeding `[0x71A]`/`[0x71E]`/`[0x716]`/`[0x724]` - part of a plot-scale-computation family with `SUB_F0AAA` | Mechanism partially understood; not renamed |
+| `0xF0A4A`/`0xF0A4E` | `SUB_F0A4A`/`SUB_F0A4E` | A landing-artifact pair (`F0A4A`'s first 4 bytes are garbage, reconverging cleanly at `F0A4E`) that sets up `[0x6C2]`/`[0x712]`/`[0x6C1]` and calls an also-never-reached function at `0xE7C6B` | Mechanism partially understood; not renamed |
+| `0xF0AAA` | `SUB_F0AAA` | Computes a scale ratio via `imul`/`idiv` against `[0x712]`/`[0x716]`/`[0x71A]`/`[0x722]`/`[0x714]`/`[0x718]`/`[0x724]`, writing `[0x6BC]` | Mechanism partially understood; not renamed |
+| `0xF0B06`/`0xF0B62`/`0xF0BC2`/`0xF0BC6`/`0xF0BE2`/`0xF0BFA`/`0xF0C26` | `SUB_F0B06` etc. | A tightly-packed family of plot-position/pen helpers touching `[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]` and far ptrs `[0x1DB8]`/`[0x1DBC]`, some calling the confirmed `update_plot_position`/`plot_line_to` - essentially more entry points into the same multi-entry plot module as `draw_pending_line_segment`/`reset_plot_home_or_acq` | Mechanism partially understood; not renamed |
+| `0xF173E` | `SUB_F173E` | Makes a **real, unambiguous `LCALL`** to `0xEA13B` - which is confirmed to be the *start of a string table* (`"or POST\0Display formatting\0..."`), not code. A second, independent instance of the `SUB_EAC86` phenomenon (a genuine call landing on data) at a different address entirely - see `disasm/NOTES.md` | Anomaly, not a real code path in practice; not renamed |
+
 The remaining ~400 heuristically-found functions (`FUNC_2998_XXXX` in
 `disasm/160-2998-14.lst`) are candidates once specific ones are traced
 from a known caller.

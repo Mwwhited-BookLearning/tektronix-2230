@@ -89,6 +89,36 @@ ENTRY_POINTS = [
     # confidence entry point (unlike the comm ROM's OWN disassembly,
     # which is seeded heuristically - see gen_disasm_2998.py).
     (0xE64C, 0x0000, "COMM_ROM_BOOTSTUB_TARGET"),
+    # Found by fully decoding init_far_pointer_table_sysrom's own
+    # embedded RAM-init table (82 entries, RAM dest = ES:0x209 base +
+    # table offset, source = far ptr value) - see disasm/NOTES.md
+    # "Found: a whole family of never-reached functions via the RAM
+    # far-pointer init table" for the full writeup. These addresses are
+    # NEVER referenced by a literal CALL/LCALL/JMP anywhere in the
+    # proven or heuristic-scanned code, and several don't match the
+    # heuristic's exact push-bp signature either - they were only
+    # discoverable by decoding this data table and checking what's at
+    # each target address. Every one of these decodes as coherent,
+    # non-garbage x86 and is deeply tied to the already-confirmed
+    # plot/scale variable family ([0x6BE]/[0x6BC]/[0x6C0]/[0x6C1]/
+    # [0x712]/[0x71A]-[0x724]/[0x1DB4]/[0x1DB8]/[0x1DBC]) - this is a
+    # genuine, substantial expansion of provable coverage, not
+    # speculative.
+    (0xE947, 0x0002, "SUB_E9472"),
+    (0xF09C, 0x0000, "SUB_F09C0"),
+    (0xF09C, 0x0006, "SUB_F09C6"),
+    (0xF09E, 0x000A, "SUB_F09EA"),
+    (0xF0A4, 0x000A, "SUB_F0A4A"),
+    (0xF0A4, 0x000E, "SUB_F0A4E"),
+    (0xF0AA, 0x000A, "SUB_F0AAA"),
+    (0xF0B0, 0x0006, "SUB_F0B06"),
+    (0xF0B6, 0x0002, "SUB_F0B62"),
+    (0xF0BC, 0x0002, "SUB_F0BC2"),
+    (0xF0BC, 0x0006, "SUB_F0BC6"),
+    (0xF0BE, 0x0002, "SUB_F0BE2"),
+    (0xF0BF, 0x000A, "SUB_F0BFA"),
+    (0xF0C2, 0x0006, "SUB_F0C26"),
+    (0xF173, 0x000E, "SUB_F173E"),
 ]
 
 # Semantic names for routines/branch targets whose purpose has been
@@ -3175,6 +3205,53 @@ FUNCTIONAL_NAMES = {
                                                # skipping that engine's
                                                # position-wraparound
                                                # preamble entirely)
+    0xE9472: "merge_record_flags_if_changed",  # compares a record's
+                                               # byte 0 against 0
+                                               # (unrelated jump table
+                                               # not shown) and byte 3
+                                               # against DL; if equal,
+                                               # XORs byte 1 into byte 2
+                                               # of the same record,
+                                               # then writes a caller-
+                                               # given flag byte into
+                                               # the far ptr record at
+                                               # [bp-0x10] and sets
+                                               # global flag [0x532]=1
+                                               # if a secondary field is
+                                               # nonzero - sibling of
+                                               # update_indexed_value_
+                                               # if_changed, found via
+                                               # the RAM far-pointer
+                                               # init table (see
+                                               # disasm/NOTES.md)
+    0xFAD6E: "init_print_record_fields",      # (far ptr record, pos,
+                                               # type, attr1, attr2) -
+                                               # builds a small record:
+                                               # [0]/[2]=pos (dup'd),
+                                               # [6]=type; [4]/[5] get
+                                               # attr1+attr2 or just
+                                               # attr2 depending on
+                                               # attr1 bit 0x80 - matches
+                                               # build_print_record_
+                                               # 3532's field layout;
+                                               # found via the RAM far-
+                                               # pointer init table
+    0xF9650: "compute_print_cell_size",       # (far ptr dest, far ptr
+                                               # src) - reads a flag
+                                               # byte from src; if bit
+                                               # 0x8 clear, checks src's
+                                               # word field [+0x12]: if
+                                               # zero, marks dest "empty"
+                                               # ([+7]=0); else marks
+                                               # dest "used" ([+7]=1) and
+                                               # computes dest[+8] as
+                                               # src[+0x12] scaled by >>6
+                                               # (if src flag bit 0x4
+                                               # set) or <<2 (otherwise) -
+                                               # a print-record cell-size
+                                               # scaler; found via the
+                                               # RAM far-pointer init
+                                               # table
     0xE804F: "update_indexed_value_if_changed", # compares a table
                                                # entry at `es:[bx+si]`
                                                # against `dx`; if equal,

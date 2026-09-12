@@ -51,6 +51,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x90000-0x97FFF` | **Address-decode alias of `0x88000-0x8FFFF`** (same comm ROM, file offset `0x8000-0xFFFF`) | Not a separate device - brute-forcing every possible base offset against 82 observed far-call targets found `base=0x88000` gives 82/82 exact matches against the comm ROM's own function starts. Likely incomplete address-line decoding in the comm ROM's chip-select logic. Wired into the tooling as `"2998_alias_90000"` in `gen_disasm_x86.CHIPS` (a `slice` of the same file) so the recursive descent follows it automatically |
 | `0xE0000-0xEFFFF` | `160-3633` (main ROM, low half) | Confirmed via TekWiki + validated disassembly |
 | `0xF0000-0xFFFFF` | `160-3532` (main ROM, high half) | Confirmed via TekWiki; holds the real CPU reset vector at `0xFFFF0` |
+| `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `disasm/NOTES.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
 
 ## Unidentified / open
 
@@ -64,6 +65,17 @@ routine" for the full explanation (prompted by the user asking whether
 it might be an install-check, and whether it might be RAM/IO on the
 comm board specifically - both turned out to be correct, as two stages
 of the same probe).
+
+**New this session**: decoding `init_far_pointer_table_sysrom`'s own
+embedded data (see the `0x02090-0x021F0` row above) surfaced a cluster
+of plot-scale variables not previously tracked individually here:
+`[0x712]`, `[0x714]`, `[0x716]`, `[0x718]`, `[0x71A]`, `[0x71C]`,
+`[0x71E]`, `[0x722]`, `[0x724]` (all read/written together by a family
+of never-before-reached functions doing `imul`/`idiv`-based scale-
+ratio math), and 2 far pointers `[0x1DB8]`/`[0x1DBC]` immediately
+adjacent to the still-unlocated stroke-font pointer `[0x1DB0]`. None
+individually identified yet - see `disasm/NOTES.md` for the addresses
+that touch them.
 
 Next open items are more about *understanding* what's already mapped
 than finding new address space - see `TODO.md` (the self-test
