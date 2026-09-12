@@ -7385,10 +7385,10 @@
     "notes": null
   },
   "E804F": {
-    "name": "SUB_E804F",
+    "name": "update_indexed_value_if_changed",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "update_indexed_value_if_changed",
     "notes": null
   },
   "E8071": {

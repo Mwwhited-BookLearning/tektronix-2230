@@ -2968,6 +2968,30 @@ FUNCTIONAL_NAMES = {
                                                # an installed-option
                                                # indicator icon on the
                                                # boot splash screen
+    0xE804F: "update_indexed_value_if_changed", # compares a table
+                                               # entry at `es:[bx+si]`
+                                               # against `dx`; if equal,
+                                               # returns immediately -
+                                               # else writes `dx` into
+                                               # the per-index table at
+                                               # far ptr `[0x1D1C]`,
+                                               # marks a "changed" byte
+                                               # at `[+4]` of that same
+                                               # entry, and sets global
+                                               # flag `[0x532]=1`.
+                                               # Called right alongside
+                                               # `SUB_E8E29` from 2
+                                               # parallel code paths
+                                               # that both go on to
+                                               # update the plot-
+                                               # position cache
+                                               # `[0x6B2]`/`[0x6B4]` -
+                                               # the simpler ("just set
+                                               # it") half of that
+                                               # update, vs.
+                                               # `SUB_E8E29`'s more
+                                               # elaborate bounds-
+                                               # checked version
     0xEEA58: "clear_readout_attrs_for_item",  # (item, count) - reads
                                                # a far ptr base from
                                                # [0x36] plus a per-item

@@ -12532,7 +12532,7 @@ L_E7E43:
 L_E7E76:
     3633:7E76  [E7E76]  ff76f6          push    word ptr [bp - 0xa]
     3633:7E79  [E7E79]  ff76f8          push    word ptr [bp - 8]
-    3633:7E7C  [E7E7C]  9a0f0004e8      lcall   SUB_E804F  ; 0xe804, 0xf
+    3633:7E7C  [E7E7C]  9a0f0004e8      lcall   update_indexed_value_if_changed  ; 0xe804, 0xf
     3633:7E81  [E7E81]  83c402          add     sp, 2
     3633:7E84  [E7E84]  8b7ef8          mov     di, word ptr [bp - 8]
     3633:7E87  [E7E87]  893eb206        mov     word ptr [0x6b2], di
@@ -12663,7 +12663,7 @@ FUNC_3633_7FA6:
     3633:7FC9  [E7FC9]  5d              pop     bp
     3633:7FCA  [E7FCA]  cb              retf    
 
-SUB_E804F:
+update_indexed_value_if_changed:
     3633:804F  [E804F]  1c1d            sbb     al, 0x1d
     3633:8051  [E8051]  8bd8            mov     bx, ax
     3633:8053  [E8053]  263910          cmp     word ptr es:[bx + si], dx
@@ -25663,7 +25663,7 @@ L_F102D:
     3532:102D  [F102D]  83c402          add     sp, 2
     3532:1030  [F1030]  ff760c          push    word ptr [bp + 0xc]
     3532:1033  [F1033]  ff760a          push    word ptr [bp + 0xa]
-    3532:1036  [F1036]  9a0f0004e8      lcall   SUB_E804F  ; 0xe804, 0xf
+    3532:1036  [F1036]  9a0f0004e8      lcall   update_indexed_value_if_changed  ; 0xe804, 0xf
     3532:103B  [F103B]  83c402          add     sp, 2
 L_F103E:
     3532:103E  [F103E]  837ef200        cmp     word ptr [bp - 0xe], 0
