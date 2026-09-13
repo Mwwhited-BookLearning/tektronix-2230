@@ -172,6 +172,15 @@
       "Follow-up live hardware session" for the full writeup and next
       step (trace what else gates on `[0x1B83]`, specifically `COMM_
       LOOPBACK`'s leaf and the command-parser entry point).
+      **Concrete physical check found 2026-09-13**: the F10/F12 option
+      installation instructions (`hardware/070-6090-00.pdf`) require
+      moving **jumper `P9107` on the Storage circuit board** as part of
+      installing either comm option - if it's not in the position the
+      firmware expects on one or both physical test units, that alone
+      could explain the comm-detection failure with no code bug at
+      all. Check `P9107`'s position before digging further into the
+      disassembly side - see `disasm/NOTES.md`'s "Strong new lead"
+      paragraph.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

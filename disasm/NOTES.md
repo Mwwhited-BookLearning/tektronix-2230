@@ -620,6 +620,28 @@ even with genuinely-present, genuinely-working comm hardware - i.e.
 whether the *detection* itself might be the actual bug/limitation,
 separate from the comm board's real capability.
 
+**Strong new lead, from `hardware/070-6090-00.pdf`** (the F10/GPIB and
+F12/RS-232 *option installation instructions*, provided by the user
+2026-09-13 - a short 6-page document, image-only scan, read via
+`pymupdf` page rendering since it has no text layer): installing
+either option requires **moving jumper `P9107` on the Storage circuit
+board "one pin over toward the center"** (step 22, Figure 3). A jumper
+that must be physically relocated for the comm option to work is
+exactly the kind of thing that could explain firmware not recognizing
+the board as installed - if `P9107` isn't in the position the option
+expects on one or both of the two physical test units, that alone
+could account for the comm-detection failure theory above, with no
+code-level bug needed at all. Worth physically checking `P9107`'s
+position on both units before assuming a firmware/detection bug -
+genuinely the single most actionable next physical step, cheaper than
+tracing more disassembly. (Also resolved a side question from the same
+document: the "2 ROMs" shipped with the F10/F12 option kit are
+**replacement main system ROMs** (`U9109`/`U9110`, i.e. `sys_rom_0`/
+`sys_rom_1` - Table 1 confirms `160-3633-XX`/`160-3532-XX` for a 2230),
+required because the option requires a matching main-ROM firmware
+version - not a second, undiscovered comm-board ROM. No teardown
+needed to answer that particular question.)
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the

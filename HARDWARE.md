@@ -6,7 +6,7 @@ connectors instead of guesswork. Images live in `hardware/photos/`.
 Add more files here (or split this doc further) as more photos come
 in — don't let it become one unmanageable page.
 
-## Manuals (`hardware/070-4998-02.pdf`, `hardware/2230 .pdf`)
+## Manuals (`hardware/070-4998-02.pdf`, `hardware/2230 .pdf`, `hardware/070-6090-00.pdf`)
 
 Provided by the user 2026-09-13 (tracked via git-lfs given their size -
 ~8.7MB and ~23MB): the **070-4998-02 Operator Manual** and the **2230
@@ -21,6 +21,18 @@ Space Allocation") and Section 6 (Maintenance, Tables 6-16 through
 -layout` (no `pdfimages`/`pdfinfo` available in this environment, but
 `pip install pymupdf` works and can render pages/extract images if a
 markdown+figure transcription is ever built - see `TODO.md`).
+
+Also provided same day: **`070-6090-00`**, the short (6-page) **F10
+(GPIB)/F12 (RS-232) option installation instructions** - an
+image-only scan with no text layer, so read via `pymupdf` page
+rendering (`page.get_pixmap()`) rather than `pdftotext`. Key finds: the
+"2 ROMs" shipped with either option are **replacement main system
+ROMs** (`U9109`/`U9110`), not a second comm-board ROM - installing the
+option requires the main-ROM firmware version to match; and installing
+either option requires **moving jumper `P9107` on the Storage circuit
+board** to a new position - a strong candidate for why live firmware
+comm-detection might fail on a unit where this wasn't done correctly
+(see `disasm/NOTES.md`'s "Follow-up live hardware session").
 
 ## Two physical units, running DIFFERENT ROM revisions - confirmed via `/DIAGNOSTICS/EXERCISERS/CONFIGURATION`
 
