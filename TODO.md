@@ -57,18 +57,22 @@
 - [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
       `print_string_far` (all used exclusively for the self-test text
       banner) write to physical `0x406F0`-`0x406F3`, inside the comm-
-      option's "Option UART/GPIB chips" 8-register bank. **Substantially
-      resolved 2026-09-13**: checked the real TMS9914A datasheet - its
-      Data Out register is at offset 7, not offset 0, ruling out the
-      GPIB-controller-data-register theory specifically. But the RS-232
-      side of the service manual confirms a real UART ("UART U1251",
-      with a baud generator and classic `TBRE`/`DR`/`INTR` signals)
-      genuinely occupies part of this same 8-address block alongside
-      the already-confirmed parameter/status buffers - strong evidence
-      this cluster writes a genuine UART transmit-data register on
-      RS-232-equipped units (self-test banner sent out the serial port),
-      silently harmless when no option is installed. GPIB-side behavior
-      at offset 0 still unclear. **Still short of a confident rename**
+      option's "Option UART/GPIB chips" 8-register bank. Desk research
+      alone (TMS9914A datasheet ruling out its Data Out register at
+      this offset; the RS-232 side having a real UART, "UART U1251",
+      sharing this address block) had built a reasonably strong case
+      for "genuine UART transmit register." **Tested directly on real
+      hardware 2026-09-13 and it doesn't hold up**: the user has RS-232
+      installed, confirmed the DIP-switch baud rate (600) by reading
+      the switches directly, and ran an actual self-test from the
+      `DIAGNOSTICS/TESTS` menu while a listener captured the port at
+      the correct baud rate - **zero bytes came through**. If this
+      cluster reached a real UART transmit register, the self-test
+      should have produced something. Back to genuinely unresolved,
+      now with real experimental data (see `disasm/NOTES.md`'s "Live
+      hardware test" section for the full writeup and caveats on what
+      else could still explain a null result). **Still short of a
+      confident rename** either way
       (exact U1251 part number/register layout not confirmed) - see
       `disasm/NOTES.md`'s expanded "The readout/CRT display memory"
       section for the full trace. Next step if picked up again: check whether
