@@ -27,8 +27,8 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 | Address | Role | Confidence |
 |---|---|---|
 | `[0x752]` | Tick counter, incremented once per `INT2` timer interrupt by `scheduler_tick_service`; `wait_readout_tick` busy-waits for this to change | Confirmed |
-| `[0x758]` | **Confirmed 2026-09-13: this is `SWB2` (service manual Table 6-16/6-17), the front-panel "Switch Bank 2" byte, physical `0x40000+0x3FFA`=`0x43FFA` = Front Panel Buffer `U9301`** (Table 3-1). Read every tick by `scheduler_tick_service`. Exact bit map (bit0=LSB): bit0=`MEM 3`, bit1=`MEM 1`, bit2=`POS/SEL`, bit3=`1K/4K`, bit4=`MENU`, bit5=`MEM 2`, bit6=`MENU ADV`, bit7=`SELECT C1/C2`. **Validated by comparing code structure to these exact bits**: the self-test report loop (`0xE3B6A` and 7 other sites near it) masks `[0x758] & 0x63` (binary `01100011` = bits 0,1,5,6 = `MEM 3`+`MEM 1`+`MEM 2`+`MENU ADV`) as one abort/branch condition and separately checks `& 0x80` (`SELECT C1/C2`) as another - this exactly matches the service manual's own documented behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") plus the complete set of menu-navigation buttons (`MEM 1`/`2`/`3` = the repurposed `Menu Select` buttons, `MENU ADV` = `SAVE REF/►` - see `HARDWARE.md`'s "Menu navigation control scheme"). A precise, independently-confirmed match between the raw bit mask and the named switches | Confirmed |
-| `[0x759]` | By the same address derivation, this should be `SWB1` (`U9302`, physical `0x43FFB` = Front Panel Buffer `U9302`): bit0=`A ONLY`(active-low), bit1=`PRE/POST`, bit2=`HOR CAL`, bit3=`HOR MAG`, bit4=`ROLL`, bit5=`HOLD`, bit6=`B ONLY`(active-low), bit7=`STORE ON`. **Bit0/bit6 now independently confirmed by live hardware test 2026-09-13**: running `FP_VALUES` and cycling `HORIZONTAL MODE` through `A`/`BOTH`/`B` changed the exerciser's digital-switch byte exactly `0x40`→`0x41`→`0x01`. In binary that's `A`=`0100 0000` (bit0=`0`=asserted/active-low, bit6=`1`=inactive), `BOTH`=`0100 0001` (bit0=`1`, bit6=`1`, both inactive - neither "only"), `B`=`0000 0001` (bit0=`1`=inactive, bit6=`0`=asserted) - an exact match to the predicted `A ONLY`/`B ONLY` active-low bit map, by real physical control manipulation rather than address pairing alone | **Bit0 (`A ONLY`) and bit6 (`B ONLY`) confirmed by live test**; remaining bits still only inferred from address pairing |
+| `[0x758]` | **Confirmed 2026-09-13: this is `SWB2` (service manual Table 6-16/6-17), the front-panel "Switch Bank 2" byte, physical `0x40000+0x3FFA`=`0x43FFA` = Front Panel Buffer `U9301`** (Table 3-1). Read every tick by `scheduler_tick_service`. Exact bit map (bit0=LSB): bit0=`MEM 3`, bit1=`MEM 1`, bit2=`POS/SEL`, bit3=`1K/4K`, bit4=`MENU`, bit5=`MEM 2`, bit6=`MENU ADV`, bit7=`SELECT C1/C2`. **Validated by comparing code structure to these exact bits**: the self-test report loop (`0xE3B6A` and 7 other sites near it) masks `[0x758] & 0x63` (binary `01100011` = bits 0,1,5,6 = `MEM 3`+`MEM 1`+`MEM 2`+`MENU ADV`) as one abort/branch condition and separately checks `& 0x80` (`SELECT C1/C2`) as another - this exactly matches the service manual's own documented behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") plus the complete set of menu-navigation buttons (`MEM 1`/`2`/`3` = the repurposed `Menu Select` buttons, `MENU ADV` = `SAVE REF/►` - see `HARDWARE.md`'s "Menu navigation control scheme"). A precise, independently-confirmed match between the raw bit mask and the named switches. **Bit3 (`1K/4K`) independently confirmed by live hardware test 2026-09-13**: pushing the acquisition record-length button (`1K`/`4K`) toggled the `FP_VALUES` `dig=` field's 3rd octet exactly `0x08`↔`0x00` (`XOR=0x08`=bit3 alone) - an exact single-bit match | Confirmed; bits 0,1,3,5,6,7 now bit-level validated (code structure + live test), bits 2/4 (`POS/SEL`/`MENU`) not yet independently isolated |
+| `[0x759]` | By the same address derivation, this should be `SWB1` (`U9302`, physical `0x43FFB` = Front Panel Buffer `U9302`): bit0=`A ONLY`(active-low), bit1=`PRE/POST`, bit2=`HOR CAL`, bit3=`HOR MAG`, bit4=`ROLL`, bit5=`HOLD`, bit6=`B ONLY`(active-low), bit7=`STORE ON`. **Independently confirmed by live hardware test 2026-09-13** (running `FP_VALUES`, reading its `dig=` field's 4th octet): `HORIZONTAL MODE` `A`/`BOTH`/`B` gave `0x40`→`0x41`→`0x01` (bit0=`A ONLY`, bit6=`B ONLY`, both active-low - exact match); **`ROLL`** toggled `0x44`↔`0x54` (`XOR=0x10`=bit4 alone - exact match); **`PRETRIG`** toggled `0x44`↔`0x46` (`XOR=0x02`=bit1 alone - exact match with `PRE/POST`); **`SAVE`** toggled `0x44`↔`0x64` (`XOR=0x20`=bit5 alone - exact match with `HOLD`, plausible if `SAVE` and hold-acquisition share a line); **`STORE`** toggled `0x44`↔`0xC4` (`XOR=0x80`=bit7 alone - exact match with `STORE ON`). Every tested bit landed on a clean single-bit XOR against the predicted name - strong confirmation of the whole byte, not just isolated bits | **Confirmed**: bits 0,1,4,5,6,7 bit-level validated by live test; only bit2 (`HOR CAL`) and bit3 (`HOR MAG`) remain untested |
 | `[0x7B4]` | Previous snapshot of `[0x758]`, XOR'd against the new read each tick for edge/change detection | Confirmed |
 
 ## Menu navigation
@@ -88,22 +88,31 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   `[0x759]` corresponds to these. Needs a slower, one-control-at-a-time
   re-test to isolate cleanly.
 - **Pushing the `CURSOR` button** cleanly toggles bit7 of `dig=` octet
-  3 between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit) - the
-  cleanest single-bit result in this batch besides `HORIZONTAL MODE`.
-- **`WAVEFORM SELECT`** cleanly toggles bit2 of the *same* octet 3,
+  3 between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit).
+- **`WAVEFORM SELECT`** cleanly toggles bit2 of the same octet 3,
   `0x08`↔`0x0C` (`0x08 XOR 0x0C = 0x04`, a single bit).
-  **Hypothesis**: octet 3 = `SWB2` (`[0x758]`) - its documented bit2
-  (`POS/SEL`) and bit7 (`SELECT C1/C2`) are a good semantic fit for
-  "waveform select" (a position/select-style function) and a cursor
-  push button (selects between cursors/channels) respectively, and
-  `SWB2`+`SWB1` being adjacent bytes (`0x43FFA`/`0x43FFB`) lines up
-  with `HORIZONTAL MODE`'s confirmed `A ONLY`/`B ONLY` bits sitting one
-  octet over (**octet 4** = `SWB1`, `[0x759]`) - i.e. `dig=`'s last two
-  octets are `SWB2` then `SWB1`, matching this project's own
-  `[0x758]`/`[0x759]` ordering. Not yet independently confirmed the
-  way `HORIZONTAL MODE`'s bits were (no code-side cross-check done for
-  `POS/SEL`/`SELECT C1/C2` specifically against these two controls
-  yet), but a strong, self-consistent working hypothesis.
+- **Acquisition `1K`/`4K`** record-length button cleanly toggles bit3
+  of the same octet 3, `0x08`↔`0x00` (`XOR=0x08`, a single bit) -
+  an exact match to `SWB2`'s documented bit3 (`1K/4K`) by name, not
+  just by bit position.
+
+  **Confirmed**: `dig=` octet 3 = `SWB2` (`[0x758]`), octet 4 = `SWB1`
+  (`[0x759]`) - the `1K/4K` result nails this down by name (not just a
+  plausible-sounding bit position), and matches this project's own
+  `[0x758]`/`[0x759]` adjacency (`0x43FFA`/`0x43FFB`) plus `HORIZONTAL
+  MODE`'s confirmed `A ONLY`/`B ONLY` bits on octet 4. `CURSOR`'s bit7
+  and `WAVEFORM SELECT`'s bit2 land exactly on `SWB2`'s `SELECT C1/C2`
+  and `POS/SEL` bits respectively - a semantic fit (cursor selects
+  between channels; waveform select is a position/select-style
+  function) though not yet independently cross-checked in code the
+  way `[0x758]`'s bits 0,1,5,6 were.
+- **`STORE`** (the same button that toggles `dig=` octet4 bit7, `SWB1`
+  `STORE ON`) also changes separate exerciser fields labeled `ASW` and
+  `BSW` (distinct from `dig=` and from `AD DATA`/`cursor` - likely
+  per-timebase "A sweep"/"B sweep" status words, not yet in Table 6-16
+  cross-reference). Exact bytes/bits not yet reported; recorded for a
+  future targeted test isolating `ASW`/`BSW` bit-by-bit against `STORE`
+  and other acquisition controls.
 - Input coupling switch (`AC`/`GND`/`DC`) changed a third byte's value
   (reported as `0x12`-ish/`0x2AA`-ish/`0x3xE`-ish across the three
   positions - transcription uncertain, values not confidently hex-clean
