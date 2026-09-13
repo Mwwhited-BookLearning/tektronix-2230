@@ -58,6 +58,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x406F8`-`0x406FB` | **CONFIRMED: "Option Interrupt Mask Latch (out)"** (Table 3-1 names `0x406F8`; the full 4-address span confirmed 2026-09-13 from the Option 12 Theory of Operation text - see below) | `BA0`/`BA1`-selected 4-output latch (`0D`/`1D`/`2D`/`3D` per the manual's own labels - i.e. physical `0x406F8`/`F9`/`FA`/`FB`); 2 of the 4 outputs mask interrupts (one for the RS-232-C port, one for diagnostics), forced LO (masked) at power-on by `BRST`. `selftest_comm_readback` (`0xE20B0`) writes/toggles output `3D` (`0x406FB`) as part of its own self-check |
 | `0x437F6` | **CONFIRMED: "Front Panel A/D control U6104"** (Table 3-1) | The front-panel A/D converter's control latch - see the new "Two separate ADCs" note below |
 | `0x437FA` | **CONFIRMED: "Front Panel A/D data U6102"** (Table 3-1) | Matches `FP-VALUES`/`FP-A2D` exerciser descriptions in the manual's Maintenance section exactly |
+| `0x437FB` | **CONFIRMED: "Main Front Panel Input U6103"** (Table 3-1) | Resolves `fp_intstat`'s address, seen live on the `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` exerciser screen (see below) - immediately adjacent to `U6102`'s `0x437FA` as guessed at the time |
 | `0x4377E`/`0x4377F` | **CONFIRMED: "Acquisition Memory Address Buffer" low/high bits, U3427/U3428** (Table 3-1) | |
 | `0x437BE` | **CONFIRMED: "Acquisition Mode Register U3310"** (Table 3-1) | |
 | `0x437DE`/`0x437DF` | **CONFIRMED: "B Delay Timer" U4123/U4124** (Table 3-1) | |
@@ -226,13 +227,11 @@ sharper photo to confirm exactly.
   `FP_VALUES`'s `AD DATA` column reads from (see `VARIABLES.md`'s
   front-panel A/D section for the `POSITION`/`VOLTS-DIV` byte-level
   findings, all sourced from this same physical latch).
-- **`fp_intstat` = `U6103`** is a brand new name - not previously
-  distinguished from `U6102`/`U6104` in this project's notes. Sits in
-  the same front-panel-ADC chip cluster (`U6101`/`U6102`/`U6104`/
-  `U6106`/`U6108` are all named a few lines below) - likely an
-  interrupt/conversion-ready status latch, physical address not yet
-  derived (plausibly adjacent to `U6104`'s `0x437F6`/`U6102`'s
-  `0x437FA`, but not confirmed).
+- **`fp_intstat` = `U6103`, address now confirmed: physical `0x437FB`**
+  (found 2026-09-13 reading further into Table 3-1's continuation -
+  labeled *"Main Front Panel Input U6103"*, immediately adjacent to
+  `U6102`'s `0x437FA` as guessed). Not yet cross-referenced against
+  any code that reads this address specifically.
 - **`comm_stat`/`comm_param`** are new, directly-named **comm-board**
   registers - highly relevant to today's live RS-232 troubleshooting
   session (see `disasm/NOTES.md`'s "Follow-up live hardware session").
