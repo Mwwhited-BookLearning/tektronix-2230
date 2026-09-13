@@ -83,6 +83,34 @@ was `0` in both readings tested, meaning **CR-only** is the currently
 selected terminator - exactly what PuTTY sends by default, so
 terminator mismatch is not what's blocking command responses.
 
+**The same physical 10-switch bank means something different in GPIB
+mode** (Table 7-6, for **Option 10** boards - a *different* option
+board/product variant than this unit's **Option 12** RS-232 board,
+though the comm ROM's code contains both decoders, `read_dip_switches_
+gpib_config` alongside `read_dip_switches_serial_config` - possibly
+what the still-open `[0x1B83]` "which hardware variant" detection
+question is actually distinguishing between):
+
+| Switch(es) | Function |
+|---|---|
+| 1,2,3,4,5 | GPIB primary address, binary-weighted: switch1=weight1, switch2=weight2, switch3=weight4, switch4=weight8, switch5=weight16 (address 0-30) |
+| 6 | Terminator: `0`=EOI only, `1`=LF or EOI |
+| 7 | `0`=no function, `1`=**LON** (listen-only) |
+| 8 | `0`=no function, `1`=**TON** (talk-only) |
+| 9,10 | Printer/plotter device - same `00`/`10`/`01`/`11` = HP-GL/Epson/ThinkJet/X-Y Plotter mapping as the RS-232 table |
+
+Talk/listen combinations: neither `LON` nor `TON` set = normal
+talk-and-listen mode; `LON` only = listen-only; `TON` only = talk-only;
+**both** set = OFF BUS (equivalent to address 31, taken off the bus
+entirely).
+
+Also in the manual (Appendix B, not yet transcribed here): ready-made
+switch-position tables for specific common printers/plotters (HP-GL
+compatible plotters, Epson printers, HP ThinkJet) - lower priority
+since they're third-party compatibility presets rather than the core
+switch-to-function mapping, but available in `hardware/070-4998-02.pdf`
+if ever needed.
+
 **AUXILIARY CONNECTOR — 9-pin D-sub**, pins labeled: `RELAY N.O.`,
 `RELAY COMM`, `RELAY N.C.`, `+4.2 VDC`, `SIG GND`, `SHIELD GND`,
 `EXT CLK`, `X`, `Y`. This is an **analog X-Y plotter/chart-recorder
