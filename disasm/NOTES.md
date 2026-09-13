@@ -651,21 +651,35 @@ stream GPIB message bytes through the interrupt-mask register.
 option chip" re-interpretation above.** It specifically kills the
 "streaming data out via the GPIB controller's own Data Out register"
 version of that theory. It does *not* rule out the RS-232 variant of
-the option (Table 3-1 calls the whole 8-address block "Option UART/
-GPIB chips" generically, implying either a GPIB or a UART chip occupies
-the same address range depending which option is installed) - a real
-UART of this era could plausibly have its transmit-data register at
-offset 0 instead of offset 7, so this doesn't reopen the door to the
-original "CRT readout hardware" theory by itself. Genuinely still
-unresolved: is offset 0 a UART TX-data register (RS-232 variant), or
-something on the mainboard entirely unrelated to the comm option? Not
-confident enough to rename either way - left open.
+the option - and checking the RS-232 side of the service manual
+confirms it's the right track: **the RS-232 option board has a real
+UART, "UART U1251"**, explicitly described as providing "serial-to-
+parallel conversion," an internal baud-rate generator, and the classic
+`TBRE`/`DR`/`INTR` interrupt lines (Transmitter-Buffer-Register-Empty,
+Data-Ready, and a combined interrupt request) - textbook USART-style
+signal names for a chip of this era. The same theory-of-operation
+section confirms U1251 is enabled by one of the *same 8 address
+strobes* that also enable the already-confirmed parameter buffer
+(`U1222`) and status buffer (`U1223`) - i.e. **U1251 genuinely is one
+of the chips occupying this exact 8-address "Option UART/GPIB chips"
+block**, not a coincidental naming overlap.
 
-Still worth trying if this gets picked up again: checking whether
-`init_readout_port_config`'s literal bytes (`0x29`, `0x23`, `0x06`)
-match documented mode-register constants for a plausible UART of this
-era (an 8251A-style USART is a reasonable guess given the option
-board's other confirmed chips).
+**Conclusion: on RS-232-equipped units, `write_readout_port_byte`'s
+write to `0x406F0` is very likely a genuine UART transmit-data write**
+(a classic-era USART commonly puts its data register at the first
+address of its register pair/block, distinguished from status/control
+registers by a low-order address bit) - meaning the self-test banner
+text really is being sent out over the RS-232 port when that option is
+installed, harmlessly going nowhere when it isn't. On GPIB-equipped
+units the exact behavior at offset 0 is still unclear (confirmed NOT
+the TMS9914A's Data Out register, so possibly its Interrupt Mask
+Register 0, meaning the "print" there might just be silently harmless
+noise into a mask register). **Still short of a confident rename**:
+haven't confirmed the exact chip part number for U1251 or its precise
+register-offset layout, and the "CRT readout hardware" story from the
+original naming was never definitively disproven either - but this is
+now a well-evidenced, credible alternate explanation, not idle
+speculation. Worth a rename once (or if) the remaining gap closes.
 
 **`0x41000`/`0x42000` note superseded** - see `MEMORY_MAP.md`'s
 "Confirmed regions" table: these are now confirmed via the service

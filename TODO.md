@@ -47,18 +47,22 @@
       `MEMORY_MAP.md`/`CONTEXT.md`).
 - [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
       `print_string_far` (all used exclusively for the self-test text
-      banner) write to physical `0x406F0`-`0x406F3`, which the service
-      manual's Table 3-1 confirms (checked against the actual page
-      image, not just OCR) as 3 of the comm-option's "Option UART/GPIB
-      chips" 8-register bank - and the manual separately says the
-      GPIB controller (TMS9914A) "has eight internal registers", an
-      exact count match. Real, specific evidence this cluster might be
-      writing to the comm-option UART/GPIB chip directly for
-      diagnostic output, not CRT/readout hardware as currently named -
-      but `print_string_far`'s per-character `wait_readout_tick` pacing
-      doesn't discriminate between the two stories, so **not confident
-      enough to rename**. See `disasm/NOTES.md`'s expanded "The
-      readout/CRT display memory" section. Next step: check whether
+      banner) write to physical `0x406F0`-`0x406F3`, inside the comm-
+      option's "Option UART/GPIB chips" 8-register bank. **Substantially
+      resolved 2026-09-13**: checked the real TMS9914A datasheet - its
+      Data Out register is at offset 7, not offset 0, ruling out the
+      GPIB-controller-data-register theory specifically. But the RS-232
+      side of the service manual confirms a real UART ("UART U1251",
+      with a baud generator and classic `TBRE`/`DR`/`INTR` signals)
+      genuinely occupies part of this same 8-address block alongside
+      the already-confirmed parameter/status buffers - strong evidence
+      this cluster writes a genuine UART transmit-data register on
+      RS-232-equipped units (self-test banner sent out the serial port),
+      silently harmless when no option is installed. GPIB-side behavior
+      at offset 0 still unclear. **Still short of a confident rename**
+      (exact U1251 part number/register layout not confirmed) - see
+      `disasm/NOTES.md`'s expanded "The readout/CRT display memory"
+      section for the full trace. Next step if picked up again: check whether
       `init_readout_port_config`'s literal bytes (`0x29`/`0x23`/`0x06`)
       match documented UART/GPIB mode-register constants for a chip of
       this era.
