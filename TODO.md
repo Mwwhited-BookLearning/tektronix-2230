@@ -3,86 +3,59 @@
 ## Next up
 
 - [ ] **User request**: decode the readout's stroke/vector font glyph
-      table into SVG files + a catalog, and use recognizable drawn
-      shapes for additional naming/context. Mechanism is fully
-      understood (`draw_readout_char`'s pen/coarse/fine bit-packing,
-      see `disasm/NOTES.md` "Attempted: locating the stroke-font glyph
+      table into SVG files + a catalog. Mechanism is fully understood
+      (`draw_readout_char`'s pen/coarse/fine bit-packing, see
+      `disasm/NOTES.md` "Attempted: locating the stroke-font glyph
       table"), but the table's physical address (`[0x1DB0]`'s value)
-      hasn't been found - a heuristic binary scan found a false
-      positive (real code + the menu string table, not glyph data).
-      **Ruled out 2026-09-12**: `[0x1DB8]`/`[0x1DBC]` (found via the RAM
-      far-pointer-table discovery, right next to `[0x1DB0]`) are simple
-      per-record byte-value caches for plot-scale clamping, NOT font
-      data - confirmed via a full byte trace, see `VARIABLES.md`
-      "Acquisition/plot scaling". `[0x1DB0]` itself is structurally
-      different (a far pointer to a 128-entry table of far pointers,
-      confirmed via `draw_readout_char`'s exact `char*4` indexing) and
-      remains the best candidate - just still unlocated. Next attempt
-      should either trace `boot_init`'s data-driven init loop(s) to find
-      what sets `[0x1DB0]`/`[0x1CC4]`, or render scan candidates and
-      visually check for real letterforms instead of just checking
-      byte-run length. **New lead 2026-09-12**: the ~2890-byte
-      structured (paired-value, not text) binary region at physical
-      `0xEA5E6`-`0xEB131` in `160-3633` - found immediately after the
-      already-catalogued help-text string table, in the same region
-      that resolved the `SUB_EAC86` mystery (see `disasm/NOTES.md`
-      "`SUB_EAC86` fully resolved") - is a plausible size/shape fit for
-      a compact stroke font (paired incrementing/zigzag byte values,
-      consistent with `(dx,dy)` pen-stroke data), but **not decoded or
-      confirmed** - no literal reference to this address exists anywhere
-      in proven or heuristic code, so it isn't proven to be *this*
-      table specifically. Worth a dedicated decode-and-render attempt
-      against `draw_readout_char`'s exact bit-packing scheme.
+      hasn't been found - nothing writes it in proven or heuristic
+      code. `[0x1DB8]`/`[0x1DBC]` (nearby) are ruled out as simple
+      plot-scale byte caches, not font data - see `VARIABLES.md`
+      "Acquisition/plot scaling". Best lead: a ~2890-byte structured
+      (paired-value, not text) binary region at physical `0xEA5E6`-
+      `0xEB131` in `160-3633`, found immediately after the already-
+      catalogued help-text string table (see `disasm/NOTES.md`
+      "`SUB_EAC86` fully resolved") - a plausible size/shape fit for a
+      compact stroke font, but **not decoded or confirmed** - no
+      literal reference to this address exists anywhere in the corpus.
+      Worth a dedicated decode-and-render attempt against `draw_
+      readout_char`'s exact bit-packing scheme, or tracing `boot_init`'s
+      data-driven init loops to find what sets `[0x1DB0]`/`[0x1CC4]`.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,
-      `service_comm_tx_queue` consumer, both renamed this session
-      after an earlier direction mistake - see `disasm/NOTES.md`
-      "Direction correction"), not an RX buffer as first assumed. No
-      genuine incoming-byte ring buffer/interrupt handler has been
-      identified yet - worth tracing if the user's offered comm-module
-      board photos turn up a UART chip whose interrupt line can be
-      followed back into the IVT.
-
+      `service_comm_tx_queue` consumer), not an RX buffer as first
+      assumed. No genuine incoming-byte ring buffer/interrupt handler
+      has been identified yet - worth tracing if a comm-module board
+      photo turns up a UART chip whose interrupt line can be followed
+      back into the IVT.
 - [ ] **REVIEW LATER**: `binary/aligned/*.bin` (NOP-padded, fully-
-      readable reconstructions - see `binary/aligned/README.md` and
-      `disasm/NOTES.md` "NOP-aligned readable reconstruction") were
+      readable reconstructions - see `binary/aligned/README.md`) were
       adopted as the reference binary for future checks. Revisit this
       choice once the rest of the analysis (self-test subroutine ID,
       menu tree, I/O port mapping) is further along, to confirm
       nothing was missed by not using the true original byte-for-byte.
 - [ ] The full `ACQ_MODE_SETUP_TABLE` menu tree and the `DIAGNOSTICS`
-      self-test menu are now photographed and documented end-to-end in
-      `HARDWARE.md`/`hardware/photos/INVENTORY.md` (screen-by-screen,
-      2026-09-11). Still open: trace the actual menu-rendering code
-      that reads/draws these screens (an `update_menu_position`-driven
-      state machine is the leading candidate) to tie each menu string
-      to its backing code, rather than just the backing variables
-      already found for the acquisition-mode bit flags. Also:
-      identify the specific functions behind the newly-named self-test
-      leaves `TB_DIVIDER`, `CLK_DELAY`, `ACQ_ACCESS`, `PRC_READBACK`
-      (all under `DIAGNOSTICS/TESTS`), and `CAL_AIDS`'s `BOX`/
-      `CAL_V_POS`/`CAL_CLK_DLY` and `EXERCISERS`'s `CONFIGURATION`/
-      `IO`/`A_TO_D_TESTS`. **A/D converter identity resolved 2026-09-13**
-      via the service manual: two separate ADCs, `U2204` (signal
-      acquisition, matches the existing Sony CX20052A spec exactly) and
-      `U6105` (front-panel controls) - see `MEMORY_MAP.md`/`CONTEXT.md`.
-      `CLK_DELAY`↔`Clock Delay Timer U4231`/`0x437F7` and `TB_DIVIDER`↔
-      `Time Base Divider Register U4113`/`0x407EE` are also now
-      confirmed (same source) - `ACQ_ACCESS`/`PRC_READBACK`'s exact
-      registers and the menu-rendering trace itself are still open.
-- [ ] **New 2026-09-13, from the service manual**: `write_readout_port_
-      byte` writes unconditionally to physical `0x40000+0x6F0`, but
-      Table 3-1 labels that exact 8-address range (`0x6F0`-`0x6F7`) as
-      "Option UART/GPIB chips (I/O)" - registers that, per the manual's
-      own description, only exist when a comm option board is
-      installed. Not reconciled: either there's a mainboard-only
-      register at this same address the excerpted table rows didn't
-      name, or the option card's chip-select genuinely gates this
-      address range and something else uses it when no card is
-      present. See `MEMORY_MAP.md`'s "Puzzle" note - worth a closer
-      look at the manual's actual page image (not just OCR text) if
-      resolving this matters.
+      self-test menu are photographed and documented end-to-end in
+      `HARDWARE.md`/`hardware/photos/INVENTORY.md`. Still open: trace
+      the actual menu-rendering code that reads/draws these screens (an
+      `update_menu_position`-driven state machine is the leading
+      candidate) to tie each menu string to its backing code. Also
+      identify the specific functions behind self-test leaves
+      `ACQ_ACCESS`/`PRC_READBACK` and `CAL_AIDS`'s `BOX`/`CAL_V_POS` and
+      `EXERCISERS`'s `CONFIGURATION`/`IO` - `TB_DIVIDER`/`CLK_DELAY`'s
+      registers and the A/D converter identity are now confirmed (see
+      `MEMORY_MAP.md`/`CONTEXT.md`).
+- [ ] `write_readout_port_byte` writes unconditionally to physical
+      `0x40000+0x6F0`, but the service manual's Table 3-1 labels that
+      exact 8-address range (`0x6F0`-`0x6F7`) as "Option UART/GPIB
+      chips (I/O)" - registers that, per the manual's own description,
+      only exist when a comm option board is installed. Not
+      reconciled: either there's a mainboard-only register at this
+      same address the excerpted table rows didn't name, or the option
+      card's chip-select genuinely gates this range and something else
+      uses it when no card is present. See `MEMORY_MAP.md`'s "Puzzle"
+      note - worth a closer look at the manual's actual page image
+      (not just OCR text) if resolving this matters.
 - [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
@@ -91,131 +64,27 @@
       HEX waveform-data coding but only the ASCII path
       (`print_signed_decimal_serial`/`print_param_list_response`) has
       been identified in code so far - find the binary/hex one(s).
-- [x] Handle the ~39-instruction decode-drift cluster in `3633` around
-      physical `0xEA1A0-0xEA615` (386-only features that can't be real
-      on this 8086/8088). **Resolved 2026-09-12**: it undersold the
-      real region's size - the true non-code span is `0xEA13B`-`0xEB131`
-      (~4083 bytes, real code resumes cleanly at `0xEB132` with a normal
-      prologue). Identified as: already-catalogued help text (`0xEA13B`-
-      `~0xEA5E6`) plus a structurally regular, not-yet-decoded binary
-      table (`~0xEA5E6`-`0xEB131`, a real lead for the stroke-font glyph
-      table - see the first item in this file). See `disasm/NOTES.md`
-      "`SUB_EAC86` fully resolved: it's the *same* non-code data blob as
-      the `SUB_F173E`→`0xEA13B` finding above".
-- [x] Investigate whether capstone is misdecoding the undocumented
-      8086 1-byte opcode `0x0F` (`POP CS`) as a 286+-style SSE/MMX
-      two-byte escape prefix - found at `SUB_F6382` (`160-3532`).
-      **Resolved 2026-09-12**: named anyway (`draw_marker_box_and_
-      update_position`) since the rest of the body is coherent despite
-      the single misdecoded opcode; the capstone-mismatch explanation
-      stands undisputed. Confirmed it does *not* explain `SUB_EAC86` or
-      any of the broader landing-artifact family below - those are a
-      different, unrelated phenomenon.
-- [ ] **Landing-artifact phenomenon - now the leading theory for `SUB_
-      EAC86` and its relatives**: a genuine, unambiguous compiled
-      `CALL`/`LCALL`/`JMP`/`LJMP` target lands 1-4 bytes *before* where
-      coherent code actually resumes, so the disassembler decodes a
-      coincidentally-valid (or garbage) instruction at the "short"
-      address before reconverging. Confirmed instances now span `SUB_
-      E90A5`/`SUB_E92B0` (original), `SUB_F6382` fallthrough, `L_EDA0A`
-      (`SUB_F1581` → `compute_and_draw_scale_marker`, resolved 2026-09-
-      11), `SUB_F6F4A`, `SUB_F1254`, and `0x88729` (the exact target of
-      `SUB_E99DF`'s garbage `ljmp` - a real, isolated, but statically-
-      unresolvable `ljmp [bp+di]` indexed off the caller `SUB_F4150`'s
-      `bp`/`di`, not meaningless garbage as first assumed). Root-cause
-      root cause **confirmed statistically 2026-09-12**: `disasm/find_
-      landing_artifacts.py` found 49 candidates total (every call-
-      target whose own instruction byte-overlaps an independently-
-      reached instruction 1-4 bytes later); 24/49 land on an `ADD`-
-      family opcode (`0x00`/`0x02`/`0x04`), far above chance - landing
-      1 byte short overwhelmingly lands on a displacement/immediate
-      filler byte (`0x00` most commonly) that also happens to be a
-      valid `ADD` opcode. **One candidate resolved into something more
-      interesting than a landing artifact**: `write_hw_shift_register`
-      (`0xEE13B`) turned out to be a genuine, deliberate secondary entry
-      point sharing bytes with `dispatch_item_handler_if_enabled`
-      (reached by 8 real `lcall`s, both readings reconverge byte-exactly
-      at `0xEE148`) - the same "two valid divergent decodes" class as
-      `SUB_E8E29`/`SUB_E8E03`, not a stale/near-miss call site. Updated
-      `FUNCTIONS.md`'s entry accordingly. The remaining ~47 candidates
-      were not individually traced (that level of effort doesn't scale
-      to all of them) - worth a look only if one stands out (e.g. many
-      independent call sites, like this one had, is the best tell that
-      a candidate is a deliberate dual entry rather than an accidental
-      near-miss). See `disasm/NOTES.md`'s "Systematic landing-artifact
-      sweep" section for the full writeup.
-- [x] Investigate `SUB_EAC86` (`160-3633`, proven set) - decodes as
-      unambiguous garbage (including an impossible SSE instruction)
-      despite being a **clean, unambiguous far-call target** reached
-      identically from 3 separate places across 2 ROMs (`160-3532` x2,
-      comm ROM x1). **Substantially resolved 2026-09-12**: `SUB_EAC86`
-      lands inside the same large (~4083-byte) non-code data region as
-      the `SUB_F173E`→`0xEA13B` finding below - not a decode-tooling
-      bug or address-decode alias, just a real, unambiguous `LCALL`
-      into data, now confirmed as the 3rd-4th such instance (alongside
-      a newly-found `SUB_EAD08`, also a genuine external-lcall target
-      into the same blob). See `disasm/NOTES.md` "`SUB_EAC86` fully
-      resolved" for the full trace. Its two neighbors `SUB_F5898`/`SUB_
-      E97DC` (the "TEKTRONIX" boot-splash builder and its shared copy-
-      loop cluster) are a **separate** phenomenon (coherent, valid code
-      relying on an unmodeled `bp`/`si` implicit-register calling
-      convention, not data) - still left unnamed; see the "Follow-up"
-      paragraph in the original "A second, more puzzling decode
-      anomaly: SUB_EAC86" NOTES.md section. Likewise `SUB_E8E03`/`SUB_
-      E8E29`/`SUB_ED9BC`/`SUB_EEA58` (coherent code, ambiguous entry)
-      are that same separate class, not data. `SUB_EADA0` is a weaker,
-      distinct case (only "called" from a coincidental byte pattern
-      inside `SUB_EAC86`'s own garbage decode, not real external code)
-      - see NOTES.md for the exact distinction. None of these get
-      renamed - the point of this item was explaining *why* the bytes
-      are garbage, which is now answered, not assigning them names.
-      `SUB_EA13B`/`SUB_EA2D6` (transitively reached past the string
-      table) remain unnamed for the same reason - they're inside the
-      data blob too, not real functions.
-- [ ] **New 2026-09-12**: `init_far_pointer_table_sysrom`'s own embedded
-      82-entry `(dest_offset, far_ptr)` RAM-init table (targets `ES=
-      0x209`, physical `0x2090-0x21F0`) led to 15 new `ENTRY_POINTS` and
-      4 more transitively-found functions, all verified byte-identical.
-      Two things still open: (1) **no code anywhere in the corpus loads
-      `ES`/`DS`=`0x209` via a literal immediate** - how (or whether)
-      these 15 functions actually get invoked in practice isn't proven;
-      (2) most are still unnamed. **Clarified 2026-09-12**: `SUB_F09C0`/
-      `F09C6`/`F09EA`/`F0A4A`/`F0A4E`/`F0AAA`/`F0B06`/`F0B62`/`F0BC2`/
-      `F0BC6`/`F0BE2`/`F0BFA`/`F0C26` aren't 7-ish separate sibling
-      functions - they're ~10 different skip-points into one continuous,
-      previously-unreached preamble immediately before `draw_pending_
-      line_segment` (`0xF0C2A`) that computes plot scale factors, see
-      `VARIABLES.md`'s new "Acquisition/plot scaling" section for the
-      variables. `SUB_F0A4A` specifically is itself a landing artifact
-      (1 byte short of the real target `0xF0A4B`, already flagged in
-      `FUNCTIONS.md` from the original pass). The `[0x1DB8]`/`[0x1DBC]`
-      pointers turned out to be simple plot-clamp byte caches, NOT font
-      data (see the stroke-font item above) - ruled out, not still open.
-      Naming any individual skip-point isn't likely to be worth it (no
-      single clean entry boundary); the preamble's overall mechanism is
-      now understood well enough to leave as-is. See `disasm/NOTES.md`
-      "Found: a whole family of never-reached functions via the RAM
-      far-pointer init table" and `FUNCTIONS.md`.
-- [x] Identify what peripheral `0x41000`/`0x42000` actually are.
-      **Resolved 2026-09-13** from the real service manual (Table 3-1):
-      "Display chip interrupt reset" and "Display chip next frame"
-      respectively - not per-channel front-end status as guessed.
-      Renamed `read_channel1_status`/`clear_channel1_status`→`read_
-      display_chip_int_reset`/`clear_display_chip_int_reset` and
-      `read_channel2_status`/`clear_channel2_status`→`read_display_
-      chip_frame_trigger`/`clear_display_chip_frame_trigger` (verified
-      byte-identical after regenerating). See `MEMORY_MAP.md`.
-- [x] Confirm whether the `0x48000-0x4FFFF` "second plane" is an
-      attribute/inverse-video plane, a shadow copy, or scratch space.
-      **Resolved 2026-09-13**: the service manual (Table 3-1) confirms
-      `0x48000-0x4BFFF` is literally **Acquisition Memory** (4 images
-      of Acquisition RAM U3418/U3419) - not a readout attribute plane.
-      The *actual* attribute-plane concept exists, just at a different
-      address: `0x08000-0x0FFFF` ("4 bits of display RAM for waveform
-      attributes (LSB)"). `append_readout_char`'s own `+0x8000` dual-
-      write pattern coincidentally shares the same numeric offset as
-      the acquisition-memory window but isn't proven to be the *same*
-      hardware - see `MEMORY_MAP.md`'s "Confirmed regions" table.
+- [ ] **Landing-artifact phenomenon** (real compiled `CALL`/`LCALL`/
+      `JMP`/`LJMP` targets landing 1-4 bytes before where coherent code
+      actually resumes): root cause confirmed statistically (`disasm/
+      find_landing_artifacts.py` found 49 candidates; the majority land
+      on an `ADD`-family opcode, far above chance - a common filler
+      byte coincidentally decoding as a valid opcode). Only 2 of the 49
+      were individually traced in depth (`write_hw_shift_register`,
+      `SUB_EAC86`/`SUB_EAD08`), both turning into real findings rather
+      than near-misses. The remaining ~47 weren't individually chased -
+      worth a look only if one stands out (many independent call sites
+      is the best tell). See `disasm/NOTES.md`'s "Systematic landing-
+      artifact sweep" section.
+- [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
+      0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
+      points, mostly a plot-scale-computation preamble immediately
+      before `draw_pending_line_segment` (see `VARIABLES.md`
+      "Acquisition/plot scaling"). Still open: **no code anywhere in
+      the corpus loads `ES`/`DS`=`0x209` via a literal immediate** - how
+      (or whether) these functions actually get invoked in practice
+      isn't proven. See `disasm/NOTES.md` "Found: a whole family of
+      never-reached functions via the RAM far-pointer init table".
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
@@ -225,128 +94,65 @@
       decode drift into data at the deepest heuristic reach, but worth
       a quick look to confirm.
 - [ ] Narrow down what peripheral the I/O ports actually seen in code
-      (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to —
-      see `MEMORY_MAP.md` "I/O ports actually seen in code". `0xD1`/
-      `0xC4` are now confirmed as a serial shift-register-style
-      hardware write (`write_hw_shift_register`) - peripheral identity
-      still open. **Checked against the service manual 2026-09-13**:
-      these are true 8086 port-space (`in`/`out`) accesses, a
-      completely different address space from the memory-mapped
-      `0x40000+` window the manual's Table 3-1 documents, so that table
-      doesn't cover them directly. The AUX-connector pen-lift relay
-      (checked as a candidate) turns out to be driven by a single
-      digital line (`PEN DWN`, connector `J6423` pin 1) - too simple to
-      explain a 3x-shift-then-strobe write, so probably not the target;
-      the X/Y analog plot-output DACs are a better structural fit but
-      the manual excerpts read don't name the specific register/DAC
-      feeding them. Still open.
+      (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to -
+      see `MEMORY_MAP.md` "I/O ports actually seen in code". These are
+      true 8086 port-space (`in`/`out`) accesses, a different address
+      space from the memory-mapped `0x40000+` window the service manual
+      documents, so that manual's Table 3-1 doesn't cover them
+      directly. The AUX-connector pen-lift relay doesn't cleanly fit
+      `write_hw_shift_register`'s multi-bit shift-and-strobe shape (Pen-
+      Down is a single digital line, per the service manual) - the X/Y
+      analog plot-output DACs are a better structural fit but the
+      specific register/DAC feeding them wasn't named in the manual
+      excerpts read so far.
 - [ ] **In progress: renaming EVERY identifiable routine, not just
-      opportunistically** (explicit user request: "keep going, don't
-      stop until everything is renamed"). Working through the
-      proven-only set (`sysrom_3532_3633.symbols.json`) ordered by
-      reference count, highest first - 261/282 named as of the latest
-      session (2026-09-12; the total grew from 278 to 282 after the
-      RAM far-pointer-table discovery added new entry points - see
-      below). See `disasm/NOTES.md`'s dated session entries and
-      `changes/` for the running list and confidence notes. The
-      heuristic-only layer (tens of thousands more, across all 3 ROMs)
-      is a much lower-confidence, much larger tail - realistic goal is
-      "every proven-reachable routine named," not literally every
-      heuristic placeholder. Mechanically: add `{address: "name"}` to
-      `gen_disasm_x86.FUNCTIONAL_NAMES` (this is what actually makes
-      the name show up in the `.lst`/`.asm`/`.symbols.json` outputs -
-      editing `.symbols.json` directly gets overwritten on the next
-      regenerate), add the matching `FUNCTIONS.md` entry, then
-      regenerate everything (`gen_disasm_x86.py`,
-      `gen_disasm_mainrom_heuristic.py`, `gen_source.py`,
-      `gen_source_readable.py`) and re-verify byte-identical/length-
-      matching before committing.
-- [x] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
-      real 8087 math coprocessor in the design. **Resolved 2026-09-13**:
-      user directly inspected the main digital/acquisition board (A10)
-      and found no 8087 chip present - see `HARDWARE.md`'s "Main system
-      board interior" section. Since `convert_sample_value`'s `fmul`
-      only runs as part of `assert_and_halt`'s panic-argument
-      computation (a path meant to almost never trigger), the leading
-      interpretation is this instruction is real but essentially never
-      executed on shipped hardware - consistent with this session's
-      broader pattern of real call paths into never-executed code. Not
-      fully closed - worth checking other boards (e.g. an acquisition
-      daughter-board) before ruling out an 8087 existing anywhere in
-      the unit. See `disasm/NOTES.md` "Found: the firmware's assert()/
-      panic mechanism" for the full update.
+      opportunistically** (standing request: "keep going, don't stop
+      until everything is renamed"). Working through the proven-only
+      set (`sysrom_3532_3633.symbols.json`) ordered by reference count,
+      highest first - 262/282 named. The remaining 20 have each been
+      individually investigated and have documented reasons they can't
+      be safely named (see `disasm/NOTES.md`'s dated session entries
+      and `changes/` for the running list). The heuristic-only layer
+      (tens of thousands more, across all 3 ROMs) is a much lower-
+      confidence, much larger tail - the realistic goal is "every
+      proven-reachable routine named," not literally every heuristic
+      placeholder. Mechanically: add `{address: "name"}` to `gen_
+      disasm_x86.FUNCTIONAL_NAMES`, add the matching `FUNCTIONS.md`
+      entry, then regenerate everything (`gen_disasm_x86.py`, `gen_
+      disasm_mainrom_heuristic.py`, `gen_source.py`, `gen_source_
+      readable.py`) and re-verify byte-identical/length-matching before
+      committing.
 - [ ] Which `[0x1B83]` value (`0x1E` vs `0x14`) specifically means
-      "comm option installed" isn't resolved yet - see
-      `detect_comm_option_hw` in `FUNCTIONS.md` and `disasm/NOTES.md`
-      "Found: the actual source of [0x1B83]". `0x1E` results from two
-      branches with opposite-looking conditions, which doesn't fit a
-      simple binary flag cleanly. **Partially advanced 2026-09-13**:
-      the service manual confirms the write-probe address is the
-      general-purpose "Time Base Mode Register U4119" (`0x407DE`), not
-      a comm-specific latch - the detection rides on a bit of a shared
-      register rather than a dedicated presence flag, which is
-      consistent with the two-branch `0x1E` ambiguity, but doesn't
-      pin down the exact bit semantics. Still open.
-- [ ] Which physical front-panel control each of the 3
-      `update_menu_position`-range-scan self-tests
-      (`selftest_front_panel_switch_a`/`_b`, `selftest_comm_option_
-      switch`) corresponds to isn't confirmed. `HARDWARE.md` has a
-      front-panel photo with all control-group labels (VERTICAL MODE,
-      ACQUISITION, TRIGGER, etc.). **New lead 2026-09-13**: the service
-      manual's Tables 6-16/6-17 ("FP-VALUES" exerciser) give exact
-      signal names for the front-panel raw-data bytes: `AD DATA`
-      (`U6101`, ADC-converted analog controls), `ISTAT` (`U6103`),
-      `SWB1` (`U9302`: `STORE ON`/`B ONLY`/`HOLD`/`ROLL`/`HOR MAG`/
-      `HOR CAL`/`PRE`/`POST`), `SWB2` (`U9301`: `SELECT C1/C2`/`MENU
-      ADV`/`MEM 2`/`MENU`/`1K/4K`/`POS/SEL`/`MEM 1`/`MEM 3`) - worth
-      cross-referencing `[0x4E7]`/`[0x4E8]`'s bit positions against
-      these now-named signals directly, not yet done.
-- [x] What hardware `0x403FFA`/`0x403FFB` belong to. **Resolved
-      2026-09-13**: service manual Table 3-1 confirms "Front Panel
-      Buffer U9301"/"Front Panel Buffer U9302" - matches the "front-
-      panel key/encoder status" guess for `scheduler_tick_service`'s
-      `[0x758]`/`[0x759]` exactly.
+      "comm option installed" isn't resolved - see `detect_comm_
+      option_hw` in `FUNCTIONS.md` and `disasm/NOTES.md` "Found the
+      actual source of [0x1B83]". The write-probe address is confirmed
+      as the general-purpose "Time Base Mode Register U4119" (not a
+      comm-specific latch), consistent with the two-branch ambiguity,
+      but doesn't pin down the exact bit semantics.
+- [ ] Which physical front-panel control each of the 3 `update_menu_
+      position`-range-scan self-tests (`selftest_front_panel_switch_a`/
+      `_b`, `selftest_comm_option_switch`) corresponds to isn't
+      confirmed. **Lead**: the service manual's Tables 6-16/6-17
+      ("FP-VALUES" exerciser) give exact signal names for the front-
+      panel raw-data bytes - `AD DATA` (`U6101`), `ISTAT` (`U6103`),
+      `SWB1` (`U9302`: `STORE ON`/`B ONLY`/`HOLD`/`ROLL`/`HOR MAG`/`HOR
+      CAL`/`PRE`/`POST`), `SWB2` (`U9301`: `SELECT C1/C2`/`MENU ADV`/
+      `MEM 2`/`MENU`/`1K/4K`/`POS/SEL`/`MEM 1`/`MEM 3`) - worth cross-
+      referencing `[0x4E7]`/`[0x4E8]`'s bit positions against these
+      named signals directly, not yet done.
 - [ ] Found the comm option board's DIP-switch reader (`read_dip_
       switches_serial_config`/`read_dip_switches_gpib_config`, see
       `HARDWARE.md`) - still open: map each of the 10 physical switch
       positions to which specific decoded bit(s) it controls. `[0x629]`
       (GPIB/RS-232 mode) still isn't confirmed as switch-sourced. The
-      service manual confirms `0x406BC` is the "Option Parameters Latch
-      (in)" (Table 3-1, 2026-09-13) - the right register, but the
-      excerpts read so far don't give a bit-by-bit switch map; may be
-      in a part of the manual not yet searched.
-- [ ] **From hardware photos**: the rear panel's 9-pin "AUXILIARY
-      CONNECTOR" has a pen-lift relay plus analog X/Y outputs - a
-      direct X-Y plotter interface. **Checked against the service
-      manual 2026-09-13, not a clean match**: the Pen-Down circuit is
-      driven by a single digital line (`PEN DWN` via connector `J6423`
-      pin 1, sourced from `VECT SMPL`) - too simple to explain `write_
-      hw_shift_register`'s multi-bit shift-and-strobe write, so it
-      probably ISN'T what that function drives. The X/Y analog plot-
-      output amplifiers (fed from DACs) are a better structural fit,
-      but the specific digital register/DAC feeding them wasn't named
-      in the manual excerpts read. See `MEMORY_MAP.md`'s I/O-ports
-      section. (The two RS-232 connectors are confirmed by the user to
-      be just DTE/DCE pinouts of the *same* serial port for cabling
-      convenience, not a firmware-visible mode select - `[0x629]` stays
-      open as "GPIB vs RS-232" or something else, just not DTE/DCE.)
-- [x] **New 2026-09-13**: the user provided the real operator's manual
-      (`hardware/070-4998-02.pdf`) and service manual (`hardware/2230
-      .pdf`) - a huge new primary-source resource, tracked via git-lfs.
-      Mined the service manual's Section 3 (Theory of Operation,
-      Table 3-1 "Memory Space Allocation") and Section 6 (Maintenance,
-      Tables 6-16 through 6-23) for the I/O address map - resolved most
-      of the previously-open port/register-identity items above. GPIB
-      controller confirmed as a **TMS9914A**. Front-panel and
-      acquisition ADCs confirmed as separate chips (`U6105`/`U2204`).
-      See `MEMORY_MAP.md` for the full "Confirmed regions" update and
-      `disasm/NOTES.md`/`CONTEXT.md`/`HARDWARE.md` for cross-references.
-      **Not yet done**: a full markdown transcription with extracted
-      figures (requested by the user - `pip install pymupdf` works in
-      this environment for image extraction/page rendering; poppler's
-      `pdfimages`/`pdfinfo` are NOT available, only `pdftotext`), and a
-      read-through of the operator's manual for menu/UI-flow context
-      (also requested, not started).
+      service manual confirms `0x406BC` is the right register ("Option
+      Parameters Latch (in)") but doesn't give a bit-by-bit switch map
+      in the sections read so far.
+- [ ] Read the operator's manual (`hardware/manuals/2230_operators/`,
+      now transcribed) specifically for menu/UI-flow context - control
+      interface behavior, menu structure, user-facing terminology - to
+      cross-check against the firmware's own menu-tree findings. Not
+      yet started.
 
 ## Ongoing documentation goal
 
@@ -381,4 +187,7 @@ building a separate image asset.
 
 ## Done
 
-See `changes/` for a dated log of completed work per session.
+See `changes/` for a dated log of completed work per session. Keep
+this file trimmed to active/pending items only — when something gets
+resolved, move its detail into the current day's `changes/YYYY-MM-DD.md`
+entry instead of leaving a long `[x]`-marked writeup here.
