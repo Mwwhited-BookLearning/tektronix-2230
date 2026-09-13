@@ -276,3 +276,21 @@ or the schematic.
   `U9110` designators - likely just a misread of small silkscreen text
   in a compressed photo, but flagged here rather than silently
   "corrected" without a clearer photo to check against.
+- **No 8087 coprocessor chip observed on this board** (user direct
+  visual inspection, 2026-09-13) - relevant to the still-open `TODO.md`
+  question of whether `convert_sample_value`'s genuine `fmul`/`sdiv32`-
+  adjacent x87 instruction implies real 8087 hardware. Since this was
+  specifically the main digital/acquisition board (A10), this doesn't
+  rule out an 8087 living on a different board (e.g. an acquisition
+  daughter-board) if one exists - worth checking other boards' photos
+  too before concluding there's no coprocessor anywhere in the unit.
+  If confirmed absent everywhere, the leading interpretation is that
+  `convert_sample_value`'s `fmul` path is genuinely unreachable in
+  normal operation (it only runs as part of `assert_and_halt`'s panic-
+  argument computation, see `disasm/NOTES.md` "Found: the firmware's
+  assert()/panic mechanism") - consistent with this session's broader
+  finding that this codebase has several real, unambiguous call paths
+  into code/data that never actually executes on real hardware. A bare
+  8086/8088 with no 8087 doesn't fault on an unrecognized `ESC` (x87)
+  opcode - it's simply a no-op unless paired with `wait`/coprocessor-
+  bus-cycle logic, so this wouldn't crash even if occasionally hit.

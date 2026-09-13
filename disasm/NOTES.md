@@ -1409,6 +1409,21 @@ non-drifted floating-point instruction in the middle of otherwise
 completely ordinary compiled-C integer code, not part of any known
 decode-drift cluster).
 
+**Update 2026-09-13**: user directly inspected the main digital/
+acquisition board (A10) and found **no 8087 chip present** - see
+`HARDWARE.md`'s "Main system board interior" section. Since `fmul`
+here only runs as part of computing `assert_and_halt`'s panic argument
+(a path that, by definition, is meant to almost never trigger in
+normal operation), this fits neatly into the same "real call path that
+never actually executes on shipped hardware" pattern found repeatedly
+elsewhere this session (`SUB_EAC86`, `SUB_F173E`→`0xEA13B`, etc.) -
+the instruction is real and would execute as a harmless no-op on bare
+8086/8088 silicon if ever reached (no 8087-absent fault exists for
+`ESC` opcodes), it just most likely never actually gets reached on
+real hardware. Not fully closed - worth checking whether any other
+board in the unit (e.g. an acquisition daughter-board) carries an
+8087 before concluding there's none anywhere in the instrument.
+
 ## Open puzzle: comm ROM's compute_parity_mode_code calls the main ROM's scale_and_plot_point_default
 
 `compute_parity_mode_code` (`0x96800`, comm ROM) is a straightforward

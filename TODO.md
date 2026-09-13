@@ -223,15 +223,20 @@
       `gen_disasm_mainrom_heuristic.py`, `gen_source.py`,
       `gen_source_readable.py`) and re-verify byte-identical/length-
       matching before committing.
-- [ ] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
-      real 8087 math coprocessor in the design (plausible for a scope
-      doing voltage/time calculations) — check against the service
-      manual's parts list. Stronger evidence found: `convert_sample_
-      value` (`0xF1001`) opens with a genuine `fmul` in the middle of
-      otherwise ordinary compiled-C integer code (mixed with `mul32`/
-      `sdiv32`), not part of any known decode-drift cluster - see
-      `disasm/NOTES.md` "Found: the firmware's assert()/panic
-      mechanism".
+- [x] Confirm whether the x87 (`fdiv` etc.) instructions mean there's a
+      real 8087 math coprocessor in the design. **Resolved 2026-09-13**:
+      user directly inspected the main digital/acquisition board (A10)
+      and found no 8087 chip present - see `HARDWARE.md`'s "Main system
+      board interior" section. Since `convert_sample_value`'s `fmul`
+      only runs as part of `assert_and_halt`'s panic-argument
+      computation (a path meant to almost never trigger), the leading
+      interpretation is this instruction is real but essentially never
+      executed on shipped hardware - consistent with this session's
+      broader pattern of real call paths into never-executed code. Not
+      fully closed - worth checking other boards (e.g. an acquisition
+      daughter-board) before ruling out an 8087 existing anywhere in
+      the unit. See `disasm/NOTES.md` "Found: the firmware's assert()/
+      panic mechanism" for the full update.
 - [ ] Which `[0x1B83]` value (`0x1E` vs `0x14`) specifically means
       "comm option installed" isn't resolved yet - see
       `detect_comm_option_hw` in `FUNCTIONS.md` and `disasm/NOTES.md`
