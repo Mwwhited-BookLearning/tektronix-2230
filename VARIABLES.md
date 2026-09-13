@@ -28,7 +28,7 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 |---|---|---|
 | `[0x752]` | Tick counter, incremented once per `INT2` timer interrupt by `scheduler_tick_service`; `wait_readout_tick` busy-waits for this to change | Confirmed |
 | `[0x758]` | **Confirmed 2026-09-13: this is `SWB2` (service manual Table 6-16/6-17), the front-panel "Switch Bank 2" byte, physical `0x40000+0x3FFA`=`0x43FFA` = Front Panel Buffer `U9301`** (Table 3-1). Read every tick by `scheduler_tick_service`. Exact bit map (bit0=LSB): bit0=`MEM 3`, bit1=`MEM 1`, bit2=`POS/SEL`, bit3=`1K/4K`, bit4=`MENU`, bit5=`MEM 2`, bit6=`MENU ADV`, bit7=`SELECT C1/C2`. **Validated by comparing code structure to these exact bits**: the self-test report loop (`0xE3B6A` and 7 other sites near it) masks `[0x758] & 0x63` (binary `01100011` = bits 0,1,5,6 = `MEM 3`+`MEM 1`+`MEM 2`+`MENU ADV`) as one abort/branch condition and separately checks `& 0x80` (`SELECT C1/C2`) as another - this exactly matches the service manual's own documented behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") plus the complete set of menu-navigation buttons (`MEM 1`/`2`/`3` = the repurposed `Menu Select` buttons, `MENU ADV` = `SAVE REF/►` - see `HARDWARE.md`'s "Menu navigation control scheme"). A precise, independently-confirmed match between the raw bit mask and the named switches | Confirmed |
-| `[0x759]` | By the same address derivation, this should be `SWB1` (`U9302`, physical `0x43FFB` = Front Panel Buffer `U9302`): bit0=`A ONLY`(active-low), bit1=`PRE/POST`, bit2=`HOR CAL`, bit3=`HOR MAG`, bit4=`ROLL`, bit5=`HOLD`, bit6=`B ONLY`(active-low), bit7=`STORE ON`. Only written in proven code so far (`0xE5D85`/`0xE65B1`), no fixed-literal-address *read* found yet to independently validate a specific bit test the way `[0x758]` was - the `SWB1` identity follows from the same `0x43FFA`/`0x43FFB` pairing, not yet confirmed by its own bit-level code check | Identity inferred from address pairing with `[0x758]`; not yet independently bit-validated |
+| `[0x759]` | By the same address derivation, this should be `SWB1` (`U9302`, physical `0x43FFB` = Front Panel Buffer `U9302`): bit0=`A ONLY`(active-low), bit1=`PRE/POST`, bit2=`HOR CAL`, bit3=`HOR MAG`, bit4=`ROLL`, bit5=`HOLD`, bit6=`B ONLY`(active-low), bit7=`STORE ON`. **Bit0/bit6 now independently confirmed by live hardware test 2026-09-13**: running `FP_VALUES` and cycling `HORIZONTAL MODE` through `A`/`BOTH`/`B` changed the exerciser's digital-switch byte exactly `0x40`→`0x41`→`0x01`. In binary that's `A`=`0100 0000` (bit0=`0`=asserted/active-low, bit6=`1`=inactive), `BOTH`=`0100 0001` (bit0=`1`, bit6=`1`, both inactive - neither "only"), `B`=`0000 0001` (bit0=`1`=inactive, bit6=`0`=asserted) - an exact match to the predicted `A ONLY`/`B ONLY` active-low bit map, by real physical control manipulation rather than address pairing alone | **Bit0 (`A ONLY`) and bit6 (`B ONLY`) confirmed by live test**; remaining bits still only inferred from address pairing |
 | `[0x7B4]` | Previous snapshot of `[0x758]`, XOR'd against the new read each tick for edge/change detection | Confirmed |
 
 ## Menu navigation
@@ -58,14 +58,40 @@ This is a live, empirical confirmation, not inference from code or
 documentation alone - the strongest kind of evidence this project has
 for a front-panel control mapping.
 
-**Not yet tested**: what drives the *second* byte of each pair (`E115`/
-`E165`) - `VOLTS/DIV` is the leading candidate (see `disasm/NOTES.md`'s
-"Also found" paragraph on `selftest_front_panel_switch_a`/`_b`, both
-confirmed to verify their swept control via ADC readback rather than a
-digital read, with `VOLTS/DIV` for CH1/CH2 as the leading guess for
-*those* two self-tests specifically - consistent with, and now
-strengthened by, this same `AD DATA` structure having a second analog
-value per channel that isn't POSITION).
+**Confirmed 2026-09-13, second finding**: the *second* byte of each
+pair (`E115`/`E165`) is **`VOLTS/DIV`** - turning **CH1 VOLTS/DIV**
+changes the second byte of `CH 1`'s `AD DATA` pair, and the user
+confirmed **CH2 VOLTS/DIV** does the same for `CH 2`'s pair. This
+directly confirms the `selftest_front_panel_switch_a`/`_b` hypothesis
+(both confirmed to verify their swept control via ADC readback -
+`VOLTS/DIV` for CH1/CH2 was the leading guess for those two self-tests
+specifically; see `disasm/NOTES.md`'s "Also found" paragraph) by live
+manipulation rather than code inference alone.
+
+Also reported the same session, from the CH1 **VAR/CAL** switch:
+toggling out of calibrated detent changes the third nibble of a third
+octet (position within the exerciser's full display line not yet
+pinned down precisely - the `AD DATA` field only lists 2 bytes per
+channel in Table 6-16, so this third octet may belong to a different
+column, e.g. `ISTAT`). Raw finding recorded here for future
+correlation; not yet mapped to a specific bit/register.
+
+**Digital switch-bank findings from the same live session** (most
+likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
+`HORIZONTAL MODE` A/BOTH/B confirmation, the cleanest of this batch):
+- `VERT MODE` (CH1/BOTH/CH2 selector) and toggling `XY` mode both
+  changed bytes in the exerciser's `dig=` digital-switch field (e.g.
+  `XY` toggled one byte between `0x73`/`0x63`); exact bit(s) not yet
+  isolated - `SWB1`/`SWB2`'s currently-documented bit maps don't have
+  an obvious single-bit match for these, so either another byte is
+  involved or one of the "not yet independently bit-validated" bits in
+  `[0x759]` corresponds to these. Needs a slower, one-control-at-a-time
+  re-test to isolate cleanly.
+- Input coupling switch (`AC`/`GND`/`DC`) changed a third byte's value
+  (reported as `0x12`-ish/`0x2AA`-ish/`0x3xE`-ish across the three
+  positions - transcription uncertain, values not confidently hex-clean
+  enough to bit-map yet). Needs a repeat test with the exact displayed
+  hex read back carefully.
 
 ## Acquisition/plot scaling
 
