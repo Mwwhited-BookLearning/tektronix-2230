@@ -92,6 +92,21 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   positions - transcription uncertain, values not confidently hex-clean
   enough to bit-map yet). Needs a repeat test with the exact displayed
   hex read back carefully.
+- **Sweep `VAR/CAL`** (uncalibrated `SEC/DIV` detent) also moves the
+  same field's 4th byte that `HORIZONTAL MODE` moves: reported
+  in-calibration `0x44`, out-of-calibration `0x4F` (a separate report
+  in the same test also said `0x40`→`0x4F` for out-of-cal - the two
+  "in-cal" baselines, `0x44` vs `0x40`, disagree, most likely a live-
+  dictation transcription slip rather than a real second variable).
+  `0x44 XOR 0x4F = 0x0B` (bits 0,1,3) and `0x40 XOR 0x4F = 0x0F` (bits
+  0,1,2,3) - either way it's a multi-bit jump, **not** a single flag
+  flip, so this is likely not just `SWB1` bit2 (`HOR CAL`) toggling in
+  isolation - possibly other bits/state change at the same time (e.g.
+  `HORIZONTAL MODE` itself drifting during the test), or the "4th
+  byte" packs more than independent single-bit flags. Needs a careful,
+  isolated re-test (one control at rest, only toggle `VAR/CAL`, read
+  the hex back digit-by-digit) before trusting a bit-level conclusion
+  here.
 
 ## Acquisition/plot scaling
 
