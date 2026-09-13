@@ -39,6 +39,34 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 | `[0x1B51]` | A flag `update_menu_position` sets/checks alongside `[0x1B50]` - looks like a "just wrapped" or "pending redraw" indicator for the cursor | Usage confirmed; exact meaning not confirmed |
 | `[0x4E7]`, `[0x4E8]` | Front-panel button/control state bytes - bit 7 of each checked by `update_menu_position` for a simultaneous-both-held "accelerate" case (`al=[0x4E7]&0x80` then `al=[0x4E8]&0x80`, both must be set) | Usage confirmed; which physical controls these represent not confirmed. **Complication found 2026-09-13**: `[0x4E8]` is also the base of a small 4-entry byte array (indexed `[di+0x4E8]`, `di`=`index*4` for `index` 0-3, i.e. `[0x4E8]`/`[0x4EC]`/`[0x4F0]`/`[0x4F4]`, cleared in a loop at `0xE8E7E`) and is separately read with mask `0x73` (not `0x80`) at `0xE8E33` gating `handle_gpib_device_clear` - so `[0x4E8]` is overloaded: sometimes a per-control state byte (`update_menu_position`'s use), sometimes the head of an unrelated 4-entry array, sometimes read for other bits entirely. The "front-panel control" interpretation is solid for `update_menu_position`'s specific `&0x80` check; don't assume it holds for every reference to this address. Cross-reference attempt against the service manual's `SWB1`/`SWB2` bit names (see `HARDWARE.md` "Menu navigation control scheme") didn't reach a confirmed mapping - `SWB1`/`SWB2` are multi-bit hardware registers holding several distinct named switches, while `[0x4E7]`/`[0x4E8]`'s `&0x80` test looks more like a single "this control is currently active" flag per byte (e.g. a rotary encoder's own momentary-activity bit) - plausible these are a *derived*, software-side per-control byte pair fed by reading `SWB1`/`SWB2` elsewhere, not the same register directly, but that intermediate step hasn't been found. **New context found the same day**: a heuristic-only function (`FUNC_3633_92D1`, `0xE92D1` - not confirmed reachable, no call site to it found yet) initializes a whole cluster of neighboring bytes together - `[0x4E0]`, `[0x4E7]`, `[0x4E8]`, `[0x4EB]`, `[0x4EC]`, `[0x4F0]`, `[0x4F4]`, `[0x4F7]`, `[0x4F8]`, `[0x4FB]`, `[0x4FC]` - to different specific default patterns depending on which branch of the `[0x1B83]==0x14` comm-detection dispatch is taken, confirming these ~11 bytes really are one related group (not coincidentally adjacent), and tying their defaults to the same still-unresolved `[0x1B83]` hardware-variant question. See `disasm/NOTES.md` "The `[0x4E0]`-`[0x4FC]` cluster" for the full byte-by-byte breakdown. Still open. |
 
+## Front-panel A/D converter (analog controls)
+
+The service manual's `FP_VALUES` exerciser (Table 6-16, "Display
+Format") shows the front-panel ADC's raw digitized readings under the
+`AD DATA` column, with 2 bytes listed for each channel row: `E114`/
+`E115` for `CH 1`, `E164`/`E165` for `CH 2` (`E`-prefixed designators -
+likely schematic test points feeding an analog multiplexer ahead of
+the front-panel ADC, `U6105`, per `MEMORY_MAP.md`'s "Two separate ADCs"
+note).
+
+**Confirmed 2026-09-13 by direct hardware manipulation** (the user ran
+`FP_VALUES` and moved individual front-panel controls while watching
+the displayed hex change): turning the **CH1 POSITION** knob changes
+exactly the *first* of `CH 1`'s two `AD DATA` bytes (`E114`); turning
+**CH2 POSITION** changes the *first* of `CH 2`'s two bytes (`E164`).
+This is a live, empirical confirmation, not inference from code or
+documentation alone - the strongest kind of evidence this project has
+for a front-panel control mapping.
+
+**Not yet tested**: what drives the *second* byte of each pair (`E115`/
+`E165`) - `VOLTS/DIV` is the leading candidate (see `disasm/NOTES.md`'s
+"Also found" paragraph on `selftest_front_panel_switch_a`/`_b`, both
+confirmed to verify their swept control via ADC readback rather than a
+digital read, with `VOLTS/DIV` for CH1/CH2 as the leading guess for
+*those* two self-tests specifically - consistent with, and now
+strengthened by, this same `AD DATA` structure having a second analog
+value per channel that isn't POSITION).
+
 ## Acquisition/plot scaling
 
 Found via `draw_pending_line_segment`'s (`0xF0C2A`) own previously-
