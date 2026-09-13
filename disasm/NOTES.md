@@ -2121,6 +2121,39 @@ and 2 more transitively-found functions from roughly an hour of
 targeted analysis; it's a much higher-yield technique than reading
 through the remaining un-prologued-entry cluster function-by-function.
 
+**Follow-up, tried on the comm ROM's own `init_far_pointer_table`
+(`0x80133`)**: decoded its embedded table too (31 entries, `ES=0x8FED`
+base, terminated by a `-1` sentinel rather than a fixed count - a
+different, slightly more general table shape than the sysrom one, and
+called cross-ROM from both `0xE1F03` in the main ROM and `0x9629E` in
+the comm-ROM alias). Unlike the sysrom table, **this one didn't yield
+new functions** - most of its far-pointer targets in the `0x90000`
+comm-ROM-alias range decode as outright garbage when force-disassembled
+(`movntps xmmword ptr...`, `popaw`, `das` and other impossible/absurd
+instruction sequences), and the handful that land on already-visited
+addresses land *mid-instruction* inside existing code, not on a real
+entry boundary. **Still a worthwhile check, for a different reason**:
+3 of its entries write far pointers to `0x406F0` ("Option UART/GPIB
+chips"), `0x4067C` ("Option Status Latch"), and `0x406BC` ("Option
+Parameters Latch") - the *exact* addresses confirmed from the service
+manual's Table 3-1 (see `MEMORY_MAP.md`) - independent confirmation,
+from the comm ROM's own initialization code this time, that these are
+real, intentional hardware-register pointers. 3 more entries forward
+to plain flat-RAM cells (`[0x548]`/`[0x1B64]`/`[0x3E3]` under `DS=
+0x41`), and one entry - `far_ptr=F1D8:0865` (physical `0xF25E5`) -
+is the **exact same target** the sysrom table's own entry #54 points
+to (see above), landing mid-instruction inside an already-covered main-
+ROM function (`mov byte ptr [0x65F], 0x54`) in both cases. Two
+independent far-pointer tables, in two different ROMs, agreeing on
+this one specific byte is too precise to be coincidence, but what it
+actually *means* isn't understood - flagged here rather than guessed.
+**Conclusion**: not every far-pointer init table in this codebase is a
+clean function-pointer array like the sysrom one turned out to be -
+some (like this one) are a genuine mix of hardware-register pointers,
+RAM-forwarding pointers, and what look like stale/non-code entries.
+Worth the same "decode and check" treatment on any newly-found table,
+but don't expect every one to pay off the way the sysrom table did.
+
 ## `SUB_EAC86` fully resolved: it's the *same* non-code data blob as the `SUB_F173E`→`0xEA13B` finding above
 
 Following up on finding #4 above (`SUB_F173E`'s `LCALL` landing on a
