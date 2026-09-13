@@ -605,12 +605,52 @@ not one:
    its far-pointer argument - it doesn't traverse that pointer at all,
    it only tags the record. Fixed in `PSEUDOCODE.md`.
 
-`[0x1CC4]`'s own segment component isn't directly confirmed as `0x4000`
-in the proven-reachable code (no write to it was found there - it must
-be initialized somewhere not yet reached), but every *use* of the
-pointer it feeds (`[0x1AF4]`/`[0x1AF6]`, `[0x1C02]`) lines up with the
-same `0x4000`-segment readout memory documented above, so it's the
-working assumption pending that write site being found.
+**Update 2026-09-13: `[0x1CC4]`'s actual value is now confirmed, and
+the old `0x4000`-segment assumption above was wrong.** Directly asked
+"what memory address does the vector-graphics display list actually
+use" led to decoding it out of `init_far_pointer_table_sysrom`'s RAM
+far-pointer init table (the same table decoded earlier this session -
+see "Found: a whole family of never-reached functions"): entry
+`dest_off=0x0044` (physical destination `0x2090+0x44=0x20D4`, i.e.
+`[0x1CC4]` under the standard `DS=0x41` flat mapping) holds far pointer
+**`0220:0000` = physical `0x02200`**. Verified the table-decode itself
+against 3 already-independently-confirmed entries (`SUB_F09EA`, `SUB_
+E9472`, `SUB_F173E`) before trusting this - all matched exactly, so the
+decode mechanism is solid.
+
+**So the vector/stroke display-list buffer lives in plain RAM at
+physical `0x02200`** (with its "second plane" duplicate ~0x8000 bytes
+higher, around physical `0xA200`) - **not** a hardware I/O port, and
+**not** the same `0x40000`-based readout/CRT memory the hardware-port
+text path uses. It's an ordinary low-RAM scratch buffer, separate from
+both. This directly answers "what address does the vector graphics
+generation use" - it's a software-staged command buffer, not a
+hardware sink; whatever hardware actually turns these buffered points
+into a drawn vector on the CRT (if anything does, on this build) hasn't
+been identified.
+
+**Loose thread found while checking this, not resolved**: the same
+table entry cluster (`dest_off` `0x130`/`0x134`/`0x138`/`0x13C`,
+spaced exactly 4 bytes apart - matching `[0x1DB0]`/`[0x1DB4]`/
+`[0x1DB8]`/`[0x1DBC]`'s real spacing, strong evidence these are the
+right variables and not a coincidence) also appears to initialize the
+still-unlocated stroke-font pointer `[0x1DB0]` and `[0x1DB4]`. But
+those two entries' resulting far pointers (`E9A3:0000` for `[0x1DB0]`,
+`E947:0002` for `[0x1DB4]`) land on **real compiled code** (a normal
+`push bp; mov bp,sp` function prologue right after `[0x1DB0]`'s target;
+`E947:0002` is `merge_record_flags_if_changed`'s own address for
+`[0x1DB4]`), not a plausible glyph-pointer-array header. Checking a
+few sample per-character second-level lookups (assuming `[0x1DB0]`
+really does point to a 128-entry `char*4`-indexed array starting right
+there) produced incoherent, seemingly-random far pointers, not a
+sensible pattern. **Not claiming this resolves the stroke-font table**
+- flagging it honestly as an unresolved puzzle: either these two
+specific entries are stale/leftover initialization values (matching
+this session's broader theme of dead/unused table rows), or the real
+per-character lookup structure is more complex than assumed. `[0x1DB8]`/
+`[0x1DBC]`'s entries (`0033:0008`→phys `0x338`, `002E:0008`→phys
+`0x2E8`, both low-memory/IVT-region addresses) are more plausible for
+their already-confirmed simple byte-cache usage, for what it's worth.
 
 ## Attempted: locating the stroke-font glyph table for SVG extraction
 
