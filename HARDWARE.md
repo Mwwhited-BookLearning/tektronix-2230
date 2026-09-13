@@ -298,8 +298,36 @@ ACQ_MODE_SETUP_TABLE
         │   └── ACQUISITION - HS_ACQ / TB_DIVIDER / MAX_MIN_ACQ /
         │                     XY_ACQ / CLK_DELAY
         ├── CAL_AIDS   - BOX / CAL_V_POS / CAL_CLK_DLY
-        └── EXERCISERS - CONFIGURATION / IO / A_TO_D_TESTS
+        └── EXERCISERS - CONFIGURATION / IO (FP_VALUES / OUT_PORTS /
+                          INPUT_PORTS) / A_TO_D_TESTS (SAMPLES /
+                          LINEARITY) / COM_OPTION_DEBUG / PICTURES
 ```
+
+**Menu tree filled in further 2026-09-13**, from the service manual's
+own exerciser-description text (Section 6, right after Tables 6-16/
+6-17) and live photos of `CONFIGURATION`/`IO/INPUT_PORTS` (see the
+section above):
+- **`OUT_PORTS`**: *"All microprocessor output ports of the instrument
+  are exercised by this exerciser. If entered from the menu, rotating
+  the cursor knob selects either a single port or all ports at once...
+  Test patterns used in each port are shown in Table 6-18 through
+  Table 6-22"* (each of those tables lists a named port/register with
+  its own bit-pattern sequence - e.g. Table 6-18 = `ACQ-MEM 0x48000`
+  on `U3427`/`U3428`, Table 6-20 = `U4119` - the same "Time Base Mode
+  Register" `detect_comm_option_hw` probes). Meant to be observed with
+  an external logic probe/LED clip, not read off the CRT. Not yet
+  traced to any code - no reference to its menu string found in the
+  disassembly so far.
+- **`COM_OPTION_DEBUG`** (menu label uncertain - manual text calls it
+  "COM-OPTION/DEBUG", not yet seen live on a menu screen): *"This
+  exerciser is used in debugging the communications option. Debug
+  outputs a test message and displays any incoming messages (data)
+  [on] the crt."* **Highly relevant to this project's live RS-232
+  investigation** (see `disasm/NOTES.md`'s comm-parser tracing
+  sections) - this could show incoming serial data directly on the
+  scope's own screen, sidestepping the adapter/cable/PC entirely as a
+  diagnostic step. Not yet located on a real menu screen or in the
+  disassembly - worth hunting for next time at the bench.
 
 ### Menu navigation control scheme (from the operator's manual, 2026-09-13)
 

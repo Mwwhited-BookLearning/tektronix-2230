@@ -205,7 +205,15 @@
       10 (GPIB) hardware available to cross-test against - so any
       further tracing should stay focused on the `[0x629]`-clear
       (RS-232) branches specifically, not the GPIB-specific code paths
-      this same shared ROM also contains.
+      this same shared ROM also contains. **Promising live-hardware
+      shortcut found 2026-09-13**: the service manual describes a
+      `COM-OPTION/DEBUG` exerciser ("used in debugging the
+      communications option... outputs a test message and displays any
+      incoming messages (data) [on] the crt") - see `HARDWARE.md`'s
+      menu tree. If findable on a real menu, this could show incoming
+      RS-232 bytes directly on the scope's own screen, without needing
+      the PC/adapter/cable at all - worth trying before more code
+      tracing.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
