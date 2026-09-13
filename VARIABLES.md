@@ -87,6 +87,15 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   involved or one of the "not yet independently bit-validated" bits in
   `[0x759]` corresponds to these. Needs a slower, one-control-at-a-time
   re-test to isolate cleanly.
+- **Pushing the `CURSOR` button** cleanly toggles bit7 of one `dig=`
+  byte between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit) -
+  the cleanest single-bit result in this batch besides `HORIZONTAL
+  MODE`. Which byte (`SWB1` vs `SWB2`) and which named bit not yet
+  identified - both banks' documented bit7 (`STORE ON` for `SWB1`,
+  `SELECT C1/C2` for `SWB2`) are plausible-sounding but neither is an
+  obvious semantic match for a cursor push button, so this may be an
+  as-yet-undocumented bit or a control not named in the bit tables
+  transcribed so far.
 - Input coupling switch (`AC`/`GND`/`DC`) changed a third byte's value
   (reported as `0x12`-ish/`0x2AA`-ish/`0x3xE`-ish across the three
   positions - transcription uncertain, values not confidently hex-clean
