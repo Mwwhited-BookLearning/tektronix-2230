@@ -139,7 +139,13 @@
       CAL`/`PRE`/`POST`), `SWB2` (`U9301`: `SELECT C1/C2`/`MENU ADV`/
       `MEM 2`/`MENU`/`1K/4K`/`POS/SEL`/`MEM 1`/`MEM 3`) - worth cross-
       referencing `[0x4E7]`/`[0x4E8]`'s bit positions against these
-      named signals directly, not yet done.
+      named signals directly, not yet done. **New cross-reference**: the
+      operator's manual's "MENU SELECTED FUNCTIONS" section confirms
+      `MENU ADV` is the `SAVE REF/►` "enter next menu level" button and
+      `MEM 1`/`MEM 2`/`MEM 3` are the 3 `Menu Select` buttons (`◄`/`↑`/
+      `↓`) used for menu navigation when `WAVEFORM REFERENCE/MENU
+      SELECT` is held in the `MENU SELECT` position - see `HARDWARE.md`
+      "Menu navigation control scheme".
 - [ ] Found the comm option board's DIP-switch reader (`read_dip_
       switches_serial_config`/`read_dip_switches_gpib_config`, see
       `HARDWARE.md`) - still open: map each of the 10 physical switch
@@ -148,11 +154,6 @@
       service manual confirms `0x406BC` is the right register ("Option
       Parameters Latch (in)") but doesn't give a bit-by-bit switch map
       in the sections read so far.
-- [ ] Read the operator's manual (`hardware/manuals/2230_operators/`,
-      now transcribed) specifically for menu/UI-flow context - control
-      interface behavior, menu structure, user-facing terminology - to
-      cross-check against the firmware's own menu-tree findings. Not
-      yet started.
 
 ## Ongoing documentation goal
 
