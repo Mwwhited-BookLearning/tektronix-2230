@@ -115,6 +115,12 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   register not yet identified; recorded for future correlation once
   the full `FP_VALUES` display layout (which field is which manual
   column) is mapped out completely.
+- The **`CURSOR` knob** changes the *first two* bytes of that same
+  "cursor" field (`B DELAY` above only moves the 3rd) - so this field
+  looks like at least a 3-byte group, with the cursor-position knob
+  driving 2 bytes (a 16-bit position value?) and `B DELAY` driving a
+  separate 3rd byte alongside it. Still not mapped to a specific
+  register/E-designator.
 
 ## Acquisition/plot scaling
 
