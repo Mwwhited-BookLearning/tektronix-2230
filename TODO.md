@@ -137,20 +137,18 @@
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
-      confirmed. **Lead**: the service manual's Tables 6-16/6-17
-      ("FP-VALUES" exerciser) give exact signal names for the front-
-      panel raw-data bytes - `AD DATA` (`U6101`), `ISTAT` (`U6103`),
-      `SWB1` (`U9302`: `STORE ON`/`B ONLY`/`HOLD`/`ROLL`/`HOR MAG`/`HOR
-      CAL`/`PRE`/`POST`), `SWB2` (`U9301`: `SELECT C1/C2`/`MENU ADV`/
-      `MEM 2`/`MENU`/`1K/4K`/`POS/SEL`/`MEM 1`/`MEM 3`) - worth cross-
-      referencing `[0x4E7]`/`[0x4E8]`'s bit positions against these
-      named signals directly, not yet done. **New cross-reference**: the
-      operator's manual's "MENU SELECTED FUNCTIONS" section confirms
-      `MENU ADV` is the `SAVE REF/►` "enter next menu level" button and
-      `MEM 1`/`MEM 2`/`MEM 3` are the 3 `Menu Select` buttons (`◄`/`↑`/
-      `↓`) used for menu navigation when `WAVEFORM REFERENCE/MENU
-      SELECT` is held in the `MENU SELECT` position - see `HARDWARE.md`
-      "Menu navigation control scheme".
+      confirmed. **`[0x758]`/`SWB2`'s exact bit map is now confirmed
+      2026-09-13**, not just address-matched - see `VARIABLES.md`. Its
+      bits (`MEM 1`/`2`/`3`, `MENU ADV`, `SELECT C1/C2`, `MENU`, `1K/
+      4K`, `POS/SEL`) are all *menu/memory* controls, not the specific
+      analog VOLTS/DIV-style switches these 3 self-tests are believed
+      to exercise - so this confirmed byte doesn't directly answer
+      *this* item, but the technique (compare a bit mask's code
+      structure to the manual's named bits, not just match addresses)
+      is proven and worth repeating for `[0x4E7]`/`[0x4E8]` and
+      `[0x759]`/`SWB1` once a literal-address read site for either is
+      found. `[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern still
+      isn't tied to a specific named `SWB1`/`SWB2` bit - remains open.
 - [ ] Found the comm option board's DIP-switch reader (`read_dip_
       switches_serial_config`/`read_dip_switches_gpib_config`, see
       `HARDWARE.md`) - still open: map each of the 10 physical switch
