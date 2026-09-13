@@ -10,15 +10,15 @@
       hasn't been found - nothing writes it in proven or heuristic
       code. `[0x1DB8]`/`[0x1DBC]` (nearby) are ruled out as simple
       plot-scale byte caches, not font data - see `VARIABLES.md`
-      "Acquisition/plot scaling". Best lead: a ~2890-byte structured
-      (paired-value, not text) binary region at physical `0xEA5E6`-
-      `0xEB131` in `160-3633`, found immediately after the already-
-      catalogued help-text string table (see `disasm/NOTES.md`
-      "`SUB_EAC86` fully resolved") - a plausible size/shape fit for a
-      compact stroke font, but **not decoded or confirmed** - no
-      literal reference to this address exists anywhere in the corpus.
-      Worth a dedicated decode-and-render attempt against `draw_
-      readout_char`'s exact bit-packing scheme, or tracing `boot_init`'s
+      "Acquisition/plot scaling". **The `0xEA5E6`-`0xEB131` candidate
+      region is now also ruled out**: decoded `draw_readout_char`'s
+      exact bit-packing formula and rendered that region as a grid of
+      glyphs (splitting on `0x00` terminators) - got 405 tiny (~5-byte)
+      fragments, all generic repetitive hook shapes, no letterforms -
+      `0x00` appears far too often there to be a per-character
+      terminator. See `disasm/NOTES.md`'s update to "`SUB_EAC86` fully
+      resolved" for the full negative result. Back to square one on
+      locating the table - next attempt should trace `boot_init`'s
       data-driven init loops to find what sets `[0x1DB0]`/`[0x1CC4]`.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned

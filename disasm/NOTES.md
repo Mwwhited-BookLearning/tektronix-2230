@@ -2190,14 +2190,26 @@ contains the project's oldest, most-discussed anomaly.
    zigzag (e.g. `03,02 / 04,01 / 05,00 / 06,01 / 07,02 / 08,03 ...`),
    and elsewhere a run of 16-bit little-endian values stepping by
    `0x100` each entry. This is genuine structured data, not decode
-   noise - and a paired "steadily increasing coordinate + symmetric
-   zigzag" shape is exactly what vector pen-stroke `(dx,dy)` data would
-   look like. **Flagged as a real lead for the still-unlocated stroke-
-   font glyph table (see the `TODO.md` item), not a confirmed
-   identification** - the size (~2890 bytes) is a plausible fit for a
-   compact 96-ish-character stroke font, but this hasn't been decoded
-   character-by-character or cross-checked against `draw_readout_char`'s
-   actual bit-packing scheme yet.
+   noise - originally flagged as a real lead for the still-unlocated
+   stroke-font glyph table.
+
+   **Tested and NOT confirmed (2026-09-13)**: decoded `draw_readout_
+   char`'s exact bit-packing formula precisely by re-tracing `plot_
+   readout_point`'s argument order (`[bp+6]`=coarse-component-derived
+   Y, `[bp+8]`=fine-nibble X, `[bp+0xa]`=pen attribute, matching the
+   already-documented mapping) and rendered this candidate region as a
+   grid of "glyphs" (splitting on `0x00` bytes as the stroke terminator,
+   per the documented format). Result: **405 fragments averaging only
+   ~5 bytes each** (way more, and much shorter, than the ~96-128
+   entries a real font would have) and every rendered shape is a
+   generic, repetitive angular "hook"/checkmark - no recognizable
+   letterforms at all. This is a genuine negative result, not just an
+   inconclusive one: `0x00` appears far too often in this region to be
+   acting as a per-character terminator, meaning it's much more likely
+   this is the previously-noted "paired incrementing/zigzag" numeric
+   table (whatever it actually is) and **not** the stroke-font data
+   after all. Downgraded from "real lead" to "checked and probably
+   wrong" - the stroke-font table's true location is still unknown.
 
 **`SUB_EAC86` and `SUB_EAD08` are both confirmed to land inside this
 exact region**, called from genuinely legitimate compiled code:
