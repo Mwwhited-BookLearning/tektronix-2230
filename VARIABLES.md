@@ -27,7 +27,7 @@ relative to `DS=0x0041`, i.e. physical `0x00410+offset` - see
 | Address | Role | Confidence |
 |---|---|---|
 | `[0x752]` | Tick counter, incremented once per `INT2` timer interrupt by `scheduler_tick_service`; `wait_readout_tick` busy-waits for this to change | Confirmed |
-| `[0x758]`, `[0x759]` | Hardware status bytes, read every tick from fixed physical addresses `0x403FFA`/`0x403FFB` by `scheduler_tick_service`. `[0x758]` also checked (masked `&0x63`) around `read_channel1_status`/`read_channel2_status` calls | Source confirmed; which peripheral (front-panel key/encoder is the leading candidate) not confirmed |
+| `[0x758]`, `[0x759]` | Hardware status bytes, read every tick from fixed physical addresses `0x403FFA`/`0x403FFB` by `scheduler_tick_service`. `[0x758]` also checked (masked `&0x63`) around `read_display_chip_int_reset`/`read_display_chip_frame_trigger` calls | Source confirmed; which peripheral (front-panel key/encoder is the leading candidate) not confirmed |
 | `[0x7B4]` | Previous snapshot of `[0x758]`, XOR'd against the new read each tick for edge/change detection | Confirmed |
 
 ## Menu navigation

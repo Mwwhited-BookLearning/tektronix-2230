@@ -5549,7 +5549,7 @@ init_selftest_report_screen:
     db 0x8b, 0xe5  ; 43EE: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 43F0: pop bp
     retf                                     ; 43F1: retf 
-report_and_read_channel1:
+report_and_read_display_chip_int_reset:
     push bp                                  ; 43F2: push bp
     db 0x8b, 0xec  ; 43F3: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 43F5: sub sp, 6
@@ -5560,7 +5560,7 @@ report_and_read_channel1:
     db 0x8b, 0xe5  ; 4406: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4408: pop bp
     retf                                     ; 4409: retf 
-read_channel2_status:
+read_display_chip_frame_trigger:
     push bp                                  ; 440A: push bp
     db 0x8b, 0xec  ; 440B: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 440D: sub sp, 8
@@ -5574,7 +5574,7 @@ read_channel2_status:
     db 0x8b, 0xe5  ; 4425: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 4427: pop bp
     retf                                     ; 4428: retf 
-read_channel1_status:
+read_display_chip_int_reset:
     push bp                                  ; 4429: push bp
     db 0x8b, 0xec  ; 442A: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 442C: sub sp, 8

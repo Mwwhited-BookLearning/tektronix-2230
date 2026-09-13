@@ -21,9 +21,21 @@ routines actually do.
   - firmware in a pair of 27512 (64Kx8) EPROMs
   - six TMS4426 16Kx4 DRAMs (main memory)
   - a pair of MCM2016H 2Kx8 SRAMs (acquisition memory)
-  - A/D converter: Sony CX20052A, 8-bit, 20MHz, ECL output
+  - A/D converter: Sony CX20052A, 8-bit, 20MHz, ECL output. **Confirmed
+    against the real service manual** (`hardware/2230 .pdf`, provided
+    2026-09-13): schematic designator **U2204**, described identically
+    (8-bit, 20 Megasamples/second, ECL device) - the TekWiki spec and
+    the manual's own theory-of-operation agree. **New**: the manual
+    also documents a *second*, separate, much slower A/D converter -
+    **U6105** - dedicated to digitizing analog front-panel controls
+    (cursor position pots etc., not the signal path), fed through
+    multiplexers U6101/U6106/U6108 and control latch U6104. See
+    `MEMORY_MAP.md`'s "Two separate A/D converters" note
   - GPIB/RS-232 option: adds a daughter board with battery-backed SRAM
-    (HM6116 2Kx8 CMOS)
+    (HM6116 2Kx8 CMOS). **GPIB controller chip confirmed 2026-09-13**
+    via the real service manual: **TMS9914A** (schematic designator
+    U1351/U1321 depending on board revision), resolving the earlier
+    open TMS9914A-vs-µPD7210 question
 - Board designators found as strings inside the ROMs themselves:
   - **A10** — the main digital/acquisition board, holds the two system
     ROM chips (sockets U9109/U9110)

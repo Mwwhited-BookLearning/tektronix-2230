@@ -63,8 +63,26 @@
       leaves `TB_DIVIDER`, `CLK_DELAY`, `ACQ_ACCESS`, `PRC_READBACK`
       (all under `DIAGNOSTICS/TESTS`), and `CAL_AIDS`'s `BOX`/
       `CAL_V_POS`/`CAL_CLK_DLY` and `EXERCISERS`'s `CONFIGURATION`/
-      `IO`/`A_TO_D_TESTS` - `A_TO_D_TESTS` in particular is a strong
-      lead for the still-unconfirmed A/D converter identity.
+      `IO`/`A_TO_D_TESTS`. **A/D converter identity resolved 2026-09-13**
+      via the service manual: two separate ADCs, `U2204` (signal
+      acquisition, matches the existing Sony CX20052A spec exactly) and
+      `U6105` (front-panel controls) - see `MEMORY_MAP.md`/`CONTEXT.md`.
+      `CLK_DELAY`↔`Clock Delay Timer U4231`/`0x437F7` and `TB_DIVIDER`↔
+      `Time Base Divider Register U4113`/`0x407EE` are also now
+      confirmed (same source) - `ACQ_ACCESS`/`PRC_READBACK`'s exact
+      registers and the menu-rendering trace itself are still open.
+- [ ] **New 2026-09-13, from the service manual**: `write_readout_port_
+      byte` writes unconditionally to physical `0x40000+0x6F0`, but
+      Table 3-1 labels that exact 8-address range (`0x6F0`-`0x6F7`) as
+      "Option UART/GPIB chips (I/O)" - registers that, per the manual's
+      own description, only exist when a comm option board is
+      installed. Not reconciled: either there's a mainboard-only
+      register at this same address the excerpted table rows didn't
+      name, or the option card's chip-select genuinely gates this
+      address range and something else uses it when no card is
+      present. See `MEMORY_MAP.md`'s "Puzzle" note - worth a closer
+      look at the manual's actual page image (not just OCR text) if
+      resolving this matters.
 - [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
@@ -178,16 +196,26 @@
       now understood well enough to leave as-is. See `disasm/NOTES.md`
       "Found: a whole family of never-reached functions via the RAM
       far-pointer init table" and `FUNCTIONS.md`.
-- [ ] Identify what peripheral `0x41000`/`0x42000` (single-byte read
-      ports, near the confirmed readout/CRT write port) actually are -
-      front-panel switch/encoder status and CRT controller status are
-      both plausible; check the service manual's I/O map when
-      available. See `MEMORY_MAP.md`.
-- [ ] Confirm whether the `0x48000-0x4FFFF` "second plane" (written by
-      `append_readout_char`, read back by `print_scratch_buffer_range`)
-      is an attribute/inverse-video plane, a shadow copy, or per-
-      channel diagnostic scratch space - see `disasm/NOTES.md` "The
-      readout/CRT display memory".
+- [x] Identify what peripheral `0x41000`/`0x42000` actually are.
+      **Resolved 2026-09-13** from the real service manual (Table 3-1):
+      "Display chip interrupt reset" and "Display chip next frame"
+      respectively - not per-channel front-end status as guessed.
+      Renamed `read_channel1_status`/`clear_channel1_status`→`read_
+      display_chip_int_reset`/`clear_display_chip_int_reset` and
+      `read_channel2_status`/`clear_channel2_status`→`read_display_
+      chip_frame_trigger`/`clear_display_chip_frame_trigger` (verified
+      byte-identical after regenerating). See `MEMORY_MAP.md`.
+- [x] Confirm whether the `0x48000-0x4FFFF` "second plane" is an
+      attribute/inverse-video plane, a shadow copy, or scratch space.
+      **Resolved 2026-09-13**: the service manual (Table 3-1) confirms
+      `0x48000-0x4BFFF` is literally **Acquisition Memory** (4 images
+      of Acquisition RAM U3418/U3419) - not a readout attribute plane.
+      The *actual* attribute-plane concept exists, just at a different
+      address: `0x08000-0x0FFFF` ("4 bits of display RAM for waveform
+      attributes (LSB)"). `append_readout_char`'s own `+0x8000` dual-
+      write pattern coincidentally shares the same numeric offset as
+      the acquisition-memory window but isn't proven to be the *same*
+      hardware - see `MEMORY_MAP.md`'s "Confirmed regions" table.
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
@@ -201,7 +229,17 @@
       see `MEMORY_MAP.md` "I/O ports actually seen in code". `0xD1`/
       `0xC4` are now confirmed as a serial shift-register-style
       hardware write (`write_hw_shift_register`) - peripheral identity
-      still open.
+      still open. **Checked against the service manual 2026-09-13**:
+      these are true 8086 port-space (`in`/`out`) accesses, a
+      completely different address space from the memory-mapped
+      `0x40000+` window the manual's Table 3-1 documents, so that table
+      doesn't cover them directly. The AUX-connector pen-lift relay
+      (checked as a candidate) turns out to be driven by a single
+      digital line (`PEN DWN`, connector `J6423` pin 1) - too simple to
+      explain a 3x-shift-then-strobe write, so probably not the target;
+      the X/Y analog plot-output DACs are a better structural fit but
+      the manual excerpts read don't name the specific register/DAC
+      feeding them. Still open.
 - [ ] **In progress: renaming EVERY identifiable routine, not just
       opportunistically** (explicit user request: "keep going, don't
       stop until everything is renamed"). Working through the
@@ -242,33 +280,73 @@
       `detect_comm_option_hw` in `FUNCTIONS.md` and `disasm/NOTES.md`
       "Found: the actual source of [0x1B83]". `0x1E` results from two
       branches with opposite-looking conditions, which doesn't fit a
-      simple binary flag cleanly.
+      simple binary flag cleanly. **Partially advanced 2026-09-13**:
+      the service manual confirms the write-probe address is the
+      general-purpose "Time Base Mode Register U4119" (`0x407DE`), not
+      a comm-specific latch - the detection rides on a bit of a shared
+      register rather than a dedicated presence flag, which is
+      consistent with the two-branch `0x1E` ambiguity, but doesn't
+      pin down the exact bit semantics. Still open.
 - [ ] Which physical front-panel control each of the 3
       `update_menu_position`-range-scan self-tests
       (`selftest_front_panel_switch_a`/`_b`, `selftest_comm_option_
-      switch`) corresponds to isn't confirmed. **New**: `HARDWARE.md`
-      now has a front-panel photo with all control-group labels
-      (VERTICAL MODE, ACQUISITION, TRIGGER, etc.) - use it once tracing
-      `[0x4E7]`/`[0x4E8]` bit ranges.
-- [ ] What hardware `0x403FFA`/`0x403FFB` belong to (read every timer
-      tick by `scheduler_tick_service`) isn't confirmed - front-panel
-      key/encoder status is the leading candidate.
+      switch`) corresponds to isn't confirmed. `HARDWARE.md` has a
+      front-panel photo with all control-group labels (VERTICAL MODE,
+      ACQUISITION, TRIGGER, etc.). **New lead 2026-09-13**: the service
+      manual's Tables 6-16/6-17 ("FP-VALUES" exerciser) give exact
+      signal names for the front-panel raw-data bytes: `AD DATA`
+      (`U6101`, ADC-converted analog controls), `ISTAT` (`U6103`),
+      `SWB1` (`U9302`: `STORE ON`/`B ONLY`/`HOLD`/`ROLL`/`HOR MAG`/
+      `HOR CAL`/`PRE`/`POST`), `SWB2` (`U9301`: `SELECT C1/C2`/`MENU
+      ADV`/`MEM 2`/`MENU`/`1K/4K`/`POS/SEL`/`MEM 1`/`MEM 3`) - worth
+      cross-referencing `[0x4E7]`/`[0x4E8]`'s bit positions against
+      these now-named signals directly, not yet done.
+- [x] What hardware `0x403FFA`/`0x403FFB` belong to. **Resolved
+      2026-09-13**: service manual Table 3-1 confirms "Front Panel
+      Buffer U9301"/"Front Panel Buffer U9302" - matches the "front-
+      panel key/encoder status" guess for `scheduler_tick_service`'s
+      `[0x758]`/`[0x759]` exactly.
 - [ ] Found the comm option board's DIP-switch reader (`read_dip_
       switches_serial_config`/`read_dip_switches_gpib_config`, see
       `HARDWARE.md`) - still open: map each of the 10 physical switch
       positions to which specific decoded bit(s) it controls. `[0x629]`
-      (GPIB/RS-232 mode) still isn't confirmed as switch-sourced.
-- [ ] **New from hardware photos**: the same rear panel's 9-pin
-      "AUXILIARY CONNECTOR" has a pen-lift relay plus analog X/Y
-      outputs - a direct X-Y plotter interface. Check whether
-      `write_hw_shift_register` (ports `0xD1`/`0xC4`) is what drives
-      this relay in sync with the HPGL PU/PD state (`[0x6CA]`), as an
-      alternative/addition to the current "front-panel setting" guess.
-      (The two RS-232 connectors are confirmed by the user to be just
-      DTE/DCE pinouts of the *same* serial port for cabling
-      convenience, not a firmware-visible mode select - `[0x629]`
-      stays open as "GPIB vs RS-232" or something else, just not
-      DTE/DCE.)
+      (GPIB/RS-232 mode) still isn't confirmed as switch-sourced. The
+      service manual confirms `0x406BC` is the "Option Parameters Latch
+      (in)" (Table 3-1, 2026-09-13) - the right register, but the
+      excerpts read so far don't give a bit-by-bit switch map; may be
+      in a part of the manual not yet searched.
+- [ ] **From hardware photos**: the rear panel's 9-pin "AUXILIARY
+      CONNECTOR" has a pen-lift relay plus analog X/Y outputs - a
+      direct X-Y plotter interface. **Checked against the service
+      manual 2026-09-13, not a clean match**: the Pen-Down circuit is
+      driven by a single digital line (`PEN DWN` via connector `J6423`
+      pin 1, sourced from `VECT SMPL`) - too simple to explain `write_
+      hw_shift_register`'s multi-bit shift-and-strobe write, so it
+      probably ISN'T what that function drives. The X/Y analog plot-
+      output amplifiers (fed from DACs) are a better structural fit,
+      but the specific digital register/DAC feeding them wasn't named
+      in the manual excerpts read. See `MEMORY_MAP.md`'s I/O-ports
+      section. (The two RS-232 connectors are confirmed by the user to
+      be just DTE/DCE pinouts of the *same* serial port for cabling
+      convenience, not a firmware-visible mode select - `[0x629]` stays
+      open as "GPIB vs RS-232" or something else, just not DTE/DCE.)
+- [x] **New 2026-09-13**: the user provided the real operator's manual
+      (`hardware/070-4998-02.pdf`) and service manual (`hardware/2230
+      .pdf`) - a huge new primary-source resource, tracked via git-lfs.
+      Mined the service manual's Section 3 (Theory of Operation,
+      Table 3-1 "Memory Space Allocation") and Section 6 (Maintenance,
+      Tables 6-16 through 6-23) for the I/O address map - resolved most
+      of the previously-open port/register-identity items above. GPIB
+      controller confirmed as a **TMS9914A**. Front-panel and
+      acquisition ADCs confirmed as separate chips (`U6105`/`U2204`).
+      See `MEMORY_MAP.md` for the full "Confirmed regions" update and
+      `disasm/NOTES.md`/`CONTEXT.md`/`HARDWARE.md` for cross-references.
+      **Not yet done**: a full markdown transcription with extracted
+      figures (requested by the user - `pip install pymupdf` works in
+      this environment for image extraction/page rendering; poppler's
+      `pdfimages`/`pdfinfo` are NOT available, only `pdftotext`), and a
+      read-through of the operator's manual for menu/UI-flow context
+      (also requested, not started).
 
 ## Ongoing documentation goal
 

@@ -4781,24 +4781,24 @@
     "notes": null
   },
   "E43F2": {
-    "name": "report_and_read_channel1",
+    "name": "report_and_read_display_chip_int_reset",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "report_and_read_channel1",
+    "functional_name": "report_and_read_display_chip_int_reset",
     "notes": null
   },
   "E440A": {
-    "name": "read_channel2_status",
+    "name": "read_display_chip_frame_trigger",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": "read_channel2_status",
+    "functional_name": "read_display_chip_frame_trigger",
     "notes": null
   },
   "E4429": {
-    "name": "read_channel1_status",
+    "name": "read_display_chip_int_reset",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": "read_channel1_status",
+    "functional_name": "read_display_chip_int_reset",
     "notes": null
   },
   "E4443": {
@@ -10430,17 +10430,17 @@
     "notes": null
   },
   "F9FEE": {
-    "name": "clear_channel2_status",
+    "name": "clear_display_chip_frame_trigger",
     "kind": "sub",
     "ref_count": 7,
-    "functional_name": "clear_channel2_status",
+    "functional_name": "clear_display_chip_frame_trigger",
     "notes": null
   },
   "FA00C": {
-    "name": "clear_channel1_status",
+    "name": "clear_display_chip_int_reset",
     "kind": "sub",
     "ref_count": 8,
-    "functional_name": "clear_channel1_status",
+    "functional_name": "clear_display_chip_int_reset",
     "notes": null
   },
   "FAD6E": {

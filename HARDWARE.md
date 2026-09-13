@@ -6,6 +6,22 @@ connectors instead of guesswork. Images live in `hardware/photos/`.
 Add more files here (or split this doc further) as more photos come
 in — don't let it become one unmanageable page.
 
+## Manuals (`hardware/070-4998-02.pdf`, `hardware/2230 .pdf`)
+
+Provided by the user 2026-09-13 (tracked via git-lfs given their size -
+~8.7MB and ~23MB): the **070-4998-02 Operator Manual** and the **2230
+Service Manual** (Artek Media scan of the original 1986 Tektronix
+manual, OCR'd - expect occasional OCR errors like "tlon" for "tion").
+This is now the primary source for hardware facts, superseding
+inference from code wherever the two disagree - see `MEMORY_MAP.md`'s
+"Confirmed regions" table for the address/register map pulled from the
+service manual's Section 3 (Theory of Operation, Table 3-1 "Memory
+Space Allocation") and Section 6 (Maintenance, Tables 6-16 through
+6-23, the front-panel/exerciser register tables). Read via `pdftotext
+-layout` (no `pdfimages`/`pdfinfo` available in this environment, but
+`pip install pymupdf` works and can render pages/extract images if a
+markdown+figure transcription is ever built - see `TODO.md`).
+
 ## Comm option module rear panel (`hardware/photos/comm_option_rear_panel.jpg`)
 
 This is the rear-panel plate for the GPIB/RS-232/plotter option board
@@ -256,8 +272,13 @@ or the schematic.
   20??7K`) sits near the bottom right, close to labeled `CH1`/`CH2`
   input traces - consistent with `CONTEXT.md`'s claimed Sony CX20052A
   A/D converter, but the visible part number doesn't cleanly read as
-  `CX20052A` from this photo. **Needs a clearer close-up photo of just
-  that chip** to confirm or correct the exact part number.
+  `CX20052A` from this photo. **Update 2026-09-13**: the real service
+  manual confirms the signal-acquisition ADC's schematic designator is
+  **U2204**, with a spec description (8-bit, 20 Megasamples/second,
+  ECL output) matching `CX20052A` exactly - this is almost certainly
+  that chip, the photo's blurry part number just couldn't confirm the
+  exact string. Still worth a clearer close-up if precision matters,
+  but no longer a real open question.
 - Hand-silkscreened **signal/test-point labels** are visible amid the
   wiring harness: `TRIGGERED`, `ACQEN A` (Acquisition Enable, channel
   A?), `EOR`, and something ending `...FULL` (partially obscured by a

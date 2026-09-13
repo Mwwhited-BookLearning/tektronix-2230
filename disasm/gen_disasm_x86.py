@@ -223,18 +223,22 @@ FUNCTIONAL_NAMES = {
                                                # count) - writes
                                                # fill_byte to `count`
                                                # consecutive bytes
-    0xF9FEE: "clear_channel2_status",         # writes 0 to physical
-                                               # 0x42000 - the SAME
-                                               # fixed address
-                                               # read_channel2_status
-                                               # reads, confirming it's
-                                               # a real read/write
-                                               # hardware register, not
-                                               # just a coincidental ROM
-                                               # address
-    0xFA00C: "clear_channel1_status",         # writes 0 to physical
-                                               # 0x41000 - see
-                                               # clear_channel2_status
+    0xF9FEE: "clear_display_chip_frame_trigger", # CORRECTED (was clear_
+                                               # channel2_status): writes
+                                               # 0 to physical 0x42000 -
+                                               # the SAME fixed address
+                                               # read_display_chip_frame_
+                                               # trigger reads. Confirmed
+                                               # by the service manual
+                                               # (Table 3-1) as the
+                                               # "Display chip next
+                                               # frame" register, not a
+                                               # per-channel status port
+    0xFA00C: "clear_display_chip_int_reset",  # CORRECTED (was clear_
+                                               # channel1_status): writes
+                                               # 0 to physical 0x41000 -
+                                               # see clear_display_chip_
+                                               # frame_trigger
     0x9470E: "set_ds_return_old",             # push ds; mov ds,[bp+6];
                                                # pop ax - swaps DS to the
                                                # caller-given segment,
@@ -454,18 +458,33 @@ FUNCTIONAL_NAMES = {
                                                # acquisition-buffer-init
                                                # tail as reset_acq_
                                                # buffers_stub
-    0xE4429: "read_channel1_status",          # reads one fixed byte
-                                               # from physical 0x41000 -
-                                               # called alternately with
-                                               # read_channel2_status in
-                                               # a self-test loop that
-                                               # takes repeated readings;
-                                               # "channel1" is inferred
-                                               # from the 2-channel-scope
-                                               # context, not confirmed
-    0xE440A: "read_channel2_status",          # reads one fixed byte
-                                               # from physical 0x42000 -
-                                               # see read_channel1_status
+    0xE4429: "read_display_chip_int_reset",   # CORRECTED (was read_
+                                               # channel1_status - the
+                                               # "channel1" guess was
+                                               # wrong): reads one fixed
+                                               # byte from physical
+                                               # 0x41000, confirmed by the
+                                               # real service manual
+                                               # (Table 3-1, provided
+                                               # 2026-09-13) to be the
+                                               # readout/CRT "Display
+                                               # chip interrupt reset"
+                                               # register, not a per-
+                                               # channel front-end status
+                                               # port. Called alternately
+                                               # with read_display_chip_
+                                               # frame_trigger in a self-
+                                               # test loop taking
+                                               # repeated readings
+    0xE440A: "read_display_chip_frame_trigger", # CORRECTED (was read_
+                                               # channel2_status): reads
+                                               # one fixed byte from
+                                               # physical 0x42000 -
+                                               # service manual Table 3-1
+                                               # labels this "Display chip
+                                               # next frame" (FRAME) -
+                                               # see read_display_chip_
+                                               # int_reset
     0xE5B34: "selftest_display_result_mode",  # idx==1/2 toggle the SAME
                                                # [0x1B5E] flag selftest_
                                                # measure_mode uses
@@ -490,7 +509,7 @@ FUNCTIONAL_NAMES = {
                                                # menu-navigation cursor
     0xE2AB0: "selftest_init_channel_hw",      # calls clear_selftest_
                                                # status_flags and
-                                               # read_channel1_status,
+                                               # read_display_chip_int_reset,
                                                # then writes a short
                                                # sequence of command
                                                # codes (0x1D, 9, 0x1D)
@@ -929,13 +948,17 @@ FUNCTIONAL_NAMES = {
                                                # 0x406F8/0x406BC, the
                                                # same family selftest_
                                                # comm_fget_flag uses)
-    0xE43F2: "report_and_read_channel1",       # sets report_screen_
-                                               # mode(2) then calls
-                                               # read_channel1_status -
-                                               # called from run_
-                                               # selftest_sequence when
-                                               # its readback loop is
-                                               # aborted/interrupted
+    0xE43F2: "report_and_read_display_chip_int_reset", # CORRECTED
+                                               # (was report_and_read_
+                                               # channel1 - see the
+                                               # 0x41000 correction
+                                               # above): sets report_
+                                               # screen_mode(2) then
+                                               # calls read_display_chip_
+                                               # int_reset - called from
+                                               # run_selftest_sequence
+                                               # when its readback loop
+                                               # is aborted/interrupted
     0xE46C3: "step_progress_pattern_a",         # (mode) - one of 5
                                                # near-identical helpers
                                                # called together by
@@ -2719,8 +2742,8 @@ FUNCTIONAL_NAMES = {
                                                # after >10 escalations,
                                                # then force-clears both
                                                # channels via
-                                               # clear_channel1_status/
-                                               # clear_channel2_status and
+                                               # clear_display_chip_int_reset/
+                                               # clear_display_chip_frame_trigger and
                                                # resets [0x754]
     0xE6884: "compute_acq_channel_scan_counts", # derives 2 base scan-
                                                # count values from the
@@ -3457,8 +3480,8 @@ FUNCTIONAL_NAMES = {
                                                # it exceeds 500 (0x1F4)
                                                # force-clears both
                                                # channels via
-                                               # clear_channel1_status/
-                                               # clear_channel2_status and
+                                               # clear_display_chip_int_reset/
+                                               # clear_display_chip_frame_trigger and
                                                # resets the counter;
                                                # returns whether [0x403]
                                                # was set - another

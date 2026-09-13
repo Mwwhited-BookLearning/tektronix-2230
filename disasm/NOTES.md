@@ -413,6 +413,25 @@ Worth revisiting once more of what reads `[0x1B83]` (beyond just
 `==0x1E`) is understood - if some code also checks `==0x14`
 specifically, that would clarify the distinction.
 
+**Update 2026-09-13, from the real service manual**: the write-probe
+address (`0x40000+0x7DE` = `0x407DE`) is confirmed to be the **"Time
+Base Mode Register U4119"** (service manual Table 3-1) - a general
+timebase-mode register, not a comm-specific latch. This means `detect_
+comm_option_hw`'s probe works by toggling a bit in the general Time
+Base Mode Register and checking whether a *different* nearby register
+reflects that change - consistent with the comm option's presence
+being wired to gate or reflect onto part of this register's behavior,
+rather than having its own dedicated "are you there" bit. The readback
+address (`0x40000+0x377E` = `0x4377E`) doesn't land exactly on a named
+register in the table rows read so far - the closest is `0x437BE`
+("Acquisition Mode Register U3310"), `0x40` away - not confirmed as
+the same register through incomplete decoding or a genuinely different
+one; worth a closer look at the manual's full page image if resolving
+this exactly matters. Still doesn't resolve the `0x1E` vs `0x14`
+meaning question above, but the *mechanism* (which physical registers
+are involved) is now solidly grounded rather than purely inferred from
+code.
+
 ## Found: the self-test dispatcher
 
 **CORRECTION (this session): `self_test_dispatcher` was misnamed.**
@@ -838,7 +857,7 @@ tick, this runs every time. It:
   embedded design where the stack is placed immediately below a fixed
   I/O window to use RAM efficiently. This is the real source of
   `[0x758]`, previously only known as "some status/mode byte checked
-  around `read_channel1_status`/`read_channel2_status`" - now
+  around `read_display_chip_int_reset`/`read_display_chip_frame_trigger`" - now
   confirmed to be a genuine hardware status register, polled once per
   tick.
 - XORs `[0x758]` against a previous snapshot (`[0x7B4]`) - classic
@@ -1310,16 +1329,19 @@ one, find any `mov reg, 0xFF7B` within 2 lines of another `mov reg,
   alone, no string needed.
 - `selftest_comm_readback` (`0xE20B0`) - the 2nd phase called by
   `selftest_comm_loopback_a`, references `COMM_RB`/`rb(1)=`/`rb(0)=`.
-  **Surprising and unreconciled**: it reads/writes physical
-  `0x40000+0x67C`/`0x6F8` - the readout/CRT memory window documented
-  above, nowhere near the comm ROM's actual `0x80000` address. Either
-  the comm board's registers are somehow also mapped into part of the
-  `0x40000` RAM window (a form of shared/dual-ported memory not
-  otherwise evidenced), or "COMM" in `COMM_RB` doesn't mean the GPIB/
-  RS-232 option board in this specific string (could be a different
-  "communication" - e.g. between the CRT controller and main CPU).
-  Left unresolved - worth another look once more of this address
-  range's other uses are mapped.
+  It reads/writes physical `0x40000+0x67C`/`0x6F8` - **previously
+  flagged as "surprising and unreconciled" (nowhere near the comm ROM's
+  `0x80000` address), now fully resolved with the real service manual
+  (provided 2026-09-13)**: `0x4067C` is the comm option's own **"Option
+  Status Latch (in)"** and `0x406F8` its **"Option Interrupt Mask Latch
+  (out)"** (service manual Table 3-1, "Memory Space Allocation") - both
+  genuine, confirmed comm-option registers. "COMM" in `COMM_RB` really
+  does mean the GPIB/RS-232 option board after all; the earlier
+  confusion was just not realizing how much *other* hardware (front-
+  panel, acquisition, and comm-option registers alike) is scattered
+  through this same `0x40000-0x437FF` "I/O Main Image" window alongside
+  the readout/CRT registers - it's a shared I/O address space, not
+  readout-specific memory that the comm option happens to also use.
 
 ## Possible ADC/measurement self-test hardware
 

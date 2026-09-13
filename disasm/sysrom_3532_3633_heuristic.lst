@@ -4434,7 +4434,7 @@ selftest_init_channel_hw:
     3633:2AC7  [E2AC7]  9aa6076be0      lcall   clear_selftest_status_flags  ; 0xe06b, 0x7a6
     3633:2ACC  [E2ACC]  803e7a1b01      cmp     byte ptr [0x1b7a], 1
     3633:2AD1  [E2AD1]  7405            je      L_E2AD8  ; 0x178
-    3633:2AD3  [E2AD3]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:2AD3  [E2AD3]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
 L_E2AD8:
     3633:2AD8  [E2AD8]  c7061c1bff00    mov     word ptr [0x1b1c], 0xff
     3633:2ADE  [E2ADE]  c43e201d        les     di, ptr [0x1d20]
@@ -6131,7 +6131,7 @@ L_E3BEA:
     3633:3BF5  [E3BF5]  7505            jne     L_E3BFC  ; 0xec
     3633:3BF7  [E3BF7]  c746f00100      mov     word ptr [bp - 0x10], 1
 L_E3BFC:
-    3633:3BFC  [E3BFC]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
+    3633:3BFC  [E3BFC]  9afa08b1e3      lcall   read_display_chip_frame_trigger  ; 0xe3b1, 0x8fa
 L_E3C01:
     3633:3C01  [E3C01]  a1e61a          mov     ax, word ptr [0x1ae6]
     3633:3C04  [E3C04]  8b7ef8          mov     di, word ptr [bp - 8]
@@ -6149,7 +6149,7 @@ L_E3C16:
 L_E3C23:
     3633:3C23  [E3C23]  e988ff          jmp     L_E3BAE  ; 0x9e
 L_E3C26:
-    3633:3C26  [E3C26]  9ae208b1e3      lcall   report_and_read_channel1  ; 0xe3b1, 0x8e2
+    3633:3C26  [E3C26]  9ae208b1e3      lcall   report_and_read_display_chip_int_reset  ; 0xe3b1, 0x8e2
 L_E3C2B:
     3633:3C2B  [E3C2B]  bf0200          mov     di, 2
     3633:3C2E  [E3C2E]  57              push    di
@@ -6192,7 +6192,7 @@ L_E3C8D:
     3633:3C96  [E3C96]  bf0400          mov     di, 4
     3633:3C99  [E3C99]  57              push    di
     3633:3C9A  [E3C9A]  9a64155de4      lcall   selftest_display_result_mode  ; 0xe45d, 0x1564
-    3633:3C9F  [E3C9F]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
+    3633:3C9F  [E3C9F]  9afa08b1e3      lcall   read_display_chip_frame_trigger  ; 0xe3b1, 0x8fa
     3633:3CA4  [E3CA4]  e9a6ff          jmp     L_E3C4D  ; 0x13d
 L_E3CA7:
     3633:3CA7  [E3CA7]  e9d400          jmp     L_E3D7E  ; 0x26e
@@ -6200,7 +6200,7 @@ L_E3CAA:
     3633:3CAA  [E3CAA]  bf0200          mov     di, 2
     3633:3CAD  [E3CAD]  57              push    di
     3633:3CAE  [E3CAE]  9a64155de4      lcall   selftest_display_result_mode  ; 0xe45d, 0x1564
-    3633:3CB3  [E3CB3]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:3CB3  [E3CB3]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:3CB8  [E3CB8]  c746f00000      mov     word ptr [bp - 0x10], 0
     3633:3CBD  [E3CBD]  c43edc1d        les     di, ptr [0x1ddc]
     3633:3CC1  [E3CC1]  26808d130280    or      byte ptr es:[di + 0x213], 0x80
@@ -6258,13 +6258,13 @@ L_E3D4A:
     3633:3D53  [E3D53]  bf0400          mov     di, 4
     3633:3D56  [E3D56]  57              push    di
     3633:3D57  [E3D57]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
-    3633:3D5C  [E3D5C]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
+    3633:3D5C  [E3D5C]  9afa08b1e3      lcall   read_display_chip_frame_trigger  ; 0xe3b1, 0x8fa
     3633:3D61  [E3D61]  e991ff          jmp     L_E3CF5  ; 0x1e5
 L_E3D64:
     3633:3D64  [E3D64]  bf0200          mov     di, 2
     3633:3D67  [E3D67]  57              push    di
     3633:3D68  [E3D68]  9a4d135de4      lcall   print_report_frame_mode  ; 0xe45d, 0x134d
-    3633:3D6D  [E3D6D]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:3D6D  [E3D6D]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:3D72  [E3D72]  803e831b15      cmp     byte ptr [0x1b83], 0x15
     3633:3D77  [E3D77]  7505            jne     L_E3D7E  ; 0x26e
     3633:3D79  [E3D79]  9a4500b6ef      lcall   SUB_EFBA5  ; 0xefb6, 0x45
@@ -6355,12 +6355,12 @@ L_E3E61:
     3633:3E7A  [E3E7A]  8b7eea          mov     di, word ptr [bp - 0x16]
     3633:3E7D  [E3E7D]  3bc7            cmp     ax, di
     3633:3E7F  [E3E7F]  750d            jne     L_E3E8E  ; 0x37e
-    3633:3E81  [E3E81]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
+    3633:3E81  [E3E81]  9afa08b1e3      lcall   read_display_chip_frame_trigger  ; 0xe3b1, 0x8fa
     3633:3E86  [E3E86]  9a73036be0      lcall   scroll_selftest_report_display  ; 0xe06b, 0x373
 L_E3E8B:
     3633:3E8B  [E3E8B]  e9d3ff          jmp     L_E3E61  ; 0x351
 L_E3E8E:
-    3633:3E8E  [E3E8E]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:3E8E  [E3E8E]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:3E93  [E3E93]  8be5            mov     sp, bp
     3633:3E95  [E3E95]  5d              pop     bp
     3633:3E96  [E3E96]  cb              retf    
@@ -6428,7 +6428,7 @@ selftest_display_irq_idle:
     3633:3F2D  [E3F2D]  8bec            mov     bp, sp
     3633:3F2F  [E3F2F]  83ec08          sub     sp, 8
     3633:3F32  [E3F32]  c746f80100      mov     word ptr [bp - 8], 1
-    3633:3F37  [E3F37]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:3F37  [E3F37]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:3F3C  [E3F3C]  9aa6076be0      lcall   clear_selftest_status_flags  ; 0xe06b, 0x7a6
     3633:3F41  [E3F41]  9a730396e2      lcall   reset_progress_pattern_e  ; 0xe296, 0x373
     3633:3F46  [E3F46]  c706f01a0100    mov     word ptr [0x1af0], 1
@@ -6510,7 +6510,7 @@ selftest_display_irq_active:
     3633:4023  [E4023]  c706f21a0000    mov     word ptr [0x1af2], 0
     3633:4029  [E4029]  c706ee1a0000    mov     word ptr [0x1aee], 0
     3633:402F  [E402F]  9a1d00d1e5      lcall   enable_interrupts  ; 0xe5d1, 0x1d
-    3633:4034  [E4034]  9afa08b1e3      lcall   read_channel2_status  ; 0xe3b1, 0x8fa
+    3633:4034  [E4034]  9afa08b1e3      lcall   read_display_chip_frame_trigger  ; 0xe3b1, 0x8fa
 L_E4039:
     3633:4039  [E4039]  ff4ef8          dec     word ptr [bp - 8]
     3633:403C  [E403C]  837ef800        cmp     word ptr [bp - 8], 0
@@ -6538,7 +6538,7 @@ L_E4049:
     3633:4070  [E4070]  83c40a          add     sp, 0xa
     3633:4073  [E4073]  814ef60200      or      word ptr [bp - 0xa], 2
 L_E4078:
-    3633:4078  [E4078]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:4078  [E4078]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:407D  [E407D]  c706ee1a0000    mov     word ptr [0x1aee], 0
     3633:4083  [E4083]  9a1d00d1e5      lcall   enable_interrupts  ; 0xe5d1, 0x1d
     3633:4088  [E4088]  9a1f00d1e5      lcall   disable_interrupts  ; 0xe5d1, 0x1f
@@ -6841,22 +6841,22 @@ init_selftest_report_screen:
     3633:43EE  [E43EE]  8be5            mov     sp, bp
     3633:43F0  [E43F0]  5d              pop     bp
     3633:43F1  [E43F1]  cb              retf    
-report_and_read_channel1:
+report_and_read_display_chip_int_reset:
     3633:43F2  [E43F2]  55              push    bp
     3633:43F3  [E43F3]  8bec            mov     bp, sp
     3633:43F5  [E43F5]  83ec06          sub     sp, 6
     3633:43F8  [E43F8]  bf0200          mov     di, 2
     3633:43FB  [E43FB]  57              push    di
     3633:43FC  [E43FC]  9a6b0f5de4      lcall   report_screen_mode  ; 0xe45d, 0xf6b
-    3633:4401  [E4401]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:4401  [E4401]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:4406  [E4406]  8be5            mov     sp, bp
     3633:4408  [E4408]  5d              pop     bp
     3633:4409  [E4409]  cb              retf    
-read_channel2_status:
+read_display_chip_frame_trigger:
     3633:440A  [E440A]  55              push    bp
     3633:440B  [E440B]  8bec            mov     bp, sp
     3633:440D  [E440D]  83ec08          sub     sp, 8
-    3633:4410  [E4410]  9a1909b1e3      lcall   read_channel1_status  ; 0xe3b1, 0x919
+    3633:4410  [E4410]  9a1909b1e3      lcall   read_display_chip_int_reset  ; 0xe3b1, 0x919
     3633:4415  [E4415]  b80000          mov     ax, 0
     3633:4418  [E4418]  ba0042          mov     dx, 0x4200
     3633:441B  [E441B]  8bf8            mov     di, ax
@@ -6866,7 +6866,7 @@ read_channel2_status:
     3633:4425  [E4425]  8be5            mov     sp, bp
     3633:4427  [E4427]  5d              pop     bp
     3633:4428  [E4428]  cb              retf    
-read_channel1_status:
+read_display_chip_int_reset:
     3633:4429  [E4429]  55              push    bp
     3633:442A  [E442A]  8bec            mov     bp, sp
     3633:442C  [E442C]  83ec08          sub     sp, 8
@@ -10047,7 +10047,7 @@ L_E643C:
 L_E646D:
     3633:646D  [E646D]  803e950700      cmp     byte ptr [0x795], 0
     3633:6472  [E6472]  7548            jne     L_E64BC  ; 0x1dc
-    3633:6474  [E6474]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:6474  [E6474]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
     3633:6479  [E6479]  c606630700      mov     byte ptr [0x763], 0
     3633:647E  [E647E]  803ef71b00      cmp     byte ptr [0x1bf7], 0
     3633:6483  [E6483]  750e            jne     L_E6493  ; 0x1b3
@@ -10282,8 +10282,8 @@ L_E66F2:
     3633:6708  [E6708]  7429            je      L_E6733  ; 0x213
     3633:670A  [E670A]  803e620700      cmp     byte ptr [0x762], 0
     3633:670F  [E670F]  7428            je      L_E6739  ; 0x219
-    3633:6711  [E6711]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:6716  [E6716]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:6711  [E6711]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:6716  [E6716]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:671B  [E671B]  eb03            jmp     L_E6720  ; 0x200
 L_E671D:
     3633:671D  [E671D]  e93c00          jmp     L_E675C  ; 0x23c
@@ -10300,7 +10300,7 @@ L_E6739:
     3633:6740  [E6740]  9a0c009bed      lcall   compute_and_draw_scale_marker  ; 0xed9b, 0xc
     3633:6745  [E6745]  3d0000          cmp     ax, 0
     3633:6748  [E6748]  740f            je      L_E6759  ; 0x239
-    3633:674A  [E674A]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:674A  [E674A]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:674F  [E674F]  c606630701      mov     byte ptr [0x763], 1
     3633:6754  [E6754]  c606620700      mov     byte ptr [0x762], 0
 L_E6759:
@@ -10312,8 +10312,8 @@ L_E675C:
     3633:6767  [E6767]  7e21            jle     L_E678A  ; 0x26a
     3633:6769  [E6769]  803e620700      cmp     byte ptr [0x762], 0
     3633:676E  [E676E]  741a            je      L_E678A  ; 0x26a
-    3633:6770  [E6770]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:6775  [E6775]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:6770  [E6770]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:6775  [E6775]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:677A  [E677A]  c606630701      mov     byte ptr [0x763], 1
     3633:677F  [E677F]  c70654070000    mov     word ptr [0x754], 0
     3633:6785  [E6785]  c606620700      mov     byte ptr [0x762], 0
@@ -10365,8 +10365,8 @@ L_E680C:
 L_E680F:
     3633:680F  [E680F]  c43ee01d        les     di, ptr [0x1de0]
     3633:6813  [E6813]  268905          mov     word ptr es:[di], ax
-    3633:6816  [E6816]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:681B  [E681B]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:6816  [E6816]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:681B  [E681B]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:6820  [E6820]  c606630701      mov     byte ptr [0x763], 1
     3633:6825  [E6825]  fe06971a        inc     byte ptr [0x1a97]
     3633:6829  [E6829]  a0971a          mov     al, byte ptr [0x1a97]
@@ -10395,8 +10395,8 @@ escalate_acq_timeout_reset:
     3633:685C  [E685C]  fe069b1a        inc     byte ptr [0x1a9b]
     3633:6860  [E6860]  c606b00700      mov     byte ptr [0x7b0], 0
 L_E6865:
-    3633:6865  [E6865]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:686A  [E686A]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:6865  [E6865]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:686A  [E686A]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:686F  [E686F]  c606630701      mov     byte ptr [0x763], 1
     3633:6874  [E6874]  c70654070000    mov     word ptr [0x754], 0
     3633:687A  [E687A]  c606620700      mov     byte ptr [0x762], 0
@@ -10644,7 +10644,7 @@ L_E6AEE:
     3633:6AEE  [E6AEE]  837ef80c        cmp     word ptr [bp - 8], 0xc
     3633:6AF2  [E6AF2]  7cec            jl      L_E6AE0  ; 0x60
     3633:6AF4  [E6AF4]  9a0e00b3fd      lcall   clear_measurement_mode_bit  ; 0xfdb3, 0xe
-    3633:6AF9  [E6AF9]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
+    3633:6AF9  [E6AF9]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
     3633:6AFE  [E6AFE]  9acd02a8e6      lcall   init_comm_dispatch_table  ; 0xe6a8, 0x2cd
     3633:6B03  [E6B03]  9a0e0056f1      lcall   SUB_F156E  ; 0xf156, 0xe
     3633:6B08  [E6B08]  c746f80000      mov     word ptr [bp - 8], 0
@@ -11616,8 +11616,8 @@ L_E7587:
     3633:75AA  [E75AA]  c43ee01d        les     di, ptr [0x1de0]
     3633:75AE  [E75AE]  268905          mov     word ptr es:[di], ax
 L_E75B1:
-    3633:75B1  [E75B1]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:75B6  [E75B6]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:75B1  [E75B1]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:75B6  [E75B6]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
 L_E75BB:
     3633:75BB  [E75BB]  8be5            mov     sp, bp
     3633:75BD  [E75BD]  5d              pop     bp
@@ -12594,8 +12594,8 @@ poll_error_flag_and_reset_channels:
     3633:7F10  [E7F10]  ff062807        inc     word ptr [0x728]
     3633:7F14  [E7F14]  813e2807f401    cmp     word ptr [0x728], 0x1f4
     3633:7F1A  [E7F1A]  7e10            jle     L_E7F2C  ; 0x2c
-    3633:7F1C  [E7F1C]  9a2c00fef9      lcall   clear_channel1_status  ; 0xf9fe, 0x2c
-    3633:7F21  [E7F21]  9a0e00fef9      lcall   clear_channel2_status  ; 0xf9fe, 0xe
+    3633:7F1C  [E7F1C]  9a2c00fef9      lcall   clear_display_chip_int_reset  ; 0xf9fe, 0x2c
+    3633:7F21  [E7F21]  9a0e00fef9      lcall   clear_display_chip_frame_trigger  ; 0xf9fe, 0xe
     3633:7F26  [E7F26]  c70628070000    mov     word ptr [0x728], 0
 L_E7F2C:
     3633:7F2C  [E7F2C]  b80100          mov     ax, 1
@@ -39767,7 +39767,7 @@ L_F9FE8:
     3532:9FE8  [F9FE8]  8be5            mov     sp, bp
     3532:9FEA  [F9FEA]  5d              pop     bp
     3532:9FEB  [F9FEB]  ca0200          retf    2
-clear_channel2_status:
+clear_display_chip_frame_trigger:
     3532:9FEE  [F9FEE]  55              push    bp
     3532:9FEF  [F9FEF]  8bec            mov     bp, sp
     3532:9FF1  [F9FF1]  83ec0a          sub     sp, 0xa
@@ -39781,7 +39781,7 @@ clear_channel2_status:
     3532:A008  [FA008]  8be5            mov     sp, bp
     3532:A00A  [FA00A]  5d              pop     bp
     3532:A00B  [FA00B]  cb              retf    
-clear_channel1_status:
+clear_display_chip_int_reset:
     3532:A00C  [FA00C]  55              push    bp
     3532:A00D  [FA00D]  8bec            mov     bp, sp
     3532:A00F  [FA00F]  83ec0a          sub     sp, 0xa
