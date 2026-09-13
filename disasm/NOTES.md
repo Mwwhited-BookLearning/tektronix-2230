@@ -471,6 +471,67 @@ found), and what physical significance the specific bit patterns
 thread rather than guessed at - see `VARIABLES.md`'s `[0x4E7]`/`[0x4E8]`
 entry for the cross-reference.
 
+## Live hardware test: the `write_readout_port_byte`/UART theory does NOT hold up on real hardware
+
+The user has a real 2230 with the RS-232 option installed, a USB-
+serial adapter wired to the rear-panel RS-232-C port, and read the
+physical `PARAMETERS` DIP switches directly off the unit as `0110000000`
+(confirmed via the switch's own printed reference as selecting 600
+baud). This let the "genuine UART on RS-232-equipped units" theory
+(see the "Follow-up, same day" `write_readout_port_byte` section
+above) be tested directly instead of staying speculative.
+
+**Method**: `disasm/listen_serial.py` (new small tool, opens a COM
+port and logs every received byte as hex + ASCII, regardless of
+whether it decodes cleanly - the point is to see raw bytes even at a
+wrong baud rate guess). Tested 3 scenarios:
+
+1. Plain power-cycle, listening at 9600 baud (a wrong guess, before
+   the real 600 baud was confirmed): exactly 2 bytes, both `0x00`,
+   a few seconds apart.
+2. Plain power-cycle again, same 9600 baud: **the identical result**
+   (2 bytes, both `0x00`).
+3. Plain power-cycle at the *correct* 600 baud: **the same 2×`0x00`
+   result again**.
+4. **An actual self-test run from the `DIAGNOSTICS/TESTS` menu**
+   (not just a power-cycle) at the correct 600 baud: **zero bytes**.
+
+**Interpretation**: result set {1,2,3} getting the *identical* byte
+pattern at two baud rates 16x apart (`600` vs `9600`) is itself
+strong evidence that the 2×`0x00` signal is **not real serial data**
+at all - genuine text garbled by a wrong baud-rate guess produces
+*different* garbage at different rates, not the same 2 bytes. Far
+more likely explanation: a hardware transient on the RS-232 line
+(e.g. the line driver chip's own supply rail settling during power-on/
+off) that many USB-serial adapters report as a spurious byte
+regardless of the configured baud rate, unrelated to firmware
+behavior entirely.
+
+**Result 4 is the important one**: with the actual self-test code
+path exercised (not just power-on) at the *confirmed-correct* baud
+rate, **nothing at all** came through. If `write_readout_port_byte`'s
+writes were genuinely reaching a UART transmit-data register, running
+the real self-test should have produced *something*, even imperfectly
+framed. Getting a clean zero here is real evidence against the "self-
+test banner goes out the RS-232 UART" theory - stronger than the desk
+research alone could produce either way (that research could only
+narrow down *candidate* explanations, not test the actual running
+firmware).
+
+**Not fully conclusive** - a few things could still explain the null
+result without fully clearing the UART theory: the specific self-test
+invoked by the user might not be the exact one `print_selftest_
+banner`'s callers are reached from; the comm option's presence-
+detection (`[0x1B83]`) might not be recognizing the board as installed
+for whatever specific reason gates this path; or there could be a
+flow-control/handshake line (RTS/CTS, DSR/DTR) the adapter isn't
+asserting that the real UART needs before it will transmit. Still,
+taken at face value this is the **first negative evidence against**
+the UART re-interpretation from actual hardware, tempering the
+"substantially resolved" language used earlier today - back to
+genuinely unresolved, now with real experimental data on both sides
+rather than just documentation-derived inference.
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the
