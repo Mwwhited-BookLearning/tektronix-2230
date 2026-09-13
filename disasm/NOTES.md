@@ -642,6 +642,79 @@ required because the option requires a matching main-ROM firmware
 version - not a second, undiscovered comm-board ROM. No teardown
 needed to answer that particular question.)
 
+## Correction: `COMM_LOOPBACK`'s `UNTESTED` result fully traced - NOT a `[0x1B83]` comm-detection failure after all
+
+Picked back up via pure code tracing (no hardware needed) per the
+user's "keep reviewing code without me" request. Read the actual
+bodies of `selftest_comm_loopback_a`/`_b` (`0xE1D28`/`0xE1DB3`) and
+what they call - `selftest_comm_readback` (`0xE20B0`) and `selftest_
+comm_fget_flag` (`0xE1FBC`) - which hadn't been fully traced
+instruction-by-instruction before today. This **overturns** the
+"comm-hardware-detection failure via `[0x1B83]`" theory from the
+session above - the real mechanism is fully understood now and doesn't
+implicate `[0x1B83]` at all:
+
+1. **Both `_a` and `_b` start by calling `check_comm_installed_gate`
+   (`0xE4571`)**, which checks `[0x1BF9]&1` (set by `check_comm_option_
+   installed`'s ROM-header-checksum probe at physical `0x80004` -
+   entirely internal to the comm ROM chip itself, no external RS-232
+   wiring involved). If this bit is clear, both return `0x20`
+   ("Not installed") immediately. **Since the user's screens showed
+   `UNTESTED`, not `Not installed`, this proves the comm ROM header
+   probe succeeds on both units** - the comm board genuinely is
+   detected as present at this level. `[0x1B83]` isn't even read by
+   this gate.
+2. **`selftest_comm_loopback_a` calls `selftest_comm_readback`**,
+   which resets `[0x1BFA]=0`, then reads a status byte from physical
+   `0x4067C` (masked/shifted from 2 different sub-fields) into a local,
+   and compares it against 5 possible values: `0x40`/`0x60`/`0xC0`/
+   `0xD0`/`0xE0`. **All 5 count as PASSED** for `_a` itself - but only
+   the `0xD0` case *also* sets `[0x1BFA]=1` before returning; any other
+   passing value leaves `[0x1BFA]=0`. Any value outside that set of 5
+   is a genuine FAIL (prints an error report line, clears `[0x1BF9]`).
+3. **`selftest_comm_loopback_b` calls `selftest_comm_fget_flag`**,
+   which checks `[0x1BFA]` first: if nonzero (i.e. `_a`'s readback was
+   exactly `0xD0`), it runs its own real hardware check (writes/reads
+   physical `0x406F0`-`0x406F3`/`0x4067C`/`0x406BC`, already documented
+   above). **If `[0x1BFA]` is zero** (the readback landed on `0x40`/
+   `0x60`/`0xC0`/`0xE0` instead of `0xD0`), it instead checks
+   `[0x1B7A]`: if that's also zero, returns `1` (PASSED, no real check
+   run at all); **if `[0x1B7A]` is nonzero, returns `0x80`** - a value
+   `format_selftest_result_string` doesn't recognize as pass/fail/not-
+   installed, so it prints the generic **`UNTESTED`**.
+4. `[0x1B7A]` (see `VARIABLES.md`) is read at dozens of self-test-
+   adjacent sites but only written at 2 (heuristic-only) sites - set to
+   `1` on what looks like entry into the full automated self-test
+   sequence, cleared to `0` near a `reset_display_and_notify_comm`
+   call. The user's live tests were run via `DIAGNOSTICS/TESTS/SYSTEM`
+   (the full sequence, per the menu path visible in their screenshots)
+   - exactly the context where `[0x1B7A]` would be `1`.
+
+**Conclusion**: `COMM_LOOPBACK` showing `UNTESTED` is fully explained
+by the comm-board's readback register (physical `0x4067C`) returning
+one of 4 "pass but not `0xD0`" values while the test runs inside the
+full sequence - **not** a firmware failure to detect the comm option
+(that detection, `[0x1BF9]`'s header check, already succeeded earlier
+in the same run). This is a real, mechanistic answer, not a guess -
+every branch above was read directly from the disassembly. It also
+means the `P9107` jumper lead above is **less likely** to be the
+answer for *this specific* symptom (`COMM_LOOPBACK`/`UNTESTED`) than
+first thought, though it could still matter for the separate `ID?`-
+gets-nothing puzzle, since that's a different code path (the comm
+ROM's own RS-232 command parser, not yet traced this session - the
+comm ROM's disassembly coverage is much thinner than the main ROM's).
+
+**Worth live-testing if picked up again**: run `COMM_LOOPBACK` from
+`DIAGNOSTICS/EXERCISERS` standalone (not the full `TESTS/SYSTEM`
+battery) - if `[0x1B7A]` really is only set during the full sequence,
+running it standalone should show a real `PASSED`/`FAILED` instead of
+`UNTESTED`, which would confirm this whole trace end-to-end against
+real hardware. Also unexplored: what physical condition makes the
+`0x4067C` readback land on exactly `0xD0` vs. the other 4 passing
+values - possibly a GPIB-vs-RS-232 board variant distinction (`0xD0`
+might specifically mean "RS-232 board with the FGET-capable
+variant"), not yet traced back to a specific bit/signal name.
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the

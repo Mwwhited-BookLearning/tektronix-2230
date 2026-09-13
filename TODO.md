@@ -160,27 +160,30 @@
       actual source of [0x1B83]". The write-probe address is confirmed
       as the general-purpose "Time Base Mode Register U4119" (not a
       comm-specific latch), consistent with the two-branch ambiguity,
-      but doesn't pin down the exact bit semantics. **Raised in
-      priority 2026-09-13**: an extended live-hardware session on two
-      real units found `COMM_LOOPBACK` reports `UNTESTED` (not PASS/
-      FAIL/"Not installed") regardless of external wiring (bare cable,
-      a full validated loopback plug, with/without pin 8), and `ID?`
-      gets zero bytes back over an electrically-proven-good cable on
-      both scopes/both connectors - comm-detection failure via
-      `[0x1B83]` not recognizing genuinely-present hardware is now the
-      leading unifying explanation for both. See `disasm/NOTES.md`
-      "Follow-up live hardware session" for the full writeup and next
-      step (trace what else gates on `[0x1B83]`, specifically `COMM_
-      LOOPBACK`'s leaf and the command-parser entry point).
-      **Concrete physical check found 2026-09-13**: the F10/F12 option
-      installation instructions (`hardware/070-6090-00.pdf`) require
-      moving **jumper `P9107` on the Storage circuit board** as part of
-      installing either comm option - if it's not in the position the
-      firmware expects on one or both physical test units, that alone
-      could explain the comm-detection failure with no code bug at
-      all. Check `P9107`'s position before digging further into the
-      disassembly side - see `disasm/NOTES.md`'s "Strong new lead"
-      paragraph.
+      but doesn't pin down the exact bit semantics. An extended
+      live-hardware session on two real units (2026-09-13) initially
+      found `COMM_LOOPBACK` reporting `UNTESTED` and `ID?` getting zero
+      bytes back, and first suspected a `[0x1B83]` comm-detection
+      failure as a unifying cause - **but `COMM_LOOPBACK`'s `UNTESTED`
+      result has since been fully traced instruction-by-instruction and
+      does NOT involve `[0x1B83]` at all** (see `disasm/NOTES.md`'s
+      "Correction: `COMM_LOOPBACK`'s `UNTESTED` result fully traced" -
+      it's `selftest_comm_readback`'s register readback landing on a
+      "pass but not `0xD0`" value combined with `[0x1B7A]` being set
+      during the full self-test sequence). The `[0x1B83]` question
+      itself thus remains exactly as open as before - the live session
+      just didn't end up being new evidence for it after all. The
+      separate `ID?`-gets-nothing puzzle is still unexplained and
+      *could* still involve `[0x1B83]`/comm-detection, or the `P9107`
+      jumper (`hardware/070-6090-00.pdf`'s F10/F12 install instructions
+      - moving it is required when installing either comm option), or
+      something else entirely in the comm ROM's own RS-232 command
+      parser (not yet traced - the comm ROM's disassembly coverage is
+      much thinner than the main ROM's). Next step if picked up again:
+      trace the comm ROM's actual command-parser entry point (where
+      incoming bytes get matched against the `STRINGS.md` keyword
+      table) rather than assuming it's gated by `[0x1B83]` without
+      checking.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
