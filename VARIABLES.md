@@ -87,6 +87,14 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   involved or one of the "not yet independently bit-validated" bits in
   `[0x759]` corresponds to these. Needs a slower, one-control-at-a-time
   re-test to isolate cleanly.
+- **`STORE` combined with `B` (horizontal `B ONLY`/delayed-sweep
+  store)** cleanly toggles bit3 of `dig=` **octet 1** (the same octet
+  `VERT MODE`/`XY` affect, not octet 3/4 where plain `STORE` and
+  `1K/4K` land): `0x27`↔`0x2F` (`XOR=0x08`, a single bit). Octet 1's
+  byte identity is still unresolved - neither `SWB1` nor `SWB2` (both
+  now well-confirmed on octets 3/4) obviously accounts for this, so
+  octet 1 is likely a third digital status byte (`ISTAT`? or an
+  acquisition-mode word) not yet cross-referenced.
 - **Pushing the `CURSOR` button** cleanly toggles bit7 of `dig=` octet
   3 between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit).
 - **`WAVEFORM SELECT`** cleanly toggles bit2 of the same octet 3,
