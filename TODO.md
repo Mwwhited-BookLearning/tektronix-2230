@@ -54,6 +54,20 @@
       `EXERCISERS`'s `CONFIGURATION`/`IO` - `TB_DIVIDER`/`CLK_DELAY`'s
       registers and the A/D converter identity are now confirmed (see
       `MEMORY_MAP.md`/`CONTEXT.md`).
+- [ ] **New 2026-09-13**: `160-2998-13.bin` vs `-14.bin` (the comm ROM)
+      genuinely differ in two ~16KB-aligned regions (unlike the main
+      ROMs, which are byte-identical between revisions except a 4-byte
+      header) - not yet diffed/analyzed in x86 terms at all. This
+      project's comm-ROM disassembly has only ever covered `-14`. Now
+      concretely relevant: the two physical test units used for live
+      hardware sessions run different revisions (Scope 1 = `-13`,
+      Scope 2 = `-14` - confirmed via the `/DIAGNOSTICS/EXERCISERS/
+      CONFIGURATION` screen, see `HARDWARE.md`), so Scope 1's actual
+      running comm-ROM code has never been disassembled. Diffing the
+      two binaries (byte-for-byte, flag the changed regions) and
+      disassembling `-13`'s changed regions would let today's comm-
+      detection findings be checked against both revisions instead of
+      just the one this project has analyzed.
 - [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
       `print_string_far` (all used exclusively for the self-test text
       banner) write to physical `0x406F0`-`0x406F3`, inside the comm-

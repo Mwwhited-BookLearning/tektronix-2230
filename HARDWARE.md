@@ -22,6 +22,49 @@ Space Allocation") and Section 6 (Maintenance, Tables 6-16 through
 `pip install pymupdf` works and can render pages/extract images if a
 markdown+figure transcription is ever built - see `TODO.md`).
 
+## Two physical units, running DIFFERENT ROM revisions - confirmed via `/DIAGNOSTICS/EXERCISERS/CONFIGURATION`
+
+Photographed 2026-09-13, a menu screen not previously documented in
+the menu tree below (add it there too - lives under `EXERCISERS`,
+alongside `IO` and `A_TO_D_TESTS`). It prints each installed ROM's own
+name/designator/part-revision directly off its self-ID header:
+
+- **Scope 1** (referred to as "the first oscilloscope" in this
+  session's live testing): `sys_rom_0`=`160-3633-13`, `sys_rom_1`=
+  `160-3532-13`, `comm_rom_0`=`160-2998-13`. **Runs the `-13` revision
+  of all three ROMs.**
+- **Scope 2** ("the second oscilloscope"): `sys_rom_0`=`160-3633-14`,
+  `sys_rom_1`=`160-3532-14`, `comm_rom_0`=`160-2998-14`. **Runs `-14`.**
+
+**Why this matters**: this project's disassembly/annotation work
+(`FUNCTIONS.md`, `VARIABLES.md`, all the named comm-ROM routines like
+`detect_comm_option_hw`, `read_dip_switches_serial_config`, `selftest_
+comm_loopback_a/b`) has been done exclusively against the **`-14`**
+binaries (`disasm/gen_disasm_x86.py`'s chip config points at `-14`
+explicitly). Per `disasm/NOTES.md`'s "Confirmed facts": the two main
+ROMs (`3532`/`3633`) are **byte-identical between `-13`/`-14` except a
+4-byte ID header** - so every main-ROM-based finding (front panel,
+`SWB1`/`SWB2`, `AD DATA`, self-tests, menu system) applies equally to
+both scopes regardless of revision, no caveat needed there. But the
+**comm ROM (`2998`) genuinely differs between `-13`/`-14` in two
+~16KB-aligned regions** - a real functional difference, not just a
+header, and **not yet analyzed in x86 terms** (see `disasm/NOTES.md`'s
+opening section).
+
+This means **Scope 1's actual running comm-ROM code (`-13`) has never
+been disassembled by this project** - every comm-ROM address/function
+name used in today's live RS-232 troubleshooting (see `disasm/
+NOTES.md`'s "Follow-up live hardware session") was derived from `-14`,
+which only Scope 2 actually runs. The comm-detection-failure theory
+from that session is directly evidenced on Scope 2 (`-14`, the
+analyzed revision) getting the same `UNTESTED`/silent results as
+Scope 1 - consistent with the theory holding on the revision we can
+actually verify - but Scope 1's specific failure could in principle
+have a different root cause hiding in the unanalyzed `-13` diff
+regions. Diffing `160-2998-13.bin` against `-14.bin` to see exactly
+what changed is a good next step if the comm-detection puzzle is
+picked up again - see `TODO.md`.
+
 ## Comm option module rear panel (`hardware/photos/comm_option_rear_panel.jpg`)
 
 This is the rear-panel plate for the GPIB/RS-232/plotter option board

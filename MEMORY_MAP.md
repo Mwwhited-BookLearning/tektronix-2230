@@ -124,6 +124,66 @@ doesn't cleanly match either):
   earlier "VOLTS/DIV or similar analog/potentiometer control" guess
   for those two self-tests.
 
+## New exerciser screen found: `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` - names several registers directly by schematic designator
+
+Photographed 2026-09-13 on **both** physical units (a menu path not
+previously documented in `HARDWARE.md`'s menu tree - add it there too).
+The screen prints a live register name + its own schematic designator
++ current value, for 7 registers at once - a much more direct source
+than inferring designators from addresses:
+
+| Name (as displayed) | Designator | Scope 1 value | Scope 2 value |
+|---|---|---|---|
+| `Acq_Addr_Buf` | `U3427/8` | `0000` | `0004` |
+| `Clk_Delay_Reg` | `U4230` | `67` | `63` |
+| `b_delay_timer` | `U4123/4` | `00F1` | `00F1` |
+| `fp_intstat` | `U6103` | `10011011` | `10011011` |
+| `fp_ad_data` | `U6102` | `01100010` (partly obscured) | `01100010` (partly obscured) |
+| `comm_stat` | `U1x23`* | `01111101` | `01111101` |
+| `comm_param` | `U1x22`* | `11111000` | `11111001` |
+
+*Designator digits uncertain from the photo - the stroke-font glyph
+for `2` can look like `x` at this size/resolution (this project has
+independently confirmed the readout is a stroke-vector font, not
+bitmap text - see `TODO.md`'s stroke-font item), so these are most
+likely `U1222`/`U1223` rather than literal "U1x22"/"U1x23". Worth a
+sharper photo to confirm exactly.
+
+**Immediately useful cross-references**:
+- **`fp_ad_data` = `U6102`** confirms, by name rather than just
+  address, the "Two separate A/D converters" entry below - `U6102` was
+  already identified from the service manual as the front-panel ADC's
+  own results-buffer chip at `0x437FA`. This is the same register
+  `FP_VALUES`'s `AD DATA` column reads from (see `VARIABLES.md`'s
+  front-panel A/D section for the `POSITION`/`VOLTS-DIV` byte-level
+  findings, all sourced from this same physical latch).
+- **`fp_intstat` = `U6103`** is a brand new name - not previously
+  distinguished from `U6102`/`U6104` in this project's notes. Sits in
+  the same front-panel-ADC chip cluster (`U6101`/`U6102`/`U6104`/
+  `U6106`/`U6108` are all named a few lines below) - likely an
+  interrupt/conversion-ready status latch, physical address not yet
+  derived (plausibly adjacent to `U6104`'s `0x437F6`/`U6102`'s
+  `0x437FA`, but not confirmed).
+- **`comm_stat`/`comm_param`** are new, directly-named **comm-board**
+  registers - highly relevant to today's live RS-232 troubleshooting
+  session (see `disasm/NOTES.md`'s "Follow-up live hardware session").
+  `comm_param` is the stronger candidate for the raw PARAMETERS
+  DIP-switch mirror the comm ROM's `read_dip_switches_serial_config`/
+  `_gpib_config` read via far pointers `[0x6DE]`/`[0x6DA]` (see
+  `HARDWARE.md`) - both scopes had identical switch readings
+  (`1110000000`) at the time, yet `comm_param`'s **last bit differs**
+  between them (`...000` vs `...001`) - if this register really is a
+  direct switch mirror, that's unexplained and worth re-checking
+  whether the switches were *really* byte-identical; if it's not a
+  pure switch mirror, the differing bit might instead reflect a live
+  runtime status condition (carrier detect? loopback-plug presence?)
+  packed into the same byte. `comm_stat` (identical on both scopes,
+  `01111101`) is a good candidate for whatever hardware status the
+  comm ROM's `selftest_comm_readback`/`selftest_comm_fget_flag`
+  routines are actually reading - worth reconciling against those
+  functions' known register addresses (`0x4067C`/`0x406BC`/`0x406F3`)
+  next time the comm ROM is revisited.
+
 ## Resolved this session (2026-09-13, from the service manual)
 
 The `0x80000-0x97FFF` comm-ROM alias mystery, the `0xAA55`-pattern
