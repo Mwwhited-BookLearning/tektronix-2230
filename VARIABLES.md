@@ -121,6 +121,12 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   cross-reference). Exact bytes/bits not yet reported; recorded for a
   future targeted test isolating `ASW`/`BSW` bit-by-bit against `STORE`
   and other acquisition controls.
+  **Consistent finding**: the `SEC/DIV` knob changes `ASW` in its
+  normal (not-pulled) position and `BSW` when pulled out - matching
+  this scope's known pull-knob convention (pulled `SEC/DIV` engages
+  delayed-sweep/`B` timebase control) and confirming `ASW`/`BSW` really
+  are the `A`-timebase/`B`-timebase sweep-control status words, not an
+  unrelated pair.
 - Input coupling switch (`AC`/`GND`/`DC`) changed a third byte's value
   (reported as `0x12`-ish/`0x2AA`-ish/`0x3xE`-ish across the three
   positions - transcription uncertain, values not confidently hex-clean
