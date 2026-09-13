@@ -196,6 +196,37 @@ ACQ_MODE_SETUP_TABLE
         └── EXERCISERS - CONFIGURATION / IO / A_TO_D_TESTS
 ```
 
+### Menu navigation control scheme (from the operator's manual, 2026-09-13)
+
+The operator's manual (`hardware/manuals/2230_operators/`, Section 3
+"MENU SELECTED FUNCTIONS") spells out exactly which physical controls
+drive `update_menu_position` (`0xE06B6`), the firmware's already-
+identified menu-cursor tracker:
+
+- **`WAVEFORM REFERENCE/MENU SELECT` switch**, held in the `MENU
+  SELECT` position (button out) - while held this way, the 3 `MEMORY`
+  switches (normally "display/save this reference waveform") stop
+  doing that and control menu navigation instead. This is almost
+  certainly the mode gate the firmware checks before treating those 3
+  buttons' state as menu input.
+- **`SAVE REF/►` switch** - enters the *next* (rightward/deeper) menu
+  level.
+- **The 3 `Menu Select/DISPLAY ON/OFF` switches** (i.e. the `MEMORY`
+  switches, repurposed):
+  - `◄` (leftward) - returns to the *previous* (higher) menu level.
+  - `↑` - selects the previous entry in the current menu level.
+  - `↓` - selects the next entry in the current menu level.
+
+**Cross-reference to the service manual's front-panel bit names**
+(`hardware/manuals/2230_service/`, Tables 6-16/6-17, `SWB2`/`U9301`):
+`SWB2`'s bit names include `MENU ADV`, `MEM 1`, `MEM 2`, `MEM 3` -
+`MENU ADV` is almost certainly the `SAVE REF/►` "enter next level"
+button, and `MEM 1`/`MEM 2`/`MEM 3` are the 3 repurposed `Menu Select`
+buttons (`◄`/`↑`/`↓`) described above. Not yet individually confirmed
+against `[0x4E7]`/`[0x4E8]`'s specific bit positions in the
+disassembly - see `TODO.md`'s front-panel-switch item for the next
+step (trace `update_menu_position`'s bit tests against this mapping).
+
 ### Direct confirmations of existing firmware findings
 
 - **`SYS_ROM_0`/`SYS_ROM_1`** in the `MEMORY` test menu match the ROM
