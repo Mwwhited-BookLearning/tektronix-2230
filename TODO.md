@@ -184,15 +184,28 @@
       core (`process_gpib_command_byte` at `0x8526B`, plus a companion
       `0x97905` in the comm-ROM alias range) built around a 4-byte-
       per-entry table at far pointer `[0x712]` - confirms RS-232
-      command handling is real, active code, not a stub. **Still not
-      found**: (1) `[0x712]`'s actual contents/initialization - not a
-      literal write anywhere in the direct listing, not one of `init_
-      far_pointer_table`'s 31 destinations either; (2) the genuine
+      command handling is real, active code, not a stub. **`[0x712]`'s
+      contents found and dumped** (the earlier "not found" was a wrong
+      DS-segment assumption - it's under `DS=0x8F80`, not `0x41`; see
+      `disasm/NOTES.md`'s "Follow-up: found [0x712]'s actual contents"):
+      a 67-entry ASCII-indexed byte-classification table, grouping
+      characters into 7 handler IDs. Best-fit reading: this is
+      low-level lexical classification (digit vs. control vs. ordinary
+      character), not keyword dispatch - individual letters `C`
+      onward all collapse to one handler, so actual keyword matching
+      (`ID`/`SET`/`CURVE`/etc. from `STRINGS.md`) must happen in a
+      **different, still-unfound function**. **Still not found**: (1)
+      that downstream keyword-matching function; (2) the genuine
       UART-receive entry point that first puts an incoming byte into
       `[6]`/`[0x580]` (still nobody's found this - not an interrupt
-      handler, not a polling loop, despite two separate look-arounds
-      this session). Either one, found, would be the most direct route
-      left to explaining the `ID?` silence.
+      handler, not a polling loop, despite several look-arounds this
+      session). Either one, found, would be the most direct route left
+      to explaining the `ID?` silence. **Note**: both of the user's
+      physical units are confirmed Option 12 (RS-232) only, no Option
+      10 (GPIB) hardware available to cross-test against - so any
+      further tracing should stay focused on the `[0x629]`-clear
+      (RS-232) branches specifically, not the GPIB-specific code paths
+      this same shared ROM also contains.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

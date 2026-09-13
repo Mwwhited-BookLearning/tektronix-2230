@@ -789,6 +789,63 @@ troubleshooting at this point - the electrical layer has already been
 thoroughly proven sound (see the "Follow-up live hardware session"
 section above).
 
+### Follow-up: found `[0x712]`'s actual contents
+
+Re-derived the DS segment `process_gpib_command_byte`/`0x97905` run
+under: `FUNC_2998_39F5` (the function containing the `L_83A04` main
+comm-task loop that calls `process_gpib_command_byte`) swaps `DS` to
+segment `0x8F80` at its own entry (`mov di,0x8f80; push di; lcall
+set_ds_return_old`) and never restores it before entering that loop -
+so `[0x712]` there is physical `0x8F800+0x712 = 0x8FF12`. That address
+**is** one of the comm ROM's own `init_far_pointer_table`'s 31
+destinations after all (I'd checked the wrong segment assumption
+initially, `0x41` instead of `0x8F80`) - entry `dest_off=0x42` points
+there, with stored far pointer `0x900F:0x0004`, i.e. physical
+`0x900F4` (in the `0x90000` comm-ROM alias - file offset `0x80F4` in
+`160-2998-14.bin`).
+
+**Dumped all 67 entries (index `0x00`-`0x42`, matching the clamp
+range) directly from the binary.** Each entry's first byte groups
+cleanly into contiguous ASCII ranges:
+
+| Handler ID | ASCII range covered |
+|---|---|
+| `0` | `NUL` (0x00) only |
+| `1` | `SOH` (0x01) only |
+| `2` | 0x02-0x1F (remaining control codes) plus `<space>`-`%` (0x20-0x25) |
+| `3` | `&` `'` `(` (0x26-0x28) - **also the clamp target for every character above `0x42`**, i.e. all of `C`-`Z` and beyond effectively fall into this handler too |
+| `4` | `)` `*` `+` `,` `-` `.` `/` `0` `1` `2` (0x29-0x32) |
+| `5` | `3` `4` `5` `6` `7` `8` `9` `:` `;` `<` `=` (0x33-0x3D) |
+| `8` | `>` `?` `@` `A` `B` (0x3E-0x42) |
+
+**Confirmed**: this table exists, is indexed by raw ASCII code (not by
+keyword), and groups characters into a small number (7 distinct
+handler IDs seen: `0,1,2,3,4,5,8` - `6`/`7` don't appear in this
+range) of behavior classes via each entry's first byte. The remaining
+3 bytes per entry increment steadily *within* each handler group
+(looks like a per-character slot/sequence value passed to whichever
+handler routine `0-8` corresponds to - handler dispatch itself, e.g. a
+jump table on this byte, not yet located).
+
+**Inferred, not confirmed**: handlers `4` and `5` together cover
+*exactly* the 10 digits (`0`-`9`) plus immediately-adjacent punctuation
+(`+ - . / : ; < =`) - a very clean fit for "numeric parameter
+lexing" (the command language needs to parse things like channel
+numbers, `STOP 1`/`STOP 2`, decimal values, etc.). Handler `2`'s broad
+bucket (whitespace/control codes plus early punctuation) reads as a
+plausible "ordinary/no special meaning" default class. Handler `3`
+being both a specific 3-character range *and* the fallback for
+everything past `B` suggests it's the generic "treat as an ordinary
+text character" case - which would mean **individual letters aren't
+distinguished by this particular table at all** (every letter `C`
+onward collapses to the same handler as `&`). If true, that means
+actual keyword recognition (matching an accumulated run of letters
+against `ID`/`SET`/`CURVE`/etc. from `STRINGS.md`'s length-prefixed
+keyword table) must happen in a **different** function entirely - this
+table is doing low-level lexical classification, not keyword
+dispatch. That downstream keyword-matching function is the next
+concrete thing to look for, not yet found.
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the

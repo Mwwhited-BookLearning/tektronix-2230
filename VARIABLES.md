@@ -143,7 +143,7 @@ table" and "Systematic landing-artifact sweep".
 
 | Address | Role | Confidence |
 |---|---|---|
-| `[0x712]`, `[0x714]` | X-axis scale inputs - `[0x712]&0x3FF` used as the `imul` multiplicand against `[0x716]`, result `idiv`'d by `[0x71A]`, feeding `[0x6BC]` (plot X position) | Usage confirmed; physical meaning (a sample index? a time value?) not confirmed |
+| `[0x712]`, `[0x714]` | X-axis scale inputs - `[0x712]&0x3FF` used as the `imul` multiplicand against `[0x716]`, result `idiv`'d by `[0x71A]`, feeding `[0x6BC]` (plot X position). **Note**: the comm ROM's `process_gpib_command_byte`/`0x97905` *also* reference a `[0x712]` far pointer, but under `DS=0x8F80` - a completely different physical address (`0x8FF12`) than this main-ROM variable (which uses the main ROM's own `DS`) - purely a coincidental low-offset reuse across separate ROMs/data segments, not the same memory. See `disasm/NOTES.md`'s "Follow-up: found [0x712]'s actual contents" for the comm ROM's version, an ASCII-indexed byte-classification table | Usage confirmed; physical meaning (a sample index? a time value?) not confirmed |
 | `[0x716]`, `[0x71A]` | Paired with `[0x712]`/`[0x714]` in the same `imul`/`idiv` scale computation - `[0x71A]` set from a byte read via far ptr `[0x1DB4]` in `SUB_F09C6` | Usage confirmed; not confirmed |
 | `[0x718]`, `[0x71C]` | Y-axis counterparts of `[0x712]`/`[0x716]` - `[0x718]` compared against `[0x71C]` to pick which of 2 `imul`/`idiv` branches computes `[0x6BE]` (plot Y position) | Usage confirmed; not confirmed |
 | `[0x71E]` | Read and `shl`'d by 1 in `SUB_F09C6`, indexes far ptr `[0x1DB4]` to set `[0x716]` | Usage confirmed; not confirmed |
