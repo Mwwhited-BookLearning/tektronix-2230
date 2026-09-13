@@ -1576,9 +1576,27 @@ confirmed hardware interrupt chain, not the polling loop (`FUNC_2998_
 tick-driven poller (not a byte-at-a-time interrupt handler) is
 plausibly *how* incoming RS-232 activity actually gets serviced in
 this firmware - polled from a guaranteed-frequent hardware tick,
-rather than a dedicated per-byte ISR. Worth tracing `0x839D1` and
-`0x8006:0x9C` next - either could lead directly to wherever `ID?`
-would actually get parsed, if it's reached at all.
+rather than a dedicated per-byte ISR.
+
+**Follow-up, same session**: traced both call targets immediately -
+**neither is new code**, both are already-documented housekeeping:
+`0x839D1` is `FUNC_2998_39D1`, which just re-invokes `draw_boot_splash_
+and_option_icon` (redrawing the installed-option status icon whenever
+the DIP-switch byte's bit `0x80` changes - not boot-only after all,
+apparently also live-refreshed); `0x8006:0x9C` is exactly `0x800FC` =
+`update_comm_tx_ready_flag`. The GPIB-branch's own `0x8006:0` call is
+`0x80060` = `set_comm_flow_hold`. **None of these three leads to a
+byte-reception/keyword-matching function** - `poll_comm_status_tick`
+really does look like a status-*sync* poller (redraw an icon, keep the
+TX-ready/flow-control flags in step with the comm channel's own status
+byte), not the place incoming bytes actually get read and parsed. The
+real byte-reception path is **still not found** - it's back to either
+`process_gpib_command_byte`'s chain (via the still-unconfirmed-
+reachable `FUNC_2998_39F5`), or a genuinely different, not-yet-found
+hook. This tick-driven interrupt chain was still worth fully tracing
+(it resolved the hardware-interrupt-exists question definitively and
+produced real, useful documentation), it just isn't the specific
+answer to "where does `ID?` get parsed."
 
 ## A small task scheduler, driven by INT2_HANDLER_LATE
 

@@ -254,9 +254,17 @@
       for "how does incoming RS-232 activity actually get serviced"**
       - a tick-driven poller reached via a confirmed hardware
       interrupt, not the never-confirmed-reachable `FUNC_2998_39F5`
-      loop this session spent time on earlier. Next step: trace
-      `0x839D1` and `0x8006:0x9C`'s bodies - either could lead to the
-      still-missing keyword-matching function from item (3).
+      loop this session spent time on earlier. **Traced `0x839D1`/
+      `0x8006:0x9C` immediately after - both are already-documented
+      housekeeping** (icon redraw, TX-ready flag update), not the
+      keyword-matching function. So `poll_comm_status_tick` is a real,
+      confirmed-reachable status-*sync* routine, but not where bytes
+      actually get received/parsed - that path is still unfound.
+      Genuinely next steps now: (a) find what, if anything, actually
+      calls `process_gpib_command_byte`'s chain (is `FUNC_2998_39F5`
+      reachable some other way, or is there a second, different entry
+      point into that dispatcher this project hasn't found yet); (b)
+      the still-missing keyword-matching function from item (3) above.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
