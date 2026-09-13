@@ -107,6 +107,14 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   isolated re-test (one control at rest, only toggle `VAR/CAL`, read
   the hex back digit-by-digit) before trusting a bit-level conclusion
   here.
+- **`B DELAY`** (delayed-sweep time control) changes the 3rd byte of a
+  *separate* field the user calls "cursor" (distinct from the `dig=`
+  field above and from the per-channel `AD DATA` pairs) - consistent
+  with `B DELAY` being an analog/multi-turn control read through its
+  own ADC channel rather than a digital switch. Exact `E`-designator/
+  register not yet identified; recorded for future correlation once
+  the full `FP_VALUES` display layout (which field is which manual
+  column) is mapped out completely.
 
 ## Acquisition/plot scaling
 
