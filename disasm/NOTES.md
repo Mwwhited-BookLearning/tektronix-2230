@@ -924,6 +924,41 @@ looks correct on inspection. What's still open:
    found) - even a perfectly interrupt-driven UART needs something to
    actually recognize `ID?` once a byte does arrive.
 
+**Follow-up check, and an important caveat**: went looking for whether
+this system's CPU-level interrupt plumbing could even support a real
+hardware `INTR`-pin interrupt for the UART (the manual says the
+combined `DR+INTR`/`TBRE` signal drives "the microprocessor's maskable
+interrupt", i.e. 8086 `INTR`, gated by the `IF` flag - a different
+mechanism than `INT2`/NMI, which this project already knows drives the
+scheduler tick and **cannot** be masked by `IF` at all). This project's
+own interrupt-vector-table trace (see "Interrupt vector table entries"
+above) only ever found vectors installed for **INT1 (trap), INT2
+(NMI), and INT255 (software)** - no vector for a hardware `INTR`-style
+interrupt has ever turned up, despite that search being run to
+exhaustion previously. `sti` (re-enable maskable interrupts) does
+appear a few times in the **main ROM** but **never once in the comm
+ROM** itself. Taken together, this raises a real possibility that this
+firmware's comm-option handling is **pure cooperative polling**, not
+actually hardware-interrupt-driven at the CPU level - the Interrupt Mask
+Latch's "ready" bits might just be a software-convention flag pair
+(gating the polling loop's own logic) rather than something that ever
+triggers a real 8086 `INTR` service routine in practice.
+
+**However, this can't be confirmed either, because the polling loop
+itself (`FUNC_2998_39F5`, containing the `L_83A04` loop that eventually
+reaches `process_gpib_command_byte`) has no confirmed caller** - not a
+literal `lcall` target anywhere in the reachable disassembly, and not
+even a raw pointer to its offset (`0x39F5`) found anywhere in the whole
+`160-2998-14.bin` binary (checked directly, byte-for-byte). This is an
+important caveat on everything traced through this function this
+session: **its reachability in real, running firmware is not
+established** - it could be dead/heuristic-only code, or reached via a
+near/relative call this project's tooling doesn't track the same way,
+or reached via a genuinely different mechanism (a function-pointer
+table entry, perhaps `create_task`-style) not yet found. Worth checking
+directly next time - either find what actually starts this loop, or
+find the *real* comm-task entry point if this isn't it.
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the
