@@ -889,6 +889,41 @@ programmatically for a plausible letterform) rather than just
 checking byte-run length. No SVGs or catalog were produced this pass -
 don't claim otherwise if this note is read out of context.
 
+**Follow-up, 2026-09-13: built the actual decode-and-render tool, per
+direct request.** `disasm/decode_stroke_font.py` implements the
+confirmed bit-packing formula exactly (`coarse=(B&0x70)>>4`→Y,
+`fine=B&0xF`→X, `pen_down=bool(B&0x80)`) and renders any byte range as
+an SVG catalog of glyph cells - a real, reusable tool, not a one-off
+script. Two things came out of using it:
+
+1. **Re-confirmed the `0xEA5E6`-`0xEB131` negative result** with a
+   proper tool instead of a throwaway PNG script - `disasm/stroke_font_
+   candidates/0xEA5E6-0xEB131.svg` shows the same generic repetitive
+   "hook"/checkmark shapes as before, no letterforms. This candidate
+   stays ruled out.
+2. **Realized the search approach up to this point was structurally
+   wrong and tried a better one.** `[0x1DB0]` doesn't point directly
+   at glyph *data* - it points at a 128-entry array of far pointers,
+   each of which points to that character's own, possibly *non-
+   contiguous*, stroke bytes elsewhere in ROM (re-confirmed precisely
+   by re-reading `draw_readout_char`'s two `les`/index steps). This
+   means the earlier "scan for a long contiguous run of small 0x00-
+   terminated fragments" approach (this note and the `0xEA5E6` search)
+   was looking for the wrong shape entirely - added `scan_pointer_
+   table()` to search instead for the *pointer array itself*: a
+   512-byte run where sampled character entries (space/digit/upper/
+   lower) all resolve to physically plausible ROM addresses that
+   themselves look like short, real stroke-byte runs (bytes whose
+   upper coarse nibble stays in the valid 0-7 range). **Result: zero
+   candidates found in either main-ROM chip even with relaxed
+   thresholds** - genuinely inconclusive, not a confirmed rule-out.
+   Either the scoring heuristic is still off (a real stroke run may
+   legitimately use nibble values this filter rejects), the table
+   lives in the comm ROM instead (not yet tried), or it lives in a
+   region genuinely unreached by this project's `buf` reconstruction
+   in some way not yet identified. Worth revisiting with looser/
+   different heuristics rather than treating this as a final answer.
+
 ## The 0x90000+ region: fully resolved (see above)
 
 This used to be a substantial open question ("`~0x80000-0x97000`,

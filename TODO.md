@@ -10,16 +10,25 @@
       hasn't been found - nothing writes it in proven or heuristic
       code. `[0x1DB8]`/`[0x1DBC]` (nearby) are ruled out as simple
       plot-scale byte caches, not font data - see `VARIABLES.md`
-      "Acquisition/plot scaling". **The `0xEA5E6`-`0xEB131` candidate
-      region is now also ruled out**: decoded `draw_readout_char`'s
-      exact bit-packing formula and rendered that region as a grid of
-      glyphs (splitting on `0x00` terminators) - got 405 tiny (~5-byte)
-      fragments, all generic repetitive hook shapes, no letterforms -
-      `0x00` appears far too often there to be a per-character
-      terminator. See `disasm/NOTES.md`'s update to "`SUB_EAC86` fully
-      resolved" for the full negative result. Back to square one on
-      locating the table - next attempt should trace `boot_init`'s
-      data-driven init loops to find what sets `[0x1DB0]`/`[0x1CC4]`.
+      "Acquisition/plot scaling". The `0xEA5E6`-`0xEB131` candidate
+      region is ruled out (generic repetitive hook shapes, no
+      letterforms). **Tool built 2026-09-13**: `disasm/decode_stroke_
+      font.py` implements the confirmed bit-packing formula and
+      renders any byte range to an SVG glyph catalog - reusable for any
+      future candidate, and re-confirmed the `0xEA5E6` ruling with a
+      proper tool (`disasm/stroke_font_candidates/0xEA5E6-0xEB131.svg`).
+      **Realized the earlier search approach was structurally wrong**:
+      `[0x1DB0]` points to a 128-entry far-pointer *array*, not glyph
+      data directly - each entry points to that character's own
+      (possibly non-contiguous) stroke bytes elsewhere. Added `scan_
+      pointer_table()` to search for the pointer array's shape instead
+      of a contiguous glyph run, but it found **zero candidates** in
+      either main-ROM chip even with relaxed thresholds - genuinely
+      inconclusive (scoring heuristic may be too strict, or the table
+      lives in the comm ROM/an unmodeled region). Worth revisiting with
+      different heuristics, or tracing `boot_init`'s data-driven init
+      loops to find what sets `[0x1DB0]`/`[0x1CC4]` directly instead of
+      searching blind.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,
