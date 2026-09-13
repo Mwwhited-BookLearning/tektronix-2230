@@ -237,6 +237,26 @@
       keyword-matching function from the `[0x712]` work above - still
       not found, and still needed even if the interrupt fires
       correctly.
+      **Question (2) is now resolved, and it's a big deal**: the
+      service manual's prose (not a table) states outright *"the
+      Maskable Interrupt (INTR) is vectored to 03FC"* - confirming
+      `INT 255` (this project's existing `INT255_HANDLER_LATE`) **is**
+      the real hardware interrupt line, not a software-only vector as
+      previously assumed. Traced the chain all the way through:
+      `INT255_HANDLER_LATE` → `run_continuous_selftest_tick` → the
+      `[0x740]` hook → (when comm installed) physical `0x96F54`, a
+      real `[0x629]`-aware per-tick comm status poller (tentatively
+      named `poll_comm_status_tick`) - reads the DIP-switch-config
+      byte, logs comm-channel-status snapshots to a circular buffer,
+      and calls out to `0x839D1`/`0x8006:0x9C` on specific status
+      bits. See `disasm/NOTES.md`'s "MAJOR CORRECTION: INT 255 is
+      NOT..." for the full writeup. **This is now the best candidate
+      for "how does incoming RS-232 activity actually get serviced"**
+      - a tick-driven poller reached via a confirmed hardware
+      interrupt, not the never-confirmed-reachable `FUNC_2998_39F5`
+      loop this session spent time on earlier. Next step: trace
+      `0x839D1` and `0x8006:0x9C`'s bodies - either could lead to the
+      still-missing keyword-matching function from item (3).
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

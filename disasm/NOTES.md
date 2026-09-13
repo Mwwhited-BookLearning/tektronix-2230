@@ -950,6 +950,18 @@ looks correct on inspection. What's still open:
    found) - even a perfectly interrupt-driven UART needs something to
    actually recognize `ID?` once a byte does arrive.
 
+**SUPERSEDED by a later finding this same session - see "MAJOR
+CORRECTION: INT 255 is NOT 'a software-only vector'" further down.**
+The speculation below (written before that finding) turned out to
+have the right instinct but the wrong conclusion: `INT 255` *is* a
+real hardware `INTR` vector after all (confirmed directly from the
+manual's own text), and tracing where it actually leads uncovered the
+real per-tick comm-status poller (`poll_comm_status_tick`,
+`0x96F54`) - a much stronger candidate for "how incoming RS-232
+activity gets serviced" than the unreachable `FUNC_2998_39F5` polling
+loop this paragraph was originally worried about. Left in place below
+for the historical reasoning trail.
+
 **Follow-up check, and an important caveat**: went looking for whether
 this system's CPU-level interrupt plumbing could even support a real
 hardware `INTR`-pin interrupt for the UART (the manual says the
@@ -1508,6 +1520,65 @@ firmware switches between distinct operating states (e.g. a
 diagnostic/POST mode vs. normal-run mode) with different NMI/software-
 interrupt handling per state - worth confirming once
 `INT255_HANDLER_EARLY`/`_LATE` and `INT2_HANDLER_LATE` are read closely.
+
+## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
+
+Found 2026-09-13 reading further into the service manual's Theory of
+Operation narrative text (not a table this time - the prose right
+after the ROM/decoder description, page 3-26): *"Other interrupts to
+the Microprocessor cause vectoring to addresses that start the
+interrupt handling routines. The NMI (non-maskable interrupt) vector
+is at 00008, and the Maskable Interrupt (INTR) is vectored to 03FC
+(both interrupt vectors are in RAM)."*
+
+`0x008` and `0x3FC` are exactly this project's own already-documented
+`INT2`/`INT255` IVT slots. **This overturns the "INT 255 is a
+software-only vector, not a CPU exception" assumption** stated a few
+paragraphs above (and repeated elsewhere in this file) - `INT255_
+HANDLER_LATE` is the real, hardware-driven Maskable Interrupt Service
+Routine, fired whenever any peripheral asserts the CPU's `INTR` pin
+(gated by the `IF` flag) - **including the RS-232 option's UART**,
+whose combined `DR+INTR`/`TBRE` signal the Option 12 Theory of
+Operation section separately confirms drives *"the microprocessor's
+maskable interrupt."* This directly resolves the reachability caveat
+raised earlier this session about the comm task loop, and gives a
+real, primary-source-confirmed path from "byte arrives at the UART"
+to "firmware code runs":
+
+**`INT255_HANDLER_LATE` → `run_continuous_selftest_tick` → the
+`[0x740]` hook (previously "not yet traced" per `FUNCTIONS.md`) → when
+`[0x1BF9]` (comm installed) is set, `init_comm_dispatch_table` points
+this hook at physical `0x96F54`** (comm-ROM alias, decoded directly via
+`capstone` since it's outside the direct-mapped `160-2998-14.lst`
+range). Read that function's full body - it's a real, `[0x629]`-aware
+(RS-232-vs-GPIB) per-tick comm status poller:
+- For RS-232 (`[0x629]==0`), skips the GPIB-specific block entirely
+  and goes straight to: reads `[0x6DA]` (the GPIB/comm DIP-switch-
+  config byte, bit `0x80`), compares against the last-seen value
+  (`[0x45E]`) and, on a change, updates flag bits in `[0x732+0x97]`
+  and calls `0x839D1` (the same target `poll_dip_switch_change`-style
+  code elsewhere calls on a switch change).
+- Checks bit `0x02` of that same byte - if set, **records a 4-byte
+  snapshot of the comm channel status structure `[0x6D6]` (`+1`, `+3`,
+  `+0`) into a circular log buffer** (far pointer `[0x464]`, 32
+  four-byte slots spanning `0x46C`-`0x46C+0x80`, wrapping around).
+- Checks the RX-ready flag `[0x596]` (the same "ready" byte `set_comm_
+  queue_busy`/`update_comm_tx_ready_flag` manage - see the Interrupt
+  Mask Latch section above) alongside failure counters, and bit `0x04`
+  of the status byte - which, if set, calls `0x8006:0x9C` (a further
+  comm-ROM dispatch target, not yet traced).
+
+**This is almost certainly the real "something arrived, go handle it"
+heartbeat this whole session was looking for** - reached via a
+confirmed hardware interrupt chain, not the polling loop (`FUNC_2998_
+39F5`) whose reachability couldn't be established earlier. Given `INT
+255`/`INT 2` fire on every tick regardless of what's running, this
+tick-driven poller (not a byte-at-a-time interrupt handler) is
+plausibly *how* incoming RS-232 activity actually gets serviced in
+this firmware - polled from a guaranteed-frequent hardware tick,
+rather than a dedicated per-byte ISR. Worth tracing `0x839D1` and
+`0x8006:0x9C` next - either could lead directly to wherever `ID?`
+would actually get parsed, if it's reached at all.
 
 ## A small task scheduler, driven by INT2_HANDLER_LATE
 
