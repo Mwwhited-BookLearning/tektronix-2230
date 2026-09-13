@@ -436,6 +436,41 @@ meaning question above, but the *mechanism* (which physical registers
 are involved) is now solidly grounded rather than purely inferred from
 code.
 
+## The `[0x4E0]`-`[0x4FC]` cluster - a whole group of front-panel-adjacent bytes gated on `[0x1B83]`
+
+Tracing `update_menu_position`'s `[0x4E7]`/`[0x4E8]` bit tests (looking
+for a clean cross-reference to the service manual's `SWB1`/`SWB2`
+signal names - see `HARDWARE.md`) led to a heuristic-only function,
+`FUNC_3633_92D1` (`0xE92D1` - **no call site to it found yet, proven or
+heuristic; reachability not confirmed**), that initializes a whole
+cluster of neighboring bytes together, gated on the same `[0x1B83]==
+0x14` dispatch already documented above:
+
+- **`[0x1B83]==0x14` branch**: `[0x4E7]=0x10`, `[0x4EB]=0xBF`,
+  `[0x1B72]=1`, `[0x4F8]=0xFF`, `[0x4FC]=0xFF`, `[0x4F4]=0xFF`,
+  `[0x4F0]=0xFF`, `[0x4FB] |= 0x10`, plus two flag fields (`+0x46`,
+  `+0x4C`) of index-0's record in the `[0x1D1C]` per-item table (the
+  same table `update_indexed_value_if_changed`/`SUB_E8E29` use) are set
+  to `1`, then a 4-iteration loop writes into two *other* far-pointer
+  tables (`[bp+6]`'s far ptr at `+0x574`/`+0x576`, stride `0xE`) and
+  sets `[0x4E0]=1` at the end.
+- **`[0x1B83]!=0x14` branch** (`L_E937B`): `[0x4F7]=0`, `[0x4FB]=0xFF`,
+  `[0x4E8]=0xFF`, `[0x4EC]=0xFF`, `[0x4F4]=0xFF`, `[0x4F0]=0xFF`, then a
+  5-iteration loop (stride `6`, same `[0x1D1C]` table base) continues
+  (not fully traced).
+
+**What this confirms**: `[0x4E0]`, `[0x4E7]`, `[0x4E8]`, `[0x4EB]`,
+`[0x4EC]`, `[0x4F0]`, `[0x4F4]`, `[0x4F7]`, `[0x4F8]`, `[0x4FB]`,
+`[0x4FC]` really are one related group of variables (not just
+coincidentally adjacent addresses) - both branches touch nearly the
+same set, just with different specific values, confirming a genuine
+per-hardware-configuration default-initialization routine. **Not
+confirmed**: whether this function ever actually executes (no caller
+found), and what physical significance the specific bit patterns
+(`0x10`, `0xBF`, `0xFF`, `|=0x10`) have. Left as an open, documented
+thread rather than guessed at - see `VARIABLES.md`'s `[0x4E7]`/`[0x4E8]`
+entry for the cross-reference.
+
 ## Found: the self-test dispatcher
 
 **CORRECTION (this session): `self_test_dispatcher` was misnamed.**
