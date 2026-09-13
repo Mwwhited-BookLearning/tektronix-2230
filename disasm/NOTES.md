@@ -271,7 +271,11 @@ NASM-validated (`validate_2998.py`): 18,290 exact + 2,151 alt-encoding,
 address-size-override prefix, landing right where page 1's header/
 copyright text starts - almost certainly decode drift into data at
 the deepest heuristic reach, not a validator problem), 3 not
-converted. A buildable NASM source (`160-2998-14.asm`, via
+converted. **Confirmed 2026-09-13**: both mismatches (physical
+`0x84010`/`0x84041`) land inside the printable-text region already
+catalogued in `strings_160-2998.json` at file offset `0x400a` (a
+57-character banner/header string) - exactly the "decode drift into
+data" explanation, not a validator bug. No further action needed. A buildable NASM source (`160-2998-14.asm`, via
 `gen_source_2998.py`) reassembles byte-identical to the original .bin
 regardless, same guarantee as the main ROM's `.asm` files - real
 mismatches/unconverted instructions just fall back to raw `db`.

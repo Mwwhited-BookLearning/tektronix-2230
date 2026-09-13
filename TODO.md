@@ -88,11 +88,6 @@
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
       them as instructions.
-- [ ] Investigate the 2 `push` instructions with a stray `0x67` prefix
-      that `validate_2998.py` flagged as real mismatches, landing right
-      at the start of page 1's header/copyright text - almost certainly
-      decode drift into data at the deepest heuristic reach, but worth
-      a quick look to confirm.
 - [ ] Narrow down what peripheral the I/O ports actually seen in code
       (`0x83`, `0xC4`, `0xD1`, and a DX-indexed range) correspond to -
       see `MEMORY_MAP.md` "I/O ports actually seen in code". These are
