@@ -61,6 +61,18 @@ address, assorted mode bits) add up close to 10-13 bits total, roughly
 consistent with two switch bytes feeding a 10-switch panel with some
 switches shared/overlapping between the two decode passes.
 
+**Switch 1 confirmed part of the baud-rate field, live hardware test
+2026-09-13**: with switches 2-10 held fixed, flipping switch 1 alone
+(`0110000000`→`1110000000`) changed the selected rate from **600
+baud** to **9600 baud** (both readings per the user's own physical
+reference on the unit, not firmware decode). A clean single-switch
+change producing a different valid baud rate - real evidence switch 1
+is part of the "4 bits baud" field described above, though the exact
+table/encoding (why this specific bit produces a 16x jump rather than
+an adjacent standard rate) isn't derived yet - would need the other 3
+baud-field switches individually toggled the same way to fill in the
+rest of the table.
+
 **AUXILIARY CONNECTOR — 9-pin D-sub**, pins labeled: `RELAY N.O.`,
 `RELAY COMM`, `RELAY N.C.`, `+4.2 VDC`, `SIG GND`, `SHIELD GND`,
 `EXT CLK`, `X`, `Y`. This is an **analog X-Y plotter/chart-recorder
