@@ -55,7 +55,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x40377E` (readback side of the same probe) | Close to, but not an exact match for, the manual's `0x437BE` ("Acquisition Mode Register U3310") - off by `0x40` | Not reconciled - the readback address `detect_comm_option_hw` actually reads doesn't land exactly on a named register in Table 3-1's excerpted rows; may be a sub-bit of Acquisition Mode Register reached through incomplete address decoding (the same phenomenon already confirmed for the `0x90000` alias), or a register the excerpted table rows didn't cover. Worth re-reading the full manual page image if resolving this matters |
 | `0x4067C` | **CONFIRMED: "Option Status Latch (in)"** (Table 3-1) | Resolves the old "unreconciled" `selftest_comm_readback` thread - this genuinely is the comm option's status latch, not a readout-memory-window coincidence as that note speculated |
 | `0x406BC` | **CONFIRMED: "Option Parameters Latch (in)"** (Table 3-1) | The comm option's PARAMETERS DIP-switch readback register - ties `read_dip_switches_serial_config`/`read_dip_switches_gpib_config` to this exact address |
-| `0x406F8` | **CONFIRMED: "Option Interrupt Mask Latch (out)"** (Table 3-1) | |
+| `0x406F8`-`0x406FB` | **CONFIRMED: "Option Interrupt Mask Latch (out)"** (Table 3-1 names `0x406F8`; the full 4-address span confirmed 2026-09-13 from the Option 12 Theory of Operation text - see below) | `BA0`/`BA1`-selected 4-output latch (`0D`/`1D`/`2D`/`3D` per the manual's own labels - i.e. physical `0x406F8`/`F9`/`FA`/`FB`); 2 of the 4 outputs mask interrupts (one for the RS-232-C port, one for diagnostics), forced LO (masked) at power-on by `BRST`. `selftest_comm_readback` (`0xE20B0`) writes/toggles output `3D` (`0x406FB`) as part of its own self-check |
 | `0x437F6` | **CONFIRMED: "Front Panel A/D control U6104"** (Table 3-1) | The front-panel A/D converter's control latch - see the new "Two separate ADCs" note below |
 | `0x437FA` | **CONFIRMED: "Front Panel A/D data U6102"** (Table 3-1) | Matches `FP-VALUES`/`FP-A2D` exerciser descriptions in the manual's Maintenance section exactly |
 | `0x4377E`/`0x4377F` | **CONFIRMED: "Acquisition Memory Address Buffer" low/high bits, U3427/U3428** (Table 3-1) | |
@@ -72,6 +72,75 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0xE0000-0xEFFFF` | `160-3633` (main ROM, low half) | Confirmed via TekWiki + validated disassembly |
 | `0xF0000-0xFFFFF` | `160-3532` (main ROM, high half) | Confirmed via TekWiki; holds the real CPU reset vector at `0xFFFF0` |
 | `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `disasm/NOTES.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
+
+## Option 12 (RS-232) hardware confirmed from the service manual's own Theory of Operation section
+
+Found 2026-09-13 while looking for anything resembling "the serial
+code" and checking whether a second, undiscovered comm-board ROM might
+exist (prompted by the user, who has confirmed **both physical test
+units are Option 12 - RS-232 - not Option 10/GPIB**). The manual has a
+dedicated "OPTION 12 THEORY OF OPERATION" section, separate from (and
+previously unread alongside) the GPIB-option section already
+partially quoted below.
+
+**Answers the "second ROM" question directly: no.** *"The option
+includes 64K bytes of ROM, 2K bytes of RAM, and an RS-232-C
+interface."* One ROM (`U1243`, "Option operating system firmware"),
+one RAM (`U1242`) - matches exactly what this project already has
+(the single `160-2998` dump) and what `hardware/070-6090-00.pdf`
+separately confirmed (the "2 ROMs" in an install kit are replacement
+*main* ROMs, not a second comm-board ROM). No hidden secondary ROM.
+
+**A real UART chip, with real interrupts** - this is the important
+part: *"The UART U1251 communicates with the Microprocessor, providing
+serial-to-parallel conversion and handling some of the RS232 protocol.
+Also included is an internal baud rate generator. Crystal Y1251
+provides a time base which is divided by software selectable ratios to
+provide the required bit transfer speeds. **Three interrupt lines,
+INTR, TBRE, and DR, inform the Microprocessor that intervention is
+required.**"* (`DR` = Data Ready, i.e. "a byte has arrived" - the
+interrupt that would fire on every incoming RS-232 byte.)
+
+**Interrupt Mask Latch (`U1236`, physical `0x406F8`-`0x406FB`,
+`BA0`/`BA1`-selected outputs `0D`/`1D`/`2D`/`3D`)**: *"provides four
+signals that are directly controlled by the Microprocessor... Two of
+the outputs are used for interrupt masking, one for the RS-232-C port,
+one for diagnostics. The outputs are forced LO by the BRST line to
+insure that interrupts are masked when the Microprocessor powers up."*
+So **the RS-232 interrupt starts masked at every power-on**, and stays
+masked until firmware explicitly writes the correct output HI to
+unmask it.
+
+**Cross-referenced against the disassembly**: `selftest_comm_readback`
+(`0xE20B0`) does write/toggle one of these 4 outputs - specifically
+`3D` (`es:[0x6F8+3]` = physical `0x406FB`), toggling it `0`→`1` while
+reading the Status Latch (`0x4067C`) each time, consistent with a
+latch self-test (Table 7-38's Status Buffer bit 6 is literally
+"Interrupt mask latch D3" - a software-readable loopback of whatever
+was last latched into output `3D`, exactly matching this code's
+read-after-toggle shape). **Not yet found: any code writing to
+outputs `0D`/`1D`/`2D`** (physical `0x406F8`/`F9`/`FA`) - specifically
+whichever *one* of those is the real "RS-232 port" interrupt mask. If
+nothing in this project's traced code ever unmasks it, **the DR
+(byte-received) interrupt would never reach the microprocessor at
+all** - a genuinely strong, concrete candidate for why incoming RS-232
+bytes produce no visible effect, independent of cabling/baud/parity
+(all already proven correct this session). Worth a dedicated search
+next time: does *anything* write a nonzero byte through the `0x6F8`
+base at offset `0`, `1`, or `2` (as opposed to the `+3` self-test
+write already found)?
+
+**One more oddity surfaced while looking for that**: a function ending
+around `0xE48A0` writes through the *same* `0x6F8` base but at a
+**runtime-computed offset**, `[0x1B16]&7` (cycling through all 8
+values `0`-`7`, not just the latch's real 4), incrementing `[0x1B16]`
+after each write - looks like a ring-buffer-style write, not a latch
+select. Since the hardware only decodes 2 address bits (`BA0`/`BA1`)
+for this latch, offsets `4`-`7` would likely alias back onto `0`-`3`
+in real hardware (incomplete address-line decoding, the same
+phenomenon already confirmed for the `0x90000` comm-ROM alias) - but
+this isn't confirmed, and what this function's caller/purpose actually
+is hasn't been traced. Flagged here rather than guessed at further.
 
 ## Puzzle: `write_readout_port_byte`'s address overlaps the comm-option UART register bank
 

@@ -214,6 +214,22 @@
       RS-232 bytes directly on the scope's own screen, without needing
       the PC/adapter/cable at all - worth trying before more code
       tracing.
+      **Best current lead, from the manual's own Option 12 Theory of
+      Operation section (2026-09-13)**: the RS-232 UART (`U1251`) has 3
+      real interrupt lines (`INTR`/`TBRE`/`DR`), gated through a
+      4-output Interrupt Mask Latch (`0x406F8`-`0x406FB`) that **starts
+      forced-masked at every power-on** and stays masked until firmware
+      explicitly unmasks the RS-232-specific output. `selftest_comm_
+      readback` is confirmed to touch only ONE of those 4 outputs
+      (`3D`, `0x406FB`, as its own latch self-test) - **no code found
+      yet that writes to the other 3 outputs** (`0x406F8`/`F9`/`FA`),
+      one of which must be the actual RS-232-port unmask. If nothing in
+      this firmware ever unmasks it, the byte-received (`DR`) interrupt
+      would never reach the CPU at all, regardless of correct wiring/
+      baud/parity (all independently proven this session) - see
+      `MEMORY_MAP.md`'s "Option 12 (RS-232) hardware confirmed..."
+      section for the full writeup. Next step: search for any write to
+      offset `0`, `1`, or `2` from the `0x6F8` base.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
