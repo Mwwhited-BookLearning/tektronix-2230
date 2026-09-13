@@ -152,6 +152,12 @@ table" and "Systematic landing-artifact sweep".
 | `[0x1DB8]`, `[0x1DBC]` | A pair of small per-record **byte-value caches** (NOT font/glyph data - ruled out this session, see `TODO.md`'s stroke-font item): indexed by `[bp-0x10]` (a channel/record index), storing/comparing an 8-bit value derived by shifting the current plot Y position `[0x6BE]` right 6 bits (`>>6`), used to clamp `[0x6BE]` against a previous cached value before `draw_pending_line_segment` actually plots - almost certainly 2 more instances of the already-documented `reset_all_channel_plot_caches` per-channel plot-scale-cache family | Mechanism confirmed via full byte trace; exact real-world unit of the cached value (a coarse Y bucket for redraw-skip decisions is the leading guess) not confirmed |
 | `[0x1DB0]` | A far pointer to a **128-entry table of far pointers** (indexed `char_code*4`, masked to 7 bits), read by `draw_readout_char` (`0xE3854`) - each entry is itself a far pointer, presumably to that character's stroke-vector glyph data. This is the best remaining candidate for the long-sought stroke-font glyph table (see `TODO.md`) - structurally distinct from `[0x1DB4]`/`[0x1DB8]`/`[0x1DBC]`'s simple byte-array shape, so it is NOT just a 4th instance of the same small-cache family | Usage/structure confirmed; the actual stored far-pointer value (where the table itself lives in ROM) still not found - nothing writes `[0x1DB0]` in proven or heuristic code |
 
+## Comm ROM (RS-232/GPIB option) variables
+
+| Address | Role | Confidence |
+|---|---|---|
+| `[0x6E2]` (comm ROM) | A far pointer, initialized by the comm ROM's own `init_far_pointer_table` to `0x406F:0x0008` = physical `0x406F8` - the service manual's **Option Interrupt Mask Latch** (`U1236`). **Traced 2026-09-13** (see `disasm/NOTES.md`'s "Traced the interrupt mask latch's real outputs"): `es:[di]` (output `0D`, physical `0x406F8`) = RX-ready flag = the UART's `DR` interrupt enable/mask bit; `es:[di+1]` (output `1D`, `0x406F9`) = TX-ready flag = `TBRE` interrupt enable/mask bit; `es:[di+3]` (output `3D`, `0x406FB`) = a diagnostic/strobe bit used by `selftest_comm_readback` and `poll_dip_switch_change`, not an interrupt mask despite living in the same latch. Output `2D` (`0x406FA`) has no code reference found anywhere | Base pointer and outputs `0D`/`1D`/`3D` confirmed via direct trace; `2D`'s role (possibly `RLSD`/`DCD` generation, per the manual) not found |
+
 ## Memory regions (not individual variables, but the pools they live in)
 
 | Address | Role | Confidence |

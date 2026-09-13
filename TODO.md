@@ -214,22 +214,29 @@
       RS-232 bytes directly on the scope's own screen, without needing
       the PC/adapter/cable at all - worth trying before more code
       tracing.
-      **Best current lead, from the manual's own Option 12 Theory of
-      Operation section (2026-09-13)**: the RS-232 UART (`U1251`) has 3
-      real interrupt lines (`INTR`/`TBRE`/`DR`), gated through a
-      4-output Interrupt Mask Latch (`0x406F8`-`0x406FB`) that **starts
-      forced-masked at every power-on** and stays masked until firmware
-      explicitly unmasks the RS-232-specific output. `selftest_comm_
-      readback` is confirmed to touch only ONE of those 4 outputs
-      (`3D`, `0x406FB`, as its own latch self-test) - **no code found
-      yet that writes to the other 3 outputs** (`0x406F8`/`F9`/`FA`),
-      one of which must be the actual RS-232-port unmask. If nothing in
-      this firmware ever unmasks it, the byte-received (`DR`) interrupt
-      would never reach the CPU at all, regardless of correct wiring/
-      baud/parity (all independently proven this session) - see
-      `MEMORY_MAP.md`'s "Option 12 (RS-232) hardware confirmed..."
-      section for the full writeup. Next step: search for any write to
-      offset `0`, `1`, or `2` from the `0x6F8` base.
+      The interrupt-mask-latch lead was **followed up and mostly
+      resolved 2026-09-13** (see `disasm/NOTES.md`'s "Traced the
+      interrupt mask latch's real outputs"): found the indirection
+      (`[0x6E2]` far pointer, comm ROM), and mapped 3 of its 4 outputs
+      - `0D`=RX-ready/`DR`-interrupt-mask, `1D`=TX-ready/`TBRE`-mask
+      (both via `set_comm_queue_busy`/`update_comm_tx_ready_flag`),
+      `3D`=a diagnostic strobe (not an interrupt mask despite the
+      shared latch). **The "never unmasked" theory doesn't hold up**:
+      `set_comm_queue_busy`'s disengage path does restore `0D`=1
+      (unmask), and is called during normal comm-channel init - the
+      masking mechanism looks correctly implemented. Output `2D`
+      (`0x406FA`) still has no reference found anywhere (possibly
+      `RLSD`/`DCD` generation, set once rather than dynamically).
+      **Remaining open questions, narrower now**: (1) whether the
+      init sequence containing the unmask call is *actually reached*
+      on real hardware (ties back to `[0x1B83]`/`[0x1BF9]` comm
+      detection - `COMM_LOOPBACK`'s `UNTESTED` result is *some*
+      evidence it is, but not a direct confirmation of this specific
+      call); (2) whether the CPU's own interrupt plumbing (IVT entry,
+      `IF` flag) is correctly set up post-boot - not checked; (3) the
+      keyword-matching function from the `[0x712]` work above - still
+      not found, and still needed even if the interrupt fires
+      correctly.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
