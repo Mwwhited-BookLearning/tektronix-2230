@@ -87,15 +87,23 @@ likely reflected in `SWB1`/`SWB2` - see `[0x759]` above for the
   involved or one of the "not yet independently bit-validated" bits in
   `[0x759]` corresponds to these. Needs a slower, one-control-at-a-time
   re-test to isolate cleanly.
-- **Pushing the `CURSOR` button** cleanly toggles bit7 of one `dig=`
-  byte between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit) -
-  the cleanest single-bit result in this batch besides `HORIZONTAL
-  MODE`. Which byte (`SWB1` vs `SWB2`) and which named bit not yet
-  identified - both banks' documented bit7 (`STORE ON` for `SWB1`,
-  `SELECT C1/C2` for `SWB2`) are plausible-sounding but neither is an
-  obvious semantic match for a cursor push button, so this may be an
-  as-yet-undocumented bit or a control not named in the bit tables
-  transcribed so far.
+- **Pushing the `CURSOR` button** cleanly toggles bit7 of `dig=` octet
+  3 between `0x08`/`0x88` (`0x08 XOR 0x88 = 0x80`, a single bit) - the
+  cleanest single-bit result in this batch besides `HORIZONTAL MODE`.
+- **`WAVEFORM SELECT`** cleanly toggles bit2 of the *same* octet 3,
+  `0x08`↔`0x0C` (`0x08 XOR 0x0C = 0x04`, a single bit).
+  **Hypothesis**: octet 3 = `SWB2` (`[0x758]`) - its documented bit2
+  (`POS/SEL`) and bit7 (`SELECT C1/C2`) are a good semantic fit for
+  "waveform select" (a position/select-style function) and a cursor
+  push button (selects between cursors/channels) respectively, and
+  `SWB2`+`SWB1` being adjacent bytes (`0x43FFA`/`0x43FFB`) lines up
+  with `HORIZONTAL MODE`'s confirmed `A ONLY`/`B ONLY` bits sitting one
+  octet over (**octet 4** = `SWB1`, `[0x759]`) - i.e. `dig=`'s last two
+  octets are `SWB2` then `SWB1`, matching this project's own
+  `[0x758]`/`[0x759]` ordering. Not yet independently confirmed the
+  way `HORIZONTAL MODE`'s bits were (no code-side cross-check done for
+  `POS/SEL`/`SELECT C1/C2` specifically against these two controls
+  yet), but a strong, self-consistent working hypothesis.
 - Input coupling switch (`AC`/`GND`/`DC`) changed a third byte's value
   (reported as `0x12`-ish/`0x2AA`-ish/`0x3xE`-ish across the three
   positions - transcription uncertain, values not confidently hex-clean
