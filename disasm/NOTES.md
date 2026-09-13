@@ -634,25 +634,44 @@ go out over an optional serial port for factory/field diagnostics
 character generator that the normal vector-font readout path doesn't
 need for a one-time full-screen report.
 
-**Left unresolved rather than guessed at - do not rename this cluster
-without more evidence.** The address match to a service-manual-
-documented comm-option register bank is real and specific, but the
-existing "CRT readout hardware port" story from an earlier session
-was never rigorously proven either (it was a plausible inference from
-"fixed address written once per character," which is equally
-consistent with a UART transmit-data register at a fixed offset).
-Worth resolving by finding what specific TMS9914A register `+0`
-(`0x406F0`, the data-write address) corresponds to in a GPIB/UART
-datasheet sense, or by checking whether `init_readout_port_config`'s
-literal bytes (`0x29`, `0x23`, `0x06`) match any documented UART baud-
-rate/mode-register constants for a chip of this era.
+**Follow-up, same day: checked the real TMS9914A datasheet (Texas
+Instruments, via bitsavers.org) and this specifically rules out the
+"GPIB Data Out register" theory.** The TMS9914A's own write-register
+map (`RS2 RS1 RS0` register-select address lines) puts its **Data Out
+register at address `111` (offset 7, the *last* of the 8 registers)**,
+not offset 0. Register offset **0** on write is **Interrupt Mask
+Register 0** - a mask/configuration register, not a byte-stream data
+register. Since `write_readout_port_byte` writes to `0x406F0`
+specifically - **offset 0** of the 8-address block, not offset 7 -
+repeatedly writing arbitrary printable ASCII text bytes there
+one-per-character makes no sense for a real TMS9914A: you would not
+stream GPIB message bytes through the interrupt-mask register.
 
-Also found in this neighborhood: two single-byte **read**-only fixed
-addresses, `0x41000` (`SUB_E4429`) and `0x42000` (`SUB_E440A`) - not
-yet renamed (purpose unconfirmed - candidates: front-panel
-switch/encoder status, or CRT controller status), but very likely
-more of the same memory-mapped I/O window given their proximity to
-the confirmed readout port. Added to `MEMORY_MAP.md` as candidate I/O.
+**This meaningfully weakens (does not fully rule out) the "comm-
+option chip" re-interpretation above.** It specifically kills the
+"streaming data out via the GPIB controller's own Data Out register"
+version of that theory. It does *not* rule out the RS-232 variant of
+the option (Table 3-1 calls the whole 8-address block "Option UART/
+GPIB chips" generically, implying either a GPIB or a UART chip occupies
+the same address range depending which option is installed) - a real
+UART of this era could plausibly have its transmit-data register at
+offset 0 instead of offset 7, so this doesn't reopen the door to the
+original "CRT readout hardware" theory by itself. Genuinely still
+unresolved: is offset 0 a UART TX-data register (RS-232 variant), or
+something on the mainboard entirely unrelated to the comm option? Not
+confident enough to rename either way - left open.
+
+Still worth trying if this gets picked up again: checking whether
+`init_readout_port_config`'s literal bytes (`0x29`, `0x23`, `0x06`)
+match documented mode-register constants for a plausible UART of this
+era (an 8251A-style USART is a reasonable guess given the option
+board's other confirmed chips).
+
+**`0x41000`/`0x42000` note superseded** - see `MEMORY_MAP.md`'s
+"Confirmed regions" table: these are now confirmed via the service
+manual as "Display chip interrupt reset"/"Display chip next frame",
+and `SUB_E4429`/`SUB_E440A` have been renamed to `read_display_chip_
+int_reset`/`read_display_chip_frame_trigger` accordingly.
 
 **Not yet confirmed, worth revisiting**: whether `0x40000-0x4FFFF` is
 read *as RAM* anywhere from the CPU's normal address space, or whether
