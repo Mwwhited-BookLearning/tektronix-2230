@@ -53,25 +53,35 @@ the settings a config DIP bank would carry - a baud-rate-like code
 uses), a CR/LF option (`[0x4EF]`, the same byte `send_serial_newline`
 uses), a 5-bit GPIB primary address 0-30 (`[0x4F0]`), and further mode
 flag bits (`[0x4F1]`/`[0x461]`). This is almost certainly the firmware
-side of this exact switch bank. Not yet done: mapping each decoded
-value back to a specific switch-position meaning (e.g. which 2 of the
-10 switches select parity, which set the baud rate) - the bit-field
-widths above (4 bits baud, 1+2 bits parity, 1 bit CR/LF, 5 bits GPIB
-address, assorted mode bits) add up close to 10-13 bits total, roughly
-consistent with two switch bytes feeding a 10-switch panel with some
-switches shared/overlapping between the two decode passes.
+side of this exact switch bank.
 
-**Switch 1 confirmed part of the baud-rate field, live hardware test
-2026-09-13**: with switches 2-10 held fixed, flipping switch 1 alone
-(`0110000000`→`1110000000`) changed the selected rate from **600
-baud** to **9600 baud** (both readings per the user's own physical
-reference on the unit, not firmware decode). A clean single-switch
-change producing a different valid baud rate - real evidence switch 1
-is part of the "4 bits baud" field described above, though the exact
-table/encoding (why this specific bit produces a 16x jump rather than
-an adjacent standard rate) isn't derived yet - would need the other 3
-baud-field switches individually toggled the same way to fill in the
-rest of the table.
+**Full switch mapping now RESOLVED - straight from the operator's
+manual's Table 7-11/7-12/7-13 (Section 7, "Options and Accessories"),
+not inferred from code.** RS-232 mode (`read_dip_switches_serial_
+config`):
+
+| Switch(es) | Function |
+|---|---|
+| 1,2,3,4 | Baud rate - 4-bit code, switch **1 = MSB**. See rate table below |
+| 5 | Parity enable: `0`=disabled (8-bit data word, no parity), `1`=enabled (7-bit data + parity bit per switches 6/7) |
+| 6,7 | Parity type when enabled (Table 7-13): `00`=ODD, `10`=EVEN, `01`=MARK, `11`=SPACE |
+| 8 | Line terminator: `0`=**CR only** (accept only CR, send CR), `1`=**CR-LF** (accept CR-LF or LF, send CR-LF) |
+| 9,10 | Printer/plotter device (power-on default only, changeable later via `COMM` menu): `00`=HP-GL, `10`=Epson, `01`=ThinkJet, `11`=X-Y Plotter |
+
+Baud rate code (switches 1234, MSB-first) → rate:
+`0000`=50, `0001`=75, `0010`=110, `0011`=134.5, `0100`=150, `0101`=300,
+`0110`=**600**, `0111`=1200, `1000`=1800, `1001`=2000, `1010`=2400,
+`1011`=3600, `1100`=4800, `1101`=7200, `1110`=**9600**, `1111`=Off Line.
+
+**Live-tested and matches exactly, 2026-09-13**: the unit's actual
+switches read `0110000000` (600 baud) and, after the user flipped
+switch 1, `1110000000` (9600 baud) - both match this table's `0110`/
+`1110` rows precisely, confirming switch-number order = bit order
+(switch 1 = MSB) with no further ambiguity. Also resolves the earlier
+open "how does the scope know CR vs LF" question directly: switch 8
+was `0` in both readings tested, meaning **CR-only** is the currently
+selected terminator - exactly what PuTTY sends by default, so
+terminator mismatch is not what's blocking command responses.
 
 **AUXILIARY CONNECTOR — 9-pin D-sub**, pins labeled: `RELAY N.O.`,
 `RELAY COMM`, `RELAY N.C.`, `+4.2 VDC`, `SIG GND`, `SHIELD GND`,
