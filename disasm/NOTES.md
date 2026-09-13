@@ -313,9 +313,30 @@ regenerated separately via `gen_source.py`'s default entry set.
 
 ## The 0x90000-0x97FFF region is fully resolved: an address-decode alias
 
+**CORRECTION, 2026-09-13, from the service manual's Table 3-1 full
+page image**: the mechanism described below (brute-forcing a base
+offset against 82 far-call targets, landing on `base=0x88000`) is
+still numerically valid and the resulting `file_offset = phys-0x88000`
+formula is still exactly correct - but the *explanation* - "the comm
+ROM's own upper half... appearing a second time," i.e. that
+`0x88000-0x8FFFF` is itself ROM - is now known to be **wrong**.
+Table 3-1 documents `0x88000-0x8F7FF` as **"Option nonvolatile RAM"**
+and `0x8F800-0x8FFFF` as **"Nonvolatile RAM"** - genuinely different
+hardware (RAM, not ROM), while `0x90000-0x97FFF` is separately and
+explicitly labeled **"Half of Communication Options ROMs U1243 or
+U1343"** - the ROM's real, deliberately-separate upper half, not an
+alias/shadow of the RAM region at all. The two ROM halves simply sit
+on either side of the option's RAM in the address space; there is no
+incomplete-address-decoding artifact here after all. See
+`MEMORY_MAP.md`'s corrected confirmed-regions rows for the exact
+addresses. The brute-force *technique* below remains valid and worth
+reusing - it found the right numeric relationship even though the
+initial explanation for *why* it worked was incorrect.
+
 **Not RAM, not a missing chip - it's the comm ROM's own upper half
 (`0x88000-0x8FFFF`, file offset `0x8000-0xFFFF`, pages 2-3) appearing a
-second time at a different physical address.** The user asked "would
+second time at a different physical address.** *(Superseded by the
+correction above - kept for history.)* The user asked "would
 the pointers into `0x90000-0x97FFF` make sense if they were a shadow
 of `0x80000-0x8FFFF`?" - a plain `+0x10000` shift didn't fit (1/82
 targets matched), but brute-forcing every possible base offset against
@@ -425,16 +446,21 @@ comm_option_hw`'s probe works by toggling a bit in the general Time
 Base Mode Register and checking whether a *different* nearby register
 reflects that change - consistent with the comm option's presence
 being wired to gate or reflect onto part of this register's behavior,
-rather than having its own dedicated "are you there" bit. The readback
-address (`0x40000+0x377E` = `0x4377E`) doesn't land exactly on a named
-register in the table rows read so far - the closest is `0x437BE`
-("Acquisition Mode Register U3310"), `0x40` away - not confirmed as
-the same register through incomplete decoding or a genuinely different
-one; worth a closer look at the manual's full page image if resolving
-this exactly matters. Still doesn't resolve the `0x1E` vs `0x14`
-meaning question above, but the *mechanism* (which physical registers
-are involved) is now solidly grounded rather than purely inferred from
-code.
+rather than having its own dedicated "are you there" bit.
+
+**Resolved 2026-09-13, from the manual's full Table 3-1 page image**:
+the readback address (`0x40000+0x377E` = `0x4377E`) is an **exact
+match** for **"Acquisition Memory Address Buffer Low bits U3427"** -
+the earlier "closest is `0x437BE`, `0x40` away, not confirmed" note was
+comparing against the wrong neighboring row in a garbled OCR pass of
+this table; the real page image resolves it cleanly. So `detect_comm_
+option_hw`'s probe toggles a bit in the general Time Base Mode
+Register (`U4119`) and checks whether it's reflected in the
+acquisition address buffer (`U3427`) - two ordinary, non-comm-specific
+registers, not dedicated comm-detection hardware. Still doesn't
+resolve the `0x1E` vs `0x14` meaning question above, but the
+*mechanism* (which physical registers are involved) is now fully
+grounded rather than partially inferred.
 
 ## The `[0x4E0]`-`[0x4FC]` cluster - a whole group of front-panel-adjacent bytes gated on `[0x1B83]`
 
