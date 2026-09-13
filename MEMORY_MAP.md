@@ -295,7 +295,21 @@ yet - see `disasm/NOTES.md` for the addresses that touch them.
 | `0x83` | `out 0x83, ax` | `160-3532`, offset `0x0CCF` - sits directly in the middle of HPGL plotter command generation code (`update_plot_position` and neighbors emit `PU%d,%d;`/`SP1;SC0,1023,0,1023;`/`ESC*rB`-style HPGL/HP-GL2 commands via `format_string_va` right around this instruction) - candidate: the GPIB/plotter output port, not confirmed |
 | `0xC4` | `out 0xc4, ax` | `160-3633`, offset `0xE143` - confirmed part of `write_hw_shift_register`'s 4-write sequence, see below |
 | `0xD1` | `out 0xd1, ax` (x3) | `160-3633`, offsets `0xE13D/E13F/E141` - confirmed: each write is preceded by `shl di,1`, all inside `write_hw_shift_register` (`0xEE13B`) |
-| (in DX) | `in al, dx` | `160-3633`, offset `0xDA0A` - port number computed at runtime, not a literal, so this reads from a *range* of ports (a peripheral with multiple addressable registers, or a scan loop) |
+
+**Corrected 2026-09-13: the "DX-indexed `in al,dx`" row above was a
+decode artifact, removed.** Physical `0xEDA0A` (file offset `0xDA0A`
+in `160-3633`) is **not** a real instruction boundary - it's 2 bytes
+into `compute_and_draw_scale_marker`'s own `mov word [0x1BEC], 0x20`
+instruction (`C7 06 EC 1B 20 00`), where the `0xEC` byte alone happens
+to decode as a standalone `in al,dx` opcode. This was already found
+and resolved in `disasm/NOTES.md` ("A third instance, found via
+`analyze_loops_vs_functions.py`'s long-jump lens") as one of several
+landing-artifact false-positives (`SUB_F1581`'s tail-jump lands there,
+2 bytes short of the real next instruction, then cleanly reconverges a
+few bytes later) - it just hadn't been removed from this table yet.
+**No genuine runtime-computed-port `in`/`out` access has actually been
+found in the corpus** - `0x83`/`0xC4`/`0xD1` (all literal, fixed port
+numbers) are the only confirmed 8086 port-space accesses.
 
 **Found: `0xD1`/`0xC4` are a serial shift-register-style hardware
 write.** `write_hw_shift_register` (`0xEE13B`) writes `ax` to port
