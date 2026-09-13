@@ -532,6 +532,94 @@ the UART re-interpretation from actual hardware, tempering the
 genuinely unresolved, now with real experimental data on both sides
 rather than just documentation-derived inference.
 
+## Follow-up live hardware session: cable fully validated, `COMM_LOOPBACK` proven internal-only, comm-detection failure now the leading theory
+
+Extended the RS-232 investigation above with a much more thorough
+hardware troubleshooting pass, on **two different physical 2230
+units**, both confirmed Option 12 (RS-232, not GPIB - cross-checked
+against the operator's manual's Option 10 vs Option 12 sections to
+make sure the right pin/switch tables were being used).
+
+**Ruled out, in order**:
+1. **PC/adapter side**: a loopback at the USB-serial adapter itself
+   (`serial.Serial` write then read back) round-tripped a test string
+   byte-for-byte. Adapter, driver, and COM port are all fine.
+2. **The DIP-switch table itself**: got the actual operator's manual
+   (`hardware/070-4998-02.pdf`, Tables 7-11/7-12/7-13 for RS-232,
+   Table 7-6 for GPIB) and confirmed the full switch-to-function
+   mapping directly rather than inferring it - see `HARDWARE.md`.
+   Both units' live switch readings (`0110000000`=600 baud,
+   `1110000000`=9600 baud after a switch-1 flip) matched the manual's
+   table exactly, and switch 8=`0` on both = **CR-only** terminator,
+   matching PuTTY's default - ruling out a terminator mismatch.
+3. **Switch changes not latched**: manual confirms "changes to the
+   PARAMETER switch after power on will not be read until the next
+   power on occurs" - power-cycled after switch changes each time to
+   make sure the new setting was actually in effect before testing.
+4. **REMOTE lockout**: manual confirms queries (like `ID?`) are
+   answered even with `REMOTE OFF` (the power-on default) - only
+   commands that *change* a setting are rejected in that state. Not
+   the blocker.
+5. **The cable itself, thoroughly**: built a real 3-pair loopback plug
+   (`2-3` TX/RX, `4-5` RTS/CTS, `6-20` DSR/DTR, later also tying in
+   pin 8/RLSD-DCD) and looped it through the *actual* cable (not just
+   the adapter) - a test string round-tripped byte-for-byte with
+   `CTS`/`DSR` both reporting asserted. Cable, connectors, and all
+   three signal pairs are fully sound on both DTE and DCE ends.
+
+**Sending `ID?` (a real, confirmed command from the operator's manual's
+command reference, expected response format `ID TEK/2230,V81.1,VERS:
+09;`) got zero bytes back** - tested directly via a Python/`pyserial`
+script (bypassing PuTTY entirely) on **both** scopes, on **both** the
+DTE and DCE connectors, at the confirmed-correct baud/parity/
+terminator, immediately after a power cycle. Uniformly silent every
+time.
+
+**The `COMM_LOOPBACK` self-test (`DIAGNOSTICS/TESTS/SYSTEM` menu)
+reports `UNTESTED` on both units** - not `PASSED`, not `FAILED`, not
+`Not installed` either (see `format_selftest_result_string`,
+`0xE0C3D`: `0x20`=not installed, `0x02`=failed, `0x01`=passed, else
+untested - so this is genuinely the "none of the above" catch-all
+case). Tested with **no** external loopback connector attached, then
+again with the full validated loopback plug (`2-3`/`4-5`/`6-20`, then
+again with pin 8 added into both groups) attached to the scope's RS-
+232 port - **identical `UNTESTED` result every time**, completely
+insensitive to what's on the external line. This is decisive: `COMM_
+LOOPBACK` is confirmed to be checking something purely internal to the
+comm board, not the actual external RS-232 wiring (correcting nothing
+about the earlier "no wiring needed" answer given to the user - if
+anything, this is now directly confirmed rather than just assumed).
+
+**Leading unifying theory**: the firmware's comm-hardware-detection
+logic (`detect_comm_option_hw`, `[0x1B83]` - see "Found: the actual
+source of `[0x1B83]`" above) isn't recognizing either unit's comm
+board as installed, for whatever reason actually drives that
+write-probe's outcome. This single explanation covers **everything**
+observed in both live-hardware sessions:
+- Why `COMM_LOOPBACK` never produces a real pass/fail (its self-test
+  leaf is plausibly skipped/short-circuited before doing anything,
+  leaving a status byte that was never written to a real value)
+- Why the self-test banner text never reached RS-232 in the first
+  session (same gating, if `write_readout_port_byte`'s cluster is
+  reached only when the comm option is considered present)
+- Why `ID?` gets no response now, on either unit, over an
+  electrically-proven-good line
+
+**Not proven** - this is the best current explanation, not a closed
+case: it's still consistent with *some* deeper physical fault common
+to both units (unlikely but not impossible), or with the real command
+parser genuinely requiring something not yet tried (a different
+command entirely, `HELp?` instead of `ID?`, or a required leading
+byte/prefix not yet identified in the manual excerpts read so far).
+The next concrete step, if picked up again: trace exactly what other
+code paths gate on `[0x1B83]`'s value (particularly whatever `COMM_
+LOOPBACK` and the command-parser entry point check), and see whether
+either unit's specific write-probe addresses (`0x40000+0x7DE`
+write, `0x40000+0x377E` bit `0x1000` readback) could plausibly fail
+even with genuinely-present, genuinely-working comm hardware - i.e.
+whether the *detection* itself might be the actual bug/limitation,
+separate from the comm board's real capability.
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the

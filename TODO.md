@@ -146,7 +146,18 @@
       actual source of [0x1B83]". The write-probe address is confirmed
       as the general-purpose "Time Base Mode Register U4119" (not a
       comm-specific latch), consistent with the two-branch ambiguity,
-      but doesn't pin down the exact bit semantics.
+      but doesn't pin down the exact bit semantics. **Raised in
+      priority 2026-09-13**: an extended live-hardware session on two
+      real units found `COMM_LOOPBACK` reports `UNTESTED` (not PASS/
+      FAIL/"Not installed") regardless of external wiring (bare cable,
+      a full validated loopback plug, with/without pin 8), and `ID?`
+      gets zero bytes back over an electrically-proven-good cable on
+      both scopes/both connectors - comm-detection failure via
+      `[0x1B83]` not recognizing genuinely-present hardware is now the
+      leading unifying explanation for both. See `disasm/NOTES.md`
+      "Follow-up live hardware session" for the full writeup and next
+      step (trace what else gates on `[0x1B83]`, specifically `COMM_
+      LOOPBACK`'s leaf and the command-parser entry point).
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
