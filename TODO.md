@@ -178,12 +178,21 @@
       jumper (`hardware/070-6090-00.pdf`'s F10/F12 install instructions
       - moving it is required when installing either comm option), or
       something else entirely in the comm ROM's own RS-232 command
-      parser (not yet traced - the comm ROM's disassembly coverage is
-      much thinner than the main ROM's). Next step if picked up again:
-      trace the comm ROM's actual command-parser entry point (where
-      incoming bytes get matched against the `STRINGS.md` keyword
-      table) rather than assuming it's gated by `[0x1B83]` without
-      checking.
+      parser. **Partially traced 2026-09-13** (see `disasm/NOTES.md`'s
+      "Traced the comm ROM's byte-dispatch/parser core"): found a real,
+      `[0x629]`-gated (RS-232-vs-other) byte-classification/dispatch
+      core (`process_gpib_command_byte` at `0x8526B`, plus a companion
+      `0x97905` in the comm-ROM alias range) built around a 4-byte-
+      per-entry table at far pointer `[0x712]` - confirms RS-232
+      command handling is real, active code, not a stub. **Still not
+      found**: (1) `[0x712]`'s actual contents/initialization - not a
+      literal write anywhere in the direct listing, not one of `init_
+      far_pointer_table`'s 31 destinations either; (2) the genuine
+      UART-receive entry point that first puts an incoming byte into
+      `[6]`/`[0x580]` (still nobody's found this - not an interrupt
+      handler, not a polling loop, despite two separate look-arounds
+      this session). Either one, found, would be the most direct route
+      left to explaining the `ID?` silence.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

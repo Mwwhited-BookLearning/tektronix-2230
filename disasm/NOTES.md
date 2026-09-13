@@ -715,6 +715,80 @@ values - possibly a GPIB-vs-RS-232 board variant distinction (`0xD0`
 might specifically mean "RS-232 board with the FGET-capable
 variant"), not yet traced back to a specific bit/signal name.
 
+## Traced the comm ROM's byte-dispatch/parser core, looking into what RS-232 commands are expected
+
+Following up on the separate, still-open `ID?`-gets-nothing puzzle
+(distinct from the `COMM_LOOPBACK` correction above), went looking for
+the comm ROM's actual incoming-command parser - not the TX-side
+(`enqueue_comm_char`/`service_comm_tx_queue`, already well documented)
+but the RX/command-recognition side, which `TODO.md` has flagged as
+genuinely unexplored ("no genuine incoming-byte ring buffer/interrupt
+handler identified yet").
+
+**Found a real, active byte-classification/dispatch core**:
+`process_gpib_command_byte` (`0x8526B`) reads a small DS-relative
+scratch cell `[6]` (the "current byte", reused across many call sites
+- not a fixed low-memory/IVT address despite the small literal, since
+it's DS-relative and this ROM's data segment sits at paragraph `0x41`,
+i.e. physical `~0x416`), checks bit `0x80` on it (very plausibly a
+GPIB ATN/address-byte flag, packed into the same byte as the data),
+clamps it to a max of `0x42`, and uses it to index a **4-byte-per-
+entry table** via far pointer `[0x712]` to build a target address in
+`[0x582]`/`[0x584]` - classic byte-class/dispatch-table shape. It then
+**unconditionally calls a second function** (tentatively named
+`advance_comm_input_state`, physical `0x97905` - in the `0x90000`
+comm-ROM alias range, so not visible in `160-2998-14.lst`'s direct
+mapping; decoded directly via a one-off `capstone` script instead,
+same technique as earlier sessions) which does its own lookup into the
+**same** `[0x712]` table (this time indexed by a parallel cell,
+`[0x580]`), and - **explicitly gated on `[0x629]`** (the RS-232-vs-
+other mode flag) - updates the comm channel status structure at
+`[0x6D6]` (`+3`=command register, set to `0x98` or `0x18` depending on
+branch; `+5`=a flags byte OR'd with a bit from I/O port `[0]`) and
+toggles bits in a flags byte at `[0x732+0x97]`.
+
+**What this confirms**: the RS-232 path through this parser is real
+and actively maintained code, not a GPIB-only stub with RS-232 quietly
+unsupported - the `[0x629]` branches do genuinely different, non-
+trivial work in both directions. This is reassuring for the "why does
+`ID?` get nothing" investigation: it rules out "RS-232 command parsing
+was simply never implemented" as an explanation.
+
+**What's still NOT found, despite this**:
+1. **`[0x712]`'s actual contents/initialization**. It's clearly a real
+   far-pointer table (used identically by two different functions,
+   with a consistent 4-byte stride and a sensible max-index clamp),
+   but no literal `mov [0x712], ...` write exists anywhere in the
+   direct-mapped listing, and it's **not** one of the comm ROM's own
+   `init_far_pointer_table`'s 31 destination slots either (re-decoded
+   that table directly this session to check - all 31 destinations
+   land in physical `0x8FED6`-`0x8FF60`, nowhere near `0x712`). So the
+   table's real character-class/dispatch data - which would show
+   exactly which input bytes/keywords this parser recognizes - is
+   still not located. Worth checking the heuristic listing or a
+   broader search for whatever *does* set `[0x712]` next time this is
+   picked up.
+2. **The actual UART-receive entry point** - where a real incoming
+   RS-232 byte first lands in `[6]`/`[0x580]` in the first place (an
+   interrupt handler, or a polled read of the comm option's UART/GPIB
+   chip registers at `0x406F0`-`0x406F3`). Not found this pass either -
+   `SUB_97B94` (initially suspected as a "read next byte" primitive
+   given how it's called from a loop right before this dispatch chain)
+   turned out to already be identified as `set_comm_critical_flag`
+   (`FUNCTIONS.md`) - a critical-section flag setter, not a receive
+   function. So the genuine RX path remains exactly as open as
+   `TODO.md` already said.
+
+**Net effect on the `ID?` puzzle**: still unresolved, but narrowed -
+there IS a real, mode-aware, RS-232-branching parser core actively
+processing classified bytes; the missing pieces are (a) what the
+dispatch table actually recognizes, and (b) how a byte from the actual
+RS-232 wire reaches this code at all. Either one, if found, would be a
+much more direct route to explaining the silence than further hardware
+troubleshooting at this point - the electrical layer has already been
+thoroughly proven sound (see the "Follow-up live hardware session"
+section above).
+
 ## `[0x758]` bit-level validated as `SWB2` by comparing code structure to the named bits
 
 Prompted directly: rather than just matching *addresses* to the
