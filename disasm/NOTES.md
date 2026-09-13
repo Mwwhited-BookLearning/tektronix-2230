@@ -592,6 +592,61 @@ directly to `append_readout_char` (`0xE39F0`) - i.e. it's re-printing
 bytes it just read from that second plane, consistent with echoing
 raw diagnostic/calibration values that were previously stashed there.
 
+**Major re-examination, 2026-09-13, from the real service manual -
+genuinely conflicting evidence, not resolved either way.** The service
+manual's Table 3-1 ("Memory Space Allocation") labels physical
+`0x406F0`-`0x406F7` (exactly `write_readout_port_byte`'s target and
+`init_readout_port_config`'s 3-byte config block, `+1`/`+2`/`+3`
+matching `0x406F1`-`0x406F3`) as **"Option UART/GPIB chips (I/O)" -
+8 consecutive addresses**, not a readout/CRT register at all. This is
+suspicious for a second reason: the service manual's GPIB theory-of-
+operation section separately states the comm option's GPIB controller
+(a TMS9914A) **"has eight internal registers"** - an exact count match
+to Table 3-1's 8-address block. Taken together, this is a real,
+specific case for `write_readout_port_byte` actually addressing the
+**comm-option daughter board's UART/GPIB chip directly**, not any
+CRT/readout hardware - which would mean this whole cluster
+(`print_string_far`/`print_char`/`write_readout_port_byte`/`init_
+readout_port_config`/`reset_readout_port`) was misnamed from an
+earlier session, before this address was independently confirmed.
+
+**Counter-evidence keeping this from being a confident rename**:
+`print_string_far` calls `wait_readout_tick` before every character
+it prints - `wait_readout_tick` busy-waits on `[0x752]`, the *general*
+per-`INT2`-tick scheduler heartbeat (not something readout-specific
+despite its own name), so this doesn't cleanly rule out either
+interpretation: pacing serial/UART output by polling a generic system
+tick is a perfectly ordinary crude flow-control technique in a small
+embedded system with no dedicated baud-rate timer interrupt, so the
+"wait" behavior is *consistent with* but doesn't *prove* either the
+UART or the CRT-readout story.
+
+**All 17 call sites of `print_string_far` are exclusively in the
+`self_test_dispatcher`/`print_selftest_banner` self-test-report region**
+(`0xE0400`-`0xE4300`) - none are used by the confirmed, separate
+vector-stroke readout display list (`print_readout_string`/`draw_
+readout_char`/`plot_readout_point`, which is unambiguously CRT-based
+and uses a completely different mechanism, see "The readout vector
+display list" above). This is consistent with either story too: a
+self-test banner is exactly the kind of text that might legitimately
+go out over an optional serial port for factory/field diagnostics
+*or* be drawn once on the CRT via a simpler fixed-position hardware
+character generator that the normal vector-font readout path doesn't
+need for a one-time full-screen report.
+
+**Left unresolved rather than guessed at - do not rename this cluster
+without more evidence.** The address match to a service-manual-
+documented comm-option register bank is real and specific, but the
+existing "CRT readout hardware port" story from an earlier session
+was never rigorously proven either (it was a plausible inference from
+"fixed address written once per character," which is equally
+consistent with a UART transmit-data register at a fixed offset).
+Worth resolving by finding what specific TMS9914A register `+0`
+(`0x406F0`, the data-write address) corresponds to in a GPIB/UART
+datasheet sense, or by checking whether `init_readout_port_config`'s
+literal bytes (`0x29`, `0x23`, `0x06`) match any documented UART baud-
+rate/mode-register constants for a chip of this era.
+
 Also found in this neighborhood: two single-byte **read**-only fixed
 addresses, `0x41000` (`SUB_E4429`) and `0x42000` (`SUB_E440A`) - not
 yet renamed (purpose unconfirmed - candidates: front-panel

@@ -75,24 +75,35 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 
 ## Puzzle: `write_readout_port_byte`'s address overlaps the comm-option UART register bank
 
-The service manual's Table 3-1 lists `0x40000+0x6F0` through `+0x6F7`
-as "Option UART/GPIB chips (I/O)" - registers that, by the manual's own
-description, only exist/matter when a comm option board is installed.
-But `write_readout_port_byte` (`0xE0B50`) writes to `0x40000+0x6F0`
-**unconditionally**, called once per character for ordinary readout
-text printing on every unit, comm option or not. Not reconciled. Two
-candidate explanations, neither confirmed: (a) the mainboard has its
-own always-present peripheral at this exact address that the manual's
-options-focused table simply didn't bother naming in the excerpted
-rows (the "Option Main Image"/"Option Duplicate Image" labeling in
-Table 3-1 is visually confusing in the OCR'd scan, so a mainboard-only
-register in the same range may have been mislabeled or is on a nearby
-row not yet found); (b) genuine bus sharing - the option card's chip-
-select logic only claims that address range when a card is physically
-present (a common design for optional add-in cards), and something
-else on the mainboard uses the *same* address when no option is
-installed. Worth resolving with a clearer read of the manual's page
-image around Table 3-1, not just the OCR text.
+**Re-examined 2026-09-13 against the manual's actual page image** (not
+just OCR text) - the picture is clearer but still unresolved. Table
+3-1's "IO Main Image" is one continuous list with no sub-grouping
+between "always present" and "option-only" rows - `0x406F0`-`0x406F7`
+("Option UART/GPIB chips (I/O)", 8 consecutive addresses) sit in the
+exact same list as `0x41XXX` (display chip interrupt reset), `0x437F6`
+(front panel A/D control), and `0x48000` (acquisition memory) - so
+there's no labeling confusion to blame; the address really is
+documented as comm-option hardware, plainly.
+
+**New, more specific evidence**: `init_readout_port_config` (`0xE0B6C`)
+writes 3 literal bytes to exactly `0x406F1`/`0x406F2`/`0x406F3` (the
+2nd/3rd/4th of the 8 registers) - and the service manual's own GPIB
+theory-of-operation section says the comm option's GPIB controller (a
+TMS9914A) **"has eight internal registers"** - an exact count match.
+This is real, specific evidence that `write_readout_port_byte`/`init_
+readout_port_config`/`print_char`/`print_string_far` (all self-test-
+banner-only, see `disasm/NOTES.md`'s expanded writeup) might genuinely
+be talking to the comm-option UART/GPIB chip directly for diagnostic
+text output, not any CRT/readout hardware - the "readout" naming may
+be a leftover guess from before this address was independently
+confirmed. **Not confident enough to rename**: `print_string_far`
+paces each character through `wait_readout_tick` (a generic system-
+tick busy-wait, not readout-specific despite its name), which is
+consistent with either a UART-pacing story or a CRT-hardware story and
+doesn't discriminate between them. See `disasm/NOTES.md`'s expanded
+"The readout/CRT display memory" section for the full writeup - left
+as a genuinely open, well-documented question rather than guessed at
+either way.
 
 ## Two separate A/D converters, both now named
 

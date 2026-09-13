@@ -45,17 +45,23 @@
       `EXERCISERS`'s `CONFIGURATION`/`IO` - `TB_DIVIDER`/`CLK_DELAY`'s
       registers and the A/D converter identity are now confirmed (see
       `MEMORY_MAP.md`/`CONTEXT.md`).
-- [ ] `write_readout_port_byte` writes unconditionally to physical
-      `0x40000+0x6F0`, but the service manual's Table 3-1 labels that
-      exact 8-address range (`0x6F0`-`0x6F7`) as "Option UART/GPIB
-      chips (I/O)" - registers that, per the manual's own description,
-      only exist when a comm option board is installed. Not
-      reconciled: either there's a mainboard-only register at this
-      same address the excerpted table rows didn't name, or the option
-      card's chip-select genuinely gates this range and something else
-      uses it when no card is present. See `MEMORY_MAP.md`'s "Puzzle"
-      note - worth a closer look at the manual's actual page image
-      (not just OCR text) if resolving this matters.
+- [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
+      `print_string_far` (all used exclusively for the self-test text
+      banner) write to physical `0x406F0`-`0x406F3`, which the service
+      manual's Table 3-1 confirms (checked against the actual page
+      image, not just OCR) as 3 of the comm-option's "Option UART/GPIB
+      chips" 8-register bank - and the manual separately says the
+      GPIB controller (TMS9914A) "has eight internal registers", an
+      exact count match. Real, specific evidence this cluster might be
+      writing to the comm-option UART/GPIB chip directly for
+      diagnostic output, not CRT/readout hardware as currently named -
+      but `print_string_far`'s per-character `wait_readout_tick` pacing
+      doesn't discriminate between the two stories, so **not confident
+      enough to rename**. See `disasm/NOTES.md`'s expanded "The
+      readout/CRT display memory" section. Next step: check whether
+      `init_readout_port_config`'s literal bytes (`0x29`/`0x23`/`0x06`)
+      match documented UART/GPIB mode-register constants for a chip of
+      this era.
 - [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
