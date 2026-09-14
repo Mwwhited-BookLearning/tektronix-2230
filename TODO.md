@@ -97,10 +97,13 @@
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
       not yet clear which wins or whether the DIP switch only sets
-      power-on defaults. Also: `COMM/DATA/ENCDG` offers ASCII/BINARY/
-      HEX waveform-data coding but only the ASCII path
-      (`print_signed_decimal_serial`/`print_param_list_response`) has
-      been identified in code so far - find the binary/hex one(s).
+      power-on defaults. `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
+      waveform-data formats and the binary checksum algorithm are now
+      all confirmed live byte-exact against the manual (see
+      `disasm/NOTES.md`'s "Live session, 2026-09-14 (continued)") -
+      still not tied to specific disassembled routines beyond the
+      known ASCII path (`print_signed_decimal_serial`/`print_param_
+      list_response`), just no longer a protocol/format unknown.
 - [ ] **Landing-artifact phenomenon** (real compiled `CALL`/`LCALL`/
       `JMP`/`LJMP` targets landing 1-4 bytes before where coherent code
       actually resumes): root cause confirmed statistically (`disasm/
@@ -179,17 +182,33 @@
         Register U4119", not comm-specific, but exact bit semantics
         still unresolved.
       - The genuine UART-receive entry point (where an incoming byte
-        first lands in `[6]`/`[0x580]`) and the downstream keyword-
-        matching function (`ID`/`SET`/`CURVE`/etc. vs. the low-level
-        `[0x712]` byte-classification table, which is NOT the keyword
-        matcher - see `disasm/NOTES.md`'s "Follow-up: found [0x712]'s
-        actual contents") are both still unfound in the disassembly.
-        Now that live command/response round-trips actually work at
-        1200 baud, this is directly live-testable again if picked up.
-      - `STAtus?` returned `STATUS 128;` at 1200 baud - doesn't fit any
-        row in `hardware/manuals/2230_programming/README.md`'s Table
-        7-34 (every documented category has bit 7 clear). Worth a
-        closer look.
+        first lands in `[6]`/`[0x580]`) is still unfound in the
+        disassembly. **Progress 2026-09-14**: found the likely backing
+        *data* for the keyword matcher itself - a real command-keyword
+        table in the comm ROM (file offsets `0x8A59`-`0x8F1D`) whose
+        entries match the live `HELp?` list byte-for-byte, plus a
+        6-byte-per-entry index/dispatch table immediately before it
+        that resolves numeric command IDs to far pointers landing
+        exactly on each keyword's table entry - see `disasm/NOTES.md`'s
+        "Found the real command-keyword table". **Still not found**:
+        the code that actually walks this index table / assigns the
+        numeric command ID from incoming bytes - a grep for the far
+        pointers' literal segment value found zero hits in the
+        already-disassembled code, so it's either computed dynamically
+        or lives in an unreached region.
+      - `STAtus?` returned `STATUS 128;` at 1200 baud once, and never
+        again - **investigated further 2026-09-14, not reproduced**:
+        10 consecutive live `STAtus?` calls at 4800 baud all returned a
+        clean `STATUS 0;`, and Table 7-34's bit layout hardcodes bit 7
+        to `0` in every documented category, so no ROM code path can
+        produce it under the documented status scheme. Best remaining
+        explanation is a one-off transient serial glitch, not a
+        firmware defect - see `disasm/NOTES.md`'s "Live session,
+        2026-09-14 (continued)" for the full writeup. Also newly found
+        in the same session: some query responses substitute an inline
+        `STATUS <code>;` for a single field's value (e.g. `DELAY
+        VALUE:STATUS 98;`) rather than failing the whole response -
+        worth remembering when parsing any response programmatically.
       - Whether `FUNC_2998_39F5` (the originally-suspected polling
         loop, never confirmed reachable) or `poll_comm_status_tick`
         (confirmed reachable via the real hardware interrupt, but only
