@@ -318,6 +318,18 @@
       behavior would justify disassembling `-13` specifically. See
       `disasm/NOTES.md`'s "BREAKTHROUGH, 2026-09-14" section for the
       full transcript and reasoning trail.
+      **Cross-check run**: Scope 2 (`-14`) tested the same way -
+      `SET?` also returned `STATUS 98;READY;`, the same dominant
+      pattern as Scope 1. **This weakens the `-13`-specific-defect
+      theory** - getting the same non-answer on both ROM revisions
+      points toward something common to both (not yet found in the
+      already-read `-14` disassembly), or a gap in this project's own
+      test methodology vs. how a period-correct terminal/controller
+      would actually talk to the instrument. Also raised live: a
+      *second* oscilloscope may be probing the RX/TX lines on Scope 1
+      for monitoring purposes, which could itself be loading/
+      corrupting the signal - worth removing before trusting any
+      further "corruption" observations on Scope 1 specifically.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

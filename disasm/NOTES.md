@@ -1712,6 +1712,43 @@ specifically and justifies disassembling it; if it behaves identically,
 the cause is common to both revisions and still hiding somewhere in the
 already-read `-14` code.
 
+**Experiment run, same day: Scope 2 (`-14`) shows the same dominant
+pattern.** First tried at 9600 baud immediately after connecting - got
+`0` bytes (later explained: Scope 2's switches were still at the old,
+uncorrected `1110000000` reading from earlier in this session, which
+under the corrected switch-4-is-MSB bit order is actually **1200
+baud**, not 9600 - the two scopes' switches had never been aligned).
+At the *actual* matching baud (1200), `ID?` returned `STATUS 97;
+READY;\r` plus a stray trailing `\x00` - a real, mostly-clean response,
+different in its specific code (`97`=Command Error, vs. Scope 1's more
+common `98`=Execution Error) but the same general shape (a `STATUS
+<n>;READY;` wrapper instead of a real answer).
+
+The user then power-cycled Scope 2 and switched back to testing at
+9600 (rather than fixing the switches to genuinely match Scope 1) -
+immediately after the reset, one `EVEnt?` call returned pure line
+noise (`\xff\xbf\xff\x7f\xff` - the classic near-all-ones-with-single-
+bit-glitches shape of a floating/unstable line, matching this
+project's very first "hardware transient" finding from the start of
+this whole investigation), but subsequent calls at 9600 settled into
+clean text again: `EVEnt?` -> `READY;\r`, and critically **`SET?` ->
+`STATUS 98;READY;`** - the *same* dominant pattern as Scope 1, on the
+*other* ROM revision.
+
+**This is a real, useful negative result**: getting the same `STATUS
+98` non-answer on both a `-13` and a `-14` unit weakens the
+"`-13`-specific firmware defect" hypothesis - whatever's actually
+causing this is more likely something common to both revisions (a
+firmware behavior neither this project's `-14` disassembly work nor
+this session's exhaustive settings elimination has explained yet), or
+something about the specific way this project's test methodology
+talks to the instrument that differs from how a period-correct
+terminal/controller would (worth revisiting the exact byte-level
+framing/timing `pyserial` uses versus what a real 1980s controller
+would have done, as a fresh angle). Diffing/disassembling the `-13`
+comm ROM is now a lower-priority lead than it was; the shared-cause
+hypothesis deserves more attention first.
+
 ## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
 
 Found 2026-09-13 reading further into the service manual's Theory of
