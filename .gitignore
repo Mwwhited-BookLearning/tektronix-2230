@@ -7,3 +7,5 @@ _src_check_*.asm
 _src_check_*.bin
 _final_check_*.bin
 *.heic
+
+scratchpad/
