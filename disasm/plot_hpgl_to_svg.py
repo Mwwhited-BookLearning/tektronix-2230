@@ -56,6 +56,13 @@ def capture_hpgl_plot(port, baud, graticule, speed, idle_timeout, max_wait):
                          parity=parity_map["N"], stopbits=1, timeout=0.3)
     try:
         ser.reset_input_buffer()
+        # If a previous run was cut off mid-plot (e.g. --max-wait was hit
+        # before the scope finished), it's still "busy" and ignores every
+        # command but PLOt ABOrt - clear that state unconditionally first.
+        ser.write(b"PLOt ABOrt\r")
+        time.sleep(0.5)
+        ser.read(500)
+
         ser.write(b"PLOt FORmat:HPGl\r")
         time.sleep(0.3)
         ser.read(500)  # discard any command-echo/status noise before the plot
