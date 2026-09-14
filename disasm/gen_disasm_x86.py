@@ -1386,6 +1386,44 @@ FUNCTIONAL_NAMES = {
                                                # calls init_comm_
                                                # default_params(1) for
                                                # the rest
+    0x85C9D: "compute_response_format_flags",   # (word flags) - reads
+                                               # the current command's
+                                               # numeric ID from es:
+                                               # [0x732+0x1F] (the same
+                                               # field checked by
+                                               # init_comm_device_type_
+                                               # and_defaults) and ORs
+                                               # a bit into the caller's
+                                               # flags word for 3
+                                               # specific IDs - 0x14
+                                               # (LONg), 0x15 (MESsage),
+                                               # 0x1E (REFStat), per the
+                                               # 2026-09-14 keyword-
+                                               # table's alphabetical
+                                               # ID order - plus a
+                                               # GPIB(0x8000)/
+                                               # RS-232(0x4000) mode bit
+                                               # from [0x629]. Likely
+                                               # marks "this command's
+                                               # response needs quoted-
+                                               # string-aware
+                                               # formatting" (all 3 IDs
+                                               # involve literal quoted
+                                               # text or verbosity in
+                                               # their reply) - called
+                                               # 3x from a small caller
+                                               # that then walks a
+                                               # 12-byte-record table at
+                                               # far ptr [0x6fe],
+                                               # matching required-flag
+                                               # masks against the
+                                               # computed word - part of
+                                               # the response-formatting
+                                               # engine, not the
+                                               # instrument-state-change
+                                               # handler (see docs/comm-
+                                               # rom/rs232-live-session-
+                                               # 2026-09-14.md)
     0x962C2: "poll_dip_switch_change",          # toggles a strobe/
                                                # chip-select-looking
                                                # flag (es:[0x6E2+3],

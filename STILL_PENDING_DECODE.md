@@ -75,6 +75,22 @@ The single biggest cluster of open items - see
   dispatch record in the slice found so far (a second/wider table may
   exist), and 4 header-table entries (`ADDress`, `BYTe`, `JMP`,
   `SEGment`) don't match any live `HELp?` response at all.
+  **Progress 2026-09-14**: found where the numeric command ID actually
+  gets *consumed* at runtime - `[0x732+0x1F]` (a byte field on the far
+  pointer `[0x732]`, itself read via `les di,[0x732]` at 89 separate
+  sites across the comm ROM, by far the most-referenced comm-ROM
+  variable found so far - see `VARIABLES.md`). Confirmed via a new
+  function, `compute_response_format_flags` (`0x85C9D`), which matches
+  this field against `0x14`/`0x15`/`0x1E` (`LONg`/`MESsage`/`REFStat`,
+  confirmed against the keyword table's own ID order) to flag commands
+  needing quote-aware response formatting. **Still not found**: who
+  *writes* `[0x732+0x1F]` in the first place (i.e. who assigns the ID
+  after parsing an incoming command) - that would be the actual
+  dispatcher entry point. See `docs/comm-rom/rs232-live-session-2026-
+  09-14.md`'s follow-up section - it also lays out a concrete, reusable
+  next step: search for `cmp ax, <id>` against each of the other ~37
+  known command IDs to keep mapping this pipeline directly, rather than
+  scanning blindly.
 - **`[0x1B83]`'s exact bit semantics.** Confirmed as the general-
   purpose "Time Base Mode Register U4119" (not comm-specific), and
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm

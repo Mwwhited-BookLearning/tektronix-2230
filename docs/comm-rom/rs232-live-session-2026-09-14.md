@@ -171,7 +171,7 @@ low-then-high mid-session and see if it reproduces on demand), but this
 is a more specific, physically-grounded theory than plain "transient
 glitch," and rules out pure reconnect-timing as the cause.
 
-## Tried tracing `MESsage <NR1>:"..."` to the drawing code (and from there, backward to the stroke-font table) - dead end, but a useful one
+## Tried tracing `MESsage <NR1>:"..."` to the drawing code (and from there, backward to the stroke-font table) - not the drawing code, but found the real command-ID field and a new function along the way
 
 The idea (a good one, worth recording why it didn't pan out): `MESsage`
 is a real, documented RS-232 command
@@ -224,3 +224,52 @@ stroke-font table**, but it does rule out the one specific path this
 idea proposed, and strengthens the case that solving "who walks the
 command-ID table" would likely unlock *both* mysteries at once, not
 just the RS-232 one - worth prioritizing for that reason.
+
+**Follow-up in the same session: found where the numeric command ID
+actually gets *used*, via a much more targeted search.** Since
+`MESsage`'s numeric dispatch ID (`0x15`, from the keyword table above)
+was already known, searched for a literal `cmp ax, 0x15` instruction
+directly (looking for the shape of this codebase's documented
+preferred dispatch style - a linear `cmp`+`je` chain - rather than
+scanning for calls). Found exactly one hit, at physical `0x85CCF`, as
+part of a real 3-entry chain: `cmp ax,0x14 / je ... / cmp ax,0x15 /
+je ... / cmp ax,0x1E / je ...`.
+
+Traced the containing function (physical `0x85C9D`, now named
+`compute_response_format_flags` in `gen_disasm_x86.FUNCTIONAL_NAMES`
+- see `FUNCTIONS.md`): it reads a byte from `es:[di+0x1F]` where `di`
+was just loaded via `les di, ptr [0x732]` - **and `[0x732]` turns out
+to be read this exact way (`les di,[0x732]`) at 89 separate places
+across the comm ROM**, found via a raw byte-level scan for that precise
+5-byte instruction encoding. This is clearly a central "current
+command/device context" far pointer, far more heavily used than any
+other comm-ROM variable found so far - see `VARIABLES.md`'s new
+`[0x732]` entry.
+
+Cross-referencing the byte at `[0x732+0x1F]` against
+`disasm/comm_keyword_tables.json`'s alphabetical header-table order
+confirms `0x14`=`LONg`, `0x15`=`MESsage`, `0x1E`=`REFStat` exactly -
+**this field is genuinely the current command's numeric dispatch ID**,
+readable at a known location for the first time this project has ever
+pinned one down concretely (previously only inferred from the
+dispatch-table's own far-pointer structure, never confirmed as a live,
+readable runtime value). `compute_response_format_flags` ORs a bit for
+each of these 3 specific IDs into a caller-supplied flags word (plus a
+GPIB/RS-232 mode bit from `[0x629]`), then its caller uses the result
+to walk a 12-byte-record table at far pointer `[0x6fe]`, matching each
+entry's required-flags word against it - **this looks like response-
+formatting-behavior selection** (all 3 IDs share "response contains
+either literal quoted text or a verbosity toggle," suggesting "does
+this reply need quote-aware formatting" is what's being decided), not
+the instrument-state-change handler that would draw `MESsage`'s text
+to the CRT. Those remain two distinct, both still-unfound code paths -
+this is progress on the parser/formatter side, not the display side.
+
+**Genuinely new and reusable technique for continuing this**: now that
+`[0x732+0x1F]`'s meaning is confirmed, searching for `cmp ax, <id>`
+against any of the *other* known command IDs from
+`disasm/comm_keyword_tables.json` (all ~40 of them, not just the 3
+found here) is a targeted, tractable way to keep discovering pieces of
+the command-processing pipeline directly - a much better lever than
+either blind heuristic scanning or searching for calls to a specific
+target function.

@@ -1,9 +1,9 @@
 {
   "80060": {
-    "name": "FUNC_2998_0060",
+    "name": "set_comm_flow_hold",
     "kind": "sub",
     "ref_count": 7,
-    "functional_name": null,
+    "functional_name": "set_comm_flow_hold",
     "notes": null
   },
   "8007B": {
@@ -28,10 +28,10 @@
     "notes": null
   },
   "8009B": {
-    "name": "FUNC_2998_009B",
+    "name": "set_comm_queue_busy",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "set_comm_queue_busy",
     "notes": null
   },
   "800CF": {
@@ -49,10 +49,10 @@
     "notes": null
   },
   "800FC": {
-    "name": "FUNC_2998_00FC",
+    "name": "update_comm_tx_ready_flag",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "update_comm_tx_ready_flag",
     "notes": null
   },
   "8011B": {
@@ -70,10 +70,10 @@
     "notes": null
   },
   "80133": {
-    "name": "SUB_80133",
+    "name": "init_far_pointer_table",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "init_far_pointer_table",
     "notes": null
   },
   "80143": {
@@ -1694,10 +1694,10 @@
     "notes": null
   },
   "81404": {
-    "name": "FUNC_2998_1404",
+    "name": "print_signed_decimal_serial",
     "kind": "sub",
     "ref_count": 18,
-    "functional_name": null,
+    "functional_name": "print_signed_decimal_serial",
     "notes": null
   },
   "81421": {
@@ -1708,10 +1708,10 @@
     "notes": null
   },
   "8142F": {
-    "name": "FUNC_2998_142F",
+    "name": "print_unsigned_decimal_serial",
     "kind": "sub",
     "ref_count": 9,
-    "functional_name": null,
+    "functional_name": "print_unsigned_decimal_serial",
     "notes": null
   },
   "8143D": {
@@ -2856,10 +2856,10 @@
     "notes": null
   },
   "821F7": {
-    "name": "FUNC_2998_21F7",
+    "name": "init_comm_default_params",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "init_comm_default_params",
     "notes": null
   },
   "82200": {
@@ -3563,10 +3563,10 @@
     "notes": null
   },
   "82D01": {
-    "name": "FUNC_2998_2D01",
+    "name": "print_string_serial",
     "kind": "sub",
     "ref_count": 35,
-    "functional_name": null,
+    "functional_name": "print_string_serial",
     "notes": null
   },
   "82D0A": {
@@ -3584,10 +3584,10 @@
     "notes": null
   },
   "82D2B": {
-    "name": "FUNC_2998_2D2B",
+    "name": "print_padded_label",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "print_padded_label",
     "notes": null
   },
   "82D4E": {
@@ -3717,10 +3717,10 @@
     "notes": null
   },
   "82EB9": {
-    "name": "FUNC_2998_2EB9",
+    "name": "print_param_list_response",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "print_param_list_response",
     "notes": null
   },
   "82EDE": {
@@ -3738,10 +3738,10 @@
     "notes": null
   },
   "82F14": {
-    "name": "FUNC_2998_2F14",
+    "name": "get_next_param_value",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "get_next_param_value",
     "notes": null
   },
   "82F3A": {
@@ -4102,17 +4102,17 @@
     "notes": null
   },
   "83241": {
-    "name": "FUNC_2998_3241",
+    "name": "putchar_serial",
     "kind": "sub",
     "ref_count": 47,
-    "functional_name": null,
+    "functional_name": "putchar_serial",
     "notes": null
   },
   "83259": {
-    "name": "FUNC_2998_3259",
+    "name": "putchar_serial_seg",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "putchar_serial_seg",
     "notes": null
   },
   "83285": {
@@ -4844,10 +4844,10 @@
     "notes": null
   },
   "839D1": {
-    "name": "FUNC_2998_39D1",
+    "name": "comm_call_main_rom",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "comm_call_main_rom",
     "notes": null
   },
   "839F5": {
@@ -7266,17 +7266,17 @@
     "notes": null
   },
   "85238": {
-    "name": "FUNC_2998_5238",
+    "name": "reset_comm_parser_state",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "reset_comm_parser_state",
     "notes": null
   },
   "8526B": {
-    "name": "FUNC_2998_526B",
+    "name": "process_gpib_command_byte",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "process_gpib_command_byte",
     "notes": null
   },
   "8528D": {
@@ -8120,10 +8120,10 @@
     "notes": null
   },
   "85C9D": {
-    "name": "FUNC_2998_5C9D",
+    "name": "compute_response_format_flags",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "compute_response_format_flags",
     "notes": null
   },
   "85CA6": {
@@ -8260,10 +8260,10 @@
     "notes": null
   },
   "85E66": {
-    "name": "FUNC_2998_5E66",
+    "name": "init_comm_device_type_and_defaults",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "init_comm_device_type_and_defaults",
     "notes": null
   },
   "85E7D": {
