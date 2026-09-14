@@ -123,14 +123,32 @@ top item.
 - **`[0x1DB0]`'s value (the glyph pointer-array's actual address) has
   never been found.** The bit-packing mechanism is fully understood
   and has a working tool (`disasm/decode_stroke_font.py`), but nothing
-  in proven or heuristic code writes `[0x1DB0]` itself. A structural
-  search for the 128-entry far-pointer array's *shape* (rather than a
-  contiguous glyph run) found zero candidates in either main-ROM chip.
-- Tracing `boot_init`'s data-driven init loops to find what directly
-  sets `[0x1DB0]`/`[0x1CC4]` hasn't been done - this is the most
-  promising untried approach (vs. more blind scanning).
-- The table might live in the comm ROM or another unmodeled region
-  rather than either main-ROM chip - not ruled out.
+  in proven or heuristic code writes `[0x1DB0]` itself - confirmed
+  2026-09-14 across all 3 chips' proven+heuristic listings (every hit
+  is a read, zero writes). `boot_init`'s own data-driven init loop was
+  fully traced 2026-09-14 and confirmed to be an unrelated RAM
+  march-test routine, closing off that specific lead.
+- A structural search for the 128-entry far-pointer array's *shape*
+  found zero real candidates in any of the 3 chips (main ROMs and comm
+  ROM all tried as of 2026-09-14) - a real scoring bug was found and
+  fixed along the way (bit `0x08` was wrongly treated as an invalid
+  coarse-nibble bit; it's actually part of the valid fine nibble), but
+  loosening thresholds after the fix just lets random noise back in
+  rather than surfacing a real table. Blind byte-pattern scanning may
+  be fundamentally unable to distinguish real stroke data from
+  coincidence here, since (per the bug fix) every non-zero byte is
+  syntactically a legal stroke byte.
+- **New 2026-09-14**: tried matching against real, live-captured
+  ground truth (an isolated "2V" HPGL label) instead of scanning ROM
+  bytes blindly. Hit a concrete, reproducible quantization puzzle -
+  two different captured characters both need 9 distinct native Y
+  levels to fit their plotted coordinates under the most natural
+  step-size assumption, one more than the 3-bit coarse field can hold.
+  Not resolved; see `docs/display/vector-display-and-stroke-font.md`'s
+  "Follow-up, 2026-09-14" for the exact numbers and what's been ruled
+  out. Most promising next step: solve for the true HPGL-to-native
+  transform using more captured samples, or find the ROM's own
+  plot-scale-for-readout-text constant directly.
 
 ## Front-panel switches
 

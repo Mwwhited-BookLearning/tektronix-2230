@@ -177,12 +177,20 @@ def _plausible_rom_addr(seg, off):
 def _stroke_run_score(buf, base, phys, max_len=60):
     """At a candidate stroke-data address, read forward until a 0x00
     terminator (or max_len) and score how "stroke-byte-like" the run
-    looks: every byte should freely use the low nibble (fine, 0-15) and
-    mid nibble (coarse, 0-7, i.e. top bit of the nibble clear) - real
-    stroke bytes never have bits 0x08 of the coarse nibble set since
-    coarse is only 3 bits. A run of pure zeros or one that runs straight
-    into another 0x00 in 1-2 bytes scores low (too short to be a real
-    character)."""
+    looks.
+
+    CORRECTED: every byte 0x01-0xFF is a *syntactically* legal stroke
+    byte under this encoding (1 pen bit + 3 coarse bits + 4 fine bits
+    = all 8 bits accounted for, no reserved combinations) - there is
+    no invalid bit pattern to check for, only 0x00 is special (the
+    terminator). An earlier version of this function penalized bit
+    0x08 as "an invalid coarse bit," but 0x08 is bit 3, which is part
+    of the *fine* nibble (mask 0x0F, bits 0-3) - a fine value of 8-15
+    legitimately sets it. That bug rejected half of all valid fine
+    values and likely contributed to the "zero candidates found" result
+    from the original scan. Score is now just run length (a very short
+    run, e.g. immediately hitting 0x00, scores low - not because it's
+    "invalid" but because it's too little evidence either way)."""
     off = phys - base
     if off < 0 or off >= len(buf):
         return -1, 0
@@ -194,20 +202,28 @@ def _stroke_run_score(buf, base, phys, max_len=60):
         if b == 0:
             break
         run.append(b)
-    if not run:
-        return -1, 0
-    bad = sum(1 for b in run if b & 0x08)  # coarse nibble should be 0-7, not 8-15
-    score = len(run) - bad * 3
-    return score, len(run)
+    return len(run), len(run)
 
 
-def scan_pointer_table(chip_name, step=2, sample_chars=(0x20, 0x30, 0x41, 0x61)):
+def scan_pointer_table(chip_name, step=2, sample_chars=(0x30, 0x31, 0x41, 0x48, 0x4f, 0x61),
+                        min_hits=None, min_run=2):
     """Search for the REAL shape: a 128-entry (offset, segment) far-
     pointer array where most sampled entries point to a physically
     plausible ROM address that itself looks like a short, real stroke-
     byte run. Only checks a handful of representative character
-    indices (space/digit/upper/lower) per candidate base for speed -
-    good enough to shortlist candidates for a full render."""
+    indices per candidate base for speed - good enough to shortlist
+    candidates for a full render.
+
+    Sample chars deliberately avoid space (0x20) - a real space glyph
+    plausibly has zero strokes (an immediate 0x00 terminator), which
+    would always fail a "must have a run" check regardless of whether
+    the table is real. Uses '0','1','A','H','O','a' instead - all
+    printable characters overwhelmingly likely to have visible strokes.
+    min_hits defaults to requiring ALL sample chars to resolve, but can
+    be loosened (e.g. len(sample_chars)-1) to tolerate one degenerate
+    entry."""
+    if min_hits is None:
+        min_hits = len(sample_chars)
     buf, base = read_chip_bytes(chip_name)
     results = []
     for table_off in range(0, len(buf) - 512, step):
@@ -224,13 +240,13 @@ def scan_pointer_table(chip_name, step=2, sample_chars=(0x20, 0x30, 0x41, 0x61))
             if phys is None:
                 continue
             s, length = _stroke_run_score(buf, base, phys)
-            if s > 3:
+            if s >= min_run:
                 hits += 1
                 total_score += s
-        if hits >= len(sample_chars):  # every sampled char must plausibly resolve
+        if hits >= min_hits:
             results.append((total_score, base + table_off, hits))
     results.sort(reverse=True)
-    print(f"{chip_name}: {len(results)} table-base candidates with all "
+    print(f"{chip_name}: {len(results)} table-base candidates with >={min_hits}/"
           f"{len(sample_chars)} sampled chars resolving to plausible stroke runs")
     for score, addr, hits in results[:20]:
         print(f"  0x{addr:06X}  score={score}  hits={hits}")
@@ -247,6 +263,10 @@ def main():
                      help="scan the whole chip for font-table-shaped regions instead (superseded, see --scan-pointers)")
     ap.add_argument("--scan-pointers", action="store_true",
                      help="scan for the real 2-level pointer-table shape instead")
+    ap.add_argument("--min-hits", type=int, default=None,
+                     help="--scan-pointers: how many sample chars must resolve (default: all)")
+    ap.add_argument("--min-run", type=int, default=2,
+                     help="--scan-pointers: minimum stroke-run length to count as a hit")
     args = ap.parse_args()
 
     if args.scan:
@@ -254,7 +274,7 @@ def main():
         return
 
     if args.scan_pointers:
-        scan_pointer_table(args.chip)
+        scan_pointer_table(args.chip, min_hits=args.min_hits, min_run=args.min_run)
         return
 
     if args.start is None or args.end is None:

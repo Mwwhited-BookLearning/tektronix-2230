@@ -184,3 +184,91 @@ script. Two things came out of using it:
    region genuinely unreached by this project's `buf` reconstruction
    in some way not yet identified. Worth revisiting with looser/
    different heuristics rather than treating this as a final answer.
+
+## Follow-up, 2026-09-14: fixed a real bug in the pointer-table scorer; still no real candidate; tried ground-truth byte matching, hit a concrete quantization puzzle
+
+**Found and fixed a genuine bug in `_stroke_run_score`.** It penalized
+any stroke byte with bit `0x08` set, on the theory that "coarse is
+only 3 bits so this bit must be invalid" - but bit `0x08` is bit 3,
+which belongs to the *fine* nibble (`0x0F`, bits 0-3), not coarse
+(`0x70`, bits 4-6). Every byte value `0x01`-`0xFF` is a syntactically
+legal stroke byte under this encoding (1 pen bit + 3 coarse bits + 4
+fine bits accounts for all 8 bits with no reserved combinations) - the
+old scorer was rejecting exactly half of all valid fine values. Fixed
+to just score by run length; also swapped `space` out of the default
+sample-character set (a real space glyph plausibly has zero strokes,
+which the old "must have a run" check always failed regardless of
+whether the table was real) and added a `--min-hits`/`--min-run` CLI
+option to loosen the "every sample char must resolve" requirement.
+
+**Reran across all three chips, including the comm ROM (never tried
+as the table's *location* before)**: still **zero candidates** at the
+strict "all 6 sample chars resolve" setting, on every chip. Loosening
+to 4-of-6 surfaced candidates in `3532` and `2998` - **but resolving
+every printable character's entry for the top `3532` candidate
+(`0xF7C00`) shows wildly inconsistent segments jumping randomly across
+all three ROM chips per adjacent character** (`'!' -> 0x8b15:7307`,
+`'"' -> 0xd78b:f87e` (3633), `'#' -> 0x04e8:1608` (implausible), `'$' ->`
+...) - the opposite of what a real font table would look like (which
+should mostly reuse one or two consistent segments). **Confirmed false
+positive, not a real table** - loosening the byte-validity filter just
+lets random noise back in, since (per the bug-fix finding above) there
+genuinely is no invalid stroke-byte pattern to filter on. Blind
+byte-pattern scanning may be fundamentally unable to distinguish real
+stroke data from coincidental noise here.
+
+**Tried a different angle instead: match against real, live-captured
+ground truth.** This project has an actual HPGL capture of an isolated
+"2V" readout label (`scratchpad/plot1.hpgl`, from the 2026-09-14
+`plot_hpgl_to_svg.py` testing session) - real vector strokes for the
+digit `2` traced directly off the CRT, not a guess. The idea: derive
+the expected native `(coarse, fine)` sequence for a known character
+from real hardware output, then search the ROM for a matching byte
+sequence (masking off the pen bit, since its exact semantics per byte
+aren't needed for a coordinate-sequence match) - sidestepping blind
+statistical scanning entirely.
+
+The `2` glyph's plotted points: X uses `{10,14,18,22,26}` (GCD of
+differences = exactly 4, mapping cleanly to native fine levels
+`0,1,2,3,4` - well within the 0-15 range). **Y hits a real, unresolved
+obstacle**: its 8 distinct plotted values `{115,119,127,131,135,139,
+143,147}` also have GCD exactly 4, but mapping them the same way
+(baseline = 115 -> coarse 0) needs native levels `{0,1,3,4,5,6,7,8}` -
+**9 needed, when the coarse field is only 3 bits wide (max 8 distinct
+values, 0-7)**. The value `8` doesn't fit. This isn't a rounding
+error - the GCD is exact and forced by the data. Possible
+explanations, none confirmed: the "baseline captured once per
+character" (`[0x1AF8]`) isn't simply the character's own minimum
+plotted Y, so 115 doesn't actually correspond to coarse `0`; the HPGL
+output pipeline applies a scale factor that doesn't preserve a clean
+integer relationship to the native grid (unlikely given how exact the
+GCD came out, but not ruled out); or the true native Y step is finer
+than 4 and two of these 8 plotted points are meant to land on the
+*same* coarse code (needs independent confirmation, e.g. from a
+second captured character, to distinguish from the first two
+theories). **Checked the second character in the same capture (`V`) - confirms
+this is systematic, not a fluke.** `V`'s plotted points hit the exact
+same 8 distinct Y values as `2` (`115,119,127,131,135,139,143,147`,
+same GCD-4 step, same gap at 123, same overflow needing level `8`).
+Both characters sit on the same text line and apparently share
+*exactly* the same Y-grid footprint despite being completely different
+shapes - strong evidence the baseline/step is a per-line (or
+per-print-record) constant, not something derived per-glyph from each
+character's own bounding box, and that the "9 slots needed" overflow
+is a real, reproducible property of this specific mapping attempt
+rather than noise from one sample. **Still not resolved** - ruling out
+"random coincidence" narrows it to a genuine off-by-one somewhere in
+the baseline/step assumption (tried shifting the baseline to several
+other candidate reference points, including a signed/two's-complement
+reinterpretation of the 3-bit coarse field - every variant tried still
+overflows by exactly one slot somewhere, since the real constraint is
+the *span* `(147-115)/4=8` requiring 9 representable values no matter
+where the baseline sits). The most likely remaining explanation: the
+true native step is not exactly 4 HPGL units, and the HPGL output
+pipeline's own plot-scaling math (already known elsewhere in this
+codebase to use `imul`/`idiv` fixed-point ratios, not fixed integer
+factors) doesn't preserve as clean a relationship as hoped - solving
+for the real transform would need either a captured character with a
+different, independently-verifiable relative shape (to set up 2+
+equations) or finding the ROM's own plot-scale-for-readout-text
+constant directly rather than reverse-solving from output samples.

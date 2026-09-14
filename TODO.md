@@ -5,30 +5,64 @@
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see
-      `disasm/NOTES.md` "Attempted: locating the stroke-font glyph
-      table"), but the table's physical address (`[0x1DB0]`'s value)
-      hasn't been found - nothing writes it in proven or heuristic
-      code. `[0x1DB8]`/`[0x1DBC]` (nearby) are ruled out as simple
-      plot-scale byte caches, not font data - see `VARIABLES.md`
-      "Acquisition/plot scaling". The `0xEA5E6`-`0xEB131` candidate
-      region is ruled out (generic repetitive hook shapes, no
-      letterforms). **Tool built 2026-09-13**: `disasm/decode_stroke_
-      font.py` implements the confirmed bit-packing formula and
-      renders any byte range to an SVG glyph catalog - reusable for any
-      future candidate, and re-confirmed the `0xEA5E6` ruling with a
-      proper tool (`disasm/stroke_font_candidates/0xEA5E6-0xEB131.svg`).
-      **Realized the earlier search approach was structurally wrong**:
-      `[0x1DB0]` points to a 128-entry far-pointer *array*, not glyph
-      data directly - each entry points to that character's own
+      `docs/display/vector-display-and-stroke-font.md`), but the
+      table's physical address (`[0x1DB0]`'s value) hasn't been found -
+      nothing writes it in proven or heuristic code, confirmed again
+      2026-09-14 by grepping every disassembly listing across all 3
+      chips for any touch of offset `0x1db0` - every hit is a `les`
+      read inside `draw_readout_char`, zero writes anywhere. `[0x1DB8]`/
+      `[0x1DBC]` (nearby) are ruled out as simple plot-scale byte
+      caches, not font data - see `VARIABLES.md` "Acquisition/plot
+      scaling". The `0xEA5E6`-`0xEB131` candidate region is ruled out
+      (generic repetitive hook shapes, no letterforms). `boot_init`'s
+      own data-driven init loop (physical `0xE0155`/`0xE017D`/
+      `0xE01AF`) was traced fully 2026-09-14 - it's a RAM-sizing/march-
+      test routine (bit patterns like `0xFD`/`0xF0F0`/`0xFFFF` written
+      and read back), confirmed unrelated to font data, not just
+      "not fully traced" as before.
+
+      **Tool built 2026-09-13**: `disasm/decode_stroke_font.py`
+      implements the confirmed bit-packing formula and renders any byte
+      range to an SVG glyph catalog - reusable for any future
+      candidate, and re-confirmed the `0xEA5E6` ruling with a proper
+      tool. **Realized the earlier search approach was structurally
+      wrong**: `[0x1DB0]` points to a 128-entry far-pointer *array*, not
+      glyph data directly - each entry points to that character's own
       (possibly non-contiguous) stroke bytes elsewhere. Added `scan_
       pointer_table()` to search for the pointer array's shape instead
-      of a contiguous glyph run, but it found **zero candidates** in
-      either main-ROM chip even with relaxed thresholds - genuinely
-      inconclusive (scoring heuristic may be too strict, or the table
-      lives in the comm ROM/an unmodeled region). Worth revisiting with
-      different heuristics, or tracing `boot_init`'s data-driven init
-      loops to find what sets `[0x1DB0]`/`[0x1CC4]` directly instead of
-      searching blind.
+      of a contiguous glyph run.
+
+      **2026-09-14: found and fixed a real bug in that scanner**
+      (`_stroke_run_score` penalized bit `0x08` as an "invalid coarse
+      bit," but it's actually part of the valid *fine* nibble - every
+      byte `0x01`-`0xFF` is syntactically legal under this encoding,
+      so there's no invalid-bit-pattern signal to filter on at all).
+      Reran across all three chips including the comm ROM (never tried
+      as the table's *location* before) - still zero candidates at
+      strict thresholds; loosened thresholds surface candidates but
+      resolving them shows segments jumping randomly across all three
+      chips per adjacent character - confirmed false positives, not a
+      real table. **Blind byte-pattern scanning may be fundamentally
+      unable to find this table** (there's no statistically-invalid
+      byte pattern to search for). **Tried a new angle instead**: used
+      a real live HPGL capture of an isolated "2V" readout label
+      (`scratchpad/plot1.hpgl`, gitignored - re-capture with
+      `disasm/plot_hpgl_to_svg.py` if needed) to derive the expected
+      native coordinate sequence from actual hardware output and search
+      for a content match. Hit a concrete, reproducible obstacle:
+      both captured characters need 9 distinct native Y levels
+      (`0,1,3,4,5,6,7,8`) to fit their observed HPGL Y-coordinates
+      under a step-4 assumption, one more than the 3-bit coarse field's
+      8-value capacity - confirmed on 2 different glyphs, not a fluke,
+      and not resolved by trying alternate baselines or a signed/two's-
+      complement reinterpretation (every variant tried still overflows
+      by one slot, since the *span* forces it regardless of where the
+      baseline sits). See `docs/display/vector-display-and-stroke-
+      font.md`'s "Follow-up, 2026-09-14" section for the full numbers -
+      likely next step is solving for the true HPGL-to-native transform
+      using more captured samples, or finding the ROM's own plot-scale-
+      for-readout-text constant directly instead of reverse-solving
+      from output.
 - [ ] Find the comm ROM's actual **incoming**-data path. The ring
       buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
       out to be a TX queue (`serial_tx_buffer_put` producer,
