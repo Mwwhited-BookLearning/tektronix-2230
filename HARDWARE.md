@@ -117,26 +117,48 @@ config`):
 
 | Switch(es) | Function |
 |---|---|
-| 1,2,3,4 | Baud rate - 4-bit code, switch **1 = MSB**. See rate table below |
+| 1,2,3,4 | Baud rate - 4-bit code, **switch 4 = MSB (weight 8), switch 1 = LSB (weight 1)**. See rate table below |
 | 5 | Parity enable: `0`=disabled (8-bit data word, no parity), `1`=enabled (7-bit data + parity bit per switches 6/7) |
 | 6,7 | Parity type when enabled (Table 7-13): `00`=ODD, `10`=EVEN, `01`=MARK, `11`=SPACE |
 | 8 | Line terminator: `0`=**CR only** (accept only CR, send CR), `1`=**CR-LF** (accept CR-LF or LF, send CR-LF) |
 | 9,10 | Printer/plotter device (power-on default only, changeable later via `COMM` menu): `00`=HP-GL, `10`=Epson, `01`=ThinkJet, `11`=X-Y Plotter |
 
-Baud rate code (switches 1234, MSB-first) → rate:
-`0000`=50, `0001`=75, `0010`=110, `0011`=134.5, `0100`=150, `0101`=300,
-`0110`=**600**, `0111`=1200, `1000`=1800, `1001`=2000, `1010`=2400,
-`1011`=3600, `1100`=4800, `1101`=7200, `1110`=**9600**, `1111`=Off Line.
+**CORRECTED 2026-09-14** - the user found they'd been misreading Table
+7-12's own column header, which lists the bit order as "`4321`"
+(switch 4 first = MSB) rather than "switches 1 through 4" in reading
+order. The original text below is kept struck through for the history
+trail; the corrected weighting matches the GPIB address table's own
+explicit `switch1=weight1`...`switch4=weight8` convention exactly (see
+below) - both tables use the same ascending-from-switch-1 weighting,
+which is the detail this project got backwards the first time.
 
-**Live-tested and matches exactly, 2026-09-13**: the unit's actual
-switches read `0110000000` (600 baud) and, after the user flipped
-switch 1, `1110000000` (9600 baud) - both match this table's `0110`/
-`1110` rows precisely, confirming switch-number order = bit order
-(switch 1 = MSB) with no further ambiguity. Also resolves the earlier
-open "how does the scope know CR vs LF" question directly: switch 8
-was `0` in both readings tested, meaning **CR-only** is the currently
-selected terminator - exactly what PuTTY sends by default, so
-terminator mismatch is not what's blocking command responses.
+Baud rate code (**switch 4,3,2,1 read in that order, MSB→LSB**) → rate:
+`0000`=50, `0001`=75, `0010`=110, `0011`=134.5, `0100`=150, `0101`=300,
+`0110`=**600**, `0111`=**1200**, `1000`=1800, `1001`=2000, `1010`=2400,
+`1011`=3600, `1100`=4800, `1101`=7200, `1110`=**9600**, `1111`=Off Line.
+~~Baud rate code (switches 1234, MSB-first) → rate: `0000`=50...~~ *(wrong
+bit order, superseded above)*
+
+**Live-tested, and this actually caught a real user error, 2026-09-14**:
+the unit's switches read `0110000000` (switch4,3,2,1=`0110`=**600 baud**
+- a palindrome, so it happened to read correctly under either bit-order
+assumption) and, after flipping switch 1, `1110000000`. Read under the
+**wrong** (original) assumption this looked like `1110`=**9600**; under
+the **correct** order (switch4,3,2,1=`0111`) it's actually
+**1200 baud** - and the user confirmed by direct observation that
+`1110000000` really was running at 1200, not 9600. They corrected the
+switches to `0111000000` (switch4,3,2,1=`1110`=**9600**, correctly this
+time) and confirmed 9600 now reads correctly. The `0110000000`/600-baud
+case being a bit-palindrome is exactly why the error went undetected
+for several exchanges - it validated under both interpretations, while
+the very next test (`1110000000`) silently broke without an obvious
+symptom (no crash, just a real but wrong baud rate) until manually
+checked against the actual reading. Also still resolves the earlier
+open "how does the scope know CR vs LF" question: switch 8 was `0` in
+both readings, meaning **CR-only** is the currently selected
+terminator, unaffected by this baud-rate bit-order correction - exactly
+what PuTTY sends by default, so terminator mismatch is still not what's
+blocking command responses.
 
 **The same physical 10-switch bank means something different in GPIB
 mode** (Table 7-6, for **Option 10** boards - a *different* option

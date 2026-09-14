@@ -574,10 +574,21 @@ make sure the right pin/switch tables were being used).
    (`hardware/070-4998-02.pdf`, Tables 7-11/7-12/7-13 for RS-232,
    Table 7-6 for GPIB) and confirmed the full switch-to-function
    mapping directly rather than inferring it - see `HARDWARE.md`.
-   Both units' live switch readings (`0110000000`=600 baud,
-   `1110000000`=9600 baud after a switch-1 flip) matched the manual's
-   table exactly, and switch 8=`0` on both = **CR-only** terminator,
-   matching PuTTY's default - ruling out a terminator mismatch.
+   Both units' live switch readings (`0110000000`=600 baud) matched
+   the manual's table, and switch 8=`0` on both = **CR-only**
+   terminator, matching PuTTY's default - ruling out a terminator
+   mismatch. **Correction, 2026-09-14**: the `1110000000`=9600 reading
+   noted here at the time was itself wrong - the user had misread
+   Table 7-12's own bit-order header ("`4321`", meaning switch 4 is
+   the MSB, not switch 1) and `1110000000` was actually running at
+   **1200 baud**. `0110000000`/600 happened to be a bit-palindrome so
+   it validated under either reading, masking the error until the very
+   next test. See `HARDWARE.md`'s corrected DIP-switch section for the
+   full writeup - all baud-rate tests in this session's live-hardware
+   sections that used `1110000000` were actually running at 1200, not
+   9600, though this doesn't change any of the conclusions reached
+   (the tests were about detecting *whether* real data appeared, not
+   about the specific baud value).
 3. **Switch changes not latched**: manual confirms "changes to the
    PARAMETER switch after power on will not be read until the next
    power on occurs" - power-cycled after switch changes each time to
