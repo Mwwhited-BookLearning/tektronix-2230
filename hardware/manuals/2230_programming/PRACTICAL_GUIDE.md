@@ -26,14 +26,18 @@ project for a full day, so it's worth stating plainly up front:
   use.** `FLOw OFF` (the power-on default) is required before any
   binary/hex `CURVe?` transfer - the manual is explicit that binary
   data and XON/XOFF flow control don't mix.
-- **9600 baud is unreliable** on at least one real unit/cable/adapter
-  combination tested here - it produces a content-blind, misleadingly
-  clean-looking `STATUS 98;READY;` for every single command, including
-  ones that should always succeed (`ID?`, `EVEnt?`). This looks exactly
-  like a real firmware problem and isn't one. **1200 and 4800 baud are
-  both confirmed reliable.** If you get `STATUS 98;READY;` for
-  everything no matter what you send, try a slower baud rate before
-  anything else.
+- **9600 baud is unreliable** - confirmed on **both** physical test
+  units (different comm-ROM revisions, `-13` and `-14`), and unaffected
+  by hardware flow control (still unreliable with DTR/RTS forced on,
+  ruling that out as the cause). It produces a content-blind,
+  misleadingly clean-looking `STATUS 98;READY;` for every single
+  command, including ones that should always succeed (`ID?`,
+  `EVEnt?`). This looks exactly like a real firmware problem and isn't
+  one. **1200 and 4800 baud are both confirmed reliable on both units.**
+  If you get `STATUS 98;READY;` for everything no matter what you send,
+  try a slower baud rate before anything else - this is consistently a
+  cable/UART-timing issue at the higher rate, not something DTR/RTS or
+  the comm-ROM revision changes.
 - **Rear-panel PARAMETERS DIP switch, baud rate nibble bit order:
   switch 4 = MSB (weight 8), switch 3 = weight 4, switch 2 = weight 2,
   switch 1 = LSB (weight 1).** It's easy to read this backwards (this

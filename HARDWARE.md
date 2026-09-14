@@ -322,8 +322,27 @@ ACQ_MODE_SETUP_TABLE
         ├── CAL_AIDS   - BOX / CAL_V_POS / CAL_CLK_DLY
         └── EXERCISERS - CONFIGURATION / IO (FP_VALUES / OUT_PORTS /
                           INPUT_PORTS) / A_TO_D_TESTS (SAMPLES /
-                          LINEARITY) / COM_OPTION_DEBUG / PICTURES
+                          LINEARITY)
 ```
+
+**Corrected 2026-09-14, confirmed live on a real Option-12 (RS-232)
+unit**: `EXERCISERS` only has **3** children on this hardware -
+`CONFIGURATION`, `IO`, `A_TO_D_TESTS` (screen photo confirms exactly
+this list, `IO` expanded showing `FP_VALUES`/`OUT_PORTS`/
+`INPUT_PORTS`) - this was actually already photographed 3 days earlier
+(`hardware/photos/20260911_010554880_iOS.jpg`, inventoried as exactly
+"DIAGNOSTICS/EXERCISERS: CONFIGURATION, IO, A_TO_D_TESTS") but never
+cross-checked against the manual's claimed 5-entry list until now.
+**`COM_OPTION_DEBUG` and `PICTURES` (both below, described from the
+service manual text) do not exist on this unit's live menu** - the
+service manual most likely covers the whole 2200 series (2211-2221,
+plus 2230) in one combined document, and these two entries may be
+specific to a different model, or to Option 10 (GPIB) rather than
+Option 12 (RS-232) - not confirmed either way, but the manual's own
+text never actually distinguishes which option a given `EXERCISERS`
+entry requires. **This closes off `COM_OPTION_DEBUG` as a way to test
+the `write_readout_port_byte`/UART theory on this specific hardware**
+- see `docs/comm-rom/rs232-early-investigation.md`.
 
 **Menu tree filled in further 2026-09-13**, from the service manual's
 own exerciser-description text (Section 6, right after Tables 6-16/
@@ -340,16 +359,17 @@ section above):
   an external logic probe/LED clip, not read off the CRT. Not yet
   traced to any code - no reference to its menu string found in the
   disassembly so far.
-- **`COM_OPTION_DEBUG`** (menu label uncertain - manual text calls it
-  "COM-OPTION/DEBUG", not yet seen live on a menu screen): *"This
-  exerciser is used in debugging the communications option. Debug
-  outputs a test message and displays any incoming messages (data)
-  [on] the crt."* **Highly relevant to this project's live RS-232
-  investigation** (see `disasm/NOTES.md`'s comm-parser tracing
-  sections) - this could show incoming serial data directly on the
-  scope's own screen, sidestepping the adapter/cable/PC entirely as a
-  diagnostic step. Not yet located on a real menu screen or in the
-  disassembly - worth hunting for next time at the bench.
+- **`COM_OPTION_DEBUG`** (manual text calls it "COM-OPTION/DEBUG"):
+  *"This exerciser is used in debugging the communications option.
+  Debug outputs a test message and displays any incoming messages
+  (data) [on] the crt."* Would have been directly useful for this
+  project's live RS-232 investigation (see `docs/comm-rom/rs232-early-
+  investigation.md`) - showing incoming serial data directly on the
+  scope's own screen sidesteps the adapter/cable/PC entirely as a
+  diagnostic step. **Confirmed 2026-09-14: this entry does not exist
+  in the live `EXERCISERS` menu** on a real Option-12 unit (see above)
+  - dead end for that purpose, at least on this hardware/option
+  combination.
 
 ### Menu navigation control scheme (from the operator's manual, 2026-09-13)
 

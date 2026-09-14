@@ -309,6 +309,13 @@ often enough to look like a consistent "broken" behavior rather than
 obviously garbled noise. At 1200 baud (8x slower), the same hardware
 works perfectly.
 
+**Follow-up, later session**: both scopes were also confirmed reliable
+at **4800 baud** (not just 1200), and 9600's unreliability persists
+**even with hardware flow control (DTR/RTS) forced on** - ruling out
+missing flow control as an explanation too. This is consistently a
+cable/UART-timing issue at the higher rate, independent of comm-ROM
+revision or flow control.
+
 **One loose end for a future session**: `STAtus?` returned `STATUS
 128;` - a value that doesn't fit any row in `hardware/manuals/2230_programming/README.md`'s
 Table 7-34 (every documented category has bit 7 clear; `128`=`0x80`

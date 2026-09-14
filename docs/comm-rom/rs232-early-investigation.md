@@ -64,6 +64,41 @@ the UART re-interpretation from actual hardware, tempering the
 genuinely unresolved, now with real experimental data on both sides
 rather than just documentation-derived inference.
 
+**Correction, later session (service manual reading): this "zero
+bytes" result is fully explained regardless of whether the UART theory
+is right or wrong, so it's weaker evidence than it looked.** The
+service manual states plainly: *"If the instrument contains the
+RS-232-C Option, an ASCII version of **all errors found** during
+power-up is sent to the option."* This is **error-conditional** - a
+healthy instrument that passes every diagnostic test sends nothing at
+all over RS-232, by design, regardless of whether
+`write_readout_port_byte`'s cluster is a real UART register. Every
+"zero bytes" result gathered so far (power-cycles and a manually-run
+self-test, at 3 different baud-rate guesses, on hardware later
+confirmed healthy) is consistent with **both** "the theory is wrong"
+**and** "the theory is right but nothing ever failed to report." The
+flow-control caveat above also turned out to be partially real (some
+cables on this hardware do need RTS/DTR asserted - see
+`hardware/manuals/2230_programming/PRACTICAL_GUIDE.md` - though that
+was found via the *command/response* protocol, not this specific
+self-test path).
+
+**Found a much better test, then hit a dead end**: the service manual
+separately documents a `DIAGNOSTICS/EXERCISERS/COM-OPTION/DEBUG`
+screen, described as unconditional, not error-gated - *"This exerciser
+is used in debugging the communications option. Debug outputs a test
+message and displays any incoming messages (data) on the crt."* This
+would have transmitted something over RS-232 just by being entered,
+pass or fail, making it the right experiment for testing this theory
+directly. **Checked live the same session: this entry does not exist**
+in the real `EXERCISERS` menu on this Option-12 unit - confirmed by
+photo, the actual children are only `CONFIGURATION`/`IO`/
+`A_TO_D_TESTS`. See `HARDWARE.md`'s menu tree. The service manual
+likely covers the whole 2200 series in one document and this entry may
+be specific to a different model or to Option 10 (GPIB) rather than
+Option 12 - not confirmed either way. **Dead end for testing the UART
+theory this way**; still genuinely open, per `STILL_PENDING_DECODE.md`.
+
 ## Follow-up live hardware session: cable fully validated, `COMM_LOOPBACK` proven internal-only, comm-detection failure now the leading theory
 
 Extended the RS-232 investigation above with a much more thorough

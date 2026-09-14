@@ -11,6 +11,11 @@ at all" - the primary question - while a correct guess would also
 show the actual banner text.
 
 Usage: python listen_serial.py [--port COM3] [--baud 9600] [--seconds 60]
+
+Hardware flow control (RTS/CTS, DTR/DSR) is left at whatever pyserial/
+the OS driver sets on open by default, same as scope_rs232.py/
+plot_hpgl_to_svg.py - use --rts/--dtr to force a line if a cable needs
+it (see those scripts' docstrings for why this can matter).
 """
 import argparse
 import sys
@@ -27,6 +32,14 @@ def main():
     ap.add_argument("--parity", default="N", choices=["N", "E", "O"])
     ap.add_argument("--bytesize", type=int, default=8, choices=[7, 8])
     ap.add_argument("--stopbits", type=int, default=1, choices=[1, 2])
+    ap.add_argument("--rtscts", action="store_true", help="enable RTS/CTS hardware flow control")
+    ap.add_argument("--dsrdtr", action="store_true", help="enable DSR/DTR hardware flow control")
+    ap.add_argument("--dtr", choices=["auto", "on", "off"], default="auto",
+                     help="force the DTR output line high/low after opening")
+    ap.add_argument("--rts", choices=["auto", "on", "off"], default="auto",
+                     help="force the RTS output line high/low after opening")
+    ap.add_argument("--show-lines", action="store_true",
+                     help="print CTS/DSR/CD/RI readback after connecting")
     args = ap.parse_args()
 
     parity_map = {"N": serial.PARITY_NONE, "E": serial.PARITY_EVEN, "O": serial.PARITY_ODD}
@@ -40,7 +53,16 @@ def main():
         parity=parity_map[args.parity],
         stopbits=args.stopbits,
         timeout=0.5,
+        rtscts=args.rtscts,
+        dsrdtr=args.dsrdtr,
     )
+    if args.dtr != "auto":
+        ser.dtr = (args.dtr == "on")
+    if args.rts != "auto":
+        ser.rts = (args.rts == "on")
+    if args.show_lines:
+        print(f"Line status: CTS={ser.cts} DSR={ser.dsr} CD={ser.cd} RI={ser.ri} "
+              f"(output: DTR={ser.dtr} RTS={ser.rts})", file=sys.stderr)
 
     all_bytes = bytearray()
     start = time.time()
