@@ -1667,6 +1667,51 @@ even after 8+ `EVEnt?` calls is itself unusual - Table 7-34/35 describe
 event codes as clearing individually once reported, not as a fixed
 pair that regenerates forever).
 
+**Follow-up, same day - the power-cycle idea was tried, and every
+remaining settings-based theory was systematically eliminated too**:
+1. **Full power-cycle**: the user reset the scope (a genuine cold
+   boot, not just a comm reinit) and retested `ID?`/`EVEnt?`
+   immediately. **Identical result** - `STATUS 98;READY;` etc., no
+   change at all. Rules out "stuck state from earlier in this
+   debugging session" definitively - this is the scope's actual,
+   repeatable behavior from a fresh boot, not a leftover artifact.
+2. **DIP switch 5 (parity) re-checked live**: photographed reading
+   `0111000000` - decoded (switch 4=MSB down to switch 1=LSB, per the
+   corrected bit order) as baud `1110`=9600 (correct) and, critically,
+   switch 5=`0`=parity disabled. This ruled out a parity-mismatch
+   theory that would otherwise have explained the *inconsistent*
+   97-vs-98 pattern (intermittent bit corruption from a parity
+   mismatch was a good candidate for why the *same* command sometimes
+   reads as a Command Error and sometimes an Execution Error).
+3. **`COMM` menu settings checked live** (`ADVANCED_FUNCTIONS/COMM`):
+   `FLOW` = **OFF** already (not the power-on-default ON - ruling out
+   an XON/XOFF handshake stall, since it was never engaged to begin
+   with), `STOP_BITS` = **1** (matches what's being sent), `DATA/
+   SOURCE` = **ACQ**, `DATA/CHANNEL` = **CH1**, `DATA/ENCDG` =
+   **BINARY** (the documented power-on default - and per `Table 7-29`
+   this only affects `CURVe`/`WAVfrm?` waveform-data formatting, not
+   simple text queries like `ID?`/`EVEnt?`, so it isn't a candidate
+   explanation for their failure either way).
+4. Retested `ID?`/`EVEnt?` with all of the above confirmed normal:
+   **identical `STATUS 98;READY;`/`STATUS 97;` pattern, unchanged.**
+
+**Every setting this project or the manual could identify as
+plausibly relevant has now been checked and ruled out.** Combined with
+the earlier finding that this is Scope 1 (`160-2998-13`, a comm-ROM
+revision this project has never disassembled - see `HARDWARE.md`'s
+"Two physical units, running DIFFERENT ROM revisions" section), the
+strongest remaining hypothesis is a **firmware-level difference or
+defect specific to the `-13` revision** - something in the ~16KB of
+genuinely-different code between `160-2998-13.bin` and `-14.bin` (see
+the still-open `TODO.md` item to diff/disassemble `-13`). **The single
+most informative untried experiment is running this exact same test
+sequence against Scope 2** (confirmed `160-2998-14`, the revision this
+project's whole comm-ROM disassembly this session was actually reading)
+- if it behaves differently, that pins the fault on the `-13` revision
+specifically and justifies disassembling it; if it behaves identically,
+the cause is common to both revisions and still hiding somewhere in the
+already-read `-14` code.
+
 ## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
 
 Found 2026-09-13 reading further into the service manual's Theory of

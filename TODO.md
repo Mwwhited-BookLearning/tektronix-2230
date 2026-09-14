@@ -301,10 +301,23 @@
       keyword-matching function is unreached," but that a separate,
       generic status-reporting path is intercepting every message
       before real command dispatch would occur, and never clears.
-      **Next physical step**: a full power-cycle before retesting (rule
-      out a stuck/never-cleared state from earlier in the same
-      debugging session) - see `disasm/NOTES.md`'s "BREAKTHROUGH,
-      2026-09-14" section for the full transcript and reasoning.
+      **Every settings-based theory now eliminated (2026-09-14)**: a
+      genuine cold power-cycle produced the identical result (not a
+      stuck state); the DIP switches (photographed live) confirm
+      parity genuinely disabled, ruling out an intermittent-corruption
+      theory that would explain the 97-vs-98 inconsistency; the `COMM`
+      menu (`FLOW`/`STOP_BITS`/`DATA SOURCE`/`CHANNEL`/`ENCDG`, all
+      photographed live) are all at normal, expected values and were
+      never the problem. **Top remaining hypothesis**: something
+      specific to comm-ROM revision `-13` (Scope 1's revision, never
+      disassembled by this project - Scope 2 runs `-14`, the revision
+      actually traced this session). **Single most informative next
+      step**: run this identical `ID?`/`EVEnt?` test sequence against
+      Scope 2. Matching behavior implicates something common to both
+      revisions still hiding in the already-read `-14` code; different
+      behavior would justify disassembling `-13` specifically. See
+      `disasm/NOTES.md`'s "BREAKTHROUGH, 2026-09-14" section for the
+      full transcript and reasoning trail.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
