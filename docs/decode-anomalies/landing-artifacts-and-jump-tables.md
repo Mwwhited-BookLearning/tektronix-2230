@@ -144,3 +144,45 @@ looks suspicious on inspection (e.g. unusually large reconvergence
 distance, or - like this one - reached by many independent call
 sites, which is the strongest tell that a "candidate" is actually a
 deliberate second entry point rather than an accidental near-miss).
+
+## Follow-up, 2026-09-14: ranked every candidate by caller count, traced the top one - `compute_and_print_item_delta_readout`
+
+Added caller-count ranking on top of `find_landing_artifacts.py`'s
+existing output (it tracks each candidate's `refs` list already, just
+never printed a ranked view) to systematically apply the "many
+independent call sites" tell from the note above, instead of eyeballing
+the raw list. Top of the list by a wide margin: physical `0xF3EA3`
+(in `160-3532`) with **33 independent callers** - more than 4x the
+previous record holder (`write_hw_shift_register`, 8 callers). Second
+and third place (`0xE9858` with 21, `0xF44C8` with 18) are noted but
+not yet individually traced - worth doing next if this is picked up
+again, using the same ranking approach.
+
+Traced `0xF3EA3`: it's 1 byte into a real `mov word ptr [bp-0x10],ax`
+instruction (the same landing-artifact shape as every other case here)
+and, once correctly read starting at the real landing point
+(`0xF3EA4`), turns out to be part of the **already-mapped cursor/
+delta-readout subsystem** - it shares the `[0x570]`-indexed
+`[x+0x18C]`/`[x+0x18F]` per-item flag tables that
+`compute_and_format_sample_delta_readout` and `sync_shift_register_
+output` already use (see `FUNCTIONS.md`), checks those flags, computes
+a position delta via a shared helper at `0xF830E` (itself called 23x
+elsewhere - also not yet individually traced), and heads toward
+printing into the readout buffer far pointer `[0x1C80]`. Named
+`compute_and_print_item_delta_readout` and registered in `gen_disasm_
+x86.FUNCTIONAL_NAMES`, regenerated, and verified byte-identical - see
+`FUNCTIONS.md`.
+
+**Honest scope of what's confirmed**: the high-level shape (checks
+per-item enable flags, computes a delta, heads toward printing) and
+its architectural home (the cursor/delta-readout subsystem) are solid.
+The function is large (spans well past `0xF40C9` based on internal
+`loc`-kind branch targets found during the trace) and **most of its
+internal branches were not individually walked** - this is a
+first-pass identification, not a full pseudocode-level trace. Given
+it's called 33 times with different argument records (2-word structs
+read from `[bp-0x18]`/`[bp-0x14]`/`[bp-0x10]` at offsets `+6`/`+8`),
+the most likely explanation is that it's a shared engine invoked once
+per distinct delta-measurement readout (`ΔV`, `ΔT`, frequency, etc. -
+the same labels seen live in this project's own HPGL capture testing,
+e.g. `ΔV1=0.00V`/`ΔT=0.000ms`) - plausible but not proven.

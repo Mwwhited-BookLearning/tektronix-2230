@@ -20139,10 +20139,10 @@
     "notes": null
   },
   "F3EA3": {
-    "name": "SUB_F3EA3",
+    "name": "compute_and_print_item_delta_readout",
     "kind": "sub",
     "ref_count": 33,
-    "functional_name": null,
+    "functional_name": "compute_and_print_item_delta_readout",
     "notes": null
   },
   "F3EC0": {

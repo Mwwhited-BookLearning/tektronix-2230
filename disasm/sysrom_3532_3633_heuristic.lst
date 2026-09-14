@@ -17301,7 +17301,7 @@ L_EBA23:
     3633:BA45  [EBA45]  57              push    di
     3633:BA46  [EBA46]  bf6400          mov     di, 0x64
     3633:BA49  [EBA49]  57              push    di
-    3633:BA4A  [EBA4A]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BA4A  [EBA4A]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BA4F  [EBA4F]  83c40a          add     sp, 0xa
 L_EBA52:
     3633:BA52  [EBA52]  803e6a0400      cmp     byte ptr [0x46a], 0
@@ -17438,7 +17438,7 @@ L_EBB90:
     3633:BBA0  [EBBA0]  50              push    ax
     3633:BBA1  [EBBA1]  b81301          mov     ax, 0x113
     3633:BBA4  [EBBA4]  50              push    ax
-    3633:BBA5  [EBBA5]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BBA5  [EBBA5]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BBAA  [EBBAA]  83c40a          add     sp, 0xa
     3633:BBAD  [EBBAD]  8d7ed2          lea     di, [bp - 0x2e]
     3633:BBB0  [EBBB0]  897ece          mov     word ptr [bp - 0x32], di
@@ -17494,7 +17494,7 @@ L_EBC0C:
     3633:BC23  [EBC23]  57              push    di
     3633:BC24  [EBC24]  2bff            sub     di, di
     3633:BC26  [EBC26]  57              push    di
-    3633:BC27  [EBC27]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BC27  [EBC27]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BC2C  [EBC2C]  83c40a          add     sp, 0xa
     3633:BC2F  [EBC2F]  8d7ed2          lea     di, [bp - 0x2e]
     3633:BC32  [EBC32]  897ece          mov     word ptr [bp - 0x32], di
@@ -17549,7 +17549,7 @@ L_EBC45:
     3633:BC9A  [EBC9A]  57              push    di
     3633:BC9B  [EBC9B]  2bff            sub     di, di
     3633:BC9D  [EBC9D]  57              push    di
-    3633:BC9E  [EBC9E]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BC9E  [EBC9E]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BCA3  [EBCA3]  83c40a          add     sp, 0xa
     3633:BCA6  [EBCA6]  ff76cc          push    word ptr [bp - 0x34]
     3633:BCA9  [EBCA9]  bf7300          mov     di, 0x73
@@ -17583,7 +17583,7 @@ L_EBC45:
     3633:BCE7  [EBCE7]  52              push    dx
     3633:BCE8  [EBCE8]  2bd2            sub     dx, dx
     3633:BCEA  [EBCEA]  52              push    dx
-    3633:BCEB  [EBCEB]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BCEB  [EBCEB]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BCF0  [EBCF0]  83c40a          add     sp, 0xa
     3633:BCF3  [EBCF3]  8b7ec8          mov     di, word ptr [bp - 0x38]
     3633:BCF6  [EBCF6]  81e70800        and     di, 8
@@ -17637,7 +17637,7 @@ L_EBD75:
     3633:BD85  [EBD85]  50              push    ax
     3633:BD86  [EBD86]  2bc0            sub     ax, ax
     3633:BD88  [EBD88]  50              push    ax
-    3633:BD89  [EBD89]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BD89  [EBD89]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BD8E  [EBD8E]  83c40a          add     sp, 0xa
     3633:BD91  [EBD91]  8b7ecc          mov     di, word ptr [bp - 0x34]
     3633:BD94  [EBD94]  d1e7            shl     di, 1
@@ -17692,7 +17692,7 @@ L_EBE07:
     3633:BE17  [EBE17]  50              push    ax
     3633:BE18  [EBE18]  2bc0            sub     ax, ax
     3633:BE1A  [EBE1A]  50              push    ax
-    3633:BE1B  [EBE1B]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BE1B  [EBE1B]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BE20  [EBE20]  83c40a          add     sp, 0xa
     3633:BE23  [EBE23]  8b7ecc          mov     di, word ptr [bp - 0x34]
     3633:BE26  [EBE26]  d1e7            shl     di, 1
@@ -17723,7 +17723,7 @@ L_EBE57:
     3633:BE67  [EBE67]  50              push    ax
     3633:BE68  [EBE68]  2bc0            sub     ax, ax
     3633:BE6A  [EBE6A]  50              push    ax
-    3633:BE6B  [EBE6B]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:BE6B  [EBE6B]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:BE70  [EBE70]  83c40a          add     sp, 0xa
     3633:BE73  [EBE73]  bf4b00          mov     di, 0x4b
     3633:BE76  [EBE76]  57              push    di
@@ -17874,7 +17874,7 @@ L_EBFEF:
     3633:C002  [EC002]  57              push    di
     3633:C003  [EC003]  bf0a00          mov     di, 0xa
     3633:C006  [EC006]  57              push    di
-    3633:C007  [EC007]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C007  [EC007]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:C00C  [EC00C]  83c40a          add     sp, 0xa
     3633:C00F  [EC00F]  bf7bff          mov     di, 0xff7b
     3633:C012  [EC012]  57              push    di
@@ -17892,7 +17892,7 @@ L_EC020:
     3633:C027  [EC027]  57              push    di
     3633:C028  [EC028]  bf0a00          mov     di, 0xa
     3633:C02B  [EC02B]  57              push    di
-    3633:C02C  [EC02C]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C02C  [EC02C]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:C031  [EC031]  83c40a          add     sp, 0xa
     3633:C034  [EC034]  c6066a0400      mov     byte ptr [0x46a], 0
 L_EC039:
@@ -17932,7 +17932,7 @@ FUNC_3633_C05D:
     3633:C07D  [EC07D]  57              push    di
     3633:C07E  [EC07E]  bf0a00          mov     di, 0xa
     3633:C081  [EC081]  57              push    di
-    3633:C082  [EC082]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C082  [EC082]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:C087  [EC087]  83c40a          add     sp, 0xa
 L_EC08A:
     3633:C08A  [EC08A]  8be5            mov     sp, bp
@@ -18783,7 +18783,7 @@ L_EC9A0:
     3633:C9B3  [EC9B3]  57              push    di
     3633:C9B4  [EC9B4]  bf0a00          mov     di, 0xa
     3633:C9B7  [EC9B7]  57              push    di
-    3633:C9B8  [EC9B8]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C9B8  [EC9B8]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:C9BD  [EC9BD]  83c40a          add     sp, 0xa
     3633:C9C0  [EC9C0]  bf7bff          mov     di, 0xff7b
     3633:C9C3  [EC9C3]  57              push    di
@@ -18801,7 +18801,7 @@ L_EC9A0:
 L_EC9DA:
     3633:C9DA  [EC9DA]  e96300          jmp     L_ECA40  ; 0xca40
 L_EC9DD:
-    3633:C9DD  [EC9DD]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C9DD  [EC9DD]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:C9E2  [EC9E2]  83c40a          add     sp, 0xa
     3633:C9E5  [EC9E5]  bf7bff          mov     di, 0xff7b
     3633:C9E8  [EC9E8]  57              push    di
@@ -18815,7 +18815,7 @@ L_EC9DD:
     3633:C9F8  [EC9F8]  57              push    di
     3633:C9F9  [EC9F9]  bf0a00          mov     di, 0xa
     3633:C9FC  [EC9FC]  57              push    di
-    3633:C9FD  [EC9FD]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:C9FD  [EC9FD]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:CA02  [ECA02]  83c40a          add     sp, 0xa
     3633:CA05  [ECA05]  c6066a0400      mov     byte ptr [0x46a], 0
     3633:CA0A  [ECA0A]  e93300          jmp     L_ECA40  ; 0xca40
@@ -18970,7 +18970,7 @@ L_ECB78:
     3633:CB8B  [ECB8B]  57              push    di
     3633:CB8C  [ECB8C]  bf0a00          mov     di, 0xa
     3633:CB8F  [ECB8F]  57              push    di
-    3633:CB90  [ECB90]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    3633:CB90  [ECB90]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     3633:CB95  [ECB95]  83c40a          add     sp, 0xa
     3633:CB98  [ECB98]  c6066a0400      mov     byte ptr [0x46a], 0
     3633:CB9D  [ECB9D]  e90b00          jmp     L_ECBAB  ; 0xcbab
@@ -30099,7 +30099,7 @@ L_F3E70:
     3532:3E9F  [F3E9F]  b87405          mov     ax, 0x574
     3532:3EA2  [F3EA2]  03c2            add     ax, dx
 
-SUB_F3EA3:
+compute_and_print_item_delta_readout:
     3532:3EA3  [F3EA3]  c28946          ret     0x4689
 
     3532:3EA4  [F3EA4]  8946f0          mov     word ptr [bp - 0x10], ax

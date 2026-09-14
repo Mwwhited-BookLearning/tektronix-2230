@@ -2972,6 +2972,44 @@ FUNCTIONAL_NAMES = {
                                                # scale-marker label
                                                # builder for the
                                                # readout graticule
+    0xF3EA3: "compute_and_print_item_delta_readout",  # (secondary entry
+                                               # point 1 byte into a
+                                               # real "mov [bp-0x10],ax"
+                                               # instruction, matching
+                                               # this codebase's already-
+                                               # documented landing-
+                                               # artifact class - found
+                                               # 2026-09-14 via find_
+                                               # landing_artifacts.py,
+                                               # by far the highest-
+                                               # ref-count case found so
+                                               # far, 33 independent
+                                               # callers vs. 8 for the
+                                               # previous record holder)
+                                               # - part of the same
+                                               # cursor/delta-readout
+                                               # subsystem as
+                                               # compute_and_format_
+                                               # sample_delta_readout
+                                               # (shares the [0x570]-
+                                               # indexed [x+0x18C]/
+                                               # [x+0x18F] per-item flag
+                                               # tables); checks those
+                                               # flags, computes a
+                                               # position delta via a
+                                               # shared helper at
+                                               # 0xF830E (itself called
+                                               # 23x elsewhere) and
+                                               # subtracting a saved
+                                               # reference, then heads
+                                               # toward printing into
+                                               # the readout buffer far
+                                               # ptr [0x1C80] - large
+                                               # function, only this
+                                               # high-level shape
+                                               # traced, most internal
+                                               # branches not
+                                               # individually walked
     0xF4150: "compute_and_format_sample_delta_readout", # called from
                                                # write_hw_shift_register:
                                                # computes the delta

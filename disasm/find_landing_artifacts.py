@@ -58,6 +58,20 @@ def main():
         t_insn = f"{visited[t]['mnem']} {visited[t].get('op', '')}"
         print(f"0x{t:06X} [{t_insn}] is {delta} byte(s) short of 0x{real:06X} ({real_name}, kind={real_kind})")
 
+    # Ranked by caller count - "many independent call sites" is this
+    # project's established tell that a candidate is a deliberate
+    # second entry point rather than an accidental near-miss (see
+    # write_hw_shift_register, and compute_and_print_item_delta_
+    # readout found this way 2026-09-14). Print separately so this
+    # signal doesn't get lost in address order above.
+    print()
+    print("Top 15 by independent caller count (the strongest 'worth tracing' signal):")
+    ranked = sorted(candidates, key=lambda c: len(labels.get(c[0], {}).get("refs", [])), reverse=True)
+    for t, delta, real in ranked[:15]:
+        ref_count = len(labels.get(t, {}).get("refs", []))
+        t_name = labels.get(t, {}).get("name") or g.FUNCTIONAL_NAMES.get(t) or "?"
+        print(f"  refs={ref_count:3d}  0x{t:06X} ({t_name}) -> short by {delta} of 0x{real:06X}")
+
 
 if __name__ == "__main__":
     main()

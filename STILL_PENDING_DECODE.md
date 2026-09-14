@@ -250,13 +250,19 @@ See `docs/decode-anomalies/dual-entry-points.md` and
 `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`.
 
 - **`find_landing_artifacts.py` found 49 candidate call targets that
-  land 1-4 bytes short of coherent code; only 2 were individually
-  traced in depth** (both turned into real findings - `write_hw_
-  shift_register`'s dual entry point, and the `SUB_EAC86` family
-  landing on real data). The other ~47 weren't individually chased.
-  Worth revisiting only if one stands out (many independent call sites
-  pointing at the same target is the best tell it's a deliberate
-  second entry point rather than a coincidence).
+  land 1-4 bytes short of coherent code; only 3 were individually
+  traced in depth** (all 3 turned into real findings - `write_hw_
+  shift_register`'s dual entry point, the `SUB_EAC86` family landing on
+  real data, and `compute_and_print_item_delta_readout`, found
+  2026-09-14 by ranking all 49 candidates by independent caller count -
+  a technique now built into the tool itself). The other ~46 weren't
+  individually chased. **New leads from that ranking, not yet traced**:
+  `0xE9858` (21 callers) and `0xF44C8` (18 callers) are the next-
+  highest-ranked candidates - both plausibly real dual-entry points
+  given the caller-count signal, neither examined yet. Also
+  `0xF830E` (23 callers, not itself a landing artifact but the shared
+  delta-computation helper `compute_and_print_item_delta_readout`
+  calls) is worth understanding for its own sake.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
