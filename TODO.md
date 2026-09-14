@@ -286,6 +286,25 @@
       reachable some other way, or is there a second, different entry
       point into that dispatcher this project hasn't found yet); (b)
       the still-missing keyword-matching function from item (3) above.
+
+      **Live testing 2026-09-14, now with `PROGRAMMING_MANUAL.md`'s
+      transcribed status/event tables to decode the reply exactly**:
+      `STATUS 98` = "Execution Error, RQS On, Not Busy" (Table 7-34) -
+      command recognized but not executable, not "command not
+      understood". Ran the decisive test: `REMote ON`, then drained
+      `EVEnt?` up to 8x specifically to read the real 3-digit event
+      codes - **the queue never drains**, every `EVEnt?` call (which
+      should always succeed per the manual) comes back wrapped in the
+      same non-informative `STATUS 98;READY;`/`STATUS 97;` template
+      regardless of what's sent. This is conclusive that command
+      content isn't being differentiated at all - not just "the
+      keyword-matching function is unreached," but that a separate,
+      generic status-reporting path is intercepting every message
+      before real command dispatch would occur, and never clears.
+      **Next physical step**: a full power-cycle before retesting (rule
+      out a stuck/never-cleared state from earlier in the same
+      debugging session) - see `disasm/NOTES.md`'s "BREAKTHROUGH,
+      2026-09-14" section for the full transcript and reasoning.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

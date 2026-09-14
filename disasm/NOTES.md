@@ -1617,6 +1617,56 @@ broken/unimplemented for this specific firmware path - a much more
 promising target than any of the hardware-level theories this session
 chased earlier.
 
+**Follow-up, same day, using `PROGRAMMING_MANUAL.md`'s newly-
+transcribed status/event tables to decode the reply exactly**: `STATUS
+98` (Table 7-34) = **"Execution Error, RQS On, Not Busy"** - *"The
+instrument received a command that it cannot execute. This is caused
+by either out-of-range arguments or settings that conflict."* Not a
+"command not understood" (that would be Command Error, `97`) - the
+header genuinely appears to be recognized, but something prevents
+execution, uniformly, for every command tried.
+
+**Ran the decisive test**: sent `REMote ON`, then called `EVEnt?`
+repeatedly (up to 8 times) specifically to drain the pending-event
+queue and read the *actual* 3-digit event codes (which the manual
+says are returned bare, no `STATUS`/`READY` wrapper at all) - then
+retried `ID?` on a clean queue. **The queue never drains.** Every
+single `EVEnt?` call - which should itself be a simple, always-
+answerable, always-succeeding query per the manual - comes back
+wrapped in the same `STATUS 98;READY;` noise, sometimes with a
+trailing `STATUS 97;` (Command Error). `REMote ON` changed nothing.
+The final clean `ID?` still got `STATUS 98;READY;`+`STATUS 97;` instead
+of either a real ID string or a real numeric event code.
+
+**This is conclusive, not just suggestive**: `EVEnt?` failing in the
+exact same generic way as everything else - when the manual explicitly
+documents it as the *diagnostic* query for exactly this situation -
+means the response is **not differentiating command content at all**.
+Every distinct input (valid queries, `REMote ON`, garbage) produces
+what looks like a small, non-draining, alternating pair of canned
+values (`98`/`97`) wrapped in a fixed `STATUS <n>;READY;` template that
+isn't itself part of the documented protocol (nowhere does the manual
+show a response literally starting with the word `STATUS` or ending in
+`READY;` - real status-byte reports are just the bare number, e.g.
+`98`, not `STATUS 98;`). Whatever is generating this template is
+plausibly independent of - or upstream of - the real command parser
+entirely.
+
+**Updated conclusion**: the low-level electrical/interrupt/dispatch
+pipeline is confirmed fully working end-to-end (bytes go out, bytes
+reliably come back, every time). But real command execution/keyword
+recognition is not happening - this now looks less like "the keyword-
+matching function is merely unreached" and more like **a separate,
+generic status-reporting path is intercepting every message before it
+would reach real command dispatch**, always producing the same
+non-informative reply. Next concrete idea, for whenever the hardware
+is available again: a full power-cycle before testing (in case this is
+a stuck/never-cleared state carried over from earlier in this same
+debugging session, since the event queue's total refusal to drain
+even after 8+ `EVEnt?` calls is itself unusual - Table 7-34/35 describe
+event codes as clearing individually once reported, not as a fixed
+pair that regenerates forever).
+
 ## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
 
 Found 2026-09-13 reading further into the service manual's Theory of
