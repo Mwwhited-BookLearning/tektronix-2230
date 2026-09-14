@@ -9,3 +9,4 @@ _final_check_*.bin
 *.heic
 
 scratchpad/
+~*.xlsx
