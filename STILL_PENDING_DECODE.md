@@ -52,18 +52,26 @@ The single biggest cluster of open items - see
   programming/PRACTICAL_GUIDE.md`), so this is purely a documentation
   gap, not a functional blocker.
 - **The code that walks the command-keyword dispatch table is
-  unfound.** A real command-keyword table was found live on
-  2026-09-14 (comm ROM file offsets `0x8A59`-`0x8F1D`, matching the
-  live `HELp?` list byte-for-byte) plus a 6-byte-per-entry index table
-  resolving numeric command IDs to far pointers into it - fully
-  extracted in `docs/comm-rom/command-keyword-table.md` (110 argument
-  keywords, 26 dispatch records, 45 header entries). A grep for the far
-  pointers' literal segment value found **zero** hits in the
-  disassembled code - whatever assigns the numeric command ID and
-  walks this table either computes the segment dynamically or lives in
-  an unreached region. This is very likely the last missing piece of
-  "how does the parser turn `STA?` into a recognized command." Also
-  unresolved: only 26 of the header table's 44 real entries have a
+  unfound - now confirmed to block a second investigation too.** A
+  real command-keyword table was found live on 2026-09-14 (comm ROM
+  file offsets `0x8A59`-`0x8F1D`, matching the live `HELp?` list
+  byte-for-byte) plus a 6-byte-per-entry index table resolving numeric
+  command IDs to far pointers into it - fully extracted in
+  `docs/comm-rom/command-keyword-table.md` (110 argument keywords, 26
+  dispatch records, 45 header entries). A grep for the far pointers'
+  literal segment value found **zero** hits in the disassembled code -
+  whatever assigns the numeric command ID and walks this table either
+  computes the segment dynamically or lives in an unreached region.
+  This is very likely the last missing piece of "how does the parser
+  turn `STA?` into a recognized command." **Also confirmed 2026-09-14**:
+  an exhaustive byte-level scan proved the comm ROM never directly
+  calls any readout-drawing primitive (`draw_readout_char`/`print_
+  readout_string`/etc.) anywhere - so the same unfound dispatch
+  mechanism is also what's blocking "trace the RS-232 `MESsage`
+  command to the drawing code" as a way into the stroke-font hunt (see
+  `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Tried tracing
+  `MESsage`" section). Solving this one item would likely unlock both.
+  Also unresolved: only 26 of the header table's 44 real entries have a
   dispatch record in the slice found so far (a second/wider table may
   exist), and 4 header-table entries (`ADDress`, `BYTe`, `JMP`,
   `SEGment`) don't match any live `HELp?` response at all.

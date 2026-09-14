@@ -272,3 +272,21 @@ for the real transform would need either a captured character with a
 different, independently-verifiable relative shape (to set up 2+
 equations) or finding the ROM's own plot-scale-for-readout-text
 constant directly rather than reverse-solving from output samples.
+
+## Tried tracing the RS-232 `MESsage` command to `draw_readout_char` - confirmed there's no direct call
+
+A good idea worth recording precisely why it didn't pan out: `MESsage
+<NR1>:"..."` writes arbitrary text to a readout row over RS-232, so
+finding its handler would hand this hunt a second way in (trace
+forward from a known caller, instead of scanning ROM bytes blindly).
+An exhaustive byte-level scan for every far-`CALL` across all three
+chips confirmed **the comm ROM never directly calls
+`print_readout_string`/`draw_readout_char` (or any of their siblings)
+anywhere** - all 40 real call sites into that family land in
+already-identified self-test/boot-banner code, none in the comm ROM.
+Full writeup: `docs/comm-rom/rs232-live-session-2026-09-14.md`'s
+"Tried tracing `MESsage`" section. Whatever handles `MESsage` goes
+through an intermediary that isn't a literal call to a fixed address -
+most likely the same still-unfound mechanism behind "who walks the
+command-ID dispatch table" - so solving that would likely unlock this
+approach too.

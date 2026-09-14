@@ -170,3 +170,57 @@ Still short of proof (would need to deliberately toggle DTR/RTS
 low-then-high mid-session and see if it reproduces on demand), but this
 is a more specific, physically-grounded theory than plain "transient
 glitch," and rules out pure reconnect-timing as the cause.
+
+## Tried tracing `MESsage <NR1>:"..."` to the drawing code (and from there, backward to the stroke-font table) - dead end, but a useful one
+
+The idea (a good one, worth recording why it didn't pan out): `MESsage`
+is a real, documented RS-232 command
+(`hardware/manuals/2230_programming/README.md` line 236) that writes
+arbitrary text directly to a readout row. If its handler could be
+found and it calls straight into the already-confirmed readout-drawing
+primitives (`print_readout_string`/`draw_readout_char`, the same ones
+that reference the still-unlocated stroke-font pointer `[0x1DB0]`),
+that would both nail down the handler *and* hand the stroke-font hunt
+a second, independent way to make progress (e.g. tracing forward from
+a known caller instead of scanning ROM bytes blindly).
+
+**Exhaustively checked, and it's not a direct call.** Wrote a
+byte-level scan (not a text grep, which would miss equivalent
+segment:offset spellings of the same physical target) that finds every
+literal far-`CALL` instruction (opcode `0x9A`, 5-byte encoding) across
+**all three ROM chips' raw bytes** and resolves its target physical
+address directly, independent of what's proven-reached or not. Checked
+against `print_readout_string` (`0xE3821`), `draw_readout_char`
+(`0xE3854`), `print_char` (`0xE0B2A`), `write_readout_port_byte`
+(`0xE0B50`), `append_readout_char` (`0xE39F0`), and `print_string_far`
+(`0xE0AF5`):
+
+- **40 real call sites found, all in `160-3633`, zero in `160-3532` or
+  the comm ROM (`160-2998`) in either its direct or aliased mapping.**
+- **Every single one of the 40 resolves into an already-identified,
+  self-test/boot-banner-related function**: `print_selftest_report_
+  line`, `print_string_far` itself, `print_char`, `print_scratch_
+  buffer_range`, `print_readout_string` itself (recursion), `run_
+  selftest_sequence`, `print_boot_rom_id_banner`, `print_selftest_
+  banner`, `print_banner_line`, `step_readout_window_pattern`, `report_
+  screen_mode` - none of these are a generic "print a caller-supplied
+  string at a caller-supplied row" utility; they're all fixed
+  self-test/startup text.
+
+**Conclusion: the comm ROM never directly calls any readout-drawing
+primitive anywhere in its own code.** Whatever handles `MESsage` (and,
+by extension, every other RS-232 command that changes instrument
+state - `ACQuisition`, `CH1 VOLTS`, etc.) must go through some
+intermediary that isn't a literal `lcall` to a fixed address - most
+plausibly the same still-unfound mechanism as "who walks the numeric-
+command-ID dispatch table" from earlier this session
+(`docs/comm-rom/rs232-live-session-2026-09-14.md`'s command-keyword-
+table section) or `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
+cross-ROM call puzzle - a shared-memory mailbox/flag polled by the main
+ROM's task scheduler is the leading architectural guess (matching how
+decoupled the comm ROM and main ROM otherwise are throughout this
+project's findings), but genuinely unconfirmed. **This didn't find the
+stroke-font table**, but it does rule out the one specific path this
+idea proposed, and strengthens the case that solving "who walks the
+command-ID table" would likely unlock *both* mysteries at once, not
+just the RS-232 one - worth prioritizing for that reason.
