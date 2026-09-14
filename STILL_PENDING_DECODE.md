@@ -72,12 +72,17 @@ The single biggest cluster of open items - see
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm
   installed" test, but *why* those two specific values mean what they
   mean isn't confirmed. See `docs/comm-rom/option-detection.md`.
-- **`STATUS 128` (seen once via `STAtus?`, never reproduced).**
-  Table 7-34's status-byte bit layout hardcodes bit 7 to 0 in every
-  documented category, so no known code path can produce it. Current
-  best guess is a one-off serial-line glitch, not a firmware defect -
-  genuinely open only in the sense that it's unproven either way. See
-  `docs/comm-rom/rs232-live-session-2026-09-14.md`.
+- **`STATUS 128` (seen twice via `STAtus?`, both times right after a
+  DTR/RTS line-state transition).** Table 7-34's status-byte bit
+  layout hardcodes bit 7 to 0 in every documented category, so no known
+  code path can produce it. The second sighting narrowed the likely
+  cause to a real voltage transition on the DTR/RTS control lines
+  briefly corrupting one incoming byte on that cable, rather than pure
+  random noise - 10 rapid reconnect-and-query cycles with the lines
+  already stable reproduced nothing. Still not proven (would need a
+  deliberate mid-session DTR/RTS toggle-and-observe test), but not a
+  ROM code path either way. See `docs/comm-rom/rs232-live-session-2026-
+  09-14.md`.
 - **Comm ROM revision `-13` has never been disassembled.** `-13` and
   `-14` differ in two real ~16KB-aligned regions (unlike the main
   ROMs, which only differ in a 4-byte header) - only `-14` has ever

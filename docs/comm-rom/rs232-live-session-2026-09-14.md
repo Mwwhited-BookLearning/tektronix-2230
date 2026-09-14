@@ -134,3 +134,39 @@ open question:**
   offset/alignment and keep whichever maximizes exact structural
   matches" technique already noted elsewhere in this file for the
   `0x90000` alias discovery.
+
+## `STATUS 128` reproduced a second time - now correlated with a DTR/RTS line-state transition, not just "transient noise"
+
+After adding explicit hardware-flow-control support to both RS-232
+tools (`--rts`/`--dtr`/`--rtscts`/`--dsrdtr`/`--show-lines` - the user
+reported needing DTR/RTS asserted in hterm on some cable/adapter
+combinations), the very first live command sent with `--rts on --dtr
+on` explicitly forced for the first time this session produced
+`STATUS 128;` again - the second independent sighting of this
+previously-"not reproduced" anomaly (see above).
+
+**Follow-up testing narrows the correlate, but doesn't fully explain
+it:**
+- 5 immediately-following `STAtus?` calls (separate process/connection
+  each time, same `--rts on --dtr on` flags) all came back clean
+  `STATUS 0;`.
+- A further 10 rapid reconnect-and-query cycles (same flags, back to
+  back) were **also all clean** - so "fast reconnect cadence" alone
+  doesn't reproduce it either.
+
+The one thing that *was* different about the triggering call: it was
+the first command in this session sent with `--rts on --dtr on`
+explicitly asserted, immediately following an `--show-lines` call that
+read the port's modem-status lines right after opening (an extra
+driver-level query touching the port at connect time), which itself
+followed a `SET?` call in yet another fresh connection. **Working
+theory, still unconfirmed**: a real voltage transition on the DTR/RTS
+control lines (going from whatever they'd been left at to explicitly
+asserted high, for the first time) briefly coupled noise onto the RX
+line on this cable, corrupting one incoming byte right around that
+transition - not a firmware defect, and not reproducible by simply
+reconnecting or querying rapidly once the lines are already stable.
+Still short of proof (would need to deliberately toggle DTR/RTS
+low-then-high mid-session and see if it reproduces on demand), but this
+is a more specific, physically-grounded theory than plain "transient
+glitch," and rules out pure reconnect-timing as the cause.
