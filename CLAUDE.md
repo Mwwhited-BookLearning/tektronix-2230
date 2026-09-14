@@ -5,7 +5,8 @@ EPROM dumps pulled from a Tektronix 2230 oscilloscope. There's no
 external deadline or audience — it's meant to be picked up and resumed
 across many sessions, so **read `CONTEXT.md` and `TODO.md` before
 re-deriving anything**; the hard-won facts (CPU identity, memory map)
-are already settled and documented there and in `disasm/NOTES.md`.
+are already settled and documented there and in `docs/` (start at
+`docs/README.md`).
 
 ## Layout
 
@@ -20,8 +21,14 @@ are already settled and documented there and in `disasm/NOTES.md`.
   `binary/aligned/README.md` — status is **provisional, review later**
   once the rest of the analysis is further along.
 - `disasm/` — the disassembly project: generator scripts, listings, and
-  the symbol table that gets refined over time. See `disasm/NOTES.md`
-  for the authoritative technical log (CPU, memory map, ROM roles).
+  the symbol table that gets refined over time.
+- `docs/` — the authoritative technical log (CPU identity, ROM roles,
+  every investigation/finding), split by topic under `docs/{area}/
+  {feature}.md` since a single running-log file grew too long to
+  navigate. **Start at `docs/README.md`** for the index; add new
+  findings to whichever area file fits, or start a new one, and update
+  the README's index. `disasm/NOTES.md` is a stub redirecting old
+  section links here — don't add new content there.
 - `CONTEXT.md` — why this project exists and what's been learned about
   the hardware/device itself.
 - `HARDWARE.md` — primary-source photos of the physical unit (front
@@ -71,7 +78,7 @@ are already settled and documented there and in `disasm/NOTES.md`.
   time — don't rename in only one place.
 - Don't re-litigate settled facts (currently: the CPU is a confirmed
   Intel 8088/8086, not the 6809 originally guessed) — check
-  `disasm/NOTES.md` first.
+  `docs/README.md` and its area files first.
 - When adding a new session's findings, append a `changes/YYYY-MM-DD.md`
   entry rather than editing prior dated entries.
 - When a diagram would help (state machines, memory maps, menu trees),
@@ -87,8 +94,9 @@ are already settled and documented there and in `disasm/NOTES.md`.
   (e.g. "brute-force every candidate base offset against observed
   targets and keep whichever maximizes exact matches" — that's how the
   comm ROM's real address and its `0x90000` alias were both found),
-  write it down in `disasm/NOTES.md` so it gets reused next time
-  instead of rediscovered.
+  write it down in `docs/` (the relevant area file, e.g.
+  `docs/comm-rom/address-map-and-cpu.md` for that example) so it gets
+  reused next time instead of rediscovered.
 - **To identify an unnamed function's purpose, check what string it
   references before anything else.** Don't just grep the function body
   for the diagnostic-message text directly (an earlier attempt did
@@ -97,8 +105,9 @@ are already settled and documented there and in `disasm/NOTES.md`.
   offset, compute the physical address (`0xFF7B0 + offset` for
   `160-3532`), and read the actual bytes there with a one-off Python
   snippet. This identified 18 of `self_test_dispatcher`'s sibling
-  subroutines in a single pass (see `disasm/NOTES.md` "Identified
-  self_test_dispatcher's sibling subroutines") after call-order
+  subroutines in a single pass (see `docs/self-test/dispatcher-and-
+  siblings.md` "Identified self_test_dispatcher's sibling subroutines")
+  after call-order
   guessing and direct-reference grepping had both failed. When a
   function has *no* string reference at all, look for a distinctive
   *shape* instead (e.g. the 3 front-panel-switch tests were identified
