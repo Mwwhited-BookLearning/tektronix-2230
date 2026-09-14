@@ -61,6 +61,10 @@ are already settled and documented there and in `docs/` (start at
   companion is `disasm/strings_<rom>.json` (regenerate with
   `disasm/gen_strings.py` if a ROM binary ever changes).
 - `TODO.md` — active/near-term work items.
+- `STILL_PENDING_DECODE.md` — a status board of every open technical
+  unknown in the firmware, organized by area (distinct from `TODO.md`:
+  this is "what's still unknown," not "what to do next"). **Update
+  whenever an item here gets resolved or a new one is found.**
 - `changes/YYYY-MM-DD.md` — a dated log entry per session of completed
   work, for a human-readable history alongside git log.
 
