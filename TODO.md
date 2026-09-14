@@ -160,8 +160,29 @@
       actual source of [0x1B83]". The write-probe address is confirmed
       as the general-purpose "Time Base Mode Register U4119" (not a
       comm-specific latch), consistent with the two-branch ambiguity,
-      but doesn't pin down the exact bit semantics. An extended
-      live-hardware session on two real units (2026-09-13) initially
+      but doesn't pin down the exact bit semantics.
+
+      **BREAKTHROUGH 2026-09-14**: the scope finally responded over
+      RS-232 for the first time this entire investigation, once a DIP-
+      switch bit-order error (see `HARDWARE.md`) and a bad DB9-to-DB25
+      adapter (not yet characterized) were both fixed. `ID?` got back
+      `STATUS 98;READY;` - real data, but **every other command tried
+      (`SET?`, `STAtus?`, `HELp?`, even deliberate garbage) produced
+      the identical reply**, while a passive 10s listen produced
+      nothing. This means the whole hardware-level investigation below
+      (comm-detection, interrupt masking, the `[0x712]` dispatch table)
+      was tracing real mechanisms, but **none of them were actually the
+      blocker** - it was baud rate and cabling all along. The live
+      result now points squarely at the **keyword-matching function**
+      (still not found in the disassembly) as the real remaining gap:
+      the low-level byte pipeline clearly works end-to-end, but nothing
+      differentiates *which* command was sent. See `disasm/NOTES.md`'s
+      "BREAKTHROUGH, 2026-09-14" section for the full transcript and
+      analysis. **This is now the top priority lead** - everything
+      below this point is retained as accurate background on how the
+      comm hardware/firmware works, but is no longer the live blocker.
+
+      An extended live-hardware session on two real units (2026-09-13) initially
       found `COMM_LOOPBACK` reporting `UNTESTED` and `ID?` getting zero
       bytes back, and first suspected a `[0x1B83]` comm-detection
       failure as a unifying cause - **but `COMM_LOOPBACK`'s `UNTESTED`

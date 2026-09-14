@@ -1532,6 +1532,91 @@ diagnostic/POST mode vs. normal-run mode) with different NMI/software-
 interrupt handling per state - worth confirming once
 `INT255_HANDLER_EARLY`/`_LATE` and `INT2_HANDLER_LATE` are read closely.
 
+## BREAKTHROUGH, 2026-09-14: the scope finally responds over RS-232 - live evidence the keyword-matching layer is where it's actually broken
+
+After the DIP-switch bit-order fix (see `HARDWARE.md` - the earlier
+sessions had genuinely been running at the wrong baud rate) **and** a
+working DB9-to-DB25 adapter (the earlier one apparently had a pinout
+problem - not yet characterized, the user plans to check it later),
+sending `ID?\r` to Scope 1 at the correct 9600 baud finally got a real
+reply for the first time all session:
+
+```
+sent: ID?\r  -> STATUS 98;READY;\r
+```
+
+**This is the first byte ever received back from either scope this
+entire investigation.** Every earlier "zero bytes" result (this
+session's whole cable/DIP-switch/interrupt-mask/parser deep-dive) can
+now be explained far more simply: the effective baud rate never
+actually matched what was being sent at, for one or both of two
+independent reasons (wrong bit order, and/or a bad adapter) - **not**
+any of the deeper firmware mechanisms traced (interrupt masking, the
+`[0x712]` dispatch table, `poll_comm_status_tick`, etc. may still be
+accurate documentation of how the firmware works, but none of them
+were actually the blocker**.
+
+**But the content of the reply is itself a new, important finding.**
+Sent several different, clearly-distinct commands in sequence -
+`ID?`, `SET?`, `STAtus?`, `HELp?`, and deliberately-invalid garbage
+(`XYZZY?`) - and **every one of them produced the same reply**,
+`STATUS 98;READY;` (sometimes with a second partial `STATUS 97;`
+trailing, and sometimes just `READY;` alone, depending on timing - see
+the raw transcript below). A passive 10-second listen with nothing
+sent produced **zero bytes**, ruling out this being unrelated
+background chatter - the replies are genuinely triggered by sending
+something, just not differentiated by *what* was sent.
+
+This lines up precisely with this session's own code-tracing gap: the
+low-level byte-classification/dispatch machinery (`process_gpib_
+command_byte`, the `[0x712]` table, the interrupt chain through `INT
+255`) is real and evidently *does* work end-to-end - something comes
+back reliably. But the actual **keyword-matching function** - the
+piece that would compare an accumulated character run against
+`STRINGS.md`'s length-prefixed keyword table to tell `ID` from `SET`
+from `STA` from garbage - was never found in the disassembly, and this
+live result is consistent with it either not being reached, or not
+functioning as expected: nothing this session sent produced a reply
+that varied with the command's actual content.
+
+**Raw transcript** (Scope 1, COM3, 9600 8N1, no flow control, `\r`
+terminator - each line is one send/receive round-trip):
+```
+ID?\r        -> STATUS 98;READY;\r
+SET?\r       -> STATUS 98;READY;\r
+STAtus?\r    -> STATUS 98;READY;\r
+HELp?\r      -> STATUS 98;READY;\rSTATUS 97;
+ID?\r        -> STATUS 98;READY;\r
+XYZZY?\r     -> STATUS 98;READY;\rSTATUS 97;
+EVEnt?\r     -> STATUS 98;
+EVEnt?\r     -> (0 bytes)
+ID?\r        -> (0 bytes)
+SET?\r       -> (0 bytes)
+EVEnt?\r     -> READY;\r
+[5x EVEnt?]  -> alternating STATUS 98;READY;[STATUS 97;] / STATUS 98;READY;
+ID?\r        -> STATUS 98;
+REMote ON\r  -> (0 bytes)
+ID?\r        -> READY;\r
+SET?\r       -> STATUS 98;READY;\r
+```
+The instability in exact byte counts/timing (sometimes a full
+`STATUS 98;READY;`, sometimes a bare `READY;`, sometimes nothing)
+looks like a small number of cyclically-repeating fixed messages being
+read across inconsistent timing windows, not a real per-command
+response varying with content. `98`/`97` look like fixed status/event
+codes (plausibly power-on-related, or generic "command not
+understood" codes) rather than being generated per-query.
+
+**Next step, live-testable**: try sending the *short* single-letter-
+capital forms of the keywords (`ID?` is already short; try things like
+just `SET` with no `?`, or send commands one character at a time with
+a delay to see if partial-match state is visible) and watch for ANY
+variation in the reply. If truly nothing ever varies, that's strong
+confirmation the keyword-matching function either isn't reached or is
+broken/unimplemented for this specific firmware path - a much more
+promising target than any of the hardware-level theories this session
+chased earlier.
+
 ## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
 
 Found 2026-09-13 reading further into the service manual's Theory of
