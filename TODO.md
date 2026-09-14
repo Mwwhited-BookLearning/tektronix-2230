@@ -1,5 +1,12 @@
 # Active work
 
+**Environment note**: NASM isn't on `PATH` in this environment, but
+is installed at `C:\Users\mwwhi\AppData\Local\bin\NASM\nasm.exe`
+(confirmed 2026-09-14, version 3.02). Pass it explicitly as an
+argument where a `gen_source*.py` script accepts one (e.g. `python
+gen_source_2998.py "C:\Users\mwwhi\AppData\Local\bin\NASM\nasm.exe"`)
+instead of assuming bare `nasm` resolves.
+
 ## Next up
 
 - [ ] **User request**: decode the readout's stroke/vector font glyph
