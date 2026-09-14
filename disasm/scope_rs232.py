@@ -18,6 +18,24 @@ Usage:
 
     # A whole batch, newline-separated, logged with timestamps
     python scope_rs232.py --port COM3 --baud 4800 --batch-file cmds.txt --log session.txt
+
+    # Check what a given cable/adapter actually presents on the modem
+    # control lines, and force RTS/DTR high if it needs that to pass
+    # data through at all (see --show-lines/--rts/--dtr/--rtscts below)
+    python scope_rs232.py --port COM3 --show-lines --cmd "ID?"
+
+Hardware flow control: the manual only documents *software* (XON/XOFF)
+flow control (the `FLOw` command) - nothing in it mentions RTS/CTS or
+DTR/DSR, so the 2230 itself isn't known to require or drive them. But
+some USB-serial adapters/cables wire (or need) these pins regardless -
+either the adapter's own chipset gates transmission on hardware CTS
+independent of any software setting, or a cable jumpers RTS to CTS (or
+DTR to DSR) so the adapter sees itself as always "clear to send." Both
+scripts default to leaving these lines exactly as pyserial/the OS
+driver leaves them on open (no explicit control) - use `--show-lines`
+to see what a given cable/adapter actually presents, and `--rts`/
+`--dtr`/`--rtscts`/`--dsrdtr` to force a specific state if a cable
+needs it.
 """
 import argparse
 import sys
@@ -60,11 +78,34 @@ def main():
     ap.add_argument("--delay-between", type=float, default=0.3,
                      help="pause between commands in batch mode")
     ap.add_argument("--raw-out", help="save the raw bytes of a single --cmd response here too")
+    ap.add_argument("--rtscts", action="store_true",
+                     help="enable RTS/CTS hardware flow control (off by default - the manual "
+                          "only documents software XON/XOFF flow control for this instrument)")
+    ap.add_argument("--dsrdtr", action="store_true",
+                     help="enable DSR/DTR hardware flow control (off by default)")
+    ap.add_argument("--dtr", choices=["auto", "on", "off"], default="auto",
+                     help="force the DTR output line high/low after opening; 'auto' leaves "
+                          "whatever pyserial/the OS driver sets by default")
+    ap.add_argument("--rts", choices=["auto", "on", "off"], default="auto",
+                     help="force the RTS output line high/low after opening; 'auto' leaves "
+                          "whatever pyserial/the OS driver sets by default")
+    ap.add_argument("--show-lines", action="store_true",
+                     help="print CTS/DSR/CD/RI readback after connecting - use this to see "
+                          "what a given cable/adapter actually presents")
     args = ap.parse_args()
 
     import serial
     ser = serial.Serial(port=args.port, baudrate=args.baud, bytesize=8,
-                         parity=serial.PARITY_NONE, stopbits=1, timeout=0.3)
+                         parity=serial.PARITY_NONE, stopbits=1, timeout=0.3,
+                         rtscts=args.rtscts, dsrdtr=args.dsrdtr)
+    if args.dtr != "auto":
+        ser.dtr = (args.dtr == "on")
+    if args.rts != "auto":
+        ser.rts = (args.rts == "on")
+    if args.show_lines:
+        print(f"Line status: CTS={ser.cts} DSR={ser.dsr} CD={ser.cd} RI={ser.ri} "
+              f"(output: DTR={ser.dtr} RTS={ser.rts}, "
+              f"rtscts={args.rtscts} dsrdtr={args.dsrdtr})", file=sys.stderr)
 
     logf = open(args.log, "a", encoding="utf-8") if args.log else None
 

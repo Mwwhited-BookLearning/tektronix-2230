@@ -13,10 +13,21 @@ safety net), on the theory that "no more bytes arriving" means the
 plot finished.
 
 Default serial settings (1200 8N1, CR terminator) match the baud rate
-confirmed live-working on 2026-09-14 - see `disasm/NOTES.md`'s
-"RESOLVED, 2026-09-14" section. 9600 was found to be unreliable on
-this hardware/cable combination; override with --baud if your own
+confirmed live-working on 2026-09-14 - see
+`docs/comm-rom/rs232-breakthrough.md`. 9600 was found to be unreliable
+on this hardware/cable combination; override with --baud if your own
 setup differs.
+
+Hardware flow control (RTS/CTS, DTR/DSR) is off by default and left at
+whatever pyserial/the OS driver sets on open - the manual only
+documents software (XON/XOFF) flow control for this instrument, so
+there's no known requirement for hardware handshake lines. Some
+adapters/cables need it anyway (either the adapter chipset gates
+transmission on hardware CTS regardless of software settings, or the
+cable jumpers RTS to CTS so it always reads "clear to send"). Use
+--show-lines to see what a cable actually presents, and --rts/--dtr/
+--rtscts/--dsrdtr to force a specific state if one needs it - see
+disasm/scope_rs232.py's docstring for more on this.
 
 The HPGL-to-SVG renderer is a small, pragmatic subset interpreter (PU/
 PD/PA/PR/SP/IN/DF) - it does NOT implement HPGL's SC/IP scaling
@@ -48,12 +59,22 @@ import time
 # Serial capture
 # ---------------------------------------------------------------------------
 
-def capture_hpgl_plot(port, baud, graticule, speed, idle_timeout, max_wait):
+def capture_hpgl_plot(port, baud, graticule, speed, idle_timeout, max_wait,
+                       rtscts=False, dsrdtr=False, dtr="auto", rts="auto", show_lines=False):
     import serial
 
     parity_map = {"N": serial.PARITY_NONE, "E": serial.PARITY_EVEN, "O": serial.PARITY_ODD}
     ser = serial.Serial(port=port, baudrate=baud, bytesize=8,
-                         parity=parity_map["N"], stopbits=1, timeout=0.3)
+                         parity=parity_map["N"], stopbits=1, timeout=0.3,
+                         rtscts=rtscts, dsrdtr=dsrdtr)
+    if dtr != "auto":
+        ser.dtr = (dtr == "on")
+    if rts != "auto":
+        ser.rts = (rts == "on")
+    if show_lines:
+        print(f"Line status: CTS={ser.cts} DSR={ser.dsr} CD={ser.cd} RI={ser.ri} "
+              f"(output: DTR={ser.dtr} RTS={ser.rts}, "
+              f"rtscts={rtscts} dsrdtr={dsrdtr})", file=sys.stderr)
     try:
         ser.reset_input_buffer()
         # If a previous run was cut off mid-plot (e.g. --max-wait was hit
@@ -275,6 +296,17 @@ def main():
     ap.add_argument("--from-file", help="skip serial capture, render an existing .hpgl file instead")
     ap.add_argument("--out", required=True,
                      help="output path stem - writes <out>.hpgl (if captured live) and <out>.svg")
+    ap.add_argument("--rtscts", action="store_true",
+                     help="enable RTS/CTS hardware flow control (off by default - see module "
+                          "docstring)")
+    ap.add_argument("--dsrdtr", action="store_true",
+                     help="enable DSR/DTR hardware flow control (off by default)")
+    ap.add_argument("--dtr", choices=["auto", "on", "off"], default="auto",
+                     help="force the DTR output line high/low after opening")
+    ap.add_argument("--rts", choices=["auto", "on", "off"], default="auto",
+                     help="force the RTS output line high/low after opening")
+    ap.add_argument("--show-lines", action="store_true",
+                     help="print CTS/DSR/CD/RI readback after connecting")
     args = ap.parse_args()
 
     if args.from_file:
@@ -283,7 +315,9 @@ def main():
     else:
         graticule = {"on": True, "off": False, None: None}[args.graticule]
         raw = capture_hpgl_plot(args.port, args.baud, graticule, args.speed,
-                                 args.idle_timeout, args.max_wait)
+                                 args.idle_timeout, args.max_wait,
+                                 rtscts=args.rtscts, dsrdtr=args.dsrdtr,
+                                 dtr=args.dtr, rts=args.rts, show_lines=args.show_lines)
         hpgl_path = args.out + ".hpgl"
         with open(hpgl_path, "wb") as f:
             f.write(raw)

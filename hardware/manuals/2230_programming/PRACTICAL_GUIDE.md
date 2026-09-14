@@ -153,6 +153,23 @@ never sends physical units directly.
 
 ## Practical gotchas worth knowing before you script anything
 
+- **Hardware flow control (RTS/CTS, DTR/DSR) isn't documented for this
+  instrument, but some cables/adapters need it anyway.** The manual
+  only documents *software* (XON/XOFF) flow control (`FLOw ON/OFF`) -
+  no mention of RTS/CTS or DTR/DSR at all, so the 2230 itself isn't
+  known to require or drive them. But some USB-serial adapters gate
+  transmission on hardware CTS at the chip/driver level regardless of
+  any software setting, and some DB9/DB25 adapters/cables jumper RTS
+  straight to CTS (or DTR to DSR) so the adapter always reads "clear to
+  send" without a real handshake partner. Both tools below leave these
+  lines exactly as pyserial/the OS driver sets them by default (no
+  explicit control) unless told otherwise - use `--show-lines` to see
+  what a given cable/adapter actually presents (`CTS`/`DSR`/`CD`/`RI`
+  readback), and `--rts on|off`/`--dtr on|off` to force a line, or
+  `--rtscts`/`--dsrdtr` to turn on OS-level hardware flow-control
+  gating, if a specific cable needs it. **If a command/plot silently
+  gets nothing back on one adapter but works on another, this is worth
+  checking before assuming it's another baud-rate issue.**
 - **A cut-off `PLOt` leaves the scope "busy."** While a plot is in
   progress the instrument ignores every command except `PLOt ABOrt` -
   if your own tooling times out and gives up mid-plot, the *next*
@@ -197,3 +214,5 @@ never sends physical units directly.
   what the DIP switches are set to.
 
 Both default to `COM3`; override with `--port` for a different setup.
+Both also share the same `--rtscts`/`--dsrdtr`/`--rts`/`--dtr`/
+`--show-lines` flags for hardware flow control - see the gotcha above.
