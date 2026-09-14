@@ -70,7 +70,13 @@ header implies).
 file offsets `0x8A59`-`0x8F1D` for the string data, `0x8D4C`-`0x8DE6`+
 for an index/dispatch table pointing into it) - this is very plausibly
 the "downstream keyword-matching function" TODO.md has listed as
-unfound since early sessions, or at least its backing data table:
+unfound since early sessions, or at least its backing data table. **The
+sampled entries below are illustrative only - see
+[`command-keyword-table.md`](command-keyword-table.md) for the complete
+extracted contents of all three structures (110 argument keywords, 26
+dispatch records, 45 header entries), including 4 header entries that
+turned out not to match any live `HELp?` response and are still an
+open question:**
 
 - **Two adjacent length-prefixed ASCII string tables** (`[len_byte]
   [ASCII text]`, confirmed against `disasm/gen_strings.py`'s own

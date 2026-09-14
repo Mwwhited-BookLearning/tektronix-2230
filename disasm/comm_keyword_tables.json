@@ -1,0 +1,965 @@
+{
+  "argument_keywords": [
+    {
+      "phys_addr": "0x088a58",
+      "len": 5,
+      "text": "ABOrt"
+    },
+    {
+      "phys_addr": "0x088a5e",
+      "len": 7,
+      "text": "ACCpeak"
+    },
+    {
+      "phys_addr": "0x088a66",
+      "len": 3,
+      "text": "ACQ"
+    },
+    {
+      "phys_addr": "0x088a6a",
+      "len": 3,
+      "text": "ARM"
+    },
+    {
+      "phys_addr": "0x088a6e",
+      "len": 5,
+      "text": "ASCii"
+    },
+    {
+      "phys_addr": "0x088a74",
+      "len": 7,
+      "text": "ASEcdiv"
+    },
+    {
+      "phys_addr": "0x088a7c",
+      "len": 4,
+      "text": "AUTo"
+    },
+    {
+      "phys_addr": "0x088a81",
+      "len": 7,
+      "text": "AVErage"
+    },
+    {
+      "phys_addr": "0x088a8a",
+      "len": 8,
+      "text": "BASegain"
+    },
+    {
+      "phys_addr": "0x088a93",
+      "len": 6,
+      "text": "BINary"
+    },
+    {
+      "phys_addr": "0x088a9a",
+      "len": 6,
+      "text": "BIT/nr"
+    },
+    {
+      "phys_addr": "0x088aa1",
+      "len": 6,
+      "text": "BN.Fmt"
+    },
+    {
+      "phys_addr": "0x088aa8",
+      "len": 7,
+      "text": "BSEcdiv"
+    },
+    {
+      "phys_addr": "0x088ab0",
+      "len": 6,
+      "text": "BYT/nr"
+    },
+    {
+      "phys_addr": "0x088ab8",
+      "len": 3,
+      "text": "CH1"
+    },
+    {
+      "phys_addr": "0x088abc",
+      "len": 3,
+      "text": "CH2"
+    },
+    {
+      "phys_addr": "0x088ac0",
+      "len": 7,
+      "text": "CHAnnel"
+    },
+    {
+      "phys_addr": "0x088ac8",
+      "len": 6,
+      "text": "CHKsm0"
+    },
+    {
+      "phys_addr": "0x088acf",
+      "len": 4,
+      "text": "CLKs"
+    },
+    {
+      "phys_addr": "0x088ad4",
+      "len": 8,
+      "text": "COUpling"
+    },
+    {
+      "phys_addr": "0x088add",
+      "len": 6,
+      "text": "CRVchk"
+    },
+    {
+      "phys_addr": "0x088ae4",
+      "len": 7,
+      "text": "CURRent"
+    },
+    {
+      "phys_addr": "0x088aec",
+      "len": 5,
+      "text": "CURS1"
+    },
+    {
+      "phys_addr": "0x088af2",
+      "len": 5,
+      "text": "CURS2"
+    },
+    {
+      "phys_addr": "0x088afb",
+      "len": 7,
+      "text": "DEFault"
+    },
+    {
+      "phys_addr": "0x088b03",
+      "len": 7,
+      "text": "DISplay"
+    },
+    {
+      "phys_addr": "0x088b0b",
+      "len": 4,
+      "text": "DIVs"
+    },
+    {
+      "phys_addr": "0x088b10",
+      "len": 4,
+      "text": "DONe"
+    },
+    {
+      "phys_addr": "0x088b16",
+      "len": 5,
+      "text": "EMPty"
+    },
+    {
+      "phys_addr": "0x088b1c",
+      "len": 5,
+      "text": "ENCdg"
+    },
+    {
+      "phys_addr": "0x088b22",
+      "len": 3,
+      "text": "ENV"
+    },
+    {
+      "phys_addr": "0x088b26",
+      "len": 4,
+      "text": "EPS7"
+    },
+    {
+      "phys_addr": "0x088b2b",
+      "len": 4,
+      "text": "EPS8"
+    },
+    {
+      "phys_addr": "0x088b30",
+      "len": 6,
+      "text": "EXTclk"
+    },
+    {
+      "phys_addr": "0x088b38",
+      "len": 4,
+      "text": "FILl"
+    },
+    {
+      "phys_addr": "0x088b3d",
+      "len": 6,
+      "text": "FORmat"
+    },
+    {
+      "phys_addr": "0x088b44",
+      "len": 4,
+      "text": "FREe"
+    },
+    {
+      "phys_addr": "0x088b4a",
+      "len": 2,
+      "text": "GO"
+    },
+    {
+      "phys_addr": "0x088b4d",
+      "len": 4,
+      "text": "GRAt"
+    },
+    {
+      "phys_addr": "0x088b53",
+      "len": 3,
+      "text": "HEX"
+    },
+    {
+      "phys_addr": "0x088b57",
+      "len": 4,
+      "text": "HMAg"
+    },
+    {
+      "phys_addr": "0x088b5c",
+      "len": 4,
+      "text": "HPGl"
+    },
+    {
+      "phys_addr": "0x088b61",
+      "len": 5,
+      "text": "HSRec"
+    },
+    {
+      "phys_addr": "0x088b68",
+      "len": 6,
+      "text": "INVert"
+    },
+    {
+      "phys_addr": "0x088b72",
+      "len": 4,
+      "text": "LOCk"
+    },
+    {
+      "phys_addr": "0x088b77",
+      "len": 5,
+      "text": "LSRec"
+    },
+    {
+      "phys_addr": "0x088b7e",
+      "len": 4,
+      "text": "MODe"
+    },
+    {
+      "phys_addr": "0x088b84",
+      "len": 5,
+      "text": "NR.Pt"
+    },
+    {
+      "phys_addr": "0x088b8a",
+      "len": 9,
+      "text": "NUMsweeps"
+    },
+    {
+      "phys_addr": "0x088b95",
+      "len": 3,
+      "text": "OFF"
+    },
+    {
+      "phys_addr": "0x088b99",
+      "len": 2,
+      "text": "ON"
+    },
+    {
+      "phys_addr": "0x088b9d",
+      "len": 7,
+      "text": "PEAkdet"
+    },
+    {
+      "phys_addr": "0x088ba5",
+      "len": 4,
+      "text": "PERM"
+    },
+    {
+      "phys_addr": "0x088baa",
+      "len": 6,
+      "text": "POInts"
+    },
+    {
+      "phys_addr": "0x088bb1",
+      "len": 8,
+      "text": "POSition"
+    },
+    {
+      "phys_addr": "0x088bba",
+      "len": 7,
+      "text": "PROtect"
+    },
+    {
+      "phys_addr": "0x088bc2",
+      "len": 6,
+      "text": "PT.Fmt"
+    },
+    {
+      "phys_addr": "0x088bc9",
+      "len": 6,
+      "text": "PT.Off"
+    },
+    {
+      "phys_addr": "0x088bd3",
+      "len": 3,
+      "text": "REF"
+    },
+    {
+      "phys_addr": "0x088bd7",
+      "len": 10,
+      "text": "REPetitive"
+    },
+    {
+      "phys_addr": "0x088be2",
+      "len": 5,
+      "text": "RESet"
+    },
+    {
+      "phys_addr": "0x088be8",
+      "len": 4,
+      "text": "ROLl"
+    },
+    {
+      "phys_addr": "0x088bed",
+      "len": 2,
+      "text": "RP"
+    },
+    {
+      "phys_addr": "0x088bf3",
+      "len": 6,
+      "text": "SAMple"
+    },
+    {
+      "phys_addr": "0x088bfa",
+      "len": 4,
+      "text": "SAVe"
+    },
+    {
+      "phys_addr": "0x088bff",
+      "len": 4,
+      "text": "SCAn"
+    },
+    {
+      "phys_addr": "0x088c04",
+      "len": 3,
+      "text": "SEC"
+    },
+    {
+      "phys_addr": "0x088c08",
+      "len": 6,
+      "text": "SELect"
+    },
+    {
+      "phys_addr": "0x088c0f",
+      "len": 6,
+      "text": "SMOoth"
+    },
+    {
+      "phys_addr": "0x088c16",
+      "len": 6,
+      "text": "SOUrce"
+    },
+    {
+      "phys_addr": "0x088c1d",
+      "len": 5,
+      "text": "SPEed"
+    },
+    {
+      "phys_addr": "0x088c23",
+      "len": 5,
+      "text": "STArt"
+    },
+    {
+      "phys_addr": "0x088c29",
+      "len": 3,
+      "text": "STR"
+    },
+    {
+      "phys_addr": "0x088c2d",
+      "len": 8,
+      "text": "SWPcount"
+    },
+    {
+      "phys_addr": "0x088c37",
+      "len": 6,
+      "text": "TARget"
+    },
+    {
+      "phys_addr": "0x088c3e",
+      "len": 4,
+      "text": "TJEt"
+    },
+    {
+      "phys_addr": "0x088c43",
+      "len": 9,
+      "text": "TRIGCount"
+    },
+    {
+      "phys_addr": "0x088c4d",
+      "len": 8,
+      "text": "TRIGMode"
+    },
+    {
+      "phys_addr": "0x088c59",
+      "len": 5,
+      "text": "UNIts"
+    },
+    {
+      "phys_addr": "0x088c5f",
+      "len": 6,
+      "text": "UNLock"
+    },
+    {
+      "phys_addr": "0x088c69",
+      "len": 5,
+      "text": "VALue"
+    },
+    {
+      "phys_addr": "0x088c6f",
+      "len": 7,
+      "text": "VECtors"
+    },
+    {
+      "phys_addr": "0x088c77",
+      "len": 5,
+      "text": "VGAin"
+    },
+    {
+      "phys_addr": "0x088c7d",
+      "len": 5,
+      "text": "VOLts"
+    },
+    {
+      "phys_addr": "0x088c83",
+      "len": 9,
+      "text": "VPOsition"
+    },
+    {
+      "phys_addr": "0x088c8e",
+      "len": 6,
+      "text": "WEIght"
+    },
+    {
+      "phys_addr": "0x088c95",
+      "len": 4,
+      "text": "WFId"
+    },
+    {
+      "phys_addr": "0x088c9b",
+      "len": 5,
+      "text": "XINcr"
+    },
+    {
+      "phys_addr": "0x088ca1",
+      "len": 5,
+      "text": "XMUlt"
+    },
+    {
+      "phys_addr": "0x088ca7",
+      "len": 4,
+      "text": "XOFf"
+    },
+    {
+      "phys_addr": "0x088cac",
+      "len": 5,
+      "text": "XUNit"
+    },
+    {
+      "phys_addr": "0x088cb2",
+      "len": 2,
+      "text": "XY"
+    },
+    {
+      "phys_addr": "0x088cb8",
+      "len": 5,
+      "text": "YMUlt"
+    },
+    {
+      "phys_addr": "0x088cbe",
+      "len": 4,
+      "text": "YOFf"
+    },
+    {
+      "phys_addr": "0x088cc3",
+      "len": 5,
+      "text": "YUNit"
+    },
+    {
+      "phys_addr": "0x088cca",
+      "len": 2,
+      "text": "AC"
+    },
+    {
+      "phys_addr": "0x088ccd",
+      "len": 3,
+      "text": "ADD"
+    },
+    {
+      "phys_addr": "0x088cd1",
+      "len": 5,
+      "text": "AINtb"
+    },
+    {
+      "phys_addr": "0x088cd7",
+      "len": 3,
+      "text": "ALT"
+    },
+    {
+      "phys_addr": "0x088cdb",
+      "len": 6,
+      "text": "ASWeep"
+    },
+    {
+      "phys_addr": "0x088ce2",
+      "len": 6,
+      "text": "BSWeep"
+    },
+    {
+      "phys_addr": "0x088ce9",
+      "len": 4,
+      "text": "CHOp"
+    },
+    {
+      "phys_addr": "0x088cee",
+      "len": 2,
+      "text": "DC"
+    },
+    {
+      "phys_addr": "0x088cf1",
+      "len": 3,
+      "text": "GND"
+    },
+    {
+      "phys_addr": "0x088cf5",
+      "len": 6,
+      "text": "NORmal"
+    },
+    {
+      "phys_addr": "0x088cfc",
+      "len": 7,
+      "text": "PERcent"
+    },
+    {
+      "phys_addr": "0x088d04",
+      "len": 4,
+      "text": "POST"
+    },
+    {
+      "phys_addr": "0x088d09",
+      "len": 6,
+      "text": "PPAuto"
+    },
+    {
+      "phys_addr": "0x088d10",
+      "len": 3,
+      "text": "PRE"
+    },
+    {
+      "phys_addr": "0x088d14",
+      "len": 7,
+      "text": "UNKnown"
+    }
+  ],
+  "dispatch_table": [
+    {
+      "id": 0,
+      "rec_offset": 6,
+      "file_offset": 36326,
+      "target": null,
+      "phys_addr": "0x088de6"
+    },
+    {
+      "id": 3,
+      "rec_offset": 36,
+      "file_offset": 36356,
+      "target": "BYTe",
+      "phys_addr": "0x088e04"
+    },
+    {
+      "id": 4,
+      "rec_offset": 42,
+      "file_offset": 36362,
+      "target": "CH1",
+      "phys_addr": "0x088e0a"
+    },
+    {
+      "id": 8,
+      "rec_offset": 64,
+      "file_offset": 36384,
+      "target": "DATa",
+      "phys_addr": "0x088e20"
+    },
+    {
+      "id": 12,
+      "rec_offset": 90,
+      "file_offset": 36410,
+      "target": "ERRor",
+      "phys_addr": "0x088e3a"
+    },
+    {
+      "id": 14,
+      "rec_offset": 103,
+      "file_offset": 36423,
+      "target": "FLOw",
+      "phys_addr": "0x088e47"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 15,
+      "rec_offset": 109,
+      "file_offset": 36429,
+      "target": "HELp",
+      "phys_addr": "0x088e4d"
+    },
+    {
+      "id": 17,
+      "rec_offset": 126,
+      "file_offset": 36446,
+      "target": "ID",
+      "phys_addr": "0x088e5e"
+    },
+    {
+      "id": 19,
+      "rec_offset": 135,
+      "file_offset": 36455,
+      "target": "JMP",
+      "phys_addr": "0x088e67"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 20,
+      "rec_offset": 140,
+      "file_offset": 36460,
+      "target": "LONg",
+      "phys_addr": "0x088e6c"
+    },
+    {
+      "id": 21,
+      "rec_offset": 146,
+      "file_offset": 36466,
+      "target": "MESsage",
+      "phys_addr": "0x088e72"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 22,
+      "rec_offset": 155,
+      "file_offset": 36475,
+      "target": "OPC",
+      "phys_addr": "0x088e7b"
+    },
+    {
+      "id": 23,
+      "rec_offset": 160,
+      "file_offset": 36480,
+      "target": "PLOt",
+      "phys_addr": "0x088e80"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 25,
+      "rec_offset": 172,
+      "file_offset": 36492,
+      "target": "REAdout",
+      "phys_addr": "0x088e8c"
+    },
+    {
+      "id": 33,
+      "rec_offset": 233,
+      "file_offset": 36553,
+      "target": "SAVeref",
+      "phys_addr": "0x088ec9"
+    },
+    {
+      "id": 40,
+      "rec_offset": 279,
+      "file_offset": 36599,
+      "target": "TRIggerd",
+      "phys_addr": "0x088ef7"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 41,
+      "rec_offset": 289,
+      "file_offset": 36609,
+      "target": "VMOde",
+      "phys_addr": "0x088f01"
+    },
+    {
+      "id": 42,
+      "rec_offset": 296,
+      "file_offset": 36616,
+      "target": "WAVfrm",
+      "phys_addr": "0x088f08"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 0,
+      "rec_offset": 316,
+      "file_offset": 36636,
+      "target": null,
+      "phys_addr": "0x088f1c"
+    },
+    {
+      "id": 44,
+      "rec_offset": 311,
+      "file_offset": 36631,
+      "target": "ZZZZ",
+      "phys_addr": "0x088f17"
+    }
+  ],
+  "header_keywords": [
+    {
+      "phys_addr": "0x088de6",
+      "len": 11,
+      "text": "ACQuisition"
+    },
+    {
+      "phys_addr": "0x088df2",
+      "len": 7,
+      "text": "ADDress"
+    },
+    {
+      "phys_addr": "0x088dfa",
+      "len": 8,
+      "text": "ATRigger"
+    },
+    {
+      "phys_addr": "0x088e04",
+      "len": 4,
+      "text": "BYTe"
+    },
+    {
+      "phys_addr": "0x088e0a",
+      "len": 3,
+      "text": "CH1"
+    },
+    {
+      "phys_addr": "0x088e0e",
+      "len": 3,
+      "text": "CH2"
+    },
+    {
+      "phys_addr": "0x088e12",
+      "len": 6,
+      "text": "CURSor"
+    },
+    {
+      "phys_addr": "0x088e19",
+      "len": 5,
+      "text": "CURVe"
+    },
+    {
+      "phys_addr": "0x088e20",
+      "len": 4,
+      "text": "DATa"
+    },
+    {
+      "phys_addr": "0x088e25",
+      "len": 5,
+      "text": "DELAy"
+    },
+    {
+      "phys_addr": "0x088e2b",
+      "len": 6,
+      "text": "DELTAT"
+    },
+    {
+      "phys_addr": "0x088e32",
+      "len": 6,
+      "text": "DELTAV"
+    },
+    {
+      "phys_addr": "0x088e3a",
+      "len": 5,
+      "text": "ERRor"
+    },
+    {
+      "phys_addr": "0x088e40",
+      "len": 5,
+      "text": "EVEnt"
+    },
+    {
+      "phys_addr": "0x088e47",
+      "len": 4,
+      "text": "FLOw"
+    },
+    {
+      "phys_addr": "0x088e4d",
+      "len": 4,
+      "text": "HELp"
+    },
+    {
+      "phys_addr": "0x088e52",
+      "len": 10,
+      "text": "HORizontal"
+    },
+    {
+      "phys_addr": "0x088e5e",
+      "len": 2,
+      "text": "ID"
+    },
+    {
+      "phys_addr": "0x088e61",
+      "len": 4,
+      "text": "INIt"
+    },
+    {
+      "phys_addr": "0x088e67",
+      "len": 3,
+      "text": "JMP"
+    },
+    {
+      "phys_addr": "0x088e6c",
+      "len": 4,
+      "text": "LONg"
+    },
+    {
+      "phys_addr": "0x088e72",
+      "len": 7,
+      "text": "MESsage"
+    },
+    {
+      "phys_addr": "0x088e7b",
+      "len": 3,
+      "text": "OPC"
+    },
+    {
+      "phys_addr": "0x088e80",
+      "len": 4,
+      "text": "PLOt"
+    },
+    {
+      "phys_addr": "0x088e85",
+      "len": 5,
+      "text": "PROBe"
+    },
+    {
+      "phys_addr": "0x088e8c",
+      "len": 7,
+      "text": "REAdout"
+    },
+    {
+      "phys_addr": "0x088e94",
+      "len": 7,
+      "text": "REFDisp"
+    },
+    {
+      "phys_addr": "0x088e9c",
+      "len": 7,
+      "text": "REFFrom"
+    },
+    {
+      "phys_addr": "0x088ea4",
+      "len": 8,
+      "text": "REFOrmat"
+    },
+    {
+      "phys_addr": "0x088ead",
+      "len": 7,
+      "text": "REFProt"
+    },
+    {
+      "phys_addr": "0x088eb5",
+      "len": 7,
+      "text": "REFStat"
+    },
+    {
+      "phys_addr": "0x088ebd",
+      "len": 6,
+      "text": "REMote"
+    },
+    {
+      "phys_addr": "0x088ec4",
+      "len": 3,
+      "text": "RQS"
+    },
+    {
+      "phys_addr": "0x088ec9",
+      "len": 7,
+      "text": "SAVeref"
+    },
+    {
+      "phys_addr": "0x088ed1",
+      "len": 7,
+      "text": "SEGment"
+    },
+    {
+      "phys_addr": "0x088ed9",
+      "len": 3,
+      "text": "SET"
+    },
+    {
+      "phys_addr": "0x088edd",
+      "len": 6,
+      "text": "SGLswp"
+    },
+    {
+      "phys_addr": "0x088ee4",
+      "len": 6,
+      "text": "STAtus"
+    },
+    {
+      "phys_addr": "0x088eeb",
+      "len": 4,
+      "text": "STOP"
+    },
+    {
+      "phys_addr": "0x088ef0",
+      "len": 5,
+      "text": "STORe"
+    },
+    {
+      "phys_addr": "0x088ef7",
+      "len": 8,
+      "text": "TRIggerd"
+    },
+    {
+      "phys_addr": "0x088f01",
+      "len": 5,
+      "text": "VMOde"
+    },
+    {
+      "phys_addr": "0x088f08",
+      "len": 6,
+      "text": "WAVfrm"
+    },
+    {
+      "phys_addr": "0x088f0f",
+      "len": 6,
+      "text": "WFMpre"
+    },
+    {
+      "phys_addr": "0x088f17",
+      "len": 4,
+      "text": "ZZZZ"
+    }
+  ]
+}

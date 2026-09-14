@@ -32,6 +32,7 @@ itself.
 - [RS-232: the 2026-09-14 breakthrough](comm-rom/rs232-breakthrough.md) - first real command/response round-trip, and the resolution (a baud-rate reliability problem, not firmware)
 - [RS-232: flow control and an open cross-ROM puzzle](comm-rom/rs232-flow-control-and-open-puzzle.md) - XON/XOFF software flow control, and an unresolved comm-ROM call into main-ROM plot-scaling code
 - [RS-232: live session - waveform formats and the command-keyword table](comm-rom/rs232-live-session-2026-09-14.md) - confirming binary/hex/ASCII waveform transfer and checksums live, and finding the real command-keyword table
+- [The full RS-232/GPIB command-keyword table](comm-rom/command-keyword-table.md) - every entry of the argument-keyword table, the dispatch/index table, and the top-level command-header table, extracted from the ROM
 
 See also `hardware/manuals/2230_programming/` for the transcribed
 programming manual and the field-tested practical guide.

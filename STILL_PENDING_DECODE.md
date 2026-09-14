@@ -55,12 +55,18 @@ The single biggest cluster of open items - see
   unfound.** A real command-keyword table was found live on
   2026-09-14 (comm ROM file offsets `0x8A59`-`0x8F1D`, matching the
   live `HELp?` list byte-for-byte) plus a 6-byte-per-entry index table
-  resolving numeric command IDs to far pointers into it. A grep for
-  the far pointers' literal segment value found **zero** hits in the
+  resolving numeric command IDs to far pointers into it - fully
+  extracted in `docs/comm-rom/command-keyword-table.md` (110 argument
+  keywords, 26 dispatch records, 45 header entries). A grep for the far
+  pointers' literal segment value found **zero** hits in the
   disassembled code - whatever assigns the numeric command ID and
   walks this table either computes the segment dynamically or lives in
   an unreached region. This is very likely the last missing piece of
-  "how does the parser turn `STA?` into a recognized command."
+  "how does the parser turn `STA?` into a recognized command." Also
+  unresolved: only 26 of the header table's 44 real entries have a
+  dispatch record in the slice found so far (a second/wider table may
+  exist), and 4 header-table entries (`ADDress`, `BYTe`, `JMP`,
+  `SEGment`) don't match any live `HELp?` response at all.
 - **`[0x1B83]`'s exact bit semantics.** Confirmed as the general-
   purpose "Time Base Mode Register U4119" (not comm-specific), and
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm
