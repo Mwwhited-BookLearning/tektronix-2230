@@ -273,3 +273,65 @@ found here) is a targeted, tractable way to keep discovering pieces of
 the command-processing pipeline directly - a much better lever than
 either blind heuristic scanning or searching for calls to a specific
 target function.
+
+**Applied that technique broadly - found a much bigger `cmp ax,<id>`
+cluster, then ruled it out as a false lead worth recording.** Scanning
+for `cmp ax,N` against all 44 known command IDs at once (not just
+MESsage's 3) found 228 hits; the largest cluster, at physical
+`0x8752A`, is a genuine linear dispatch chain hitting 12 *consecutive*
+alphabetical IDs (`1`=`ADDress` through `12`=`ERRor`) - reading its
+selector from **a different variable, `[0x3DA]`**, not `[0x732+0x1F]`.
+
+**Checked what the 12 jump targets actually do before getting excited:
+all 12 have the identical shape** - `mov di,0x90F1; push di; mov
+dx,<A>; push dx; mov bx,0x90F1; push bx; mov ax,<B>; push ax; mov
+di,0x7D; push di; sub di,di; push di; lcall 0xF313,0xD73` - the same
+shared far call every time, with only two string-offset immediates
+(`<A>`, `<B>`, both offsets into the same `0x90F1` segment) varying per
+branch. **This is an error-code-to-message dispatcher, not a command
+dispatcher** - `[0x3DA]` holds a small sequential *error/status code*
+(confirmed separately: every write to `[0x3DA]` found in the ROM is a
+hardcoded immediate store of a small value like `0`/`2`/`9`/`0xB`/
+`0xC`, from unrelated validation-failure branches elsewhere, never a
+computed/looked-up value), and the alphabetical-ID overlap for values
+1-12 is coincidental - any sequential small-integer error-code scheme
+would show the same overlap for its first N codes. The shared far call
+target (`0xF313:0xD73` = physical `0xF3EA3`, in `160-3532`) turned out
+to land mid-instruction (byte `0xC2`, decoding as a plausible-looking
+but spurious `ret imm16`) - almost certainly another instance of this
+project's already-documented landing-artifact phenomenon, not a real
+function start; not chased further. **Recording this so a future
+session doesn't re-walk the same promising-looking cluster** - the
+real command dispatcher (whatever writes `[0x732+0x1F]`) is still
+unfound.
+
+**Also tried exhaustively to find `[0x732+0x1F]`'s write site directly
+- still not found, but usefully narrowed.** Checked every byte-sized
+and word-sized store form (both register-source and immediate-source)
+to `[di+0x1F]` and `[bx+0x1F]` under `ES:` (the two base registers
+confirmed used to read the far pointer `[0x732]` - `les di,[0x732]`
+89x, `les bx,[0x732]` 18x, no other register used anywhere) - **zero
+matches for any of these forms**. Combined with `[0x732+0x1F]` being
+read from a live, populated record (not left at a fixed/dead value),
+the most likely remaining explanation is that the whole record gets
+populated via a **bulk copy** (`rep movsb`/`rep stosb` or similar,
+copying a parser-staged command record into place in one shot) rather
+than individual per-field writes.
+
+**That bulk-copy theory was also checked and came up empty.** Searched
+for a `rep movsb`/`rep movsw` within 40 bytes of every one of the 107
+`les [reg],[0x732]` sites (di and bx both) - none found. Also checked
+whether `[0x732]`'s offset word is ever loaded via a plain `mov`
+instead of `les` (`mov ax,[0x732]` direct form, and `mov reg16,[0x732]`
+for every other register) - zero hits there too. **The write site
+genuinely isn't found via any straightforward encoding searched so
+far.** Remaining possibilities for a future session: it lives in the
+~8% of comm-ROM bytes unreached by either the proven or heuristic
+methods; it's written through a *different* operand that happens to
+resolve to the same physical address (e.g. a different literal offset
+under a different assumed `DS`, which this project has already found
+happens elsewhere); or it's set up once at a fixed compile-time address
+never rewritten, with the "current command" semantics coming entirely
+from what gets written into the fields *of* the record it points to
+(which was found, extensively, at other offsets - just not `+0x1F`
+specifically).

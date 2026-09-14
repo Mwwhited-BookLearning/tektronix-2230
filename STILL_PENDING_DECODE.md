@@ -86,11 +86,20 @@ The single biggest cluster of open items - see
   needing quote-aware response formatting. **Still not found**: who
   *writes* `[0x732+0x1F]` in the first place (i.e. who assigns the ID
   after parsing an incoming command) - that would be the actual
-  dispatcher entry point. See `docs/comm-rom/rs232-live-session-2026-
-  09-14.md`'s follow-up section - it also lays out a concrete, reusable
-  next step: search for `cmp ax, <id>` against each of the other ~37
-  known command IDs to keep mapping this pipeline directly, rather than
-  scanning blindly.
+  dispatcher entry point. Searched exhaustively for it (every byte/word
+  write form via the two confirmed base registers, immediate and
+  register sourced, plus a nearby `rep movsb`/`movsw` bulk-copy, plus
+  every alternate way of loading `[0x732]` itself) - genuinely not
+  found by any of these; likely lives in the unreached ~8% of the comm
+  ROM, or is set via an operand this project hasn't thought to search
+  for yet. Also **ruled out a promising-looking false lead**: a bigger
+  `cmp ax,<id>` cluster at `0x8752A` (12 consecutive alphabetical IDs)
+  turned out to read a *different* variable (`[0x3DA]`) and is actually
+  an error-code-to-message dispatcher, not the command dispatcher - see
+  `docs/comm-rom/rs232-live-session-2026-09-14.md`'s follow-up sections
+  for both the full negative-result writeup and the reusable technique
+  (search `cmp ax, <id>` against each of the other ~37 known command
+  IDs) for whoever picks this up next.
 - **`[0x1B83]`'s exact bit semantics.** Confirmed as the general-
   purpose "Time Base Mode Register U4119" (not comm-specific), and
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm
