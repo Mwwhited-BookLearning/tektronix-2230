@@ -1,15 +1,26 @@
 # Tektronix 2230 Programming Manual (Options 10/12 command reference)
 
 Markdown transcription of `hardware/Tektronix_2230_Programming_Manual.pdf`
-(42 pages, image-only scan, no embedded text layer - transcribed by
-reading each page image directly). Despite its standalone filename,
-this document **is the "Options and Accessories" chapter (Section 7)
-of the same 2230 Operator Manual** as `hardware/070-4998-02.pdf` -
-page headers throughout read "Options and Accessories—2230 Operators"
-and the page numbers continue that manual's own 7-17 through 7-50
-sequence. It covers material common to **both Option 10 (GPIB) and
-Option 12 (RS-232-C)** - the communication command set, waveform
-transfer formats, and status/event codes.
+(42 pages). **Unlike the `2230_operators`/`2230_service` manuals in
+this same directory, this one is hand-transcribed rather than run
+through `hardware/gen_manual_markdown.py`** - this PDF is a pure
+image-only scan with no embedded OCR text layer at all (confirmed via
+`page.get_text()` returning empty for every content page), so that
+script's font-size-based heading detection has nothing to work with;
+every page would fall back to its "treat as figure" path and produce
+an images-only dump with no real prose. Each page was instead read
+directly as a rendered image. Full-page images are saved in `images/`
+(`page0001.jpg`-`page0042.jpg`) for reference if any transcribed detail
+needs double-checking against the original layout.
+
+Despite its standalone filename, this document **is the "Options and
+Accessories" chapter (Section 7) of the same 2230 Operator Manual** as
+`hardware/070-4998-02.pdf` (see `../2230_operators/`) - page headers
+throughout read "Options and Accessories—2230 Operators" and the page
+numbers continue that manual's own 7-17 through 7-50 sequence. It
+covers material common to **both Option 10 (GPIB) and Option 12
+(RS-232-C)** - the communication command set, waveform transfer
+formats, and status/event codes.
 
 This is the single most directly relevant primary source for the
 project's live RS-232 command-parser investigation - see

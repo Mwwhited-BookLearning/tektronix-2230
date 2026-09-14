@@ -154,182 +154,52 @@
       disasm_mainrom_heuristic.py`, `gen_source.py`, `gen_source_
       readable.py`) and re-verify byte-identical/length-matching before
       committing.
-- [ ] Which `[0x1B83]` value (`0x1E` vs `0x14`) specifically means
-      "comm option installed" isn't resolved - see `detect_comm_
-      option_hw` in `FUNCTIONS.md` and `disasm/NOTES.md` "Found the
-      actual source of [0x1B83]". The write-probe address is confirmed
-      as the general-purpose "Time Base Mode Register U4119" (not a
-      comm-specific latch), consistent with the two-branch ambiguity,
-      but doesn't pin down the exact bit semantics.
+- [x] **RESOLVED 2026-09-14 - the live RS-232 command silence was a
+      baud-rate reliability problem, not firmware.** A day-long live
+      investigation (interrupt mask latch tracing, the `[0x712]`
+      dispatch table, `poll_comm_status_tick`, exhaustive settings
+      elimination, a two-ROM-revision cross-check) chased what turned
+      out to be a red herring: at 9600 baud, both scopes reliably
+      returned clean-looking but content-blind `STATUS 98;READY;`
+      responses to every command. Dropping to **1200 baud** made every
+      command work correctly and immediately (`ID?`, `EVEnt?`, `SET?`,
+      `HELp?` all returned exactly the documented format). All of that
+      day's disassembly findings remain accurate documentation of how
+      the comm ROM actually works (interrupt masking, the tick-driven
+      status poller, the byte-classification table, etc.) - they just
+      weren't the blocker. Full transcript and reasoning trail in
+      `disasm/NOTES.md`'s "RESOLVED, 2026-09-14: it was baud rate
+      reliability all along, not firmware".
 
-      **BREAKTHROUGH 2026-09-14**: the scope finally responded over
-      RS-232 for the first time this entire investigation, once a DIP-
-      switch bit-order error (see `HARDWARE.md`) and a bad DB9-to-DB25
-      adapter (not yet characterized) were both fixed. `ID?` got back
-      `STATUS 98;READY;` - real data, but **every other command tried
-      (`SET?`, `STAtus?`, `HELp?`, even deliberate garbage) produced
-      the identical reply**, while a passive 10s listen produced
-      nothing. This means the whole hardware-level investigation below
-      (comm-detection, interrupt masking, the `[0x712]` dispatch table)
-      was tracing real mechanisms, but **none of them were actually the
-      blocker** - it was baud rate and cabling all along. The live
-      result now points squarely at the **keyword-matching function**
-      (still not found in the disassembly) as the real remaining gap:
-      the low-level byte pipeline clearly works end-to-end, but nothing
-      differentiates *which* command was sent. See `disasm/NOTES.md`'s
-      "BREAKTHROUGH, 2026-09-14" section for the full transcript and
-      analysis. **This is now the top priority lead** - everything
-      below this point is retained as accurate background on how the
-      comm hardware/firmware works, but is no longer the live blocker.
-
-      An extended live-hardware session on two real units (2026-09-13) initially
-      found `COMM_LOOPBACK` reporting `UNTESTED` and `ID?` getting zero
-      bytes back, and first suspected a `[0x1B83]` comm-detection
-      failure as a unifying cause - **but `COMM_LOOPBACK`'s `UNTESTED`
-      result has since been fully traced instruction-by-instruction and
-      does NOT involve `[0x1B83]` at all** (see `disasm/NOTES.md`'s
-      "Correction: `COMM_LOOPBACK`'s `UNTESTED` result fully traced" -
-      it's `selftest_comm_readback`'s register readback landing on a
-      "pass but not `0xD0`" value combined with `[0x1B7A]` being set
-      during the full self-test sequence). The `[0x1B83]` question
-      itself thus remains exactly as open as before - the live session
-      just didn't end up being new evidence for it after all. The
-      separate `ID?`-gets-nothing puzzle is still unexplained and
-      *could* still involve `[0x1B83]`/comm-detection, or the `P9107`
-      jumper (`hardware/070-6090-00.pdf`'s F10/F12 install instructions
-      - moving it is required when installing either comm option), or
-      something else entirely in the comm ROM's own RS-232 command
-      parser. **Partially traced 2026-09-13** (see `disasm/NOTES.md`'s
-      "Traced the comm ROM's byte-dispatch/parser core"): found a real,
-      `[0x629]`-gated (RS-232-vs-other) byte-classification/dispatch
-      core (`process_gpib_command_byte` at `0x8526B`, plus a companion
-      `0x97905` in the comm-ROM alias range) built around a 4-byte-
-      per-entry table at far pointer `[0x712]` - confirms RS-232
-      command handling is real, active code, not a stub. **`[0x712]`'s
-      contents found and dumped** (the earlier "not found" was a wrong
-      DS-segment assumption - it's under `DS=0x8F80`, not `0x41`; see
-      `disasm/NOTES.md`'s "Follow-up: found [0x712]'s actual contents"):
-      a 67-entry ASCII-indexed byte-classification table, grouping
-      characters into 7 handler IDs. Best-fit reading: this is
-      low-level lexical classification (digit vs. control vs. ordinary
-      character), not keyword dispatch - individual letters `C`
-      onward all collapse to one handler, so actual keyword matching
-      (`ID`/`SET`/`CURVE`/etc. from `STRINGS.md`) must happen in a
-      **different, still-unfound function**. **Still not found**: (1)
-      that downstream keyword-matching function; (2) the genuine
-      UART-receive entry point that first puts an incoming byte into
-      `[6]`/`[0x580]` (still nobody's found this - not an interrupt
-      handler, not a polling loop, despite several look-arounds this
-      session). Either one, found, would be the most direct route left
-      to explaining the `ID?` silence. **Note**: both of the user's
-      physical units are confirmed Option 12 (RS-232) only, no Option
-      10 (GPIB) hardware available to cross-test against - so any
-      further tracing should stay focused on the `[0x629]`-clear
-      (RS-232) branches specifically, not the GPIB-specific code paths
-      this same shared ROM also contains. **Promising live-hardware
-      shortcut found 2026-09-13**: the service manual describes a
-      `COM-OPTION/DEBUG` exerciser ("used in debugging the
-      communications option... outputs a test message and displays any
-      incoming messages (data) [on] the crt") - see `HARDWARE.md`'s
-      menu tree. If findable on a real menu, this could show incoming
-      RS-232 bytes directly on the scope's own screen, without needing
-      the PC/adapter/cable at all - worth trying before more code
-      tracing.
-      The interrupt-mask-latch lead was **followed up and mostly
-      resolved 2026-09-13** (see `disasm/NOTES.md`'s "Traced the
-      interrupt mask latch's real outputs"): found the indirection
-      (`[0x6E2]` far pointer, comm ROM), and mapped 3 of its 4 outputs
-      - `0D`=RX-ready/`DR`-interrupt-mask, `1D`=TX-ready/`TBRE`-mask
-      (both via `set_comm_queue_busy`/`update_comm_tx_ready_flag`),
-      `3D`=a diagnostic strobe (not an interrupt mask despite the
-      shared latch). **The "never unmasked" theory doesn't hold up**:
-      `set_comm_queue_busy`'s disengage path does restore `0D`=1
-      (unmask), and is called during normal comm-channel init - the
-      masking mechanism looks correctly implemented. Output `2D`
-      (`0x406FA`) still has no reference found anywhere (possibly
-      `RLSD`/`DCD` generation, set once rather than dynamically).
-      **Remaining open questions, narrower now**: (1) whether the
-      init sequence containing the unmask call is *actually reached*
-      on real hardware (ties back to `[0x1B83]`/`[0x1BF9]` comm
-      detection - `COMM_LOOPBACK`'s `UNTESTED` result is *some*
-      evidence it is, but not a direct confirmation of this specific
-      call); (2) whether the CPU's own interrupt plumbing (IVT entry,
-      `IF` flag) is correctly set up post-boot - not checked; (3) the
-      keyword-matching function from the `[0x712]` work above - still
-      not found, and still needed even if the interrupt fires
-      correctly.
-      **Question (2) is now resolved, and it's a big deal**: the
-      service manual's prose (not a table) states outright *"the
-      Maskable Interrupt (INTR) is vectored to 03FC"* - confirming
-      `INT 255` (this project's existing `INT255_HANDLER_LATE`) **is**
-      the real hardware interrupt line, not a software-only vector as
-      previously assumed. Traced the chain all the way through:
-      `INT255_HANDLER_LATE` → `run_continuous_selftest_tick` → the
-      `[0x740]` hook → (when comm installed) physical `0x96F54`, a
-      real `[0x629]`-aware per-tick comm status poller (tentatively
-      named `poll_comm_status_tick`) - reads the DIP-switch-config
-      byte, logs comm-channel-status snapshots to a circular buffer,
-      and calls out to `0x839D1`/`0x8006:0x9C` on specific status
-      bits. See `disasm/NOTES.md`'s "MAJOR CORRECTION: INT 255 is
-      NOT..." for the full writeup. **This is now the best candidate
-      for "how does incoming RS-232 activity actually get serviced"**
-      - a tick-driven poller reached via a confirmed hardware
-      interrupt, not the never-confirmed-reachable `FUNC_2998_39F5`
-      loop this session spent time on earlier. **Traced `0x839D1`/
-      `0x8006:0x9C` immediately after - both are already-documented
-      housekeeping** (icon redraw, TX-ready flag update), not the
-      keyword-matching function. So `poll_comm_status_tick` is a real,
-      confirmed-reachable status-*sync* routine, but not where bytes
-      actually get received/parsed - that path is still unfound.
-      Genuinely next steps now: (a) find what, if anything, actually
-      calls `process_gpib_command_byte`'s chain (is `FUNC_2998_39F5`
-      reachable some other way, or is there a second, different entry
-      point into that dispatcher this project hasn't found yet); (b)
-      the still-missing keyword-matching function from item (3) above.
-
-      **Live testing 2026-09-14, now with `PROGRAMMING_MANUAL.md`'s
-      transcribed status/event tables to decode the reply exactly**:
-      `STATUS 98` = "Execution Error, RQS On, Not Busy" (Table 7-34) -
-      command recognized but not executable, not "command not
-      understood". Ran the decisive test: `REMote ON`, then drained
-      `EVEnt?` up to 8x specifically to read the real 3-digit event
-      codes - **the queue never drains**, every `EVEnt?` call (which
-      should always succeed per the manual) comes back wrapped in the
-      same non-informative `STATUS 98;READY;`/`STATUS 97;` template
-      regardless of what's sent. This is conclusive that command
-      content isn't being differentiated at all - not just "the
-      keyword-matching function is unreached," but that a separate,
-      generic status-reporting path is intercepting every message
-      before real command dispatch would occur, and never clears.
-      **Every settings-based theory now eliminated (2026-09-14)**: a
-      genuine cold power-cycle produced the identical result (not a
-      stuck state); the DIP switches (photographed live) confirm
-      parity genuinely disabled, ruling out an intermittent-corruption
-      theory that would explain the 97-vs-98 inconsistency; the `COMM`
-      menu (`FLOW`/`STOP_BITS`/`DATA SOURCE`/`CHANNEL`/`ENCDG`, all
-      photographed live) are all at normal, expected values and were
-      never the problem. **Top remaining hypothesis**: something
-      specific to comm-ROM revision `-13` (Scope 1's revision, never
-      disassembled by this project - Scope 2 runs `-14`, the revision
-      actually traced this session). **Single most informative next
-      step**: run this identical `ID?`/`EVEnt?` test sequence against
-      Scope 2. Matching behavior implicates something common to both
-      revisions still hiding in the already-read `-14` code; different
-      behavior would justify disassembling `-13` specifically. See
-      `disasm/NOTES.md`'s "BREAKTHROUGH, 2026-09-14" section for the
-      full transcript and reasoning trail.
-      **Cross-check run**: Scope 2 (`-14`) tested the same way -
-      `SET?` also returned `STATUS 98;READY;`, the same dominant
-      pattern as Scope 1. **This weakens the `-13`-specific-defect
-      theory** - getting the same non-answer on both ROM revisions
-      points toward something common to both (not yet found in the
-      already-read `-14` disassembly), or a gap in this project's own
-      test methodology vs. how a period-correct terminal/controller
-      would actually talk to the instrument. Also raised live: a
-      *second* oscilloscope may be probing the RX/TX lines on Scope 1
-      for monitoring purposes, which could itself be loading/
-      corrupting the signal - worth removing before trusting any
-      further "corruption" observations on Scope 1 specifically.
+      **Still genuinely open, lower priority now**:
+      - Which `[0x1B83]` value (`0x1E` vs `0x14`) means "comm option
+        installed" - see `detect_comm_option_hw` in `FUNCTIONS.md` and
+        `disasm/NOTES.md` "Found the actual source of [0x1B83]". Write-
+        probe address confirmed as general-purpose "Time Base Mode
+        Register U4119", not comm-specific, but exact bit semantics
+        still unresolved.
+      - The genuine UART-receive entry point (where an incoming byte
+        first lands in `[6]`/`[0x580]`) and the downstream keyword-
+        matching function (`ID`/`SET`/`CURVE`/etc. vs. the low-level
+        `[0x712]` byte-classification table, which is NOT the keyword
+        matcher - see `disasm/NOTES.md`'s "Follow-up: found [0x712]'s
+        actual contents") are both still unfound in the disassembly.
+        Now that live command/response round-trips actually work at
+        1200 baud, this is directly live-testable again if picked up.
+      - `STAtus?` returned `STATUS 128;` at 1200 baud - doesn't fit any
+        row in `hardware/manuals/2230_programming/README.md`'s Table
+        7-34 (every documented category has bit 7 clear). Worth a
+        closer look.
+      - Whether `FUNC_2998_39F5` (the originally-suspected polling
+        loop, never confirmed reachable) or `poll_comm_status_tick`
+        (confirmed reachable via the real hardware interrupt, but only
+        does status housekeeping) relates to the real receive path is
+        still unresolved - moot for practical use now that RS-232
+        communication works, but open for anyone continuing the
+        disassembly.
+      - Diffing/disassembling comm ROM revision `-13` (Scope 1, vs. the
+        `-14` this project has actually read) is no longer motivated by
+        a suspected defect, but remains a legitimate documentation gap.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't

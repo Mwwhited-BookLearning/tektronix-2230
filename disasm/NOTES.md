@@ -1617,7 +1617,7 @@ broken/unimplemented for this specific firmware path - a much more
 promising target than any of the hardware-level theories this session
 chased earlier.
 
-**Follow-up, same day, using `PROGRAMMING_MANUAL.md`'s newly-
+**Follow-up, same day, using `hardware/manuals/2230_programming/README.md`'s newly-
 transcribed status/event tables to decode the reply exactly**: `STATUS
 98` (Table 7-34) = **"Execution Error, RQS On, Not Busy"** - *"The
 instrument received a command that it cannot execute. This is caused
@@ -1748,6 +1748,63 @@ framing/timing `pyserial` uses versus what a real 1980s controller
 would have done, as a fresh angle). Diffing/disassembling the `-13`
 comm ROM is now a lower-priority lead than it was; the shared-cause
 hypothesis deserves more attention first.
+
+## RESOLVED, 2026-09-14: it was baud rate reliability all along, not firmware
+
+The user's own instinct - "the slower speed should have less issues" -
+was exactly right. Set Scope 2 back to **1200 baud** (the setting it
+happened to already be at from earlier in the session) and reran the
+identical test sequence:
+
+```
+ID?     -> ID TEK/2230,V81.1,VERS:14;
+EVEnt?  -> EVENT 0;
+EVEnt?  -> EVENT 0;
+SET?    -> READOUT ON;ACQUISITION REPETITIVE:AVERAGE,HSREC:SAMPLE,
+            LSREC:PEAKDET,SCAN:PEAKDET,ROLL:PEAKDET,SMOOTH:ON,WEIGHT:4,
+            NUMSWEEPS:0,VECTORS:ON;CURSOR SELECT:CURS1,TARGET:ACQ,
+            CHANNEL:CH1,POSITION:0;PLOT GRAT:OFF,FORMAT:HPGL,SPEED:1;
+            RQS ON;OPC OFF;LONG ON;FLOW OFF;STOP 1;
+HELp?   -> HELP ACQuisition,ATRigger,CH1,CH2,CURSor,CURVe,DATa,DELAy,
+            DELTAT,DELTAV,ERRor,EVEnt,FLOw,HELp,HORizontal,ID,INIt,
+            LONg,MESsage,OPC,PLOt,PROBe,REAdout,REFDisp,REFFrom,
+            REFOrmat,REFProt,REFStat,REMote,RQS,SAVeref,SET,SGLswp,
+            STAtus,STOP,STORe,TRIggerd,VMOde,WAVfrm,WFMpre;
+```
+
+**Every single field is correct**, matching `hardware/manuals/2230_programming/README.md`'s
+transcribed command tables exactly - `ID?`'s format, `EVEnt?`'s bare
+`EVENT 0;` (not the `STATUS <n>;READY;` non-answer template seen all
+session), `SET?`'s full settings dump in exactly the documented
+header:argument,argument;... shape, and `HELp?`'s command list matching
+the real command set one-for-one. `VERS:14` even plausibly reflects the
+`-14` ROM revision this scope actually runs.
+
+**The entire day's investigation - the interrupt mask latch tracing,
+`poll_comm_status_tick`, the `[0x712]` dispatch table, the comm-ROM-
+revision cross-check, every settings elimination - was tracing
+genuinely real firmware mechanisms, but none of them were the actual
+blocker.** At 9600 baud, this hardware (both scopes, both ROM
+revisions) could apparently transmit *something* back reliably enough
+to produce well-formed-looking ASCII (`STATUS 98;READY;` is clean
+text, not garbage) but not reliably enough to get genuine command
+differentiation right - consistent with intermittent single-bit-level
+corruption landing on real, still-valid-looking status/event codes
+often enough to look like a consistent "broken" behavior rather than
+obviously garbled noise. At 1200 baud (8x slower), the same hardware
+works perfectly.
+
+**One loose end for a future session**: `STAtus?` returned `STATUS
+128;` - a value that doesn't fit any row in `hardware/manuals/2230_programming/README.md`'s
+Table 7-34 (every documented category has bit 7 clear; `128`=`0x80`
+has only bit 7 set). Worth a closer look once the RS-232 link is
+otherwise trusted - possibly a firmware detail newer than the
+transcribed manual, or a bit this project hasn't yet mapped.
+
+**Practical takeaway for any future live RS-232 testing on this
+hardware**: default to a lower baud rate (1200, or the already-
+confirmed-solid 600 from earlier in the day) rather than 9600, given
+this specific cabling/adapter/scope-age combination.
 
 ## MAJOR CORRECTION: INT 255 is NOT "a software-only vector" - it's the real hardware Maskable Interrupt (`INTR`), confirmed from the manual
 
