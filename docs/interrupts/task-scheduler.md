@@ -115,3 +115,95 @@ confirmed why the compiler/source duplicated this rather than calling
 `create_task` directly - possibly an artifact of how the original C
 source structured task creation vs. task wake-up as textually separate
 functions despite near-identical bodies.
+
+## Follow-up, 2026-09-15: `create_task` is a real `fork()`-style trampoline, and the answer to "how many tasks exist"
+
+Went looking for "how many tasks exist and what each does" by finding
+every caller of `create_task` and `create_task_b` directly - **35 and
+1 respectively**. Before trying to name what each one does, checked
+`create_task`'s actual calling convention by looking at 3 sample call
+sites - **none of them push anything before the `lcall`**. That's a
+real puzzle, since the function's own body clearly saves *something*
+as "the new task's entry point" (`[0x7C0]`/`[0x7C2]`).
+
+The answer: `create_task` doesn't take an explicit entry-point
+argument at all - it's a **`fork()`-style trampoline**. Its prologue
+(`pushf; cli; push ax,bx,cx,dx,bp,si,di,ds,es; mov bp,sp`) is a normal
+context-save, but then it does something unusual to 3 specific stack
+slots:
+
+```
+mov ax, [bp+0x12]      ; ax = FLAGS (from the pushf)
+xchg [bp+0x16], ax      ; ax <-> return CS
+xchg [bp+0x14], ax      ; ax <-> return IP
+mov [bp+0x12], ax       ; write back
+```
+
+Before this runs, `[bp+0x12]`/`[bp+0x14]`/`[bp+0x16]` hold (in order)
+`FLAGS`/return-`IP`/return-`CS` - the values the *ordinary far `call`
+into `create_task`* pushed automatically, not anything the caller
+pushed on purpose. This 3-step rotation reorders them (net effect:
+`[bp+0x12]`=old `IP`, `[bp+0x14]`=old `CS`, `[bp+0x16]`=old `FLAGS`),
+and *that* rearranged pair is what gets saved to `[0x7C0]`/`[0x7C2]` as
+the "entry point." **In plain terms: calling `create_task()` turns the
+call site's own return address into a brand-new, independently-
+scheduled task.** The code physically following each `create_task`
+call in the source is never executed by the calling function itself -
+it becomes that new task's entire body, run later (on its own stack)
+whenever the scheduler picks it, exactly like Unix `fork()` returning
+into the child at the same program point the parent would have
+continued from.
+
+**Verified on 2 independent call sites**, not just theorized:
+- `0xE72D8` (inside an unnamed function starting `0xE7298`): the code
+  right after the call (`0xE72DD: jmp 0xE7300`) is unreachable any
+  other way from this function's own control flow - it can only run as
+  the new task resuming later.
+- `0xE6F8C` (inside another unnamed function starting `0xE6F5C`): the
+  post-call code is a **self-perpetuating loop** - checks `[0x1A99]`/
+  `[0x1A93]`'s high nibble (setting to `0x41` if clear) and `[0x1B76]`
+  bit 7, and if that bit is still set, jumps *back* before the
+  `create_task` call to fork itself again. A task that keeps re-
+  spawning its own continuation each time it runs, rather than looping
+  internally - a genuinely different concurrency idiom than a normal
+  `while` loop, only possible because of the fork-style mechanism.
+
+**This concretely answers "how many tasks exist"**: at least the 35
+distinct `create_task` call sites (plus 1 `create_task_b` site) found
+this session, each a genuine, independent point where a new task gets
+spun up. Some are already inside named functions (`spawn_task_with_
+tag`, `restart_current_task`, `comm_call_main_rom`, `mark_task_ready`
+x4); most of the containing functions are still unnamed. **What each
+one specifically does** requires tracing its own post-call
+continuation individually - only the 2 above have been looked at.
+Full caller list (physical addresses, containing function name where
+known):
+
+```
+0x09688F  spawn_task_with_tag        0x0FD16A  (unnamed, 0xFD006)
+0x0F0DFA  (unnamed, 0xF0D64)         0x0FD0FF  (unnamed, 0xFD006)
+0x0E6952  restart_current_task       0x0FCBA3  (unnamed, 0xFCAF6)
+0x08E88F  (unnamed, 0x87F44)         0x0FD3D1  (unnamed, 0xFD2E8)
+0x083B05  comm_call_main_rom         0x0FD31E  (unnamed, 0xFD2E8)
+0x0FCFEC  (unnamed, 0xFCFD2)         0x0FD56D  (unnamed, 0xFD471)
+0x0FF14F  (unnamed, 0xFF067)         0x0FD6BB  (unnamed, 0xFD471)
+0x0FF39F  (unnamed, 0xFF067)         0x0FD73D  (unnamed, 0xFD471)
+0x0FF3B9  (unnamed, 0xFF067)         0x0FEA82  (unnamed, 0xFEA2E)
+0x0FED4E  (unnamed, 0xFED1D)         0x0FDF8E  (unnamed, 0xFDF88)
+0x0FEBC7  (unnamed, 0xFEB40)         0x0E6F8C  (unnamed, 0xE6F5C) - traced above
+0x0FF19E  (unnamed, 0xFF067)         0x0F074E  (unnamed, 0xF04A2)
+0x0FCDBE  (unnamed, 0xFCCEC)         0x0F07A8  (unnamed, 0xF04A2)
+0x0E72D8  (unnamed, 0xE7298) - traced above
+0x0E72F3  (unnamed, 0xE7298)         0x0E9013  (unnamed, 0xE8E29)
+                                     0x0E8FF5  (unnamed, 0xE8E29)
+                                     0x0E7030  (unnamed, 0xE6F9E)
+0x0E6C3A/0x0E6C1C/0x0E6C24/0x0E6BBE  all inside mark_task_ready
+0x0E6AA0  create_task_b's sole call site, also inside mark_task_ready
+```
+
+Note several containing functions call `create_task` **more than
+once** (`0xFF067` x4, `0xFD2E8` x2, `0xFD471` x3, `0xE7298` x2,
+`0xE8E29` x2, `mark_task_ready` x4 across both `create_task`/
+`create_task_b`) - each occurrence is a *separate* fork point with its
+*own* distinct continuation code, so the true task count (by distinct
+entry point) is exactly 36, not "36 calls to a handful of tasks."

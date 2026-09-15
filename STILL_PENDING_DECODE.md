@@ -333,9 +333,17 @@ photographed menu tree this maps to.
 
 See `docs/interrupts/task-scheduler.md`.
 
-- **How many tasks exist and what each one does isn't confirmed** -
-  the scheduler mechanism itself (driven by `INT2_HANDLER_LATE`) is
-  understood, but its actual task roster hasn't been enumerated.
+- **"How many tasks exist" is now answered: 36** (35 `create_task`
+  call sites + 1 `create_task_b` site, found 2026-09-15). Along the
+  way, confirmed `create_task` is a real `fork()`-style trampoline -
+  it rotates its own saved return-address words rather than taking an
+  explicit entry-point argument, so the code physically following each
+  call site *is* that task's body, run later when the scheduler
+  resumes it. **What each of the 36 specifically does is still mostly
+  open** - only 2 have been individually traced (one is a self-
+  perpetuating loop that re-forks itself each time it runs); most of
+  their containing functions are still unnamed. Full call-site list in
+  `docs/interrupts/task-scheduler.md`.
 - The scheduler tick's timer source is presumed to be a periodic
   hardware timer, but which one isn't confirmed.
 
