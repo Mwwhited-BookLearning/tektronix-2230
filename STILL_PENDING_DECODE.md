@@ -116,12 +116,25 @@ The single biggest cluster of open items - see
   deliberate mid-session DTR/RTS toggle-and-observe test), but not a
   ROM code path either way. See `docs/comm-rom/rs232-live-session-2026-
   09-14.md`.
-- **Comm ROM revision `-13` has never been disassembled.** `-13` and
-  `-14` differ in two real ~16KB-aligned regions (unlike the main
-  ROMs, which only differ in a 4-byte header) - only `-14` has ever
-  been read as x86. One of the two physical test units runs `-13`.
-  No longer motivated by a suspected defect (both revisions behave
-  identically over live RS-232), but still a real documentation gap.
+- **Comm ROM revision `-13` has never been formally disassembled into
+  this project's tooling.** `-13` and `-14` differ in exactly 3 small
+  byte runs (133 bytes total: the expected header, plus 2 runs each
+  starting at a 16KB-page boundary), now hand-decoded and documented
+  in `docs/comm-rom/revision-13-vs-14-diff.md` - `-13` has a small
+  unnamed config-check routine and lacks `-14`'s page-3 boot-stub
+  jump, but neither has been added to `gen_disasm_2998.py`. One of the
+  two physical test units runs `-13`. No longer motivated by a
+  suspected defect (both revisions behave identically over live
+  RS-232), but still a real documentation gap.
+- **New lead found 2026-09-15, unconfirmed**: `160-2998` file offset
+  `0x80EC`-`0x8211` (physical `0x880EC`-`0x88211`) contains a clean
+  record table - `(group, subgroup, incrementing 16-bit id)` - where
+  `group` takes only 5 distinct values (`2,3,4,5,8`). Tentatively
+  suspected of being related to the manual's Table 7-34 status/event
+  categories (comm ROM, small handful of category values, same
+  general shape) but the numbers don't line up cleanly enough to
+  claim a match. See `docs/decode-anomalies/unknown-data-deep-dive-
+  2026-09-15.md` finding 5.
 - **`compute_parity_mode_code` (comm ROM) calls the main ROM's
   `scale_and_plot_point_default`** using the exact save/restore
   argument shape normally used for a DS-segment-switch helper, but the
@@ -298,6 +311,27 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   disassembled (see the comm-ROM section above).
 - `SUB_F6382`'s "capstone misreading opcode `0x0F`" theory is a
   reasonable explanation but not fully confirmed.
+- **New systematic instance found 2026-09-15**: a previously-unknown
+  real ~100-entry jump table in `160-3532` (file offset `0x1A33`-
+  `0x213A`) has 2 of its 4 real callers (from `FUNC_3633_E9FA`, a
+  6-case acquisition-mode dispatcher) land exactly 1 byte into the
+  jump table's own `jmp` instruction, decoding as nonsense (and, for
+  one, a `ret`/far-call mismatch) if read literally - while the other
+  2 callers land on clean, sensible code. `FUNC_3633_E9FA` itself has
+  zero confirmed callers, so whether this specific instance is ever
+  reached on real hardware is unconfirmed. A separate, consistent
+  4-byte stack-argument/cleanup shortfall across all 3 traced call
+  sites in that function is also unexplained. See `docs/decode-
+  anomalies/unknown-data-deep-dive-2026-09-15.md` finding 1.
+- **New lead found 2026-09-15, unconfirmed**: `160-3532` file offset
+  `0xBEE6`-`0xC263` contains 894 bytes of clean `(small count, 16-bit
+  address)` records where the address always falls in `0xFC00-
+  0xFC70` - as a plain segment offset that's physical `0xFFC00-
+  0xFFC70`, about 1KB before the CPU reset vector (`0xFFFF0`). A
+  suggestive location for an entry-point/interrupt-related table, but
+  no literal reference to this table's own address was found, and the
+  count field's meaning is unexplored. See `docs/decode-anomalies/
+  unknown-data-deep-dive-2026-09-15.md` finding 4.
 
 ## The RAM far-pointer init table family
 
@@ -328,6 +362,18 @@ photographed menu tree this maps to.
 - Specific self-test leaf functions not yet identified: `ACQ_ACCESS`/
   `PRC_READBACK`, `CAL_AIDS`'s `BOX`/`CAL_V_POS`, `EXERCISERS`'s
   `CONFIGURATION`/`IO`.
+- **New lead found 2026-09-15, unconfirmed**: `160-3633` physical
+  `0xEAE64`-`0xEB061` contains real vector-graphics data - a
+  mathematically-confirmed circle (40 points, radius ≈14, center
+  (17,17)) and a second, perfectly circular smaller shape (radius
+  exactly 3.16, same center), plus several less-clean smaller shapes
+  and what looks like a straight radial line. Very likely a small
+  library of UI icons (dial/knob position indicator, cursor/crosshair,
+  or similar) - distinct from the stroke font (smooth curves, not
+  letterforms) and from any previously-ruled-out candidate region.
+  What draws these or where they're used on screen is not found. See
+  `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`
+  finding 3.
 
 ## The tick-driven task scheduler
 
@@ -377,3 +423,14 @@ still disassembled as if they were instructions in the listing output
 (harmless to the buildable `.asm` - the generator only trusts
 exact-match bytes - but makes the `.lst` listing noisier than it needs
 to be around those regions). Not yet systematically marked.
+
+**Concrete example found 2026-09-15**: `SUB_E88CB` (`160-3633`,
+physical `0xE88CB`, proven-reachable, called with exactly one word
+argument) heuristically decodes as `inc word [bx+si]` followed
+immediately by garbage that's actually the start of an adjacent,
+otherwise-unidentified 843-byte data table (`UNKNOWN_DATA.md`'s
+`3633` block 10, file offset `0x88DE`-`0x8C29` - a probable per-item
+Y-position/width record table, `(0xFFFF, 0, 0, Y, 0x38)` repeating).
+See `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`
+finding 2 - a good real test case if this data-region-marking work
+gets picked up.

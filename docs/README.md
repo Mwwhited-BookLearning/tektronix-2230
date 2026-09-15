@@ -58,6 +58,7 @@ programming manual and the field-tested practical guide.
 
 - [Deliberate dual-entry-point byte sharing](decode-anomalies/dual-entry-points.md) - call targets that land 1-4 bytes into another instruction on purpose, not by accident
 - [Landing artifacts and jump tables](decode-anomalies/landing-artifacts-and-jump-tables.md) - the systematic sweep for landing-artifact call targets, and indirect jump/call tables
+- [Deep dive into UNKNOWN_DATA.md's blocks, 2026-09-15](decode-anomalies/unknown-data-deep-dive-2026-09-15.md) - a real ~100-entry jump table with 2 landing-artifact callers, a probable per-item position table, a mathematically-confirmed vector circle icon, and 2 other plausible-but-unconfirmed record tables
 
 ## Hardware I/O
 

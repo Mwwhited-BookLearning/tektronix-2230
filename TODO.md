@@ -9,6 +9,28 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
+      exported blocks (see `disasm/find_unknown_data.py`). Found 5
+      things worth following up, ranked by confidence in `docs/decode-
+      anomalies/unknown-data-deep-dive-2026-09-15.md`: (1) a real
+      ~100-entry jump table in `160-3532` with 2 real callers landing
+      1 byte inside it (landing artifact) from a channel-mode
+      dispatcher that itself has zero confirmed callers; (2) a probable
+      per-item Y-position/width table in `160-3633` next to a
+      2-byte function whose body the heuristic decoder over-runs into
+      the table; (3) **a mathematically-confirmed vector circle icon**
+      (40 points, radius≈14) plus a second perfect small circle in
+      `160-3633`, likely a dial/cursor icon library, distinct from the
+      stroke font; (4) a small-int + near-reset-vector-address table in
+      `160-3532`; (5) a grouped incrementing-ID table in the comm ROM,
+      tentatively but not confirmedly related to the manual's Table
+      7-34 status categories. None reached the confidence bar for a
+      `FUNCTIONS.md` rename yet - see `STILL_PENDING_DECODE.md`'s
+      "Decode anomalies"/"Menu/UI rendering"/"Comm ROM" sections for
+      each as a tracked open item. Next step if picked up: nail down
+      the vector-icon table's shape-delimiter encoding (the 2-byte
+      headers are the obvious next lead) rather than eyeballing shape
+      boundaries.
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see

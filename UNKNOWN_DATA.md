@@ -70,6 +70,25 @@ plain-text console version.
   this column is very likely just two unrelated words that happen to
   sit next to each other, not a real pointer - use judgment per block.
 
+## Follow-up, 2026-09-15
+
+A manual deep-dive pass over these blocks found 5 things worth
+tracking - see `docs/decode-anomalies/unknown-data-deep-dive-2026-09-
+15.md` for the full evidence. Quick index (chip / file offset here
+matches the tables below):
+
+- `3532 0x1A37-0x1C5C` (blocks 5-8 below) - part of a real ~100-entry
+  jump table (extends past this file's own 32-byte threshold on both
+  sides); 2 of its real callers land 1 byte inside it.
+- `3633 0x88DE-0x8C29` (block 10) - probable per-item Y-position/width
+  table.
+- `3633 0xAE64-0xB061` (block 19) - vector icon table; contains a
+  mathematically-confirmed circle.
+- `3532 0xBEE6-0xC263` (block 17) - small-int + near-reset-vector-
+  address table.
+- `2998 0x80EC-0x8211` (block 5) - grouped incrementing-ID table,
+  tentatively comm-status-related.
+
 ## Summary
 
 Minimum block size shown: 32 bytes.
