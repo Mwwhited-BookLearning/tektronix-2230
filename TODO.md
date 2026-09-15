@@ -127,20 +127,25 @@ instead of assuming bare `nasm` resolves.
       still-unfound general menu-navigation code above, not
       independently solvable by this technique. Worth retrying once
       (if ever) that general mechanism is found.
-- [ ] **New 2026-09-13**: `160-2998-13.bin` vs `-14.bin` (the comm ROM)
-      genuinely differ in two ~16KB-aligned regions (unlike the main
-      ROMs, which are byte-identical between revisions except a 4-byte
-      header) - not yet diffed/analyzed in x86 terms at all. This
-      project's comm-ROM disassembly has only ever covered `-14`. Now
-      concretely relevant: the two physical test units used for live
-      hardware sessions run different revisions (Scope 1 = `-13`,
-      Scope 2 = `-14` - confirmed via the `/DIAGNOSTICS/EXERCISERS/
-      CONFIGURATION` screen, see `HARDWARE.md`), so Scope 1's actual
-      running comm-ROM code has never been disassembled. Diffing the
-      two binaries (byte-for-byte, flag the changed regions) and
-      disassembling `-13`'s changed regions would let today's comm-
-      detection findings be checked against both revisions instead of
-      just the one this project has analyzed.
+- [x] **RESOLVED 2026-09-15**: diffed `160-2998-13.bin` vs `-14.bin`
+      byte-for-byte - only 133 bytes differ total, in exactly 3 runs (a
+      6-byte header, and two runs starting at the 16KB-page boundaries
+      `0x4000`/`0xC000`, ~63-67 bytes each - "two ~16KB-aligned
+      regions" meant page-*aligned start*, not 16KB-*long*). At
+      `0x84000`: `-13` has a small, previously undocumented config-check
+      routine (tests `[0x0623]`/`[0x0002]`/`[0x05FA]`/`[0x05F7]`); `-14`
+      has a truncated, non-terminated leftover copy of the ROM's own
+      copyright string in the same slot (the real, complete copy lives
+      at file offset `0x000a` in both revisions) - most likely a build
+      artifact, not functional. At `0xC000`: corrects an existing claim
+      that both comm-ROM pages 2 and 3 carry the boot-stub far-jump -
+      true only for `-14`; `-13` has no page-3 boot stub at all (that
+      offset falls mid-function in `-13`, patched over in `-14`). Full
+      writeup, hex dumps, and hand-disassembly in
+      `docs/comm-rom/revision-13-vs-14-diff.md`. **Not done**: actually
+      disassembling `-13`'s changed regions into the project's tooling
+      (the two `-13`-only routines found are hand-decoded only) - low
+      priority since `-13` isn't this project's baseline chip.
 - [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
       `print_string_far` (all used exclusively for the self-test text
       banner) write to physical `0x406F0`-`0x406F3`, inside the comm-

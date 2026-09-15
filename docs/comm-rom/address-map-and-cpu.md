@@ -45,12 +45,15 @@ end note
 Own ROM chips, own physical board (A23/A24 vs. the main board A10) —
 but **not its own CPU**. Evidence:
 
-- Both 16KB pages at file offset `0x8000` and `0xC000` in `160-2998`
+- Both 16KB pages at file offset `0x8000` and `0xC000` in `160-2998-14`
   open with byte `0xEA` (x86 far-JMP), decoding cleanly as
   `ljmp 0xE64C:0000` → physical `0xE64C0` — which falls *inside* the
   already-confirmed main-ROM window (`0xE0000-0xEFFFF`). A genuinely
   separate CPU with its own private address space would have no reason
-  to reference an address inside the other board's ROM.
+  to reference an address inside the other board's ROM. **Revision
+  note**: this is true for `-14` specifically — `-13` only has the
+  page-2 copy of this jump; page 3 is mid-function ordinary code in
+  that revision. See `docs/comm-rom/revision-13-vs-14-diff.md`.
 - The classic C-compiler prologue `55 8B EC` (`push bp; mov bp,sp`)
   appears **398 times** across all four 16KB pages (121/102/84/91 per
   page) — real compiled functions, same style (BP-based frames, `retf`/
