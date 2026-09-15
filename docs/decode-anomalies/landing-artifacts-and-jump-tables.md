@@ -154,30 +154,8 @@ independent call sites" tell from the note above, instead of eyeballing
 the raw list. Top of the list by a wide margin: physical `0xF3EA3`
 (in `160-3532`) with **33 independent callers** - more than 4x the
 previous record holder (`write_hw_shift_register`, 8 callers). Second
-and third place (`0xE9858` with 21, `0xF44C8` with 18) are noted but
-not yet individually traced - worth doing next if this is picked up
-again, using the same ranking approach.
-
-**Traced the #2 candidate too, same session: `0xE9858`, now named
-`decimate_peakdet_samples`.** Lands 1 byte into a real `cmp word ptr
-[bp+0x12],0` instruction. Full signature recovered (`far ptr src, far
-ptr dst, count, byte/word mode flag`): for every group of 8 input
-samples it scans for the min and max, then emits **2 output samples
-per group** - whichever extremum changed most recently during the
-scan, followed by either the other extremum or an averaged boundary
-value depending on how the next sample compares - the standard
-peak-detect min/max envelope-compression algorithm. This is a clean,
-confident, complete-enough trace (unlike `compute_and_print_item_
-delta_readout` above, which only got a partial first-pass ID) because
-the algorithm's loop body is small and self-contained. Directly
-confirms and *corrects* an existing cross-reference: `handle_gpib_
-device_clear`'s `FUNCTIONS.md` entry already named this address
-(as `SUB_E9858`) with the vague description "reset/clear a display
-region" - now updated to reflect what it actually does. Called from
-both ROMs (21 sites total, cross-ROM from the comm ROM in at least
-one case) - strong independent confirmation this project's `PEAKDET`
-acquisition mode (seen throughout this session's live RS-232/HPGL
-testing) has a real, now-identified software implementation.
+and third place (`0xE9858` with 21, `0xF44C8` with 18) were traced
+next, in the same session - see below.
 
 Traced `0xF3EA3`: it's 1 byte into a real `mov word ptr [bp-0x10],ax`
 instruction (the same landing-artifact shape as every other case here)
@@ -207,3 +185,50 @@ the most likely explanation is that it's a shared engine invoked once
 per distinct delta-measurement readout (`ΔV`, `ΔT`, frequency, etc. -
 the same labels seen live in this project's own HPGL capture testing,
 e.g. `ΔV1=0.00V`/`ΔT=0.000ms`) - plausible but not proven.
+
+**Traced the #2 candidate too, same session: `0xE9858`, now named
+`decimate_peakdet_samples`.** Lands 1 byte into a real `cmp word ptr
+[bp+0x12],0` instruction. Full signature recovered (`far ptr src, far
+ptr dst, count, byte/word mode flag`): for every group of 8 input
+samples it scans for the min and max, then emits **2 output samples
+per group** - whichever extremum changed most recently during the
+scan, followed by either the other extremum or an averaged boundary
+value depending on how the next sample compares - the standard
+peak-detect min/max envelope-compression algorithm. This is a clean,
+confident, complete-enough trace (unlike `compute_and_print_item_
+delta_readout` above, which only got a partial first-pass ID) because
+the algorithm's loop body is small and self-contained. Directly
+confirms and *corrects* an existing cross-reference: `handle_gpib_
+device_clear`'s `FUNCTIONS.md` entry already named this address
+(as `SUB_E9858`) with the vague description "reset/clear a display
+region" - now updated to reflect what it actually does. Called from
+both ROMs (21 sites total, cross-ROM from the comm ROM in at least
+one case) - strong independent confirmation this project's `PEAKDET`
+acquisition mode (seen throughout this session's live RS-232/HPGL
+testing) has a real, now-identified software implementation.
+
+**Traced the #3 candidate too: `0xF44C8`, now named
+`compute_and_print_cursor_position_readout`.** Lands 1 byte into a
+real `cmp byte ptr [0x1b83],0x14` instruction. Takes no arguments -
+works entirely off global state. Computes 2 Y-position-looking values
+(`>>3`, `+0xEE`) from a 14-byte-stride table at `[0x570]*2*0xE +
+0x576` for the current item and item+1 (plausibly the 2 on-screen
+cursors), checks a validity/type field at `[0x570]*0x10+0x192`, then
+prints via **the exact same `SUB_E97DC` helper** `compute_and_format_
+sample_delta_readout` already calls, branching on `[0x1B83]==0x14`
+(the already-confirmed device-type field from `detect_comm_option_
+hw`) to pick which label source to use. Very likely a sibling of
+`compute_and_format_sample_delta_readout` in the same cursor/readout
+family - printing cursor *position* rather than delta values - but
+not proven, and the internal branches weren't individually walked
+(same honesty caveat as `compute_and_print_item_delta_readout`).
+
+**This closes out the top 5 candidates by caller count** - between
+`write_hw_shift_register`/`SUB_EAC86` (found in earlier sessions) and
+the 3 found this session, every landing-artifact candidate with more
+than ~15 independent callers has now been traced. `SUB_E97DC`
+specifically is now confirmed shared by 2 of the 3 functions found
+this session plus the pre-existing `compute_and_format_sample_delta_
+readout` - a strong candidate for "the actual readout-string print
+primitive this whole family funnels through," worth naming next if
+this area is revisited.

@@ -250,24 +250,31 @@ See `docs/decode-anomalies/dual-entry-points.md` and
 `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`.
 
 - **`find_landing_artifacts.py` found 49 candidate call targets that
-  land 1-4 bytes short of coherent code; only 4 were individually
-  traced in depth** (all 4 turned into real findings - `write_hw_
-  shift_register`'s dual entry point, the `SUB_EAC86` family landing on
-  real data, `compute_and_print_item_delta_readout`, and
-  `decimate_peakdet_samples` - the last two found 2026-09-14 by ranking
-  all 49 candidates by independent caller count, a technique now built
-  into the tool itself). `decimate_peakdet_samples` (21 callers, 2nd-
-  highest) is a clean, complete trace - the standard min/max peak-
-  detect envelope-compression algorithm, confirming a real software
-  implementation behind the `PEAKDET` acquisition mode seen throughout
-  this project's live testing; it also corrected an existing vague
-  cross-reference in `handle_gpib_device_clear`'s `FUNCTIONS.md` entry.
-  The other ~45 weren't individually chased. **New lead from that
-  ranking, not yet traced**: `0xF44C8` (18 callers) is the next-
-  highest-ranked untraced candidate. Also `0xF830E` (23 callers, not
-  itself a landing artifact but the shared delta-computation helper
-  `compute_and_print_item_delta_readout` calls) is worth understanding
-  for its own sake.
+  land 1-4 bytes short of coherent code; the top 5 by independent
+  caller count have now all been traced** (all 5 turned into real
+  findings - `write_hw_shift_register`'s dual entry point, the
+  `SUB_EAC86` family landing on real data, and 3 found 2026-09-14 by
+  ranking all 49 candidates by caller count, a technique now built
+  into the tool itself: `compute_and_print_item_delta_readout` (33
+  callers), `decimate_peakdet_samples` (21 callers - a clean, complete
+  trace of the standard min/max peak-detect envelope-compression
+  algorithm, confirming a real software implementation behind the
+  `PEAKDET` acquisition mode seen throughout this project's live
+  testing, and correcting an existing vague cross-reference in
+  `handle_gpib_device_clear`'s entry), and `compute_and_print_cursor_
+  position_readout` (18 callers - a likely sibling of `compute_and_
+  format_sample_delta_readout`, sharing its `SUB_E97DC` print helper,
+  printing cursor position rather than delta values). **The other ~44
+  weren't individually chased** - the caller-count ranking has now
+  been exhausted down to single-digit counts, so further candidates
+  are progressively less likely to be worth the effort per the
+  project's own "many callers = deliberate" heuristic, though not
+  ruled out. Also `0xF830E` (23 callers, not itself a landing artifact
+  but the shared delta-computation helper `compute_and_print_item_
+  delta_readout` calls) and `SUB_E97DC`/`SUB_E99DF` (the shared
+  print helpers used by 3 of the traced functions above) are worth
+  understanding for their own sake - both are real, heavily-shared,
+  still-unnamed utilities right at the center of this whole subsystem.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

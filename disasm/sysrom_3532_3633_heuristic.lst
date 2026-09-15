@@ -17195,7 +17195,7 @@ L_EB8F7:
     3633:B931  [EB931]  50              push    ax
     3633:B932  [EB932]  bfc800          mov     di, 0xc8
     3633:B935  [EB935]  57              push    di
-    3633:B936  [EB936]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:B936  [EB936]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:B93B  [EB93B]  83c406          add     sp, 6
     3633:B93E  [EB93E]  8306720409      add     word ptr [0x472], 9
 L_EB943:
@@ -17801,7 +17801,7 @@ L_EBF0B:
     3633:BF32  [EBF32]  52              push    dx
     3633:BF33  [EBF33]  ff7608          push    word ptr [bp + 8]
     3633:BF36  [EBF36]  ff7606          push    word ptr [bp + 6]
-    3633:BF39  [EBF39]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:BF39  [EBF39]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:BF3E  [EBF3E]  83c406          add     sp, 6
     3633:BF41  [EBF41]  8306720409      add     word ptr [0x472], 9
     3633:BF46  [EBF46]  8be5            mov     sp, bp
@@ -18211,7 +18211,7 @@ L_EC3A2:
     3633:C3A6  [EC3A6]  57              push    di
     3633:C3A7  [EC3A7]  ff367004        push    word ptr [0x470]
     3633:C3AB  [EC3AB]  ff76f4          push    word ptr [bp - 0xc]
-    3633:C3AE  [EC3AE]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:C3AE  [EC3AE]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:C3B3  [EC3B3]  83c406          add     sp, 6
     3633:C3B6  [EC3B6]  c7066e040000    mov     word ptr [0x46e], 0
     3633:C3BC  [EC3BC]  83067004ce      add     word ptr [0x470], -0x32
@@ -18308,7 +18308,7 @@ L_EC453:
     3633:C490  [EC490]  ff367004        push    word ptr [0x470]
     3633:C494  [EC494]  2bdb            sub     bx, bx
     3633:C496  [EC496]  53              push    bx
-    3633:C497  [EC497]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:C497  [EC497]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:C49C  [EC49C]  83c406          add     sp, 6
     3633:C49F  [EC49F]  c47eee          les     di, ptr [bp - 0x12]
     3633:C4A2  [EC4A2]  893e5e04        mov     word ptr [0x45e], di
@@ -18579,7 +18579,7 @@ L_EC759:
     3633:C793  [EC793]  ff367004        push    word ptr [0x470]
     3633:C797  [EC797]  2bdb            sub     bx, bx
     3633:C799  [EC799]  53              push    bx
-    3633:C79A  [EC79A]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:C79A  [EC79A]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:C79F  [EC79F]  83c406          add     sp, 6
     3633:C7A2  [EC7A2]  8306720409      add     word ptr [0x472], 9
     3633:C7A7  [EC7A7]  8be5            mov     sp, bp
@@ -18643,7 +18643,7 @@ L_EC814:
     3633:C84F  [EC84F]  f7ea            imul    dx
     3633:C851  [EC851]  03d8            add     bx, ax
     3633:C853  [EC853]  53              push    bx
-    3633:C854  [EC854]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:C854  [EC854]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:C859  [EC859]  83c406          add     sp, 6
 L_EC85C:
     3633:C85C  [EC85C]  c47ef2          les     di, ptr [bp - 0xe]
@@ -19952,7 +19952,7 @@ L_ED4D1:
     3633:D4F9  [ED4F9]  ff76ee          push    word ptr [bp - 0x12]
     3633:D4FC  [ED4FC]  b8be00          mov     ax, 0xbe
     3633:D4FF  [ED4FF]  50              push    ax
-    3633:D500  [ED500]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D500  [ED500]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D505  [ED505]  83c406          add     sp, 6
     3633:D508  [ED508]  8306720409      add     word ptr [0x472], 9
     3633:D50D  [ED50D]  8346eece        add     word ptr [bp - 0x12], -0x32
@@ -19992,7 +19992,7 @@ L_ED550:
     3633:D578  [ED578]  ff76ee          push    word ptr [bp - 0x12]
     3633:D57B  [ED57B]  b82c01          mov     ax, 0x12c
     3633:D57E  [ED57E]  50              push    ax
-    3633:D57F  [ED57F]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D57F  [ED57F]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D584  [ED584]  83c406          add     sp, 6
     3633:D587  [ED587]  8306720409      add     word ptr [0x472], 9
     3633:D58C  [ED58C]  8346eece        add     word ptr [bp - 0x12], -0x32
@@ -20032,7 +20032,7 @@ L_ED5CF:
     3633:D5F7  [ED5F7]  ff76ee          push    word ptr [bp - 0x12]
     3633:D5FA  [ED5FA]  b82c01          mov     ax, 0x12c
     3633:D5FD  [ED5FD]  50              push    ax
-    3633:D5FE  [ED5FE]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D5FE  [ED5FE]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D603  [ED603]  83c406          add     sp, 6
     3633:D606  [ED606]  8306720409      add     word ptr [0x472], 9
     3633:D60B  [ED60B]  8346eece        add     word ptr [bp - 0x12], -0x32
@@ -20072,7 +20072,7 @@ SUB_ED64E:
     3633:D676  [ED676]  ff76ee          push    word ptr [bp - 0x12]
     3633:D679  [ED679]  b82c01          mov     ax, 0x12c
     3633:D67C  [ED67C]  50              push    ax
-    3633:D67D  [ED67D]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D67D  [ED67D]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D682  [ED682]  83c406          add     sp, 6
     3633:D685  [ED685]  8306720409      add     word ptr [0x472], 9
     3633:D68A  [ED68A]  8346eee7        add     word ptr [bp - 0x12], -0x19
@@ -20180,7 +20180,7 @@ L_ED78F:
     3633:D7AE  [ED7AE]  ff76ee          push    word ptr [bp - 0x12]
     3633:D7B1  [ED7B1]  2bc0            sub     ax, ax
     3633:D7B3  [ED7B3]  50              push    ax
-    3633:D7B4  [ED7B4]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D7B4  [ED7B4]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D7B9  [ED7B9]  83c406          add     sp, 6
     3633:D7BC  [ED7BC]  8306720409      add     word ptr [0x472], 9
     3633:D7C1  [ED7C1]  ff46da          inc     word ptr [bp - 0x26]
@@ -20309,7 +20309,7 @@ L_ED8D3:
     3633:D8FB  [ED8FB]  ff760a          push    word ptr [bp + 0xa]
     3633:D8FE  [ED8FE]  2bc0            sub     ax, ax
     3633:D900  [ED900]  50              push    ax
-    3633:D901  [ED901]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:D901  [ED901]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:D906  [ED906]  83c406          add     sp, 6
     3633:D909  [ED909]  8306720409      add     word ptr [0x472], 9
     3633:D90E  [ED90E]  8be5            mov     sp, bp
@@ -21621,7 +21621,7 @@ L_EE4D7:
     3633:E4F0  [EE4F0]  53              push    bx
     3633:E4F1  [EE4F1]  ff760c          push    word ptr [bp + 0xc]
     3633:E4F4  [EE4F4]  ff760a          push    word ptr [bp + 0xa]
-    3633:E4F7  [EE4F7]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    3633:E4F7  [EE4F7]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     3633:E4FC  [EE4FC]  83c406          add     sp, 6
     3633:E4FF  [EE4FF]  c47eee          les     di, ptr [bp - 0x12]
     3633:E502  [EE502]  893e7204        mov     word ptr [0x472], di
@@ -30753,7 +30753,7 @@ FUNC_3532_444F:
     3532:44C1  [F44C1]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
     3532:44C6  [F44C6]  83c402          add     sp, 2
 
-SUB_F44C8:
+compute_and_print_cursor_position_readout:
     3532:44C8  [F44C8]  02803e83        add     al, byte ptr [bx + si - 0x7cc2]
 
     3532:44C9  [F44C9]  803e831b14      cmp     byte ptr [0x1b83], 0x14

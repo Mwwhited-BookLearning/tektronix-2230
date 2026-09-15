@@ -20468,10 +20468,10 @@
     "notes": null
   },
   "F44C8": {
-    "name": "SUB_F44C8",
+    "name": "compute_and_print_cursor_position_readout",
     "kind": "sub",
     "ref_count": 18,
-    "functional_name": null,
+    "functional_name": "compute_and_print_cursor_position_readout",
     "notes": null
   },
   "F44EA": {

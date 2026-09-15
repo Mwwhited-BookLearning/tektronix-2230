@@ -3009,6 +3009,48 @@ FUNCTIONAL_NAMES = {
                                                # traced, most internal
                                                # branches not
                                                # individually walked
+    0xF44C8: "compute_and_print_cursor_position_readout", # found
+                                               # 2026-09-14 via find_
+                                               # landing_artifacts.py's
+                                               # caller-count ranking
+                                               # (18 callers, 3rd-
+                                               # highest found so far) -
+                                               # lands 1 byte into a
+                                               # real "cmp byte ptr
+                                               # [0x1b83],0x14"
+                                               # instruction, same
+                                               # landing-artifact class
+                                               # as compute_and_print_
+                                               # item_delta_readout/
+                                               # decimate_peakdet_
+                                               # samples. No arguments -
+                                               # works entirely off
+                                               # global state. Computes
+                                               # 2 Y-position-looking
+                                               # values (>>3, +0xEE)
+                                               # from a 14-byte-stride
+                                               # table at [0x570]*2*0xE
+                                               # + 0x576 (current item
+                                               # and item+1 - plausibly
+                                               # the 2 on-screen
+                                               # cursors), checks a
+                                               # validity/type field at
+                                               # [0x570]*0x10+0x192,
+                                               # then prints via the
+                                               # same SUB_E97DC helper
+                                               # compute_and_format_
+                                               # sample_delta_readout
+                                               # uses, branching on
+                                               # [0x1B83]==0x14 (the
+                                               # already-confirmed
+                                               # device-type field) to
+                                               # pick which label
+                                               # source to use. Likely
+                                               # sibling of compute_
+                                               # and_format_sample_
+                                               # delta_readout, printing
+                                               # cursor position rather
+                                               # than delta values
     0xF4150: "compute_and_format_sample_delta_readout", # called from
                                                # write_hw_shift_register:
                                                # computes the delta
