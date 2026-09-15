@@ -361,3 +361,42 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def scan_chip_for_shape_clusters(chip_name, window=2000, step=500, min_closed=3):
+    """Slide a window across a whole chip and score each by how many
+    genuinely CLOSED shapes (header present, >=4 points, and the
+    header lands within 2 units of the shape's own last point) it
+    contains in a plausible size range (bbox width/height 4-40 units -
+    covers everything actually seen in the one confirmed candidate).
+    A real character/icon library should show up as a run of *several*
+    such windows in a row (many glyphs back-to-back), not an isolated
+    spike - single-window spikes are much more likely coincidental
+    byte patterns than a real table this small a scan can even detect
+    reliably. This is a coarse survey tool, not a final answer -
+    manually render anything it flags with the normal CLI before
+    trusting it."""
+    buf, base = read_chip_bytes(chip_name)
+    results = []
+    for off in range(0, len(buf) - window, step):
+        chunk = buf[off:off + window]
+        shapes = parse_shapes(chunk)
+        closed = 0
+        for s in shapes:
+            if not s["header"] or len(s["points"]) < 4:
+                continue
+            x0, y0, x1, y1 = shape_bbox(s)
+            if not (4 <= (x1 - x0) <= 40 and 4 <= (y1 - y0) <= 40):
+                continue
+            hx, hy = s["header"]
+            lx, ly = s["points"][-1]
+            if abs(hx - lx) <= 2 and abs(hy - ly) <= 2:
+                closed += 1
+        if closed >= min_closed:
+            results.append((closed, base + off))
+    results.sort(reverse=True)
+    print(f"{chip_name}: {len(results)} windows with >= {min_closed} plausible closed shapes "
+          f"(window={window}, step={step})")
+    for closed, addr in results[:25]:
+        print(f"  0x{addr:06X}  closed_shapes={closed}")
+    return results

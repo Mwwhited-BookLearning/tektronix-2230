@@ -58,3 +58,33 @@ required for this kind of search - noted here so the same false
 positive doesn't get rediscovered.) So this table's reachability from
 already-disassembled code is still unconfirmed, the same open status
 as several other findings in `STILL_PENDING_DECODE.md`.
+
+## A tempting menu-text connection that a real photo disproved
+
+The table is immediately followed in ROM by genuine, already-cataloged
+UI text (`"SAVE REF"`, `"Cursor moves box, SEL for choice"`,
+`"S/Div & Trig select col"` - the `SELECT_MODE` timebase/trigger
+matrix screen). That's specific enough to identify the exact photo:
+`hardware/photos/20260911_005751019_iOS.jpg` shows this screen live,
+including the actual "box" the help text refers to - a plain
+rectangular outline highlighting one cell of the matrix. That's a
+trivial 4-corner shape computed on the fly, not something that needs
+pre-stored vector data, and it looks nothing like this table's
+circles/ovals/letter-like shapes. The address proximity is very
+likely coincidental (or at most a same-source-file linker artifact,
+not "used together at runtime") - checked and ruled out so it doesn't
+get re-chased.
+
+## Searched for a sibling table elsewhere - found none
+
+14 shapes is too few for a real character set. Added
+`scan_chip_for_shape_clusters` to the tool and ran it across all three
+ROMs looking for another region with a comparable density of closed,
+plausibly-sized pen-bit shapes. Every high-scoring window found was
+just a different overlapping slice of this same 509-byte island -
+no separate cluster exists anywhere else in any of the three chips
+under this specific encoding. Doesn't rule out the already-confirmed,
+separately-encoded stroke font at `[0x1DB0]` existing somewhere this
+scan wouldn't detect (different, more compact byte format) - just
+means this particular table is a one-off under its own encoding, not
+part of a bigger family findable the same way.

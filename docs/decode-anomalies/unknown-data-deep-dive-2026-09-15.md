@@ -239,11 +239,27 @@ isn't the same table `draw_readout_char` reads from `[0x1DB0]`.
 
 **Not confirmed**: which hypothesis (icons vs. font) is right, the
 correct Y-axis orientation, or what the smaller open-arc shapes (5, 6,
-7) represent either way. Worth a follow-up: render nearby ROM regions
-with the same tool to see if more shapes (a fuller alphabet, or more
-icon variants) turn up adjacent to this one, and try the
-un-flipped/flipped renders side by side for every shape rather than
-just 5-7.
+7) represent either way.
+
+**Searched for a bigger, sibling table elsewhere - found nothing.**
+14 shapes is too few for a real character set (no room for a full
+alphabet), so if this were a font there should be more of it
+somewhere. Added `scan_chip_for_shape_clusters` to
+`decode_vector_icons.py` (slides a window across a whole chip,
+scores by how many genuinely-closed, plausibly-sized shapes it
+contains) and ran it across all three ROMs. Result: every window that
+scored highly is just a different overlapping slice of this *same*
+509-byte island (`0xEA7F8`-`0xEADD4`, all within ~2KB of each other,
+all really just showing this one table's own shapes) - **no
+comparable cluster exists anywhere else**, in any of the three chips,
+under this specific pen-bit-2-byte encoding. This doesn't rule out a
+"real" character ROM existing under a *different* encoding (in
+particular the already-confirmed compact 1-byte stroke font at
+`[0x1DB0]`, whose table location this project has separately searched
+for at length without success - see `docs/display/vector-display-
+and-stroke-font.md`) - it specifically means this encoding, this
+table, is a one-off, not part of a larger family this same technique
+would find.
 
 **Checked for a caller, found none**: searched all three ROMs' actual
 disassembly listings (not a raw byte scan) for any `lcall`/`ljmp`
@@ -260,6 +276,28 @@ precisely so this specific false lead doesn't get rediscovered and
 re-chased. This table's reachability from already-disassembled code
 remains genuinely unconfirmed - full detail and the rendered SVGs in
 `docs/display/vector-icons/`.
+
+**Checked the tempting menu-text proximity lead, and it doesn't hold
+up.** The 209-byte gap immediately after this table (file `0xB062`-
+`0xB132`, before the next real function) is genuine, already-cataloged
+UI text: `"SAVE REF"`, `"Cursor moves box, SEL for choice"`,
+`"S/Div & Trig select col"`, plus the `SELECT_MODE` timebase/trigger
+matrix's row and column labels (`STRINGS.md` "Timebase/range labels
+and misc UI"). That's specific enough to identify the exact physical
+screen: `hardware/photos/20260911_005751019_iOS.jpg` (`ACQ_MODE_SETUP_
+TABLE/SELECT_MODE`) shows it directly, "Cursor moves box, SEL for
+choice" printed at the bottom **and the actual box visible on screen**
+- a plain rectangular outline highlighting one cell of the UN-TRIG/TRIG
+× sweep-speed matrix. That's a simple 4-corner rectangle, trivially
+computed from a known cell width/height with the same point-plotting
+primitives already confirmed elsewhere (`plot_readout_point` et al.) -
+it doesn't need pre-stored vector shape data at all, and doesn't
+resemble this table's circles/ovals/letter-like shapes in any way.
+**The address proximity is very likely coincidental** (or at most
+"same compiled source file's static data section," not "used
+together at runtime") - this specific menu is not the table's
+consumer. Recorded here so a future session doesn't re-chase this
+exact connection; the real consumer, if any, is still unfound.
 
 ## 4. `160-3532` file `0xBEE6`-`0xC263`: only the first ~44 bytes are near a known string block; the other ~850 bytes are unrelated (revised, partially resolved)
 
