@@ -87,11 +87,25 @@ instead of assuming bare `nasm` resolves.
 - [ ] The full `ACQ_MODE_SETUP_TABLE` menu tree and the `DIAGNOSTICS`
       self-test menu are photographed and documented end-to-end in
       `HARDWARE.md`/`hardware/photos/INVENTORY.md`. Still open: trace
-      the actual menu-rendering code that reads/draws these screens (an
-      `update_menu_position`-driven state machine is the leading
-      candidate) to tie each menu string to its backing code. Also
-      identify the specific functions behind self-test leaves
-      `ACQ_ACCESS`/`PRC_READBACK` and `CAL_AIDS`'s `BOX`/`CAL_V_POS` and
+      the actual menu-rendering code that reads/draws these screens.
+      **Checked 2026-09-14: `update_menu_position` is NOT this
+      candidate after all** - enumerated all 9 of its callers
+      exhaustively (proven+heuristic) and every single one is a
+      self-test function (`selftest_front_panel_switch_a`/`_b`,
+      `run_adc_selftest_range`, `selftest_tb_divider`, `step_tb_
+      divider_test`, `step_front_panel_switch_b_test`, `wait_stable_
+      measurement`, `run_indexed_adc_selftest`, `selftest_comm_
+      readback`) - it's scoped entirely to diagnostic test-position
+      scanning, not general menu navigation. Its own backing variable
+      `[0x1B50]` is likewise only ever touched from inside its own
+      body (9 read/write sites, all clustered at its own address) -
+      nothing outside it re-reads the position. **The real
+      `ADVANCED_FUNCTIONS`/`DIAGNOSTICS`/etc. menu-navigation state
+      machine is a genuinely different, still entirely unfound
+      mechanism** - this was a real, useful correction (it redirects
+      away from a dead end), not just re-confirmation. Also identify
+      the specific functions behind self-test leaves `ACQ_ACCESS`/
+      `PRC_READBACK` and `CAL_AIDS`'s `BOX`/`CAL_V_POS` and
       `EXERCISERS`'s `CONFIGURATION`/`IO` - `TB_DIVIDER`/`CLK_DELAY`'s
       registers and the A/D converter identity are now confirmed (see
       `MEMORY_MAP.md`/`CONTEXT.md`).

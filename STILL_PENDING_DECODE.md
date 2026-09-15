@@ -316,10 +316,15 @@ See `docs/acquisition-and-plotting/ram-far-pointer-table.md`.
 See `TODO.md` and `HARDWARE.md`/`hardware/photos/INVENTORY.md` for the
 photographed menu tree this maps to.
 
-- **The actual menu-rendering code hasn't been traced** - an
-  `update_menu_position`-driven state machine is the leading candidate
-  for tying each documented menu string to its backing code, but this
-  hasn't been done systematically.
+- **The actual menu-rendering code hasn't been traced.** `update_menu_
+  position` was the leading candidate but is now **ruled out** (checked
+  2026-09-14): all 9 of its callers, exhaustively enumerated, are
+  self-test functions - it's scoped entirely to diagnostic test-
+  position scanning, and its backing variable `[0x1B50]` is never read
+  from outside its own body. The real `ADVANCED_FUNCTIONS`/
+  `DIAGNOSTICS`/etc. menu-navigation state machine is a genuinely
+  different, still entirely unfound mechanism - this rules out a
+  previously-assumed lead rather than just re-confirming it.
 - Specific self-test leaf functions not yet identified: `ACQ_ACCESS`/
   `PRC_READBACK`, `CAL_AIDS`'s `BOX`/`CAL_V_POS`, `EXERCISERS`'s
   `CONFIGURATION`/`IO`.
