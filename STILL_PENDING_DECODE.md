@@ -323,15 +323,20 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   4-byte stack-argument/cleanup shortfall across all 3 traced call
   sites in that function is also unexplained. See `docs/decode-
   anomalies/unknown-data-deep-dive-2026-09-15.md` finding 1.
-- **New lead found 2026-09-15, unconfirmed**: `160-3532` file offset
-  `0xBEE6`-`0xC263` contains 894 bytes of clean `(small count, 16-bit
-  address)` records where the address always falls in `0xFC00-
-  0xFC70` - as a plain segment offset that's physical `0xFFC00-
-  0xFFC70`, about 1KB before the CPU reset vector (`0xFFFF0`). A
-  suggestive location for an entry-point/interrupt-related table, but
-  no literal reference to this table's own address was found, and the
-  count field's meaning is unexplored. See `docs/decode-anomalies/
-  unknown-data-deep-dive-2026-09-15.md` finding 4.
+- **Revised 2026-09-15**: `160-3532` file offset `0xBEE6`-`0xC263`
+  (894 bytes of clean `(small count, 16-bit value)` records) is
+  **not one table** - only the first 11 records (44 bytes) have their
+  16-bit value landing near (not exactly on) `160-3532`'s existing,
+  already-named self-test string cluster near the end of the chip
+  (`"ROM/RAM/NMI :"`, `"2230/2220 Power up tests complete."`, etc. -
+  see `STRINGS.md`). The remaining ~850 bytes correlate with nothing
+  and are a separate, still-fully-unknown structure. Also surfaced a
+  methodological gap while checking this: `160-3633` physical
+  `0xEAC90`-`0xEADA0` heuristically decodes as including an SSE
+  instruction (`minps`), impossible on an 8088 - a "covered but
+  garbage" region `UNKNOWN_DATA.md` can't see because it only flags
+  *uncovered* gaps. See `docs/decode-anomalies/unknown-data-deep-dive-
+  2026-09-15.md` finding 4.
 
 ## The RAM far-pointer init table family
 

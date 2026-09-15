@@ -150,78 +150,133 @@ groups correspond to on screen. No literal pointer to this table's
 address (`0xE88DE`) was found anywhere in the proven or heuristic
 disassembly.
 
-## 3. `160-3633` file `0xAE64`-`0xB061`: a vector icon/graphic table - includes a mathematically-confirmed circle (confirmed shape, unconfirmed purpose)
+## 3. `160-3633` file `0xAE64`-`0xB061`: a vector icon table - encoding fully decoded, contents strongly suggest a rotary dial/knob indicator (confirmed encoding and shapes; icon's real-world identity still inferred)
 
-This is the strongest new finding of this pass. The block opens with
-a clean linear countdown (`0x0F0F` down to `0x0000`, wrapping to
-`0xFFFF` - 31 words, almost certainly an unrelated small ramp/delay
-table, *not* part of the vector data below it), then a long run of
-byte-pairs that looks, by eye, like several distinct closed-curve
-outlines separated by odd 2-byte headers/terminators whose own
-encoding wasn't determined (byte-pair values like `91 9F`, `85 9D`,
-`9A 8B`, `FF FF`).
+This is the strongest new finding of this pass, and a follow-up pass
+resolved the encoding completely rather than leaving the shape
+boundaries as an eyeballed guess.
 
-Extracted the first, largest such run as `(x,y)` point pairs and
-checked it numerically:
+**The encoding**: each closed shape is a 2-byte "pen-up move to `(x,y)`"
+point, both bytes with bit 7 set (`x|0x80, y|0x80`), followed by N
+2-byte "pen-down line to `(x,y)`" points with bit 7 clear. This is the
+same pen-bit convention already confirmed for `draw_readout_char`'s
+stroke font (`docs/display/vector-display-and-stroke-font.md`), just
+using a wider 2-byte-per-point coordinate (7 usable bits each) instead
+of the font's compact packed byte - consistent with a smaller table of
+larger, more detailed shapes rather than 128 compact glyphs. Verified
+by writing a proper scanner (bit7-set-on-both-bytes = header/moveto,
+otherwise a point) and checking, for every shape, whether its
+preceding "moveto" header lands exactly on one of its own traced
+points - for every genuinely closed shape it does, at distance 0.0.
 
-```
-40 points, bounding box x:[3,31] y:[3,31], center (17,17)
-radius: min 13.42, max 14.14, average 13.77
-```
+**Confirmed shapes** (block opens with an unrelated 31-word linear
+countdown ramp, `0x0F0F` down to `0x0000` wrapping to `0xFFFF` - not
+vector data, kept separate):
 
-That's a circle - 40 points sampled around a radius-~14 circle
-centered at `(17,17)`, with all radii within about ±0.4 of the mean
-(exactly the variation you'd expect from integer-rounded pixel
-coordinates on a real circle, not coincidence). A second, smaller run
-came back as a **perfect circle** (radius exactly 3.16 = √10,
-constant, zero variation, 8 points) centered at `(17,17)` - the same
-center as the big circle, suggesting a filled/ringed dot at the center
-of the larger circle, or two views of the same icon at different
-sizes. A third run turned out to be degenerate - not a curve at all,
-but a straight vertical line (`x` constant at 17, `y` from 17 to 42) -
-plausibly a radial "needle"/pointer line, though its coordinate range
-extends past the big circle's own bounding box, so it may belong to a
-different icon rather than being that circle's needle.
+- **A 40-point circle**, radius 13.42-14.14 (average 13.77), centered
+  at `(17,17)` - appears **twice** in this table, and the two copies
+  are the exact same 40-point list, just cyclically rotated to a
+  different starting index (verified by direct list comparison - not
+  a coincidence, not a "similar" shape, the literal same polygon).
+- **An 8-point circle**, radius exactly `√10` (3.16, zero variation) -
+  centered at the **same** `(17,17)` - a small hub/dot sitting exactly
+  at the big circle's center.
+- **A straight vertical line**, ~28 units long (`x` constant at 17,
+  `y` from ~17 to ~45) - about the same length as the big circle's own
+  diameter (28 units).
+- **A second, larger, less-perfectly-circular closed shape** (30-31
+  points, radius 14.4-20.9, bounding box up to 34 units wide) - also
+  appears **twice**, with the two copies close but not byte-identical
+  (one has an extra point and a slightly larger radius range) -
+  possibly a slightly different revision or a genuinely distinct but
+  similarly-shaped companion icon.
+- Several smaller runs (8-11 points, radius 2.5-4.7) that do **not**
+  close back to their own moveto point - open arcs or tick-mark
+  details, not full curves. Two 1-2 point runs are just short line
+  segments.
 
-Several smaller runs (radius 2.5-4.7, less cleanly circular) look like
-smaller marks, arcs, or tick-like details - their exact boundaries in
-the byte stream were eyeballed, not derived from a confirmed
-delimiter encoding, so treat those specifically as a rough first pass,
-not a settled decode.
+**A circle the exact diameter of a needle, centered on a small hub
+circle, is a rotary knob/dial position indicator** - the classic
+analog-style graphic for showing a control's rotational setting on a
+CRT, and a very natural thing for this instrument's firmware to draw
+somewhere in its menu/calibration UI. The two near-duplicate copies of
+the outer ring (and the second, larger closed shape) suggest this
+specific icon - or a close variant of it - is drawn more than once,
+which fits a reusable icon used for multiple controls, or before/after
+states of the same indicator, better than a one-off drawing.
 
-**This is very likely a small library of UI vector icons** (dial/knob
-position indicators, a cursor/crosshair marker, or similar CRT
-graphics used somewhere in the menu or calibration display) - drawn
-with the same kind of pen/vector mechanism as `draw_readout_char`
-(see `docs/display/vector-display-and-stroke-font.md`), but
-**distinct from the stroke font itself**: these are smooth curves
+This is **distinct from the stroke font**: these are smooth curves
 (circles), not letterforms, and this address range was never one of
-the stroke-font search's own candidates.
+the stroke-font search's own candidates (`draw_readout_char` and this
+table clearly share the same *drawing primitive family*, not the same
+data).
 
-**Not confirmed**: the exact shape-delimiter encoding, how many
-distinct icons are really in this table, what draws them, or what
-they're used for on screen. Worth a proper re-pass with an actual
-delimiter hypothesis (the 2-byte headers are a good next lead) rather
-than eyeballed splits.
+**Not confirmed**: which specific control (if any) this dial
+represents, what code loads/draws this table (no literal reference to
+its address was found), or what the smaller open-arc shapes are for.
+Worth a follow-up: search for any code that computes an angle/position
+value and might index into a rotation table alongside this shape (a
+dial indicator's needle angle would need to be parameterized
+somehow - this fixed table only has ONE needle position, so either
+the needle is redrawn separately per angle, or this specific
+occurrence is a single fixed snapshot rather than an animatable icon).
 
-## 4. `160-3532` file `0xBEE6`-`0xC263`: small-int + near-top-of-ROM-address pairs (plausible, unconfirmed)
+## 4. `160-3532` file `0xBEE6`-`0xC263`: only the first ~44 bytes are near a known string block; the other ~850 bytes are unrelated (revised, partially resolved)
 
-894 bytes of clean 4-byte records: `(small count, 16-bit value)`,
-where the 16-bit value is consistently in the `0xFC00-0xFC70` range -
-read as a plain unsigned offset within the `160-3532` chip's own
-64KB segment (base `0xF0000`), that's physical `0xFFC00-0xFFC70`,
-**about 1KB before the CPU reset vector** (`0xFFFF0`, confirmed
-elsewhere in `JUMP_MAP.md`). That's a distinctive, plausible location
-for a table of entry points into the same final-ROM-page region that
-already holds the early interrupt-vector installs (`INT1`/`INT2`/
-`INT255` handlers, per `JUMP_MAP.md`'s Level-0 boot diagram). The
-paired small "count" values (`3, 3, 0, 3, 9, 4, 4, 8, 6, 4, 1, 0, ...`)
-don't obviously match a known enumeration yet.
+894 bytes of clean 4-byte records: `(small count, 16-bit value)`. A
+follow-up pass checked the 16-bit value against every already-
+cataloged string offset in `strings_160-3532.json` and found something
+real, but weaker than first thought:
 
-**Not confirmed**: no literal reference to this table's own address
-was found, and the small-count field's meaning is unexplored. Flagging
-this primarily because the address range is suggestive, not because
-the mechanism is understood.
+**Only the first 11 records** (44 bytes) have their 16-bit value
+landing within a few bytes of an *already-documented, already-named*
+diagnostic string cluster - the self-test messages near the end of
+`160-3532` (`STRINGS.md` lines ~150-155/180: `" comm_stat u1x23"`,
+`" comm_param u1x22"`, `"ROM/RAM/NMI :"`, `"2230/2220 Power up tests
+complete."`, `"line stuck high"` - the same strings this project's
+`JUMP_MAP.md` already ties to `selftest_display_irq_idle`/`_active`).
+The offsets are close (`-19` to `+14` bytes from the nearest string's
+own start) but **not an exact, uniform pointer match** - there's no
+single constant that lines every one of the 11 up exactly, so this
+isn't simply "pointer + fixed bias." It's real proximity to a real,
+already-identified string cluster, not coincidence (11 out of 11 land
+within a 34-byte spread that's otherwise a small fraction of the
+chip), but the exact addressing scheme (mid-string references on
+purpose? a slightly different field/byte alignment than assumed?)
+isn't nailed down.
+
+**The remaining ~850 bytes (records 12 onward) don't correlate with
+any known string at all** - their values are small and cluster near
+the very start of the chip (`0x0000-0x0705`) instead, which is a
+completely different neighborhood. This means the original "894-byte
+table" framing was wrong: at least two different, unrelated data
+structures were lumped into one block by `find_unknown_data.py`'s
+gap-merging, and only the first fragment has a real, characterized
+lead.
+
+**Not confirmed**: the exact addressing/field scheme for the first 11
+records, or what the small "count" field (`3, 3, 0, 3, 9, 4, 4, 8, 6,
+4, 1`) means. The rest of the block (records 12+) is back to fully
+unknown.
+
+**Methodological note**: while checking the neighboring ROM for this,
+found a separate, unrelated example of this project's heuristic
+disassembler producing an *impossible* decode - `160-3633` physical
+`0xEAC90`-`0xEADA0` heuristically "decodes" as including a `minps
+xmm4,xmm4` (an SSE instruction, which cannot exist on an 8088) among
+other clearly-bogus reads. That region is **not** flagged in
+`UNKNOWN_DATA.md` at all, because the heuristic scanner did "cover"
+those bytes - just with garbage. `find_unknown_data.py` only finds
+*uncovered* gaps; it has no way to flag *wrongly-covered* ones. A
+useful follow-up tool: scan already-"covered" heuristic regions for
+decode oddities (opcodes/instructions that don't exist on the 8088,
+implausibly long runs of the same ADD-immediate shape from what's
+probably all-zero data, etc.) to find more hidden data regions this
+export missed entirely. Checked whether *that* specific region was
+more of the vector-icon data from finding 3 (given how close it sits
+to finding 3's own table) - it isn't: its point-pairs have bounding
+boxes spanning the full 0-255 byte range, nothing like a coordinate
+system, so it's some other kind of data, not more icon shapes.
 
 ## 5. `160-2998` (comm ROM) file `0x80EC`-`0x8211`: a grouped, incrementing-ID record table (plausible, tentatively comm-error/status related)
 
@@ -268,8 +323,8 @@ entirely), or what reads this table.
 |---|---|---|---|---|
 | 1 | 3532 | `0x1A33-0x213A` | Well-supported | Real ~100-entry jump table; 2 of 4 real callers land 1 byte into it (landing artifact); enclosing function not proven-reachable |
 | 2 | 3633 | `0x88DE-0x8C29` | Plausible | Per-item Y-position/width record table; consumer (`SUB_E88CB`) suspected but not confirmed |
-| 3 | 3633 | `0xAE64-0xB061` | **Confirmed shape**, unconfirmed purpose | Vector icon table; contains a mathematically-verified circle (r≈14) and a perfect small circle (r=3.16); likely a dial/cursor/icon library, not the stroke font |
-| 4 | 3532 | `0xBEE6-0xC263` | Plausible | Small-int + near-reset-vector-address record table; suggestive location, mechanism unconfirmed |
+| 3 | 3633 | `0xAE64-0xB061` | **Encoding + shapes confirmed**, icon identity inferred | Vector icon table using the same pen-bit convention as `draw_readout_char`; a 40-pt circle (r≈14) duplicated as a cyclic rotation of the same point list, a perfect small circle (r=3.16) sharing its center, and a ~28-unit needle line - very likely a rotary dial/knob indicator |
+| 4 | 3532 | `0xBEE6-0xC263` | Partially resolved | Only the first 44 bytes are near an already-known self-test string cluster (not an exact match); the other ~850 bytes are a different, still-unknown structure - the original "one table" framing was wrong |
 | 5 | 2998 | `0x80EC-0x8211` | Plausible | Grouped incrementing-ID record table; tentatively status/error-category-related, not a clean match yet |
 
 None of the addresses discussed here were renamed in
