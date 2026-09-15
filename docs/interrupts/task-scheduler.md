@@ -168,16 +168,41 @@ continued from.
   internally - a genuinely different concurrency idiom than a normal
   `while` loop, only possible because of the fork-style mechanism.
 
-**This concretely answers "how many tasks exist"**: at least the 35
-distinct `create_task` call sites (plus 1 `create_task_b` site) found
-this session, each a genuine, independent point where a new task gets
-spun up. Some are already inside named functions (`spawn_task_with_
-tag`, `restart_current_task`, `comm_call_main_rom`, `mark_task_ready`
-x4); most of the containing functions are still unnamed. **What each
-one specifically does** requires tracing its own post-call
-continuation individually - only the 2 above have been looked at.
-Full caller list (physical addresses, containing function name where
-known):
+**Correction, same session, before this got written up further: it
+does NOT create a new, independent task identity.** Re-reading
+`create_task`'s body line by line: `bx = [0x1ACD]` (the index of the
+task that is *currently running*) is read once, near the top, and
+**never modified anywhere in the function** - the SP/SS save and the
+ready-flag update both write to that same, current task's own slot.
+There is no allocation of a new/free index anywhere in `create_task`.
+So this is really a **"yield the currently-running task, saving a new
+resume point for it" primitive** operating on an existing task slot,
+not a spawn primitive - "create_task" is a misleading name inherited
+from an earlier, less thorough session, on par with other renamed-
+then-corrected cases in this project. The actual number of distinct
+task *slots* is bounded by whatever `select_next_ready_task` iterates
+over (documented above as a **12-entry** table) - genuinely new task
+identities, if this system ever creates any beyond a fixed roster set
+up at boot, must be established some other way not yet found.
+
+**So "how many tasks exist" is answered differently than first
+thought**: not 36 independent tasks, but **at most 12 task slots**
+(per the already-documented 12-entry ready-state table), each of which
+can yield-and-resume from any of the 35 `create_task` call sites (plus
+1 `create_task_b` site) found this session - 35 different *potential
+resume points in code*, not 35 different task identities. In practice
+each call site is presumably only ever reached from within whichever
+one task's own code path normally executes it, so there's likely still
+a natural association between "this call site" and "this one task,"
+just not a *mechanical* 1:1 the way originally claimed. Some call
+sites are already inside named functions (`spawn_task_with_tag`,
+`restart_current_task`, `comm_call_main_rom`, `mark_task_ready` x4);
+most of the containing functions are still unnamed. **What each task
+slot actually spends its time doing** requires tracing individual
+call sites' post-call continuations - only 3 have been looked at so
+far (see below). Full call-site list (physical addresses, containing
+function name where known) - still useful as "every place in the code
+a yield can happen," even under the corrected understanding:
 
 ```
 0x09688F  spawn_task_with_tag        0x0FD16A  (unnamed, 0xFD006)
@@ -204,9 +229,11 @@ known):
 Note several containing functions call `create_task` **more than
 once** (`0xFF067` x4, `0xFD2E8` x2, `0xFD471` x3, `0xE7298` x2,
 `0xE8E29` x2, `mark_task_ready` x4 across both `create_task`/
-`create_task_b`) - each occurrence is a *separate* fork point with its
-*own* distinct continuation code, so the true task count (by distinct
-entry point) is exactly 36, not "36 calls to a handful of tasks."
+`create_task_b`) - each occurrence is a *separate* potential resume
+point with its *own* distinct continuation code (per the correction
+above, these are yield points a task can use, not 36 separate task
+identities - the real task count is bounded by the 12-entry ready-
+state table instead).
 
 **Traced a 3rd example - `comm_call_main_rom`'s call site - and it
 makes the real, common usage pattern unambiguous: `create_task` is
@@ -231,12 +258,28 @@ picks its own state machine back up exactly where it left off once
 rescheduled - a cooperative multitasking yield, implemented entirely
 via the fork mechanism rather than a dedicated "yield" primitive.
 
-This reframes the earlier 2 examples too: the self-perpetuating loop
-found at `0xE6F5C` fits the same "yield and resume the same loop"
-shape, not a one-off spawn. The likely real picture: most of the 36
-call sites are **yield points inside existing loops** (fork a
-continuation of the same code, let something else run, resume), and
-only some are genuine "spawn an independent, differently-purposed
-task" calls - telling the two apart requires checking, per call site,
-whether the post-call code loops back into the *same* function or
-goes somewhere genuinely new. Not done for all 36 yet.
+This reframes the earlier 2 examples too, and matches the correction
+above precisely: the self-perpetuating loop found at `0xE6F5C` fits
+the same "yield and resume the same loop" shape. **Given `create_task`
+never allocates a new task index (see the correction above), every one
+of the 36 call sites is structurally the same kind of thing - the
+currently-running task yielding and marking where to resume - not a
+mix of "yield" vs. "spawn" cases.** What differs from call site to
+call site is only what the *post-call continuation* does: sometimes
+it's a tight loop back into the same function (`comm_call_main_rom`,
+`0xE6F5C`), sometimes it's a short one-shot "restore DS and return
+normally to my own caller" (`spawn_task_with_tag`, see below) - so the
+practical *effect* ranges from "yield once, then continue exactly as
+before" to "yield repeatedly forever as this task's entire purpose,"
+but the underlying mechanism is identical in all cases.
+
+**Corrected `spawn_task_with_tag` too** (`FUNCTIONS.md`'s entry
+previously said it "launches a background comm-tx-servicing task" -
+no longer accurate under this corrected understanding). Its actual
+shape: tag the *current* task's own scratch byte, yield once via
+`create_task`, and when resumed, immediately restore `DS` and return
+normally to its own caller (`serial_tx_buffer_put`). So it doesn't
+launch anything independent - it inserts a single deliberate
+scheduling yield (presumably to let a higher-priority tick, like the
+actual TX-servicing one, run) before continuing on with the same call
+chain, tagged with a marker for whatever reads `[idx+0x744]` later.
