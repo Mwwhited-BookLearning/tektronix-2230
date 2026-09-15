@@ -150,76 +150,101 @@ groups correspond to on screen. No literal pointer to this table's
 address (`0xE88DE`) was found anywhere in the proven or heuristic
 disassembly.
 
-## 3. `160-3633` file `0xAE64`-`0xB061`: a vector icon table - encoding fully decoded, contents strongly suggest a rotary dial/knob indicator (confirmed encoding and shapes; icon's real-world identity still inferred)
+## 3. `160-3633` file `0xAE64`-`0xB061`: a vector shape table - encoding fully decoded and rendered; whether it's icons or a rough font is genuinely unresolved
 
-This is the strongest new finding of this pass, and a follow-up pass
-resolved the encoding completely rather than leaving the shape
-boundaries as an eyeballed guess.
+The encoding is now fully decoded and a real rendering tool exists
+(`disasm/decode_vector_icons.py`) - but rendering it and actually
+looking at the output (rather than just the numeric radius/bbox
+checks from the previous pass) **walked back the "rotary dial" story
+from a confident conclusion to one of two open possibilities**. This
+is exactly the kind of thing that only shows up once you look at the
+picture, not the numbers - recorded here in full including the
+reasoning that changed, not just the final state.
 
-**The encoding**: each closed shape is a 2-byte "pen-up move to `(x,y)`"
-point, both bytes with bit 7 set (`x|0x80, y|0x80`), followed by N
-2-byte "pen-down line to `(x,y)`" points with bit 7 clear. This is the
-same pen-bit convention already confirmed for `draw_readout_char`'s
-stroke font (`docs/display/vector-display-and-stroke-font.md`), just
-using a wider 2-byte-per-point coordinate (7 usable bits each) instead
-of the font's compact packed byte - consistent with a smaller table of
-larger, more detailed shapes rather than 128 compact glyphs. Verified
-by writing a proper scanner (bit7-set-on-both-bytes = header/moveto,
-otherwise a point) and checking, for every shape, whether its
-preceding "moveto" header lands exactly on one of its own traced
-points - for every genuinely closed shape it does, at distance 0.0.
+**The encoding** (unchanged, still solid): each closed shape is a
+2-byte "pen-up move to `(x,y)`" point, both bytes with bit 7 set
+(`x|0x80, y|0x80`), followed by N 2-byte "pen-down line to `(x,y)`"
+points with bit 7 clear - the same pen-bit convention already
+confirmed for `draw_readout_char`'s stroke font
+(`docs/display/vector-display-and-stroke-font.md`), just with a wider
+2-byte-per-point coordinate (7 usable bits each) instead of the font's
+packed byte. Verified: for every genuinely closed shape, its preceding
+"moveto" header lands exactly on one of its own traced points, at
+distance 0.0. **Also checked and ruled out**: reinterpreting the same
+bytes as 16-bit word pairs instead of independent 8-bit x/y bytes
+(prompted by noticing the HPGL plot output uses 1023-count, i.e.
+10-bit, resolution) - that reading turns the clean circle into scatter
+(radius spread jumps from 0.7 units to 6872 units), so 8-bit-per-axis
+is correct for *this* table. The HPGL plotter's 10-bit resolution is a
+different, later-stage output path (the rear-panel X-Y plotter DAC),
+not evidence this on-screen table should be reread as 16-bit.
 
-**Confirmed shapes** (block opens with an unrelated 31-word linear
-countdown ramp, `0x0F0F` down to `0x0000` wrapping to `0xFFFF` - not
-vector data, kept separate):
+**14 shapes found** (`disasm/decode_vector_icons.py`'s default run
+against this region - see `scratchpad/vector_icons/` for the
+rendered SVGs and quicklook PNGs this session produced, gitignored
+scratch output, regenerate with the tool if needed):
 
-- **A 40-point circle**, radius 13.42-14.14 (average 13.77), centered
-  at `(17,17)` - appears **twice** in this table, and the two copies
-  are the exact same 40-point list, just cyclically rotated to a
-  different starting index (verified by direct list comparison - not
-  a coincidence, not a "similar" shape, the literal same polygon).
-- **An 8-point circle**, radius exactly `√10` (3.16, zero variation) -
-  centered at the **same** `(17,17)` - a small hub/dot sitting exactly
-  at the big circle's center.
-- **A straight vertical line**, ~28 units long (`x` constant at 17,
-  `y` from ~17 to ~45) - about the same length as the big circle's own
-  diameter (28 units).
-- **A second, larger, less-perfectly-circular closed shape** (30-31
-  points, radius 14.4-20.9, bounding box up to 34 units wide) - also
-  appears **twice**, with the two copies close but not byte-identical
-  (one has an extra point and a slightly larger radius range) -
-  possibly a slightly different revision or a genuinely distinct but
-  similarly-shaped companion icon.
-- Several smaller runs (8-11 points, radius 2.5-4.7) that do **not**
-  close back to their own moveto point - open arcs or tick-mark
-  details, not full curves. Two 1-2 point runs are just short line
-  segments.
+- Shape 0 (31 pts, no header) - the countdown ramp prefix, kept but
+  clearly not vector data (renders as a meaningless "L" shape).
+- **Shapes 1 and 9**: the same 40-point circle (radius≈14), appearing
+  twice as an exact cyclic rotation of the same point list.
+- **Shapes 2 and 11**: a second, larger, less-perfectly-circular closed
+  shape (30-31 pts, radius 14.4-20.9), also appearing twice, close but
+  not byte-identical.
+- Shape 3: a straight vertical line, ~28 units long.
+- Shape 4: an 8-point closed octagon, radius exactly `√10` (3.16),
+  centered at the same point as the big circles (17,17).
+- Shapes 5, 6, 7: three medium, open (non-closing) curved/angular
+  shapes, similar in size to each other.
+- Shapes 8, 10, 12: short 1-2 point tick marks/line segments.
+- Shape 13 (9 pts, no header after the `0xFF 0xFF` end marker) - this
+  is the tail junk this project already separately identified as an
+  unrelated small index/lookup table, not vector data - correctly
+  excluded from the drawing by treating `0xFF 0xFF` as "no header"
+  rather than a bogus `(127,127)` coordinate (an earlier version of
+  the tool got this wrong before the fix).
 
-**A circle the exact diameter of a needle, centered on a small hub
-circle, is a rotary knob/dial position indicator** - the classic
-analog-style graphic for showing a control's rotational setting on a
-CRT, and a very natural thing for this instrument's firmware to draw
-somewhere in its menu/calibration UI. The two near-duplicate copies of
-the outer ring (and the second, larger closed shape) suggest this
-specific icon - or a close variant of it - is drawn more than once,
-which fits a reusable icon used for multiple controls, or before/after
-states of the same indicator, better than a one-off drawing.
+**What actually happened on rendering**: at each shape's own scale
+(`catalog_quicklook.png`), shapes 5/6/7 look like a "C", a "U", and a
+"P" - three plausible letterforms. Re-rendered at a single **uniform**
+scale across every shape (not auto-fit per cell, which can make a
+2-point tick look as big as a 40-point circle) - at uniform scale, the
+"C"/"U"/"P"-like shapes are consistently similarly sized to each other
+(and much smaller than the two big circles), which is what you'd
+expect from real font glyphs, not from arbitrary icon fragments.
+**But** re-rendering the same shapes with the Y-axis flip disabled
+(the flip was an unconfirmed assumption, borrowed from
+`decode_stroke_font.py`'s own convention, not independently verified
+for this table) turns "U" into something closer to "n", and "P" into
+something closer to "b"/"6" - plausible letters either way, but
+different ones, and neither orientation makes *all three* shapes read
+unambiguously as consistent, confident letterforms at once.
 
-This is **distinct from the stroke font**: these are smooth curves
-(circles), not letterforms, and this address range was never one of
-the stroke-font search's own candidates (`draw_readout_char` and this
-table clearly share the same *drawing primitive family*, not the same
-data).
+**Current honest state**: this is either (a) a small set of UI icons
+(the two big circles sharing a center plus a needle-length line is
+still consistent with a dial/knob indicator, and shapes 5-7 could be
+unrelated smaller symbols), or (b) a rough, low-resolution vector font
+distinct from the already-confirmed compact stroke font at `[0x1DB0]`
+- and the rendered evidence doesn't cleanly settle which. **Not a
+confident conclusion either way** - this walks back the previous
+draft's "very likely a rotary dial/knob indicator" framing, which was
+based on the numeric circle-fit alone and didn't hold up as well once
+actually rendered and looked at.
 
-**Not confirmed**: which specific control (if any) this dial
-represents, what code loads/draws this table (no literal reference to
-its address was found), or what the smaller open-arc shapes are for.
-Worth a follow-up: search for any code that computes an angle/position
-value and might index into a rotation table alongside this shape (a
-dial indicator's needle angle would need to be parameterized
-somehow - this fixed table only has ONE needle position, so either
-the needle is redrawn separately per angle, or this specific
-occurrence is a single fixed snapshot rather than an animatable icon).
+This is still **distinct from the already-confirmed stroke font**:
+different coordinate encoding (2 bytes/axis vs. a packed nibble),
+different address range, and this address range was never one of the
+stroke-font search's own candidates - whatever it turns out to be, it
+isn't the same table `draw_readout_char` reads from `[0x1DB0]`.
+
+**Not confirmed**: which hypothesis (icons vs. font) is right, the
+correct Y-axis orientation, what code loads/draws this table (no
+literal reference to its address was found), or what the smaller
+open-arc shapes (5, 6, 7) represent either way. Worth a follow-up:
+render nearby ROM regions with the same tool to see if more shapes
+(a fuller alphabet, or more icon variants) turn up adjacent to this
+one, and try the un-flipped/flipped renders side by side for every
+shape rather than just 5-7.
 
 ## 4. `160-3532` file `0xBEE6`-`0xC263`: only the first ~44 bytes are near a known string block; the other ~850 bytes are unrelated (revised, partially resolved)
 
@@ -323,7 +348,7 @@ entirely), or what reads this table.
 |---|---|---|---|---|
 | 1 | 3532 | `0x1A33-0x213A` | Well-supported | Real ~100-entry jump table; 2 of 4 real callers land 1 byte into it (landing artifact); enclosing function not proven-reachable |
 | 2 | 3633 | `0x88DE-0x8C29` | Plausible | Per-item Y-position/width record table; consumer (`SUB_E88CB`) suspected but not confirmed |
-| 3 | 3633 | `0xAE64-0xB061` | **Encoding + shapes confirmed**, icon identity inferred | Vector icon table using the same pen-bit convention as `draw_readout_char`; a 40-pt circle (r≈14) duplicated as a cyclic rotation of the same point list, a perfect small circle (r=3.16) sharing its center, and a ~28-unit needle line - very likely a rotary dial/knob indicator |
+| 3 | 3633 | `0xAE64-0xB061` | **Encoding confirmed**, purpose genuinely unresolved | Vector shape table using the same pen-bit convention as `draw_readout_char`, rendered with the new `disasm/decode_vector_icons.py`; contains a 40-pt circle duplicated as a cyclic point-list rotation, a small circle sharing its center, a needle-length line, and 3 medium shapes that look letter-like at one scale but don't confirm as a clean alphabet - could be UI icons or a rough font, rendering didn't settle which |
 | 4 | 3532 | `0xBEE6-0xC263` | Partially resolved | Only the first 44 bytes are near an already-known self-test string cluster (not an exact match); the other ~850 bytes are a different, still-unknown structure - the original "one table" framing was wrong |
 | 5 | 2998 | `0x80EC-0x8211` | Plausible | Grouped incrementing-ID record table; tentatively status/error-category-related, not a clean match yet |
 

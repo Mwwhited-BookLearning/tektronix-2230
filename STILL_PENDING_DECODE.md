@@ -367,15 +367,20 @@ photographed menu tree this maps to.
 - Specific self-test leaf functions not yet identified: `ACQ_ACCESS`/
   `PRC_READBACK`, `CAL_AIDS`'s `BOX`/`CAL_V_POS`, `EXERCISERS`'s
   `CONFIGURATION`/`IO`.
-- **New lead found 2026-09-15, unconfirmed**: `160-3633` physical
-  `0xEAE64`-`0xEB061` contains real vector-graphics data - a
-  mathematically-confirmed circle (40 points, radius ≈14, center
-  (17,17)) and a second, perfectly circular smaller shape (radius
-  exactly 3.16, same center), plus several less-clean smaller shapes
-  and what looks like a straight radial line. Very likely a small
-  library of UI icons (dial/knob position indicator, cursor/crosshair,
-  or similar) - distinct from the stroke font (smooth curves, not
-  letterforms) and from any previously-ruled-out candidate region.
+- **New lead found and rendered 2026-09-15, purpose still unresolved**:
+  `160-3633` physical `0xEAE64`-`0xEB061` contains real vector-graphics
+  data - a confirmed circle (40 points, radius ≈14, center (17,17),
+  appearing twice as an exact cyclic rotation of the same point list),
+  a second, perfectly circular smaller shape (radius exactly 3.16,
+  same center), a straight line, and 3 medium shapes. Built
+  `disasm/decode_vector_icons.py` to actually render these to SVG/PNG
+  and look, rather than judging from radius numbers alone - the
+  rendering **doesn't settle** whether this is a small UI icon set
+  (dial/knob indicator) or a rough font distinct from the confirmed
+  stroke font: the 3 medium shapes look letter-like at one scale but
+  don't confirm as a clean, orientation-independent alphabet. Distinct
+  either way from the stroke font (different encoding, different
+  address range) and from any previously-ruled-out candidate region.
   What draws these or where they're used on screen is not found. See
   `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`
   finding 3.

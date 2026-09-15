@@ -18,28 +18,33 @@ instead of assuming bare `nasm` resolves.
       dispatcher that itself has zero confirmed callers; (2) a probable
       per-item Y-position/width table in `160-3633` next to a
       2-byte function whose body the heuristic decoder over-runs into
-      the table; (3) **the encoding is now fully decoded** - a
-      pen-bit vector icon table in `160-3633` (same convention as
-      `draw_readout_char`'s stroke font, wider coordinate) containing
-      a 40-point circle (radius≈14) that appears twice as a cyclic
-      rotation of the same point list, a perfect small circle sharing
-      its center, and a needle-length line - very likely a rotary
-      dial/knob indicator; (4) **revised** - only the first 44 bytes of
-      a 3532 record table are near (not exactly on) an already-known
-      self-test string cluster, the other ~850 bytes are unrelated;
-      also surfaced a methodological gap (a `160-3633` region
-      heuristically "decodes" as including an impossible SSE
-      instruction - `UNKNOWN_DATA.md` can't see "covered but garbage"
-      regions, only uncovered gaps); (5) a grouped incrementing-ID
-      table in the comm ROM, tentatively but not confirmedly related
-      to the manual's Table 7-34 status categories. None reached the
-      confidence bar for a
+      the table; (3) **the encoding is fully decoded and actually
+      rendered** - built `disasm/decode_vector_icons.py` (pen-bit
+      convention, same as `draw_readout_char`'s stroke font, wider
+      coordinate) and rendered the `160-3633` region to SVG/PNG.
+      **Rendering it changed the conclusion**: a 40-point circle
+      (radius≈14, appears twice as a cyclic point-list rotation) and a
+      small circle sharing its center are real, but 3 medium shapes
+      that looked letter-like at one render scale don't hold up as a
+      clean, orientation-independent alphabet either - genuinely
+      unresolved whether this is a small icon set or a rough font, see
+      the doc for the full before/after reasoning; (4) **revised** -
+      only the first 44 bytes of a 3532 record table are near (not
+      exactly on) an already-known self-test string cluster, the other
+      ~850 bytes are unrelated; also surfaced a methodological gap (a
+      `160-3633` region heuristically "decodes" as including an
+      impossible SSE instruction - `UNKNOWN_DATA.md` can't see
+      "covered but garbage" regions, only uncovered gaps); (5) a
+      grouped incrementing-ID table in the comm ROM, tentatively but
+      not confirmedly related to the manual's Table 7-34 status
+      categories. None reached the confidence bar for a
       `FUNCTIONS.md` rename yet - see `STILL_PENDING_DECODE.md`'s
       "Decode anomalies"/"Menu/UI rendering"/"Comm ROM" sections for
-      each as a tracked open item. Next step if picked up: nail down
-      the vector-icon table's shape-delimiter encoding (the 2-byte
-      headers are the obvious next lead) rather than eyeballing shape
-      boundaries.
+      each as a tracked open item. Next step if picked up: render more
+      of the surrounding ROM with `decode_vector_icons.py` to check for
+      a fuller alphabet or more icon variants nearby, and compare
+      flipped/un-flipped Y-axis renders for every shape (only shapes
+      5-7 were checked both ways so far).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see
