@@ -158,6 +158,27 @@ and third place (`0xE9858` with 21, `0xF44C8` with 18) are noted but
 not yet individually traced - worth doing next if this is picked up
 again, using the same ranking approach.
 
+**Traced the #2 candidate too, same session: `0xE9858`, now named
+`decimate_peakdet_samples`.** Lands 1 byte into a real `cmp word ptr
+[bp+0x12],0` instruction. Full signature recovered (`far ptr src, far
+ptr dst, count, byte/word mode flag`): for every group of 8 input
+samples it scans for the min and max, then emits **2 output samples
+per group** - whichever extremum changed most recently during the
+scan, followed by either the other extremum or an averaged boundary
+value depending on how the next sample compares - the standard
+peak-detect min/max envelope-compression algorithm. This is a clean,
+confident, complete-enough trace (unlike `compute_and_print_item_
+delta_readout` above, which only got a partial first-pass ID) because
+the algorithm's loop body is small and self-contained. Directly
+confirms and *corrects* an existing cross-reference: `handle_gpib_
+device_clear`'s `FUNCTIONS.md` entry already named this address
+(as `SUB_E9858`) with the vague description "reset/clear a display
+region" - now updated to reflect what it actually does. Called from
+both ROMs (21 sites total, cross-ROM from the comm ROM in at least
+one case) - strong independent confirmation this project's `PEAKDET`
+acquisition mode (seen throughout this session's live RS-232/HPGL
+testing) has a real, now-identified software implementation.
+
 Traced `0xF3EA3`: it's 1 byte into a real `mov word ptr [bp-0x10],ax`
 instruction (the same landing-artifact shape as every other case here)
 and, once correctly read starting at the real landing point

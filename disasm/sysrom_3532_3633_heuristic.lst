@@ -14415,7 +14415,7 @@ L_E9832:
 L_E9855:
     3633:9855  [E9855]  837e1200        cmp     word ptr [bp + 0x12], 0
 
-SUB_E9858:
+decimate_peakdet_samples:
     3633:9858  [E9858]  007555          add     byte ptr [di + 0x55], dh
 
     3633:9859  [E9859]  7555            jne     L_E98B0  ; 0x98b0
@@ -26224,7 +26224,7 @@ FUNC_3532_1255:
     3532:1295  [F1295]  1e              push    ds
     3532:1296  [F1296]  baf206          mov     dx, 0x6f2
     3532:1299  [F1299]  52              push    dx
-    3532:129A  [F129A]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:129A  [F129A]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:129F  [F129F]  83c40a          add     sp, 0xa
     3532:12A2  [F12A2]  c43edc1d        les     di, ptr [0x1ddc]
     3532:12A6  [F12A6]  26c685be0280    mov     byte ptr es:[di + 0x2be], 0x80
@@ -27417,7 +27417,7 @@ FUNC_3532_2344:
     3532:2363  [F2363]  06              push    es
     3532:2364  [F2364]  bf6422          mov     di, 0x2264
     3532:2367  [F2367]  57              push    di
-    3532:2368  [F2368]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:2368  [F2368]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:236D  [F236D]  83c40a          add     sp, 0xa
 L_F2370:
     3532:2370  [F2370]  c746f80000      mov     word ptr [bp - 8], 0
@@ -27456,7 +27456,7 @@ L_F2391:
     3532:23C6  [F23C6]  03fe            add     di, si
     3532:23C8  [F23C8]  06              push    es
     3532:23C9  [F23C9]  57              push    di
-    3532:23CA  [F23CA]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:23CA  [F23CA]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:23CF  [F23CF]  83c40a          add     sp, 0xa
     3532:23D2  [F23D2]  e97d00          jmp     L_F2452  ; 0x2452
 L_F23D5:
@@ -27485,7 +27485,7 @@ L_F23FA:
     3532:2407  [F2407]  03f7            add     si, di
     3532:2409  [F2409]  06              push    es
     3532:240A  [F240A]  56              push    si
-    3532:240B  [F240B]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:240B  [F240B]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:2410  [F2410]  83c40a          add     sp, 0xa
     3532:2413  [F2413]  e93c00          jmp     L_F2452  ; 0x2452
 L_F2416:
@@ -27510,7 +27510,7 @@ L_F2416:
     3532:2446  [F2446]  03d0            add     dx, ax
     3532:2448  [F2448]  06              push    es
     3532:2449  [F2449]  52              push    dx
-    3532:244A  [F244A]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:244A  [F244A]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:244F  [F244F]  83c40a          add     sp, 0xa
 L_F2452:
     3532:2452  [F2452]  ff46f8          inc     word ptr [bp - 8]
@@ -27538,7 +27538,7 @@ L_F245E:
     3532:248C  [F248C]  03f0            add     si, ax
     3532:248E  [F248E]  06              push    es
     3532:248F  [F248F]  56              push    si
-    3532:2490  [F2490]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:2490  [F2490]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:2495  [F2495]  83c40a          add     sp, 0xa
     3532:2498  [F2498]  c7064805ffff    mov     word ptr [0x548], 0xffff
     3532:249E  [F249E]  c746f80000      mov     word ptr [bp - 8], 0
@@ -28439,7 +28439,7 @@ L_F2DB8:
     3532:2DDC  [F2DDC]  03d0            add     dx, ax
     3532:2DDE  [F2DDE]  06              push    es
     3532:2DDF  [F2DDF]  52              push    dx
-    3532:2DE0  [F2DE0]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:2DE0  [F2DE0]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:2DE5  [F2DE5]  83c40a          add     sp, 0xa
     3532:2DE8  [F2DE8]  bf1200          mov     di, 0x12
     3532:2DEB  [F2DEB]  57              push    di
@@ -29443,7 +29443,7 @@ FUNC_3532_3799:
     3532:37CA  [F37CA]  03f8            add     di, ax
     3532:37CC  [F37CC]  06              push    es
     3532:37CD  [F37CD]  57              push    di
-    3532:37CE  [F37CE]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:37CE  [F37CE]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:37D3  [F37D3]  83c40a          add     sp, 0xa
     3532:37D6  [F37D6]  c7065c060000    mov     word ptr [0x65c], 0
     3532:37DC  [F37DC]  833e700500      cmp     word ptr [0x570], 0
@@ -30835,7 +30835,7 @@ FUNC_3532_4542:
     3532:458F  [F458F]  03fb            add     di, bx
     3532:4591  [F4591]  06              push    es
     3532:4592  [F4592]  57              push    di
-    3532:4593  [F4593]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:4593  [F4593]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:4598  [F4598]  83c40a          add     sp, 0xa
     3532:459B  [F459B]  e98700          jmp     L_F4625  ; 0x4625
 L_F459E:
@@ -30854,7 +30854,7 @@ SUB_F45A4:
     3532:45BD  [F45BD]  c4168e06        les     dx, ptr [0x68e]
     3532:45C1  [F45C1]  06              push    es
     3532:45C2  [F45C2]  52              push    dx
-    3532:45C3  [F45C3]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:45C3  [F45C3]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:45C8  [F45C8]  83c40a          add     sp, 0xa
     3532:45CB  [F45CB]  e95700          jmp     L_F4625  ; 0x4625
 L_F45CE:
@@ -30872,7 +30872,7 @@ L_F45CE:
     3532:45ED  [F45ED]  c4169206        les     dx, ptr [0x692]
     3532:45F1  [F45F1]  06              push    es
     3532:45F2  [F45F2]  52              push    dx
-    3532:45F3  [F45F3]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:45F3  [F45F3]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:45F8  [F45F8]  83c40a          add     sp, 0xa
     3532:45FB  [F45FB]  e92700          jmp     L_F4625  ; 0x4625
 L_F45FE:
@@ -30888,7 +30888,7 @@ L_F45FE:
     3532:4617  [F4617]  c4168a06        les     dx, ptr [0x68a]
     3532:461B  [F461B]  06              push    es
     3532:461C  [F461C]  52              push    dx
-    3532:461D  [F461D]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:461D  [F461D]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:4622  [F4622]  83c40a          add     sp, 0xa
 L_F4625:
     3532:4625  [F4625]  8be5            mov     sp, bp
@@ -31036,7 +31036,7 @@ L_F4745:
     3532:479B  [F479B]  81c7700d        add     di, 0xd70
     3532:479F  [F479F]  06              push    es
     3532:47A0  [F47A0]  57              push    di
-    3532:47A1  [F47A1]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:47A1  [F47A1]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:47A6  [F47A6]  83c40a          add     sp, 0xa
     3532:47A9  [F47A9]  bf3100          mov     di, 0x31
 
@@ -31098,7 +31098,7 @@ L_F47F9:
     3532:4834  [F4834]  03f8            add     di, ax
     3532:4836  [F4836]  06              push    es
     3532:4837  [F4837]  57              push    di
-    3532:4838  [F4838]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:4838  [F4838]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:483D  [F483D]  83c40a          add     sp, 0xa
     3532:4840  [F4840]  e93600          jmp     L_F4879  ; 0x4879
 L_F4843:
@@ -31118,7 +31118,7 @@ L_F4846:
     3532:486B  [F486B]  c4169606        les     dx, ptr [0x696]
     3532:486F  [F486F]  06              push    es
     3532:4870  [F4870]  52              push    dx
-    3532:4871  [F4871]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    3532:4871  [F4871]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     3532:4876  [F4876]  83c40a          add     sp, 0xa
 L_F4879:
     3532:4879  [F4879]  bf3100          mov     di, 0x31

@@ -1350,12 +1350,11 @@ FUNCTIONAL_NAMES = {
                                                # until [0x548]==0);
                                                # finally resets
                                                # [0x686]=0 and calls the
-                                               # main ROM's SUB_E9858
-                                               # (cross-ROM) to reset/
-                                               # clear a display region
-                                               # - shape matches a
-                                               # GPIB Device Clear (DCL)
-                                               # handler
+                                               # main ROM's decimate_
+                                               # peakdet_samples
+                                               # (cross-ROM) - shape
+                                               # matches a GPIB Device
+                                               # Clear (DCL) handler
     0x9628C: "comm_rom_boot_init",              # called exactly once,
                                                # cross-ROM, from the
                                                # main ROM's boot
@@ -3304,6 +3303,47 @@ FUNCTIONAL_NAMES = {
                                                # skipping that engine's
                                                # position-wraparound
                                                # preamble entirely)
+    0xE9858: "decimate_peakdet_samples",        # (far ptr src, far ptr
+                                               # dst, count, mode) -
+                                               # found 2026-09-14 via
+                                               # find_landing_
+                                               # artifacts.py's caller-
+                                               # count ranking (21
+                                               # independent callers,
+                                               # 2nd-highest found so
+                                               # far) - lands 1 byte
+                                               # into a real "cmp
+                                               # word[bp+0x12],0"
+                                               # instruction, same
+                                               # landing-artifact class
+                                               # as compute_and_print_
+                                               # item_delta_readout.
+                                               # For every group of 8
+                                               # input samples (byte or
+                                               # word, per the mode
+                                               # flag), scans for
+                                               # min+max, then emits 2
+                                               # output samples per
+                                               # group (whichever
+                                               # extremum changed most
+                                               # recently, then either
+                                               # the other extremum or
+                                               # an averaged boundary
+                                               # value depending on the
+                                               # next input sample) -
+                                               # the classic peak-
+                                               # detect envelope-
+                                               # compression algorithm
+                                               # (matches "PEAKDET"
+                                               # acquisition mode seen
+                                               # throughout this
+                                               # project's live
+                                               # testing). Called from
+                                               # both ROMs, including
+                                               # cross-ROM from the
+                                               # comm ROM's
+                                               # handle_gpib_device_
+                                               # clear
     0xE9472: "merge_record_flags_if_changed",  # compares a record's
                                                # byte 0 against 0
                                                # (unrelated jump table
