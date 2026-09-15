@@ -156,12 +156,12 @@ instead of assuming bare `nasm` resolves.
       the correct baud rate - **zero bytes came through**. If this
       cluster reached a real UART transmit register, the self-test
       should have produced something. Back to genuinely unresolved,
-      now with real experimental data (see `disasm/NOTES.md`'s "Live
-      hardware test" section for the full writeup and caveats on what
+      now with real experimental data (see `docs/comm-rom/rs232-early-
+      investigation.md`'s "Live hardware test" section for the full writeup and caveats on what
       else could still explain a null result). **Still short of a
       confident rename** either way
       (exact U1251 part number/register layout not confirmed) - see
-      `disasm/NOTES.md`'s expanded "The readout/CRT display memory"
+      `docs/display/readout-memory.md`'s expanded "The readout/CRT display memory"
       section for the full trace. Next step if picked up again: check whether
       `init_readout_port_config`'s literal bytes (`0x29`/`0x23`/`0x06`)
       match documented UART/GPIB mode-register constants for a chip of
@@ -173,7 +173,7 @@ instead of assuming bare `nasm` resolves.
       power-on defaults. `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
-      `disasm/NOTES.md`'s "Live session, 2026-09-14 (continued)") -
+      `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Live session, 2026-09-14 (continued)") -
       still not tied to specific disassembled routines beyond the
       known ASCII path (`print_signed_decimal_serial`/`print_param_
       list_response`), just no longer a protocol/format unknown.
@@ -187,7 +187,7 @@ instead of assuming bare `nasm` resolves.
       `SUB_EAC86`/`SUB_EAD08`), both turning into real findings rather
       than near-misses. The remaining ~47 weren't individually chased -
       worth a look only if one stands out (many independent call sites
-      is the best tell). See `disasm/NOTES.md`'s "Systematic landing-
+      is the best tell). See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s "Systematic landing-
       artifact sweep" section.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
@@ -196,7 +196,7 @@ instead of assuming bare `nasm` resolves.
       "Acquisition/plot scaling"). Still open: **no code anywhere in
       the corpus loads `ES`/`DS`=`0x209` via a literal immediate** - how
       (or whether) these functions actually get invoked in practice
-      isn't proven. See `disasm/NOTES.md` "Found: a whole family of
+      isn't proven. See `docs/acquisition-and-plotting/ram-far-pointer-table.md` "Found: a whole family of
       never-reached functions via the RAM far-pointer init table".
 - [ ] Identify and mark data regions (ASCII strings, tables) inside the
       already-reached code so the listing stops trying to disassemble
@@ -219,8 +219,8 @@ instead of assuming bare `nasm` resolves.
       set (`sysrom_3532_3633.symbols.json`) ordered by reference count,
       highest first - 262/282 named. The remaining 20 have each been
       individually investigated and have documented reasons they can't
-      be safely named (see `disasm/NOTES.md`'s dated session entries
-      and `changes/` for the running list). The heuristic-only layer
+      be safely named (see `docs/` (start at `docs/README.md`) for the
+      dated session entries and `changes/` for the running list). The heuristic-only layer
       (tens of thousands more, across all 3 ROMs) is a much lower-
       confidence, much larger tail - the realistic goal is "every
       proven-reachable routine named," not literally every heuristic
@@ -244,13 +244,13 @@ instead of assuming bare `nasm` resolves.
       the comm ROM actually works (interrupt masking, the tick-driven
       status poller, the byte-classification table, etc.) - they just
       weren't the blocker. Full transcript and reasoning trail in
-      `disasm/NOTES.md`'s "RESOLVED, 2026-09-14: it was baud rate
+      `docs/comm-rom/rs232-breakthrough.md`'s "RESOLVED, 2026-09-14: it was baud rate
       reliability all along, not firmware".
 
       **Still genuinely open, lower priority now**:
       - Which `[0x1B83]` value (`0x1E` vs `0x14`) means "comm option
         installed" - see `detect_comm_option_hw` in `FUNCTIONS.md` and
-        `disasm/NOTES.md` "Found the actual source of [0x1B83]". Write-
+        `docs/comm-rom/option-detection.md` "Found the actual source of [0x1B83]". Write-
         probe address confirmed as general-purpose "Time Base Mode
         Register U4119", not comm-specific, but exact bit semantics
         still unresolved.
@@ -262,8 +262,8 @@ instead of assuming bare `nasm` resolves.
         entries match the live `HELp?` list byte-for-byte, plus a
         6-byte-per-entry index/dispatch table immediately before it
         that resolves numeric command IDs to far pointers landing
-        exactly on each keyword's table entry - see `disasm/NOTES.md`'s
-        "Found the real command-keyword table". **Still not found**:
+        exactly on each keyword's table entry - see `docs/comm-rom/rs232-live-session-2026-09-14.md`'s
+        "Found the real command-keyword table" and `docs/comm-rom/command-keyword-table.md` for the full extracted contents. **Still not found**:
         the code that actually walks this index table / assigns the
         numeric command ID from incoming bytes - a grep for the far
         pointers' literal segment value found zero hits in the
@@ -276,7 +276,7 @@ instead of assuming bare `nasm` resolves.
         to `0` in every documented category, so no ROM code path can
         produce it under the documented status scheme. Best remaining
         explanation is a one-off transient serial glitch, not a
-        firmware defect - see `disasm/NOTES.md`'s "Live session,
+        firmware defect - see `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Live session,
         2026-09-14 (continued)" for the full writeup. Also newly found
         in the same session: some query responses substitute an inline
         `STATUS <code>;` for a single field's value (e.g. `DELAY

@@ -9,7 +9,7 @@ replacing the high-level one, so the overview stays readable.
 Every step below is a directly observed jump/call in the disassembly
 (see `disasm/sysrom_3532_3633.lst` and `disasm/160-2998-14.lst` for the
 raw instructions) — addresses are physical (`chip:offset` per
-`disasm/NOTES.md`'s address map). Where the *purpose* of a step is
+`MEMORY_MAP.md`'s address map). Where the *purpose* of a step is
 inferred rather than confirmed, it's marked "(guess)".
 
 ## Level 0: system boot, high level
@@ -81,8 +81,8 @@ to `print_selftest_banner`. The real OR-fold test dispatcher is
 `0xE4244`, called from an unrelated site (`0xE3DEE`). Both routines
 happen to be called near each other inside the same outer
 report-printing function (`SUB_E07B4`), which is what caused the
-original mix-up. See `disasm/NOTES.md` "self_test_dispatcher was
-misnamed".
+original mix-up. See `docs/self-test/dispatcher-and-siblings.md`
+"self_test_dispatcher was misnamed".
 
 ```plantuml
 @startuml

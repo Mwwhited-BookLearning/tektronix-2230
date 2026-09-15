@@ -60,14 +60,14 @@ addresses it checks are hardcoded.
 #define COMM_OPTION_SEGMENT 0x8000
 #define ROM_HEADER_OFFSET   0x0004   // bytes 4-5 of the comm ROM's own
                                      // 10-byte self-ID header (see
-                                     // disasm/NOTES.md "Confirmed facts")
+                                     // docs/architecture/cpu-and-language.md "Confirmed facts")
 #define RAM_TEST_OFFSET     0xA004   // ROM_HEADER_OFFSET + 0xA000 - a
                                      // DIFFERENT word elsewhere in the
                                      // same 64KB window. Why exactly
                                      // this offset isn't confirmed -
-                                     // see disasm/NOTES.md for the
-                                     // "dedicated scratch register"
-                                     // hypothesis.
+                                     // see docs/comm-rom/option-
+                                     // detection.md for the "dedicated
+                                     // scratch register" hypothesis.
 
 void check_comm_option_installed(void) {
     comm_option_status = 0xFF;  // [0x1BF9]: "not yet determined" sentinel
@@ -170,13 +170,13 @@ void boot_init(void) {
 (prompted by tracing what calls `SUB_E094B`) found it contains **no
 test calls at all** - only banner-printing. The real dispatcher is a
 different function, `0xE4244` (below), which now carries the
-`self_test_dispatcher` name. See `disasm/NOTES.md` "self_test_dispatcher
+`self_test_dispatcher` name. See `docs/self-test/dispatcher-and-siblings.md` "self_test_dispatcher
 was misnamed".
 
 **Fully re-derived this session** now that every routine it calls has
 a real name (previously several of these were unidentified `SUB_`s,
 guessed at as generic "line setup" placeholders - see
-`disasm/NOTES.md` "The readout vector display list" for how each was
+`docs/display/vector-display-and-stroke-font.md` "The readout vector display list" for how each was
 identified). This also **corrects a real error**: the former
 `print_string_far(far_ptr_from(0x1DDC) + 0x20A)` line was wrong -
 `SUB_E374E` (now `close_print_record`) never traverses that pointer as
@@ -227,7 +227,7 @@ void SUB_E094B(void) {  // not yet renamed
 above). Called unconditionally from `0xE3DEE` - a different, unrelated
 call site from `print_selftest_banner`'s. Runs ~14 subsystem
 self-tests in sequence and returns an accumulated result. See
-`disasm/NOTES.md` "Found: the self-test dispatcher" for the full
+`docs/self-test/dispatcher-and-siblings.md` "Found: the self-test dispatcher" for the full
 address list this summarizes.
 
 ```c

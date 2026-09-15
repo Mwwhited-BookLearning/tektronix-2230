@@ -15,7 +15,7 @@ are almost certainly coincidental byte patterns inside code/data (not
 real text) are filtered out of both — see that script's `looks_real()`
 if the heuristic needs revisiting.
 
-## String encoding convention (see disasm/NOTES.md "What language")
+## String encoding convention (see docs/architecture/cpu-and-language.md "What language")
 
 Two different conventions are used, split cleanly by ROM:
 - **`160-3633` and `160-3532` (main ROM): null-terminated** (147/169
@@ -30,14 +30,14 @@ Two different conventions are used, split cleanly by ROM:
 This is almost certainly a deliberate table format for fast command
 parsing (read length byte, compare that many characters) rather than
 evidence the GPIB module was written in a different language than the
-rest of the firmware — see the language write-up in `disasm/NOTES.md`
+rest of the firmware — see the language write-up in `docs/architecture/cpu-and-language.md`
 for the full reasoning.
 
 ## Known constants
 
 | Value | Meaning | Where seen |
 |---|---|---|
-| `0xAA55` | RAM/IO write-test pattern | `SUB_E44F1`'s option-board presence check (`disasm/NOTES.md`) |
+| `0xAA55` | RAM/IO write-test pattern | `SUB_E44F1`'s option-board presence check (`docs/comm-rom/option-detection.md`) |
 | byte + one's-complement = `0xFF` | Header/identity checksum | Every ROM's own 10-byte self-ID header (byte 4 = BCD revision, byte 5 = its complement); also what `SUB_E44F1` re-derives when probing for a valid ROM at a given address |
 | `0xFF` (repeated) | Sentinel/unprogrammed-EPROM value | Trailing unused EPROM space (e.g. all of `160-2998`'s last 16 bytes); also used as a "no value"/blank marker in a few config-byte comparisons |
 | `0x1E` | Expected config-byte value | `SUB_E44F1` checks `[0x1B83] == 0x1E` as part of confirming RAM/IO presence - meaning unconfirmed |
@@ -201,7 +201,7 @@ DLY>=
 
 ### HPGL plotter format strings
 Printf-style (`%c`/`%d`) format strings driving the pen-plotter output
-- see the language write-up in `disasm/NOTES.md`, this is one of the
+- see the language write-up in `docs/architecture/cpu-and-language.md`, this is one of the
 strongest single pieces of evidence for the source language:
 ```
 SP0;   SP1;SC0,1023,0,1023;

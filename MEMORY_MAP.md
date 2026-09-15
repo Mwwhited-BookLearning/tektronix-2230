@@ -8,8 +8,8 @@ for the master address map, and Section 6 "Maintenance" Tables 6-16
 through 6-23 for the front-panel/exerciser register tables). Most of
 the previously-"candidate, not confirmed" entries below are now backed
 by the manual's own register names and U-numbers, not just inference
-from code. See `disasm/NOTES.md` for the underlying disassembly-side
-evidence and cross-references.
+from code. See `docs/` (start at `docs/README.md`) for the underlying
+disassembly-side evidence and cross-references.
 
 ```plantuml
 @startuml
@@ -44,13 +44,13 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 
 | Range | What | Evidence |
 |---|---|---|
-| `0x00000-0x003FF` | Interrupt vector table | Direct writes: `mov word [es:bx],...` with `es=0`/`es=0x3F` installing INT1, INT2, INT255 handlers (see `disasm/NOTES.md`). **`0x008`/`INT2` = NMI and `0x3FC`/`INT255` = the real hardware Maskable Interrupt (`INTR`), both confirmed directly from the service manual's own text** ("the NMI... vector is at 00008, and the Maskable Interrupt (INTR) is vectored to 03FC") - `INT255` is not a software-only vector as this project previously assumed; it's what fires when the RS-232 UART (or any other peripheral) asserts `INTR` |
+| `0x00000-0x003FF` | Interrupt vector table | Direct writes: `mov word [es:bx],...` with `es=0`/`es=0x3F` installing INT1, INT2, INT255 handlers (see `docs/interrupts/ivt-and-int255.md`). **`0x008`/`INT2` = NMI and `0x3FC`/`INT255` = the real hardware Maskable Interrupt (`INTR`), both confirmed directly from the service manual's own text** ("the NMI... vector is at 00008, and the Maskable Interrupt (INTR) is vectored to 03FC") - `INT255` is not a software-only vector as this project previously assumed; it's what fires when the RS-232 UART (or any other peripheral) asserts `INTR` |
 | `0x40000-~0x43FFF` | RAM: stack + scratch buffers | `mov ax,0x4000 / mov ss,ax` then `mov sp,0x3FFA` at reset; `es=0x4000` used 31x, more than any other segment, for buffer clears (`mov byte [es:si],0` loops) |
 | `~0x00400+` | RAM: global/static variables | `ds=0x0041` (physical `0x410`, right after the IVT) used repeatedly to access small fixed offsets like `[0x758]`, `[0x780]`, `[0x1B50]` - looks like the main variable pool starts immediately after the IVT |
 | `0x40000+0x6F0`-`0x6F7` | **CONFIRMED (service manual Table 3-1): "Option UART/GPIB chips (I/O)"**, 8 consecutive addresses - the comm-option's actual UART/GPIB register file | `write_readout_port_byte` (`0xE0B50`) writes here unconditionally (not gated on comm-option presence) - a genuinely puzzling overlap with a register bank the manual says only exists when a comm option is installed. Not reconciled - see the new "Puzzle: write_readout_port_byte's address overlaps the comm-option UART register bank" note below |
 | `0x41000` | **CONFIRMED: "Display chip interrupt reset"** (Table 3-1) | Matches `read_display_chip_int_reset`/`clear_display_chip_int_reset`'s address exactly - the earlier "per-channel front-end status" guess was wrong; it's the CRT/readout display controller chip's interrupt-reset line, not a channel status register |
 | `0x42000` (labeled "FRAME" in the manual) | **CONFIRMED: "Display chip next frame"** (Table 3-1) | Matches `read_display_chip_frame_trigger`/`clear_display_chip_frame_trigger`'s address exactly - same correction as `0x41000` above; this is the display chip's next-frame trigger |
-| `0x403FFA`, `0x403FFB` | **CONFIRMED: "Front Panel Buffer U9301"** (=`SWB2`) / **"Front Panel Buffer U9302"** (=`SWB1`) (Table 3-1, cross-referenced against Tables 6-16/6-17) | Confirms the long-standing "front-panel key/encoder status is the leading candidate" guess for `scheduler_tick_service`'s `[0x758]`/`[0x759]` source exactly. **Bit-level validated 2026-09-13**, not just address-matched: `[0x758]`'s (`SWB2`) exact bit map is `MEM 3`/`MEM 1`/`POS-SEL`/`1K-4K`/`MENU`/`MEM 2`/`MENU ADV`/`SELECT C1-C2` (bit0-7) - and self-test code masking `[0x758]&0x63` (bits 0,1,5,6 = the 3 `MEM` buttons + `MENU ADV`) plus a separate `&0x80` (`SELECT C1/C2`) check exactly reproduces the service manual's own documented self-test-abort behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") - see `VARIABLES.md` for the full bit table and `disasm/NOTES.md` for the code-structure comparison |
+| `0x403FFA`, `0x403FFB` | **CONFIRMED: "Front Panel Buffer U9301"** (=`SWB2`) / **"Front Panel Buffer U9302"** (=`SWB1`) (Table 3-1, cross-referenced against Tables 6-16/6-17) | Confirms the long-standing "front-panel key/encoder status is the leading candidate" guess for `scheduler_tick_service`'s `[0x758]`/`[0x759]` source exactly. **Bit-level validated 2026-09-13**, not just address-matched: `[0x758]`'s (`SWB2`) exact bit map is `MEM 3`/`MEM 1`/`POS-SEL`/`1K-4K`/`MENU`/`MEM 2`/`MENU ADV`/`SELECT C1-C2` (bit0-7) - and self-test code masking `[0x758]&0x63` (bits 0,1,5,6 = the 3 `MEM` buttons + `MENU ADV`) plus a separate `&0x80` (`SELECT C1/C2`) check exactly reproduces the service manual's own documented self-test-abort behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") - see `VARIABLES.md` for the full bit table and `docs/self-test/front-panel-switches.md` for the code-structure comparison |
 | `0x4007DE` | **CONFIRMED: "Time Base Mode Register U4119"** (Table 3-1, address `0x407DE`) | Exact match for `detect_comm_option_hw`'s write-probe address (`0x40000+0x7DE`) - the register `[0x1B83]`'s detection probe pokes is a general Time Base Mode register, not a comm-specific latch; the comm-option detection apparently rides on a specific bit within this general register |
 | `0x4377E` (readback side of the same probe, i.e. `0x40000+0x377E`) | **RESOLVED 2026-09-13, exact match: "Acquisition Memory Address Buffer Low bits U3427"** (Table 3-1's full page image) | The earlier "off by `0x40` from `0x437BE`" note was comparing against the wrong neighboring row - an OCR/text-extraction gap in the previously-read garbled table, not a real discrepancy. `detect_comm_option_hw`'s readback probe reads a bit of `U3427` (the acquisition address buffer, already independently confirmed elsewhere at this same address) - not a comm-specific register at all, consistent with the write side also being a general-purpose register (`U4119`, Time Base Mode) rather than dedicated comm hardware |
 | `0x4067C` | **CONFIRMED: "Option Status Latch (in)"** (Table 3-1) | Resolves the old "unreconciled" `selftest_comm_readback` thread - this genuinely is the comm option's status latch, not a readout-memory-window coincidence as that note speculated |
@@ -70,11 +70,11 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x08000-0x0FFFF` | **CONFIRMED: "4 bits of display RAM for waveform attributes (LSB)"** (Table 3-1) | A genuine attribute/LSB plane for waveform display - distinct from (and a better fit for the "attribute plane" concept than) the `0x48000` acquisition-memory window above |
 | `0x80000-0x87FFF` | `160-2998` file offset `0x0000-0x7FFF` (comm/GPIB-RS232 option ROM, **lower 32KB half**) | **CONFIRMED exactly from Table 3-1's full page image (2026-09-13)**: `"80000-87FFF: Half of Communication Options ROMs U1243 or U1343"`. Every far-call target landing in this range resolves against this file offset range directly |
 | `0x88000-0x8F7FF` | **CONFIRMED: "Option nonvolatile RAM"** (Table 3-1) | **This is genuinely RAM, not ROM** - corrects this project's earlier blanket "0x80000-0x8FFFF is one flat 64KB ROM device" statement, which conflated this RAM range with the ROM. The comm ROM's `init_far_pointer_table` writes its RAM-resident far-pointer destinations here/below (physical `0x8FED6`-`0x8FF60`, all landing correctly in this RAM range or the next row) - fully consistent, not a contradiction, once the RAM/ROM split is correctly drawn |
-| `0x8F800-0x8FFFF` | **CONFIRMED: "Nonvolatile RAM"** (Table 3-1) | Second RAM sub-range, same image. `[0x712]`'s comm-ROM dispatch-table far pointer (see `disasm/NOTES.md`) lives at physical `0x8FF12`, inside this range - a RAM-resident variable, exactly as already documented, now with its address's RAM identity independently confirmed |
+| `0x8F800-0x8FFFF` | **CONFIRMED: "Nonvolatile RAM"** (Table 3-1) | Second RAM sub-range, same image. `[0x712]`'s comm-ROM dispatch-table far pointer (see `docs/comm-rom/rs232-early-investigation.md`) lives at physical `0x8FF12`, inside this range - a RAM-resident variable, exactly as already documented, now with its address's RAM identity independently confirmed |
 | `0x90000-0x97FFF` | `160-2998` file offset `0x8000-0xFFFF` (comm/GPIB-RS232 option ROM, **upper 32KB half**) | **CORRECTED 2026-09-13, from the same Table 3-1 page image**: `"90000-97FFF: Half of Communication Options ROMs U1243 or U1343"` - this is the ROM's own genuine, deliberately-separate upper half, **not an "address-decode alias" of `0x88000-0x8FFFF`** as this project previously guessed (that range is real RAM, a completely different device - see above). The lower/upper 32KB ROM halves are split across the address space with the option's 2 RAM regions sitting *between* them, not through incomplete address-line decoding. This project's own empirical formula (`file_offset = (phys-0x90000)+0x8000`) was already numerically correct and remains so - only the *explanation* for why it works was wrong. Still wired into the tooling as `"2998_alias_90000"` in `gen_disasm_x86.CHIPS` (naming now known to be a misnomer, kept for now to avoid an unnecessary rename churn) |
 | `0xE0000-0xEFFFF` | `160-3633` (main ROM, low half) | Confirmed via TekWiki + validated disassembly |
 | `0xF0000-0xFFFFF` | `160-3532` (main ROM, high half) | Confirmed via TekWiki; holds the real CPU reset vector at `0xFFFF0` |
-| `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `disasm/NOTES.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
+| `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `docs/acquisition-and-plotting/ram-far-pointer-table.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
 
 ## Option 12 (RS-232) hardware confirmed from the service manual's own Theory of Operation section
 
@@ -166,7 +166,7 @@ theory-of-operation section says the comm option's GPIB controller (a
 TMS9914A) **"has eight internal registers"** - an exact count match.
 This is real, specific evidence that `write_readout_port_byte`/`init_
 readout_port_config`/`print_char`/`print_string_far` (all self-test-
-banner-only, see `disasm/NOTES.md`'s expanded writeup) might genuinely
+banner-only, see `docs/display/readout-memory.md`'s expanded writeup) might genuinely
 be talking to the comm-option UART/GPIB chip directly for diagnostic
 text output, not any CRT/readout hardware - the "readout" naming may
 be a leftover guess from before this address was independently
@@ -174,7 +174,7 @@ confirmed. **Not confident enough to rename**: `print_string_far`
 paces each character through `wait_readout_tick` (a generic system-
 tick busy-wait, not readout-specific despite its name), which is
 consistent with either a UART-pacing story or a CRT-hardware story and
-doesn't discriminate between them. See `disasm/NOTES.md`'s expanded
+doesn't discriminate between them. See `docs/display/readout-memory.md`'s expanded
 "The readout/CRT display memory" section for the full writeup - left
 as a genuinely open, well-documented question rather than guessed at
 either way.
@@ -238,7 +238,7 @@ sharper photo to confirm exactly.
   any code that reads this address specifically.
 - **`comm_stat`/`comm_param`** are new, directly-named **comm-board**
   registers - highly relevant to today's live RS-232 troubleshooting
-  session (see `disasm/NOTES.md`'s "Follow-up live hardware session").
+  session (see `docs/comm-rom/rs232-early-investigation.md`'s "Follow-up live hardware session").
   `comm_param` is the stronger candidate for the raw PARAMETERS
   DIP-switch mirror the comm ROM's `read_dip_switches_serial_config`/
   `_gpib_config` read via far pointers `[0x6DE]`/`[0x6DA]` (see
@@ -277,7 +277,7 @@ this is RAM state initialized by the firmware, not something a
 hardware manual would document); the exact bit-to-signal mapping for
 `[0x4E7]`/`[0x4E8]` (worth another pass now that Tables 6-16/6-17's
 `AD DATA`/`ISTAT`/`SWB1`/`SWB2` signal names are known - see
-`disasm/NOTES.md`); and the `write_readout_port_byte` overlap puzzle
+`docs/self-test/front-panel-switches.md`); and the `write_readout_port_byte` overlap puzzle
 above. See `TODO.md` for the full current list.
 
 **New this session (before the manual arrived)**: decoding
@@ -289,7 +289,7 @@ not previously tracked individually here: `[0x712]`, `[0x714]`,
 reached functions doing `imul`/`idiv`-based scale-ratio math), and 2
 far pointers `[0x1DB8]`/`[0x1DBC]` immediately adjacent to the still-
 unlocated stroke-font pointer `[0x1DB0]`. None individually identified
-yet - see `disasm/NOTES.md` for the addresses that touch them.
+yet - see `docs/acquisition-and-plotting/ram-far-pointer-table.md` for the addresses that touch them.
 
 ## I/O ports actually seen in code
 
@@ -305,7 +305,7 @@ in `160-3633`) is **not** a real instruction boundary - it's 2 bytes
 into `compute_and_draw_scale_marker`'s own `mov word [0x1BEC], 0x20`
 instruction (`C7 06 EC 1B 20 00`), where the `0xEC` byte alone happens
 to decode as a standalone `in al,dx` opcode. This was already found
-and resolved in `disasm/NOTES.md` ("A third instance, found via
+and resolved in `docs/decode-anomalies/landing-artifacts-and-jump-tables.md` ("A third instance, found via
 `analyze_loops_vs_functions.py`'s long-jump lens") as one of several
 landing-artifact false-positives (`SUB_F1581`'s tail-jump lands there,
 2 bytes short of the real next instruction, then cleanly reconverges a

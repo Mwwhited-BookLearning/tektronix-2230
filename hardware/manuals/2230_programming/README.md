@@ -24,9 +24,9 @@ formats, and status/event codes.
 
 This is the single most directly relevant primary source for the
 project's live RS-232 command-parser investigation - see
-`disasm/NOTES.md`'s "BREAKTHROUGH, 2026-09-14" section for how the
-`STATUS 98` response the scope actually produced cross-references
-Table 7-34 below.
+`docs/comm-rom/rs232-breakthrough.md`'s "BREAKTHROUGH, 2026-09-14"
+section for how the `STATUS 98` response the scope actually produced
+cross-references Table 7-34 below.
 
 ## Command syntax rules
 
@@ -520,6 +520,6 @@ ROM binary - every keyword found there (`ID`, `SET`, `STAtus`, `HELp`,
 `EVEnt`, `CURVe`, `WFMpre`, `DATa`, `ACQuisition`, etc.) matches a real,
 now-fully-documented command here. It does **not** by itself explain
 why the live hardware returns `STATUS 98` instead of real answers -
-that remains an open, live-testable question (see `disasm/NOTES.md`'s
-"BREAKTHROUGH, 2026-09-14" section and `TODO.md` for the current
-state of that investigation).
+that remains an open, live-testable question (see
+`docs/comm-rom/rs232-breakthrough.md`'s "BREAKTHROUGH, 2026-09-14"
+section and `TODO.md` for the current state of that investigation).

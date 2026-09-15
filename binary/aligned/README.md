@@ -10,7 +10,7 @@ real hardware and must never be treated as one.
 For every decoded instruction, if NASM's own preferred encoding is
 *shorter* than the byte sequence actually found in the true original
 ROM (the immediate-width / displacement-width / zero-displacement
-encoding ambiguities documented in `disasm/NOTES.md`), the shorter
+encoding ambiguities documented in `docs/architecture/validation-and-coverage.md`), the shorter
 form is padded back out to the original length with explicit `NOP`
 (`0x90`) bytes. That keeps every address *after* the substitution
 identical to the true original, so every jump/call target and data
@@ -47,7 +47,7 @@ that choice has not been fully validated yet. **Review again once the
 rest of the analysis is further along** (self-test subroutine ID,
 menu tree, I/O port mapping) to confirm nothing was missed - in
 particular whether any self-checksum routine in the firmware (at
-least two are known to exist, see `disasm/NOTES.md`) would behave
+least two are known to exist, see `docs/architecture/validation-and-coverage.md`) would behave
 differently against these bytes. That question is moot for our
 purposes (nothing here ever runs on real hardware), but it's the kind
 of thing worth double-checking before leaning on this file for

@@ -32,7 +32,7 @@ option requires the main-ROM firmware version to match; and installing
 either option requires **moving jumper `P9107` on the Storage circuit
 board** to a new position - a strong candidate for why live firmware
 comm-detection might fail on a unit where this wasn't done correctly
-(see `disasm/NOTES.md`'s "Follow-up live hardware session").
+(see `docs/comm-rom/rs232-early-investigation.md`'s "Follow-up live hardware session").
 
 ## Two physical units, running DIFFERENT ROM revisions - confirmed via `/DIAGNOSTICS/EXERCISERS/CONFIGURATION`
 
@@ -53,15 +53,15 @@ name/designator/part-revision directly off its self-ID header:
 `detect_comm_option_hw`, `read_dip_switches_serial_config`, `selftest_
 comm_loopback_a/b`) has been done exclusively against the **`-14`**
 binaries (`disasm/gen_disasm_x86.py`'s chip config points at `-14`
-explicitly). Per `disasm/NOTES.md`'s "Confirmed facts": the two main
+explicitly). Per `docs/architecture/cpu-and-language.md`'s "Confirmed facts": the two main
 ROMs (`3532`/`3633`) are **byte-identical between `-13`/`-14` except a
 4-byte ID header** - so every main-ROM-based finding (front panel,
 `SWB1`/`SWB2`, `AD DATA`, self-tests, menu system) applies equally to
 both scopes regardless of revision, no caveat needed there. But the
 **comm ROM (`2998`) genuinely differs between `-13`/`-14` in two
 ~16KB-aligned regions** - a real functional difference, not just a
-header, and **not yet analyzed in x86 terms** (see `disasm/NOTES.md`'s
-opening section).
+header, and **not yet analyzed in x86 terms** (see `docs/architecture/
+cpu-and-language.md`'s "Confirmed facts" section).
 
 This means **Scope 1's actual running comm-ROM code (`-13`) has never
 been disassembled by this project** - every comm-ROM address/function
@@ -514,8 +514,9 @@ or the schematic.
   If confirmed absent everywhere, the leading interpretation is that
   `convert_sample_value`'s `fmul` path is genuinely unreachable in
   normal operation (it only runs as part of `assert_and_halt`'s panic-
-  argument computation, see `disasm/NOTES.md` "Found: the firmware's
-  assert()/panic mechanism") - consistent with this session's broader
+  argument computation, see `docs/hardware-io/shift-register-and-
+  assert.md` "Found: the firmware's assert()/panic mechanism") -
+  consistent with this session's broader
   finding that this codebase has several real, unambiguous call paths
   into code/data that never actually executes on real hardware. A bare
   8086/8088 with no 8087 doesn't fault on an unrecognized `ESC` (x87)

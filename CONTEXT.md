@@ -12,8 +12,9 @@ routines actually do.
 
 ## The hardware (per TekWiki, w140.com/tekwiki/wiki/2230)
 
-- CPU: **Intel 8088** (confirmed — see `disasm/NOTES.md` for how this
-  was pinned down after an initial wrong guess of a 6809). A photo of
+- CPU: **Intel 8088** (confirmed — see `docs/architecture/cpu-and-
+  language.md` for how this was pinned down after an initial wrong
+  guess of a 6809). A photo of
   the main board (`HARDWARE.md`, `hardware/photos/IMG_1412.jpg`)
   confirms the physical chip as an Intel **`P8088-2`** (1978 date
   code) — the `-2` is Intel's 8 MHz speed grade, vs. the base part's
@@ -56,8 +57,9 @@ revisions we don't have copies of — there may be more revisions out
 there than what's in `binary/`).
 
 Full technical detail — physical memory map, header format, per-
-revision diffs, disassembly tooling and status — lives in
-`disasm/NOTES.md`, which is the file to update as understanding grows.
+revision diffs, disassembly tooling and status — lives in `docs/`
+(start at `docs/README.md`), which is where to add findings as
+understanding grows.
 This file is for the higher-level "what and why"; that one is the
 detailed engineering log.
 

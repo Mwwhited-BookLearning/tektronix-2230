@@ -14,8 +14,8 @@ Every claim below is tagged **[confirmed live]** (directly observed on
 real hardware this session or a prior one), **[manual]** (documented
 by Tektronix, not independently re-tested), or **[from ROM]** (derived
 from disassembling `160-2998-14.bin`, not from either the manual or a
-live response). See `disasm/NOTES.md` for the full ROM-side writeups
-this guide summarizes.
+live response). See `docs/` (start at `docs/README.md`) for the full
+ROM-side writeups this guide summarizes.
 
 ## Getting a real connection working
 
@@ -77,8 +77,9 @@ project for a full day, so it's worth stating plainly up front:
   backed by a real table in the comm ROM: a length-prefixed ASCII
   string for every top-level command header, plus a small index table
   that maps a numeric command ID straight to that string - see
-  `disasm/NOTES.md`'s "Found the real command-keyword table" for the
-  full byte-level evidence. The code that actually walks that table
+  `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Found the real
+  command-keyword table" (also `docs/comm-rom/command-keyword-table.md`)
+  for the full byte-level evidence. The code that actually walks that table
   (i.e. the genuine keyword-matching function) hasn't been located in
   the disassembly yet.
 - **A query response can substitute an inline `STATUS <code>;` for a
