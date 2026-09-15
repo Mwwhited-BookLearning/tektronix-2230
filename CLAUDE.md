@@ -60,6 +60,12 @@ are already settled and documented there and in `docs/` (start at
   plus known constants, categorized and curated; machine-readable
   companion is `disasm/strings_<rom>.json` (regenerate with
   `disasm/gen_strings.py` if a ROM binary ever changes).
+- `UNKNOWN_DATA.md` — every large (32+ byte) contiguous ROM byte range
+  not yet accounted for by disassembly, a known string, or a known
+  data table, exported with multi-format decodes (hex/oct/ascii/
+  int/float/far-pointer) for manual or external analysis. Regenerate
+  with `disasm/find_unknown_data.py <min_size> --markdown` if a ROM
+  binary changes or more of the ROM gets identified.
 - `TODO.md` — active/near-term work items.
 - `STILL_PENDING_DECODE.md` — a status board of every open technical
   unknown in the firmware, organized by area (distinct from `TODO.md`:
