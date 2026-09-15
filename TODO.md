@@ -109,6 +109,24 @@ instead of assuming bare `nasm` resolves.
       `EXERCISERS`'s `CONFIGURATION`/`IO` - `TB_DIVIDER`/`CLK_DELAY`'s
       registers and the A/D converter identity are now confirmed (see
       `MEMORY_MAP.md`/`CONTEXT.md`).
+
+      **Checked 2026-09-14, genuine dead end for now**: tried the same
+      string-table cross-reference technique that found `self_test_
+      dispatcher`'s 18 siblings (find the fixed-segment string load,
+      compute the physical address, identify the caller) on `ACQ_
+      ACCESS`/`PRC_READBACK`/`BOX`/`CAL_V_POS`/`CONFIGURATION`/`IO`
+      specifically. Found all 6 strings (in `160-3633`, offsets
+      `0x9fcb`-`0xa08x`) but they're just plain concatenated NUL-
+      terminated text (`RAM\0SYSTEM\0ACQ_ACCESS\0PRC_READBACK\0FP...`)
+      with **zero individual code references anywhere in either main
+      ROM chip** - checked every immediate-load encoding for each
+      string's exact offset, none found. Unlike the 18 already-found
+      self-test siblings (each individually hardcoded into a call
+      site), these look like they're walked by a generic menu-string-
+      table mechanism instead - i.e. this is blocked on the same
+      still-unfound general menu-navigation code above, not
+      independently solvable by this technique. Worth retrying once
+      (if ever) that general mechanism is found.
 - [ ] **New 2026-09-13**: `160-2998-13.bin` vs `-14.bin` (the comm ROM)
       genuinely differ in two ~16KB-aligned regions (unlike the main
       ROMs, which are byte-identical between revisions except a 4-byte
