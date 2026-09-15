@@ -207,3 +207,36 @@ once** (`0xFF067` x4, `0xFD2E8` x2, `0xFD471` x3, `0xE7298` x2,
 `create_task_b`) - each occurrence is a *separate* fork point with its
 *own* distinct continuation code, so the true task count (by distinct
 entry point) is exactly 36, not "36 calls to a handful of tasks."
+
+**Traced a 3rd example - `comm_call_main_rom`'s call site - and it
+makes the real, common usage pattern unambiguous: `create_task` is
+mostly used as a cooperative *yield point*, not a one-shot spawn.**
+`comm_call_main_rom` (`0x8839D1`, comm ROM) is a real state-machine
+loop: it switches to the main ROM's `DS` (`0x41`), calls `process_
+gpib_command_byte` a couple of times, does an **indexed call through a
+computed pointer table at `[0x72A]`** (`les di,[0x72A]; ...; lcall
+es:[bx+di]`, indexed by `[0x5A4]*4` - a genuine state-dispatch jump
+table, distinct from anything documented in `docs/decode-anomalies/
+landing-artifacts-and-jump-tables.md` so far and worth its own look
+later), checks whether the dispatched state changed, and **loops back
+to the top (`jmp 0x83A04`) if not done**. Right before the bottom of
+this loop, it calls `create_task` unconditionally, and the code
+immediately after that call (which, in a normal function, would be
+dead/unreachable, since the loop already jumps back earlier) is
+exactly: switch `DS` back to the comm ROM's own segment (`0x8F80`),
+then `jmp 0x83A04` - **back to the top of the very same loop**. In
+other words: this function periodically forks a continuation of
+*itself*, letting the scheduler run other tasks in between, then
+picks its own state machine back up exactly where it left off once
+rescheduled - a cooperative multitasking yield, implemented entirely
+via the fork mechanism rather than a dedicated "yield" primitive.
+
+This reframes the earlier 2 examples too: the self-perpetuating loop
+found at `0xE6F5C` fits the same "yield and resume the same loop"
+shape, not a one-off spawn. The likely real picture: most of the 36
+call sites are **yield points inside existing loops** (fork a
+continuation of the same code, let something else run, resume), and
+only some are genuine "spawn an independent, differently-purposed
+task" calls - telling the two apart requires checking, per call site,
+whether the post-call code loops back into the *same* function or
+goes somewhere genuinely new. Not done for all 36 yet.
