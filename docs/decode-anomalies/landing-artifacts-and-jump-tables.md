@@ -226,9 +226,22 @@ not proven, and the internal branches weren't individually walked
 **This closes out the top 5 candidates by caller count** - between
 `write_hw_shift_register`/`SUB_EAC86` (found in earlier sessions) and
 the 3 found this session, every landing-artifact candidate with more
-than ~15 independent callers has now been traced. `SUB_E97DC`
-specifically is now confirmed shared by 2 of the 3 functions found
-this session plus the pre-existing `compute_and_format_sample_delta_
-readout` - a strong candidate for "the actual readout-string print
-primitive this whole family funnels through," worth naming next if
-this area is revisited.
+than ~15 independent callers has now been traced.
+
+**Immediately followed up on the shared helper all 3 functions call:
+`SUB_E97DC`, now named `extract_strided_channel_samples`.** Turned out
+*not* to be a print primitive as guessed - it's a **strided/de-
+interleaving copy utility**. Its real entry point is `0xE9744` (found
+by backtracking from `0xE97DC` for the nearest `push bp; mov bp,sp`);
+`0xE97CA` and `0xE97DC` are both legitimate secondary entry points
+(real `lcall` targets, not byte-corruption artifacts) that skip the
+full function's remainder-alignment preamble - exactly the "caller
+already has the parameters computed, skip the setup" shape already
+documented for `write_hw_shift_register`. It copies every Nth byte or
+word from a source to a destination far pointer with a caller-selected
+stride (2, 3, or 6 bytes seen across the different entry points),
+gated by 2 flag bytes choosing element size and which interleaved
+sub-stream to extract. Given every one of its 3 known callers is a
+per-channel measurement/readout function, the strong working
+hypothesis is that this pulls one channel's samples out of interleaved
+dual-channel acquisition memory - plausible, not proven.

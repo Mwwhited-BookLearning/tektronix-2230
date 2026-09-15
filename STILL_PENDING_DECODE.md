@@ -263,18 +263,26 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   testing, and correcting an existing vague cross-reference in
   `handle_gpib_device_clear`'s entry), and `compute_and_print_cursor_
   position_readout` (18 callers - a likely sibling of `compute_and_
-  format_sample_delta_readout`, sharing its `SUB_E97DC` print helper,
-  printing cursor position rather than delta values). **The other ~44
-  weren't individually chased** - the caller-count ranking has now
-  been exhausted down to single-digit counts, so further candidates
-  are progressively less likely to be worth the effort per the
-  project's own "many callers = deliberate" heuristic, though not
-  ruled out. Also `0xF830E` (23 callers, not itself a landing artifact
-  but the shared delta-computation helper `compute_and_print_item_
-  delta_readout` calls) and `SUB_E97DC`/`SUB_E99DF` (the shared
-  print helpers used by 3 of the traced functions above) are worth
-  understanding for their own sake - both are real, heavily-shared,
-  still-unnamed utilities right at the center of this whole subsystem.
+  format_sample_delta_readout`, sharing its `extract_strided_channel_
+  samples` helper, printing cursor position rather than delta values).
+  **The other ~44 weren't individually chased** - the caller-count
+  ranking has now been exhausted down to single-digit counts, so
+  further candidates are progressively less likely to be worth the
+  effort per the project's own "many callers = deliberate" heuristic,
+  though not ruled out. **Immediately followed up on the shared helper
+  itself**: `SUB_E97DC` is now named `extract_strided_channel_samples`
+  - turned out to be a strided/de-interleaving copy utility (not a
+  print helper as guessed), with 2 more legitimate secondary entry
+  points (`0xE97CA`, real entry `0xE9744`) skipping its remainder-
+  alignment preamble, the same "caller already has params computed"
+  shape as `write_hw_shift_register`. Strong but unproven hypothesis:
+  pulls one channel's samples out of interleaved dual-channel
+  acquisition memory, given all 3 known callers are per-channel
+  measurement/readout functions. `SUB_E99DF` (the other helper
+  `compute_and_format_sample_delta_readout` calls alongside it) and
+  `0xF830E` (23 callers, the shared delta-computation helper
+  `compute_and_print_item_delta_readout` calls) remain unnamed and
+  worth understanding for their own sake.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

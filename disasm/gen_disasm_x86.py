@@ -3386,6 +3386,58 @@ FUNCTIONAL_NAMES = {
                                                # comm ROM's
                                                # handle_gpib_device_
                                                # clear
+    0xE9744: "extract_strided_channel_samples", # (far ptr src, far ptr
+                                               # dst, count, skip,
+                                               # elem_size_flag,
+                                               # sub_offset_flag) -
+                                               # found 2026-09-14
+                                               # tracing SUB_E97DC
+                                               # (called by compute_
+                                               # and_format_sample_
+                                               # delta_readout,
+                                               # compute_and_print_
+                                               # item_delta_readout,
+                                               # and compute_and_print_
+                                               # cursor_position_
+                                               # readout - all 3
+                                               # landing-artifact finds
+                                               # from this session).
+                                               # Real entry point is
+                                               # here (0xE9744); 0xE97CA
+                                               # and 0xE97DC are
+                                               # legitimate SECONDARY
+                                               # entry points (real,
+                                               # unambiguous lcall
+                                               # targets, not byte-
+                                               # corruption artifacts)
+                                               # that skip this
+                                               # function's own
+                                               # remainder-alignment
+                                               # preamble - same
+                                               # "caller already has
+                                               # the parameters
+                                               # computed" pattern
+                                               # documented for write_
+                                               # hw_shift_register.
+                                               # Copies every Nth
+                                               # byte/word from src to
+                                               # dst with a caller-
+                                               # selected stride
+                                               # (2/3/6 bytes seen),
+                                               # gated by 2 flag bytes
+                                               # selecting element size
+                                               # and which interleaved
+                                               # sub-stream to extract -
+                                               # very plausibly a
+                                               # channel de-interleaving
+                                               # copy (pulling one
+                                               # channel's samples out
+                                               # of interleaved dual-
+                                               # channel acquisition
+                                               # memory) given its
+                                               # callers are all
+                                               # per-channel measurement/
+                                               # readout functions
     0xE9472: "merge_record_flags_if_changed",  # compares a record's
                                                # byte 0 against 0
                                                # (unrelated jump table

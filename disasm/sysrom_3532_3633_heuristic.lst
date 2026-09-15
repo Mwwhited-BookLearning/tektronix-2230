@@ -14304,7 +14304,7 @@ FUNC_3633_9733:
     3633:973B  [E973B]  5d              pop     bp
     3633:973C  [E973C]  cb              retf    
 
-FUNC_3633_9744:
+extract_strided_channel_samples:
     3633:9744  [E9744]  55              push    bp
     3633:9745  [E9745]  8bec            mov     bp, sp
     3633:9747  [E9747]  83ec02          sub     sp, 2

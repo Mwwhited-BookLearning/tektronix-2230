@@ -8855,10 +8855,10 @@
     "notes": null
   },
   "E9744": {
-    "name": "FUNC_3633_9744",
+    "name": "extract_strided_channel_samples",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "extract_strided_channel_samples",
     "notes": null
   },
   "E9765": {
