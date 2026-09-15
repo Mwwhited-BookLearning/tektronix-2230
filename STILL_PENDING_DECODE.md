@@ -278,11 +278,19 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   shape as `write_hw_shift_register`. Strong but unproven hypothesis:
   pulls one channel's samples out of interleaved dual-channel
   acquisition memory, given all 3 known callers are per-channel
-  measurement/readout functions. `SUB_E99DF` (the other helper
-  `compute_and_format_sample_delta_readout` calls alongside it) and
-  `0xF830E` (23 callers, the shared delta-computation helper
-  `compute_and_print_item_delta_readout` calls) remain unnamed and
-  worth understanding for their own sake.
+  measurement/readout functions. **Checked the other two leads and
+  both turned out to already be resolved from earlier sessions**:
+  `0xF830E` is already `read_acq_sample_with_wrap`, a fully-documented,
+  confirmed function (earlier notes in this file mistakenly called it
+  "unnamed" - corrected); `SUB_E99DF` (the other helper `compute_and_
+  format_sample_delta_readout` calls) is the already-documented
+  landing artifact whose `ljmp` target (`0x88729`) resolves against
+  the *caller's* stack frame, not statically resolvable further per
+  `docs/decode-anomalies/dual-entry-points.md`. Tracing the real,
+  coherent function physically adjacent to it (`0xE999E`, a group-of-4
+  byte/word decimation routine) turned out to be a heuristic-only
+  orphan with zero confirmed callers - not worth naming without more
+  context. This specific sub-thread is now exhausted.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

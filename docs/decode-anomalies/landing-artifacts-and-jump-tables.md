@@ -165,9 +165,12 @@ delta-readout subsystem** - it shares the `[0x570]`-indexed
 `[x+0x18C]`/`[x+0x18F]` per-item flag tables that
 `compute_and_format_sample_delta_readout` and `sync_shift_register_
 output` already use (see `FUNCTIONS.md`), checks those flags, computes
-a position delta via a shared helper at `0xF830E` (itself called 23x
-elsewhere - also not yet individually traced), and heads toward
-printing into the readout buffer far pointer `[0x1C80]`. Named
+a position delta via the already-confirmed `read_acq_sample_with_wrap`
+(`0xF830E`, called 23x in total including this site - **correction**:
+this was first written up as "not yet traced," but it turns out to
+already be a fully-documented, confirmed function from an earlier
+session - see `FUNCTIONS.md`), and heads toward printing into the
+readout buffer far pointer `[0x1C80]`. Named
 `compute_and_print_item_delta_readout` and registered in `gen_disasm_
 x86.FUNCTIONAL_NAMES`, regenerated, and verified byte-identical - see
 `FUNCTIONS.md`.
