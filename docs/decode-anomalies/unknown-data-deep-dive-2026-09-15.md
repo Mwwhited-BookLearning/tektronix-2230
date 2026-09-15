@@ -238,13 +238,28 @@ stroke-font search's own candidates - whatever it turns out to be, it
 isn't the same table `draw_readout_char` reads from `[0x1DB0]`.
 
 **Not confirmed**: which hypothesis (icons vs. font) is right, the
-correct Y-axis orientation, what code loads/draws this table (no
-literal reference to its address was found), or what the smaller
-open-arc shapes (5, 6, 7) represent either way. Worth a follow-up:
-render nearby ROM regions with the same tool to see if more shapes
-(a fuller alphabet, or more icon variants) turn up adjacent to this
-one, and try the un-flipped/flipped renders side by side for every
-shape rather than just 5-7.
+correct Y-axis orientation, or what the smaller open-arc shapes (5, 6,
+7) represent either way. Worth a follow-up: render nearby ROM regions
+with the same tool to see if more shapes (a fuller alphabet, or more
+icon variants) turn up adjacent to this one, and try the
+un-flipped/flipped renders side by side for every shape rather than
+just 5-7.
+
+**Checked for a caller, found none**: searched all three ROMs' actual
+disassembly listings (not a raw byte scan) for any `lcall`/`ljmp`
+whose resolved target lands in this address range - zero hits in
+either the proven or heuristic layers. A raw byte-level scan first
+appeared to find one (`select_next_ready_task` doing an `lcall
+EB00:0007`, landing 1 byte inside shape 11's own header - which would
+have been a great "another landing artifact, and this one's call-
+verified" story), but that turned out to be a false positive: opcode
+`0x9A` coincidentally shows up as *data* inside two unrelated,
+adjacent instructions there (`mov word [0x79A], 0` immediately
+followed by `jmp short`), not as a real far call. Worth recording
+precisely so this specific false lead doesn't get rediscovered and
+re-chased. This table's reachability from already-disassembled code
+remains genuinely unconfirmed - full detail and the rendered SVGs in
+`docs/display/vector-icons/`.
 
 ## 4. `160-3532` file `0xBEE6`-`0xC263`: only the first ~44 bytes are near a known string block; the other ~850 bytes are unrelated (revised, partially resolved)
 

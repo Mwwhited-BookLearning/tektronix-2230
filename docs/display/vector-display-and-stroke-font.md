@@ -290,3 +290,20 @@ through an intermediary that isn't a literal call to a fixed address -
 most likely the same still-unfound mechanism behind "who walks the
 command-ID dispatch table" - so solving that would likely unlock this
 approach too.
+
+## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
+
+Found 2026-09-15 while investigating `UNKNOWN_DATA.md`'s exported
+blocks, not by continuing this specific hunt - flagged here for
+cross-reference since it uses the same pen-bit drawing convention
+traced above (bit 7 = pen up/down), just with a wider 2-byte-per-axis
+coordinate instead of the packed nibble format. Rendered with a new
+tool, `disasm/decode_vector_icons.py` - committed output in
+`docs/display/vector-icons/`. Whether it's a small UI icon set or a
+different, rougher font is genuinely unresolved (rendering the shapes
+and looking at them didn't settle it either way - see
+`docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md` finding 3
+for the full reasoning). This address range was never a candidate in
+the stroke-font search above, and no code has been found calling into
+it either - it's a second, independent open question, not a
+resolution of this one.

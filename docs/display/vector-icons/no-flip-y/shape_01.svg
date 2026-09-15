@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="296" viewBox="0 0 280 296">
+<rect width="100%" height="100%" fill="white"/>
+<text x="4" y="12" font-family="monospace" font-size="10">shape1 +0x40 (40pt)</text>
+<g transform="translate(-4,36)">
+<path d="M 136 248 L 120 248 L 104 240 L 88 232 L 72 224 L 56 216 L 48 200 L 40 184 L 32 168 L 24 152 L 24 136 L 24 120 L 32 104 L 40 88 L 48 72 L 56 56 L 72 48 L 88 40 L 104 32 L 120 24 L 136 24 L 152 24 L 168 32 L 184 40 L 200 48 L 216 56 L 224 72 L 232 88 L 240 104 L 248 120 L 248 136 L 248 152 L 240 168 L 232 184 L 224 200 L 216 216 L 200 224 L 184 232 L 168 240 L 152 248 L 136 248" fill="none" stroke="black" stroke-width="1.5"/>
+<circle cx="136" cy="248" r="2.5" fill="red"/>
+</g>
+</svg>

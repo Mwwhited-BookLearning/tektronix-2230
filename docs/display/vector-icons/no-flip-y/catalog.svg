@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1282" viewBox="0 0 2300 1282">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="16" font-family="monospace" font-size="12">3633 0xEAE64-0xEB061 - 14 shapes</text>
+<rect x="20" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="22" font-family="monospace" font-size="8">shape0 +0x0 31pt bbox[0,0-15,15]</text>
+<path d="M 120 120 L 112 120 L 104 120 L 96 120 L 88 120 L 80 120 L 72 120 L 64 120 L 56 120 L 48 120 L 40 120 L 32 120 L 24 120 L 16 120 L 8 120 L 0 120 L 0 112 L 0 104 L 0 96 L 0 88 L 0 80 L 0 72 L 0 64 L 0 56 L 0 48 L 0 40 L 0 32 L 0 24 L 0 16 L 0 8 L 0 0" fill="none" stroke="black" stroke-width="1.5" transform="translate(140.0,144.0)"/>
+<rect x="400" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="22" font-family="monospace" font-size="8">shape1 +0x40 40pt bbox[3,3-31,31] CLOSED</text>
+<path d="M 136 248 L 120 248 L 104 240 L 88 232 L 72 224 L 56 216 L 48 200 L 40 184 L 32 168 L 24 152 L 24 136 L 24 120 L 32 104 L 40 88 L 48 72 L 56 56 L 72 48 L 88 40 L 104 32 L 120 24 L 136 24 L 152 24 L 168 32 L 184 40 L 200 48 L 216 56 L 224 72 L 232 88 L 240 104 L 248 120 L 248 136 L 248 152 L 240 168 L 232 184 L 224 200 L 216 216 L 200 224 L 184 232 L 168 240 L 152 248 L 136 248" fill="none" stroke="black" stroke-width="1.5" transform="translate(444.0,92.0)"/>
+<circle cx="580.0" cy="340.0" r="2" fill="red"/>
+<rect x="780" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="780" y="22" font-family="monospace" font-size="8">shape2 +0x92 30pt bbox[0,0-34,29]</text>
+<path d="M 40 232 L 24 216 L 16 200 L 8 176 L 0 160 L 0 136 L 0 112 L 8 96 L 16 72 L 24 56 L 40 40 L 56 24 L 72 16 L 96 8 L 112 0 L 136 0 L 160 0 L 176 8 L 200 16 L 216 24 L 232 40 L 248 56 L 256 72 L 264 96 L 272 112 L 272 136 L 272 160 L 264 176 L 256 200 L 248 216 L 232 232" fill="none" stroke="black" stroke-width="1.5" transform="translate(824.0,88.0)"/>
+<circle cx="864.0" cy="320.0" r="2" fill="red"/>
+<rect x="1160" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1160" y="22" font-family="monospace" font-size="8">shape3 +0xD0 10pt bbox[17,17-17,45]</text>
+<path d="M 136 360 L 136 336 L 136 312 L 136 288 L 136 264 L 136 240 L 136 216 L 136 192 L 136 168 L 136 144 L 136 136" fill="none" stroke="black" stroke-width="1.5" transform="translate(1204.0,92.0)"/>
+<circle cx="1340.0" cy="452.0" r="2" fill="red"/>
+<rect x="1540" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1540" y="22" font-family="monospace" font-size="8">shape4 +0xE8 8pt bbox[14,14-20,20] CLOSED</text>
+<path d="M 128 112 L 144 112 L 160 128 L 160 144 L 144 160 L 128 160 L 112 144 L 112 128 L 128 112" fill="none" stroke="black" stroke-width="1.5" transform="translate(1584.0,180.0)"/>
+<circle cx="1712.0" cy="292.0" r="2" fill="red"/>
+<rect x="1920" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1920" y="22" font-family="monospace" font-size="8">shape5 +0xFE 11pt bbox[6,14-11,22]</text>
+<path d="M 88 168 L 80 176 L 64 176 L 56 176 L 48 168 L 48 152 L 48 136 L 48 120 L 56 112 L 72 112 L 80 112 L 88 120" fill="none" stroke="black" stroke-width="1.5" transform="translate(2032.0,172.0)"/>
+<circle cx="2120.0" cy="340.0" r="2" fill="red"/>
+<rect x="20" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="436" font-family="monospace" font-size="8">shape6 +0x116 10pt bbox[14,14-19,22]</text>
+<path d="M 112 176 L 112 160 L 112 144 L 112 128 L 120 112 L 136 112 L 144 112 L 152 128 L 152 144 L 152 160 L 152 176" fill="none" stroke="black" stroke-width="1.5" transform="translate(68.0,586.0)"/>
+<circle cx="180.0" cy="762.0" r="2" fill="red"/>
+<rect x="400" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="436" font-family="monospace" font-size="8">shape7 +0x12C 11pt bbox[22,14-27,22]</text>
+<path d="M 176 112 L 176 128 L 176 144 L 176 160 L 176 176 L 192 176 L 208 176 L 216 168 L 216 152 L 208 144 L 192 144 L 176 144" fill="none" stroke="black" stroke-width="1.5" transform="translate(384.0,586.0)"/>
+<circle cx="560.0" cy="698.0" r="2" fill="red"/>
+<rect x="780" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="780" y="436" font-family="monospace" font-size="8">shape8 +0x144 2pt bbox[25,14-27,18]</text>
+<path d="M 200 144 L 208 128 L 216 112" fill="none" stroke="black" stroke-width="1.5" transform="translate(752.0,602.0)"/>
+<circle cx="952.0" cy="746.0" r="2" fill="red"/>
+<rect x="1160" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1160" y="436" font-family="monospace" font-size="8">shape9 +0x14A 40pt bbox[3,3-31,31] CLOSED</text>
+<path d="M 248 136 L 248 152 L 240 168 L 232 184 L 224 200 L 216 216 L 200 224 L 184 232 L 168 240 L 152 248 L 136 248 L 120 248 L 104 240 L 88 232 L 72 224 L 56 216 L 48 200 L 40 184 L 32 168 L 24 152 L 24 136 L 24 120 L 32 104 L 40 88 L 48 72 L 56 56 L 72 48 L 88 40 L 104 32 L 120 24 L 136 24 L 152 24 L 168 32 L 184 40 L 200 48 L 216 56 L 224 72 L 232 88 L 240 104 L 248 120 L 248 136" fill="none" stroke="black" stroke-width="1.5" transform="translate(1204.0,506.0)"/>
+<circle cx="1452.0" cy="642.0" r="2" fill="red"/>
+<rect x="1540" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1540" y="436" font-family="monospace" font-size="8">shape10 +0x19C 2pt bbox[29,5-32,8]</text>
+<path d="M 232 64 L 232 40 L 256 40" fill="none" stroke="black" stroke-width="1.5" transform="translate(1476.0,606.0)"/>
+<circle cx="1708.0" cy="670.0" r="2" fill="red"/>
+<rect x="1920" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1920" y="436" font-family="monospace" font-size="8">shape11 +0x1A2 31pt bbox[0,5-34,34]</text>
+<path d="M 232 40 L 248 56 L 256 72 L 264 96 L 272 112 L 272 136 L 272 160 L 264 176 L 256 200 L 248 216 L 232 232 L 216 248 L 200 256 L 176 264 L 160 272 L 136 272 L 112 272 L 96 264 L 72 256 L 56 248 L 40 232 L 24 216 L 16 200 L 8 176 L 0 160 L 0 136 L 0 112 L 8 96 L 16 72 L 24 56 L 40 40 L 16 40" fill="none" stroke="black" stroke-width="1.5" transform="translate(1964.0,502.0)"/>
+<circle cx="2196.0" cy="542.0" r="2" fill="red"/>
+<rect x="20" y="852" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="850" font-family="monospace" font-size="8">shape12 +0x1E2 1pt bbox[5,5-5,8]</text>
+<path d="M 40 64 L 40 40" fill="none" stroke="black" stroke-width="1.5" transform="translate(160.0,1020.0)"/>
+<circle cx="200.0" cy="1084.0" r="2" fill="red"/>
+<rect x="400" y="852" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="850" font-family="monospace" font-size="8">shape13 +0x1E8 9pt bbox[0,1-2,5]</text>
+<path d="M 0 8 L 16 40 L 0 8 L 16 40 L 0 8 L 16 24 L 0 8 L 16 24 L 0 40" fill="none" stroke="black" stroke-width="1.5" transform="translate(572.0,1016.0)"/>
+</svg>

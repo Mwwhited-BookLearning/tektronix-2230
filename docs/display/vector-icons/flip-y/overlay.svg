@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="344" height="656" viewBox="0 0 344 656">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="14" font-family="monospace" font-size="12">overlay - 14 shapes, all drawn at their own raw coordinates (flip_y=True)</text>
+<g transform="translate(20,40)">
+<path d="M 120 240 L 112 240 L 104 240 L 96 240 L 88 240 L 80 240 L 72 240 L 64 240 L 56 240 L 48 240 L 40 240 L 32 240 L 24 240 L 16 240 L 8 240 L 0 240 L 0 248 L 0 256 L 0 264 L 0 272 L 0 280 L 0 288 L 0 296 L 0 304 L 0 312 L 0 320 L 0 328 L 0 336 L 0 344 L 0 352 L 0 360" fill="none" stroke="#1b6ea0" stroke-width="1.2"/>
+<path d="M 136 112 L 120 112 L 104 120 L 88 128 L 72 136 L 56 144 L 48 160 L 40 176 L 32 192 L 24 208 L 24 224 L 24 240 L 32 256 L 40 272 L 48 288 L 56 304 L 72 312 L 88 320 L 104 328 L 120 336 L 136 336 L 152 336 L 168 328 L 184 320 L 200 312 L 216 304 L 224 288 L 232 272 L 240 256 L 248 240 L 248 224 L 248 208 L 240 192 L 232 176 L 224 160 L 216 144 L 200 136 L 184 128 L 168 120 L 152 112 L 136 112" fill="none" stroke="#a01b1b" stroke-width="1.2"/>
+<circle cx="136" cy="112" r="2" fill="#a01b1b"/>
+<path d="M 40 128 L 24 144 L 16 160 L 8 184 L 0 200 L 0 224 L 0 248 L 8 264 L 16 288 L 24 304 L 40 320 L 56 336 L 72 344 L 96 352 L 112 360 L 136 360 L 160 360 L 176 352 L 200 344 L 216 336 L 232 320 L 248 304 L 256 288 L 264 264 L 272 248 L 272 224 L 272 200 L 264 184 L 256 160 L 248 144 L 232 128" fill="none" stroke="#1ba05a" stroke-width="1.2"/>
+<circle cx="40" cy="128" r="2" fill="#1ba05a"/>
+<path d="M 136 0 L 136 24 L 136 48 L 136 72 L 136 96 L 136 120 L 136 144 L 136 168 L 136 192 L 136 216 L 136 224" fill="none" stroke="#a0731b" stroke-width="1.2"/>
+<circle cx="136" cy="0" r="2" fill="#a0731b"/>
+<path d="M 128 248 L 144 248 L 160 232 L 160 216 L 144 200 L 128 200 L 112 216 L 112 232 L 128 248" fill="none" stroke="#6a1ba0" stroke-width="1.2"/>
+<circle cx="128" cy="248" r="2" fill="#6a1ba0"/>
+<path d="M 88 192 L 80 184 L 64 184 L 56 184 L 48 192 L 48 208 L 48 224 L 48 240 L 56 248 L 72 248 L 80 248 L 88 240" fill="none" stroke="#a01b73" stroke-width="1.2"/>
+<circle cx="88" cy="192" r="2" fill="#a01b73"/>
+<path d="M 112 184 L 112 200 L 112 216 L 112 232 L 120 248 L 136 248 L 144 248 L 152 232 L 152 216 L 152 200 L 152 184" fill="none" stroke="#1ba0a0" stroke-width="1.2"/>
+<circle cx="112" cy="184" r="2" fill="#1ba0a0"/>
+<path d="M 176 248 L 176 232 L 176 216 L 176 200 L 176 184 L 192 184 L 208 184 L 216 192 L 216 208 L 208 216 L 192 216 L 176 216" fill="none" stroke="#5a731b" stroke-width="1.2"/>
+<circle cx="176" cy="248" r="2" fill="#5a731b"/>
+<path d="M 200 216 L 208 232 L 216 248" fill="none" stroke="#731b5a" stroke-width="1.2"/>
+<circle cx="200" cy="216" r="2" fill="#731b5a"/>
+<path d="M 248 224 L 248 208 L 240 192 L 232 176 L 224 160 L 216 144 L 200 136 L 184 128 L 168 120 L 152 112 L 136 112 L 120 112 L 104 120 L 88 128 L 72 136 L 56 144 L 48 160 L 40 176 L 32 192 L 24 208 L 24 224 L 24 240 L 32 256 L 40 272 L 48 288 L 56 304 L 72 312 L 88 320 L 104 328 L 120 336 L 136 336 L 152 336 L 168 328 L 184 320 L 200 312 L 216 304 L 224 288 L 232 272 L 240 256 L 248 240 L 248 224" fill="none" stroke="#333333" stroke-width="1.2"/>
+<circle cx="248" cy="224" r="2" fill="#333333"/>
+<path d="M 232 296 L 232 320 L 256 320" fill="none" stroke="#1b6ea0" stroke-width="1.2"/>
+<circle cx="232" cy="296" r="2" fill="#1b6ea0"/>
+<path d="M 232 320 L 248 304 L 256 288 L 264 264 L 272 248 L 272 224 L 272 200 L 264 184 L 256 160 L 248 144 L 232 128 L 216 112 L 200 104 L 176 96 L 160 88 L 136 88 L 112 88 L 96 96 L 72 104 L 56 112 L 40 128 L 24 144 L 16 160 L 8 184 L 0 200 L 0 224 L 0 248 L 8 264 L 16 288 L 24 304 L 40 320 L 16 320" fill="none" stroke="#a01b1b" stroke-width="1.2"/>
+<circle cx="232" cy="320" r="2" fill="#a01b1b"/>
+<path d="M 40 296 L 40 320" fill="none" stroke="#1ba05a" stroke-width="1.2"/>
+<circle cx="40" cy="296" r="2" fill="#1ba05a"/>
+<path d="M 0 352 L 16 320 L 0 352 L 16 320 L 0 352 L 16 336 L 0 352 L 16 336 L 0 320" fill="none" stroke="#a0731b" stroke-width="1.2"/>
+</g>
+<text x="20" y="452" font-family="monospace" font-size="10">legend:</text>
+<rect x="20" y="458" width="10" height="10" fill="#1b6ea0"/>
+<text x="36" y="466" font-family="monospace" font-size="9">shape0 +0x0 31pt bbox[0,0-15,15]</text>
+<rect x="20" y="472" width="10" height="10" fill="#a01b1b"/>
+<text x="36" y="480" font-family="monospace" font-size="9">shape1 +0x40 40pt bbox[3,3-31,31] CLOSED</text>
+<rect x="20" y="486" width="10" height="10" fill="#1ba05a"/>
+<text x="36" y="494" font-family="monospace" font-size="9">shape2 +0x92 30pt bbox[0,0-34,29]</text>
+<rect x="20" y="500" width="10" height="10" fill="#a0731b"/>
+<text x="36" y="508" font-family="monospace" font-size="9">shape3 +0xD0 10pt bbox[17,17-17,45]</text>
+<rect x="20" y="514" width="10" height="10" fill="#6a1ba0"/>
+<text x="36" y="522" font-family="monospace" font-size="9">shape4 +0xE8 8pt bbox[14,14-20,20] CLOSED</text>
+<rect x="20" y="528" width="10" height="10" fill="#a01b73"/>
+<text x="36" y="536" font-family="monospace" font-size="9">shape5 +0xFE 11pt bbox[6,14-11,22]</text>
+<rect x="20" y="542" width="10" height="10" fill="#1ba0a0"/>
+<text x="36" y="550" font-family="monospace" font-size="9">shape6 +0x116 10pt bbox[14,14-19,22]</text>
+<rect x="20" y="556" width="10" height="10" fill="#5a731b"/>
+<text x="36" y="564" font-family="monospace" font-size="9">shape7 +0x12C 11pt bbox[22,14-27,22]</text>
+<rect x="20" y="570" width="10" height="10" fill="#731b5a"/>
+<text x="36" y="578" font-family="monospace" font-size="9">shape8 +0x144 2pt bbox[25,14-27,18]</text>
+<rect x="20" y="584" width="10" height="10" fill="#333333"/>
+<text x="36" y="592" font-family="monospace" font-size="9">shape9 +0x14A 40pt bbox[3,3-31,31] CLOSED</text>
+<rect x="20" y="598" width="10" height="10" fill="#1b6ea0"/>
+<text x="36" y="606" font-family="monospace" font-size="9">shape10 +0x19C 2pt bbox[29,5-32,8]</text>
+<rect x="20" y="612" width="10" height="10" fill="#a01b1b"/>
+<text x="36" y="620" font-family="monospace" font-size="9">shape11 +0x1A2 31pt bbox[0,5-34,34]</text>
+<rect x="20" y="626" width="10" height="10" fill="#1ba05a"/>
+<text x="36" y="634" font-family="monospace" font-size="9">shape12 +0x1E2 1pt bbox[5,5-5,8]</text>
+<rect x="20" y="640" width="10" height="10" fill="#a0731b"/>
+<text x="36" y="648" font-family="monospace" font-size="9">shape13 +0x1E8 9pt bbox[0,1-2,5]</text>
+</svg>

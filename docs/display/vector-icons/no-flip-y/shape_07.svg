@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="136" viewBox="0 0 96 136">
+<rect width="100%" height="100%" fill="white"/>
+<text x="4" y="12" font-family="monospace" font-size="10">shape7 +0x12C (11pt)</text>
+<g transform="translate(-156,36)">
+<path d="M 176 112 L 176 128 L 176 144 L 176 160 L 176 176 L 192 176 L 208 176 L 216 168 L 216 152 L 208 144 L 192 144 L 176 144" fill="none" stroke="black" stroke-width="1.5"/>
+<circle cx="176" cy="112" r="2.5" fill="red"/>
+</g>
+</svg>

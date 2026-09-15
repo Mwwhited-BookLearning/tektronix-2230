@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1282" viewBox="0 0 2300 1282">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="16" font-family="monospace" font-size="12">3633 0xEAE64-0xEB061 - 14 shapes</text>
+<rect x="20" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="22" font-family="monospace" font-size="8">shape0 +0x0 31pt bbox[0,0-15,15]</text>
+<path d="M 120 0 L 112 0 L 104 0 L 96 0 L 88 0 L 80 0 L 72 0 L 64 0 L 56 0 L 48 0 L 40 0 L 32 0 L 24 0 L 16 0 L 8 0 L 0 0 L 0 8 L 0 16 L 0 24 L 0 32 L 0 40 L 0 48 L 0 56 L 0 64 L 0 72 L 0 80 L 0 88 L 0 96 L 0 104 L 0 112 L 0 120" fill="none" stroke="black" stroke-width="1.5" transform="translate(140.0,144.0)"/>
+<rect x="400" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="22" font-family="monospace" font-size="8">shape1 +0x40 40pt bbox[3,3-31,31] CLOSED</text>
+<path d="M 136 0 L 120 0 L 104 8 L 88 16 L 72 24 L 56 32 L 48 48 L 40 64 L 32 80 L 24 96 L 24 112 L 24 128 L 32 144 L 40 160 L 48 176 L 56 192 L 72 200 L 88 208 L 104 216 L 120 224 L 136 224 L 152 224 L 168 216 L 184 208 L 200 200 L 216 192 L 224 176 L 232 160 L 240 144 L 248 128 L 248 112 L 248 96 L 240 80 L 232 64 L 224 48 L 216 32 L 200 24 L 184 16 L 168 8 L 152 0 L 136 0" fill="none" stroke="black" stroke-width="1.5" transform="translate(444.0,92.0)"/>
+<circle cx="580.0" cy="92.0" r="2" fill="red"/>
+<rect x="780" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="780" y="22" font-family="monospace" font-size="8">shape2 +0x92 30pt bbox[0,0-34,29]</text>
+<path d="M 40 0 L 24 16 L 16 32 L 8 56 L 0 72 L 0 96 L 0 120 L 8 136 L 16 160 L 24 176 L 40 192 L 56 208 L 72 216 L 96 224 L 112 232 L 136 232 L 160 232 L 176 224 L 200 216 L 216 208 L 232 192 L 248 176 L 256 160 L 264 136 L 272 120 L 272 96 L 272 72 L 264 56 L 256 32 L 248 16 L 232 0" fill="none" stroke="black" stroke-width="1.5" transform="translate(824.0,88.0)"/>
+<circle cx="864.0" cy="88.0" r="2" fill="red"/>
+<rect x="1160" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1160" y="22" font-family="monospace" font-size="8">shape3 +0xD0 10pt bbox[17,17-17,45]</text>
+<path d="M 136 0 L 136 24 L 136 48 L 136 72 L 136 96 L 136 120 L 136 144 L 136 168 L 136 192 L 136 216 L 136 224" fill="none" stroke="black" stroke-width="1.5" transform="translate(1204.0,92.0)"/>
+<circle cx="1340.0" cy="92.0" r="2" fill="red"/>
+<rect x="1540" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1540" y="22" font-family="monospace" font-size="8">shape4 +0xE8 8pt bbox[14,14-20,20] CLOSED</text>
+<path d="M 128 48 L 144 48 L 160 32 L 160 16 L 144 0 L 128 0 L 112 16 L 112 32 L 128 48" fill="none" stroke="black" stroke-width="1.5" transform="translate(1584.0,180.0)"/>
+<circle cx="1712.0" cy="228.0" r="2" fill="red"/>
+<rect x="1920" y="24" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1920" y="22" font-family="monospace" font-size="8">shape5 +0xFE 11pt bbox[6,14-11,22]</text>
+<path d="M 88 8 L 80 0 L 64 0 L 56 0 L 48 8 L 48 24 L 48 40 L 48 56 L 56 64 L 72 64 L 80 64 L 88 56" fill="none" stroke="black" stroke-width="1.5" transform="translate(2032.0,172.0)"/>
+<circle cx="2120.0" cy="180.0" r="2" fill="red"/>
+<rect x="20" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="436" font-family="monospace" font-size="8">shape6 +0x116 10pt bbox[14,14-19,22]</text>
+<path d="M 112 0 L 112 16 L 112 32 L 112 48 L 120 64 L 136 64 L 144 64 L 152 48 L 152 32 L 152 16 L 152 0" fill="none" stroke="black" stroke-width="1.5" transform="translate(68.0,586.0)"/>
+<circle cx="180.0" cy="586.0" r="2" fill="red"/>
+<rect x="400" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="436" font-family="monospace" font-size="8">shape7 +0x12C 11pt bbox[22,14-27,22]</text>
+<path d="M 176 64 L 176 48 L 176 32 L 176 16 L 176 0 L 192 0 L 208 0 L 216 8 L 216 24 L 208 32 L 192 32 L 176 32" fill="none" stroke="black" stroke-width="1.5" transform="translate(384.0,586.0)"/>
+<circle cx="560.0" cy="650.0" r="2" fill="red"/>
+<rect x="780" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="780" y="436" font-family="monospace" font-size="8">shape8 +0x144 2pt bbox[25,14-27,18]</text>
+<path d="M 200 0 L 208 16 L 216 32" fill="none" stroke="black" stroke-width="1.5" transform="translate(752.0,602.0)"/>
+<circle cx="952.0" cy="602.0" r="2" fill="red"/>
+<rect x="1160" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1160" y="436" font-family="monospace" font-size="8">shape9 +0x14A 40pt bbox[3,3-31,31] CLOSED</text>
+<path d="M 248 112 L 248 96 L 240 80 L 232 64 L 224 48 L 216 32 L 200 24 L 184 16 L 168 8 L 152 0 L 136 0 L 120 0 L 104 8 L 88 16 L 72 24 L 56 32 L 48 48 L 40 64 L 32 80 L 24 96 L 24 112 L 24 128 L 32 144 L 40 160 L 48 176 L 56 192 L 72 200 L 88 208 L 104 216 L 120 224 L 136 224 L 152 224 L 168 216 L 184 208 L 200 200 L 216 192 L 224 176 L 232 160 L 240 144 L 248 128 L 248 112" fill="none" stroke="black" stroke-width="1.5" transform="translate(1204.0,506.0)"/>
+<circle cx="1452.0" cy="618.0" r="2" fill="red"/>
+<rect x="1540" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1540" y="436" font-family="monospace" font-size="8">shape10 +0x19C 2pt bbox[29,5-32,8]</text>
+<path d="M 232 0 L 232 24 L 256 24" fill="none" stroke="black" stroke-width="1.5" transform="translate(1476.0,606.0)"/>
+<circle cx="1708.0" cy="606.0" r="2" fill="red"/>
+<rect x="1920" y="438" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="1920" y="436" font-family="monospace" font-size="8">shape11 +0x1A2 31pt bbox[0,5-34,34]</text>
+<path d="M 232 232 L 248 216 L 256 200 L 264 176 L 272 160 L 272 136 L 272 112 L 264 96 L 256 72 L 248 56 L 232 40 L 216 24 L 200 16 L 176 8 L 160 0 L 136 0 L 112 0 L 96 8 L 72 16 L 56 24 L 40 40 L 24 56 L 16 72 L 8 96 L 0 112 L 0 136 L 0 160 L 8 176 L 16 200 L 24 216 L 40 232 L 16 232" fill="none" stroke="black" stroke-width="1.5" transform="translate(1964.0,502.0)"/>
+<circle cx="2196.0" cy="734.0" r="2" fill="red"/>
+<rect x="20" y="852" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="20" y="850" font-family="monospace" font-size="8">shape12 +0x1E2 1pt bbox[5,5-5,8]</text>
+<path d="M 40 0 L 40 24" fill="none" stroke="black" stroke-width="1.5" transform="translate(160.0,1020.0)"/>
+<circle cx="200.0" cy="1020.0" r="2" fill="red"/>
+<rect x="400" y="852" width="360" height="360" fill="none" stroke="lightgray"/>
+<text x="400" y="850" font-family="monospace" font-size="8">shape13 +0x1E8 9pt bbox[0,1-2,5]</text>
+<path d="M 0 32 L 16 0 L 0 32 L 16 0 L 0 32 L 16 16 L 0 32 L 16 16 L 0 0" fill="none" stroke="black" stroke-width="1.5" transform="translate(572.0,1016.0)"/>
+</svg>

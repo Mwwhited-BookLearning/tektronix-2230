@@ -48,6 +48,7 @@ programming manual and the field-tested practical guide.
 
 - [CRT readout display memory](display/readout-memory.md) - the physical `0x40000-0x4FFFF` readout memory window
 - [Vector display list and the stroke-font hunt](display/vector-display-and-stroke-font.md) - the separate vector/stroke display-list buffer, and the still-unresolved search for the character glyph table
+- [Rendered vector shapes, 0xAE64-0xB061](display/vector-icons/README.md) - committed SVG renders of a separate candidate vector shape table (icons or a rough font, unresolved which), plus `disasm/decode_vector_icons.py`
 
 ## Interrupts and scheduling
 
