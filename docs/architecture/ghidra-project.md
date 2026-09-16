@@ -108,3 +108,129 @@ error, it just doesn't work. Use `jpype.JArray(jpype.JByte)(n)` for
 the buffer instead, or read single bytes via `Memory.getByte(Address)`
 to sanity-check. Cost significant debugging time before being traced
 to this (not a persistence bug at all - the writes were fine).
+
+## Applying `PARAMETER_NAMES` as real stack parameters, 2026-09-16
+
+Once `disasm/gen_disasm_x86.PARAMETER_NAMES` (see `CLAUDE.md`'s
+Conventions section) had 72 confirmed functions in it, applied them
+all to Ghidra as real stack-based `Parameter` objects (not just plate
+comments) so the decompiler shows them directly in every call site,
+not only at the function's own definition.
+
+**The API, calibrated on one function first**: `ParameterImpl(name,
+dataType, stackOffset, program)` takes this project's own `bp+N`
+offset convention **directly** - no translation needed, despite
+Ghidra's own *display* convention showing a different number (its
+`getVariableStorage()` prints `Stack[0x4]` for what this project calls
+`bp+6` - a fixed 2-byte difference, because Ghidra's stack-offset
+numbering doesn't count the saved `BP` register the way `bp+N` does).
+Confirmed by creating a real parameter and reading it back before
+trusting the pattern for a 72-function batch.
+
+**Byte vs. word size matters and is easy to get wrong via unscoped
+search** - found and fixed 2 real bugs in the size-inference step
+before trusting the results:
+1. A regex search for the `byte`/`word` prefix on a given `[bp+N]`
+   text pattern, run against a whole chip's `_readable.asm` text
+   rather than scoped to the one function's own body, picks up
+   whichever function's matching text happens to appear *first* in the
+   file - completely unrelated to the function actually being sized.
+   Fixed by first slicing out just that function's own line range
+   (from its label to the next *non-internal* label - a bug on the
+   first attempt too, since this project's internal branch labels
+   `L_XXXXX:` look exactly like a function boundary unless explicitly
+   excluded).
+2. `array_index_16`'s own entry was itself wrong (pre-existing, not
+   introduced by the size-fix pass) - `retf 4` (only 4 bytes of
+   arguments) proves it takes 2 plain words, not `(base far ptr,
+   index)` as `FUNCTIONS.md` said; the "index" argument doing the
+   `shl` by 4 is actually at `bp+8`, not `bp+0xa` as a 3rd offset.
+   Fixed in `gen_disasm_x86.py`/`FUNCTIONS.md` and reapplied.
+
+Applying and removing an existing (auto-analysis-guessed) parameter
+list cleanly: `func.removeParameter(0)` in a loop while
+`func.getParameterCount() > 0`, then `func.addParameter(Parameter,
+SourceType.USER_DEFINED)` per confirmed offset in increasing order.
+One transaction per program (`program.startTransaction()`/
+`endTransaction()`), saved with **`project.save(program)`** - calling
+`program.save(comment, monitor)` directly instead raises `Unable to
+lock due to active transaction` even after the transaction is properly
+closed; use the `GhidraProject` method, not the `Program` one.
+
+## Decompiled-C export: a real, fast way to cross-check parameter work
+
+`decompile/export_decompiled_c.py` dumps every function's decompiled C
+in a program to a single text file under `decompile/exports/` -
+**~1-2 seconds per 200-400-function program**, cheap enough to
+regenerate after any batch of edits. This answers a question worth
+recording for next time: **yes, Ghidra's decompiler can meaningfully
+help the hand-written disassembly/parameter-naming work**, in three
+concrete ways demonstrated 2026-09-16:
+
+1. **Live decompilation sometimes recovers parameters the cached
+   auto-analysis missed entirely.** `draw_readout_char`'s cached
+   `Function.getSignature()` showed `(void)` - zero parameters - but
+   asking the decompiler to actually decompile it live showed 1 byte
+   parameter at `Stack[0x4]`, matching this project's own independent
+   finding (`char`) exactly. The cached signature and a fresh
+   `DecompInterface.decompileFunction()` call can disagree; the live
+   one is more reliable.
+2. **It's a genuine independent cross-check for byte/word sizing**,
+   not just naming - `set_item_active_flag(word item_index, word
+   set_flag)`'s cached signature had already (correctly, independent
+   of this project) inferred 2 stack parameters before any manual
+   naming pass touched it, confirming the parameter *count* the manual
+   read had found; conversely, seeing the exported C helps catch
+   Ghidra's own size mistakes when a program's calling convention
+   isn't set correctly (the comm ROM's `160-2998-14.bin` shows
+   `calling convention: unknown`, not `__stdcall16far` like the main
+   ROM programs - not yet fixed, a real next step to improve accuracy
+   there specifically).
+3. **It surfaces which named functions are "real" Ghidra Functions
+   vs. label-only fallbacks the decompiler can't resolve as callees.**
+   Cross-checking every `FUNCTIONAL_NAMES` address against its own
+   decompiled-C definition found 19 candidates that looked
+   label-only from a first, callee-site-based text scan; running
+   `CreateFunctionCmd` directly against each showed **14 were already
+   fine** (the callee-site text scan has false positives - an indirect/
+   computed call site can show a raw address fallback even when the
+   target has a real name, since Ghidra can't always resolve an
+   indirect call to a specific function), but the remaining **5
+   genuinely fail `CreateFunctionCmd`**: `write_hw_shift_register`,
+   `handle_acq_mode_change`, `compute_and_draw_scale_marker`,
+   `clear_readout_attrs_for_item`, `start_plot_output_task`. **This is
+   real, convergent evidence** with this project's own static-analysis
+   findings - `handle_acq_mode_change` and `compute_and_draw_scale_
+   marker` were *already* independently flagged this same day (see
+   `changes/2026-09-16.md`/the parameter-naming batch notes) as
+   landing on garbage/anomalous decode at their exact label address
+   (a `push cs; cmp al,byte[di]...` nonsense opening and an `add
+   si,ax` mid-instruction landing, respectively) - Ghidra's own
+   function-boundary heuristics independently refuse to recognize
+   these same 5 addresses as valid instruction boundaries. Worth
+   resolving via this project's own dual-entry-point process
+   (`docs/decode-anomalies/dual-entry-points.md`) before trying to
+   force a Ghidra function there.
+
+**Limits worth remembering**: the decompiler's inferred types/counts
+are a *hypothesis* to cross-check against, not ground truth - it can
+also be wrong (the `unknown`-calling-convention comm ROM case above).
+**Open, unexplained quirk found while writing this section**:
+`format_hex_word`'s decompiled body shows `func_0x000e327f();` (an
+opaque, unnamed call) even though `format_number` - confirmed to be
+the exact same physical address (`0xe31d:0xaf` resolves via ordinary
+8086 real-mode arithmetic to `0xE327F`, the well-established segment-
+aliasing pattern documented throughout this project) - is a fully
+named, fully parameterized real Ghidra function (`format_number(word
+value, word radix, word width, byte overflow_flag, word extra)`,
+verified directly). Re-exporting after confirming this didn't change
+the result. The `func_0x000e327f` label itself proves Ghidra resolved
+the *address* correctly; something about how the far-call operand
+(`0xe31d:0xaf`, a different but numerically-equal segment:offset pair
+from the callee's own "home" segment `000e`) gets resolved during
+decompilation isn't picking up the named function there. Not yet root-
+caused - worth investigating before leaning on cross-chip/cross-alias
+far calls specifically for decompiler-based cross-checks; direct calls
+using a function's own home segment (the vast majority) don't show
+this problem. Regenerate `decompile/exports/*.c` after any batch of
+parameter or function-name changes to keep this cross-check current.

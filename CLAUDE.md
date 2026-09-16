@@ -23,12 +23,17 @@ are already settled and documented there and in `docs/` (start at
 - `disasm/` — the disassembly project: generator scripts, listings, and
   the symbol table that gets refined over time.
 - `decompile/` — a local Ghidra project (`Tek2230.gpr`/`.rep/`), a
-  second, independent cross-check tool. **Not git-tracked** (the
-  `.rep/` database is gitignored) — a local artifact, not something a
-  fresh clone will have. See `docs/architecture/ghidra-project.md`
-  before scripting against it — its segment-addressing convention is
-  non-obvious and has already caused two real mistakes worth avoiding
-  a second time.
+  second, independent cross-check tool. **The `.rep/` database itself
+  is not git-tracked** — a local artifact, not something a fresh clone
+  will have — but `decompile/exports/*.c` (Ghidra's decompiled C for
+  every function, regenerated via `decompile/export_decompiled_c.py`)
+  **is committed**, since it's a cheap-to-regenerate, grep-able text
+  artifact useful even without Ghidra installed. See
+  `docs/architecture/ghidra-project.md` before scripting against the
+  live project — its segment-addressing convention is non-obvious and
+  has already caused real mistakes worth avoiding a second time — and
+  its "Decompiled-C export" section for what the decompiler can (and
+  can't) reliably tell you about a function's real parameters/types.
 - `emulator/` — a headless Unicorn-Engine-based tracer for running the
   real firmware from reset and observing runtime behavior directly,
   for questions static disassembly can't settle on its own (e.g. the
