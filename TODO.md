@@ -15,13 +15,25 @@ instead of assuming bare `nasm` resolves.
       stroke-font.md`) hitting a wall static analysis alone can't
       resolve - two candidate writers of `[0x1DB0]` found, neither
       confirmed as the real one, and the downstream HPGL transform
-      still unmatched by static shape-matching. Design phase complete:
-      see `emulator/docs/design.md` for scope (headless boot+trace
-      tool, not a full-system emulator), memory-map wiring (reuse
-      `MEMORY_MAP.md` directly), I/O stub strategy, and milestones.
-      Not yet implemented - `unicorn` confirmed installable
-      (`pip install unicorn` resolves to `2.1.4`) but not yet
-      installed in this environment.
+      still unmatched by static shape-matching. Design phase complete,
+      first implementation pass done: `unicorn` installed (`2.1.4`),
+      boots the real firmware from reset, and a synthetic scheduler
+      tick (INT 2/NMI) is working - milestones 1 and 3 of `emulator/
+      docs/design.md` both function. Found and fixed 4 real emulation
+      gotchas (RAM-vs-ROM mapping at `0x88000-0x8FFFF`, INT 2 being
+      NMI so it must never be gated on `IF`, the 8086's 1MB address
+      wraparound Unicorn doesn't model automatically, a false-positive
+      "vector installed" check firing on transient boot-time RAM-test
+      patterns) - see `emulator/docs/design.md`'s "Findings and
+      gotchas" section. **Currently blocked**: a deterministic
+      unmapped read at physical `0x0C69B9` (from a stack-local
+      far-pointer read, physical `0xE38ED`) happens after exactly 33
+      scheduler ticks regardless of tick interval (tested
+      2000/20000/100000/500000 - all identical), ruling out timing
+      noise; likely some tick-count-derived dispatch/index reads
+      uninitialized state. Next step: instrument `[0x752]` and any
+      `%N`-style index derived from it, rather than further
+      tick-interval tuning.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-

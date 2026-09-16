@@ -33,8 +33,11 @@ are already settled and documented there and in `docs/` (start at
   real firmware from reset and observing runtime behavior directly,
   for questions static disassembly can't settle on its own (e.g. the
   stroke-font glyph-table hunt). See `emulator/docs/design.md` for
-  scope and status — as of 2026-09-16 this is design-phase only, no
-  implementation yet.
+  scope, and its "Findings and gotchas" section before touching
+  `emu.py`/`memory_map.py`/`timer.py` — booting a real 8086 in Unicorn
+  has already surfaced several non-obvious gotchas (NMI-vs-maskable
+  interrupt semantics, the 1MB address wraparound, RAM-vs-ROM mapping)
+  worth not rediscovering.
 - `docs/` — the authoritative technical log (CPU identity, ROM roles,
   every investigation/finding), split by topic under `docs/{area}/
   {feature}.md` since a single running-log file grew too long to
