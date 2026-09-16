@@ -335,3 +335,63 @@ never rewritten, with the "current command" semantics coming entirely
 from what gets written into the fields *of* the record it points to
 (which was found, extensively, at other offsets - just not `+0x1F`
 specifically).
+
+## Follow-up, 2026-09-16: mapped every direct byte-comparison against MESsage's ID (0x15) - all response-formatting, still not the CRT-write trigger
+
+User asked to specifically walk the code that handled a live capture
+of `MESSAGE 1:"abcdefghijklmnopqrstuvwxyz 1234567890"`. The earlier
+`cmp ax, <id>` register-comparison scan (228 hits, above) doesn't
+cover a *different* encoding this ROM also uses: `cmp byte ptr es:
+[reg+0x1F], imm8` directly, comparing the byte in memory without
+first loading it into `AX`. Searching for that form against `0x15`
+specifically (in addition to the one already-documented hit at
+`0x85CCF`, inside `compute_response_format_flags`) found **4 more
+sites**, all previously uncatalogued:
+
+- `0x84967` and `0x84DF4` (`cmp es:[di+0x1F], 0x15`) - both inside the
+  same 3-way `0x14`/`0x15`/`0x1E` check shape already seen in
+  `compute_response_format_flags`'s caller, gating which bit of a
+  per-record "required flags" byte (`es:[bx+1]`/`es:[di+1]`) gets
+  tested - this is the **12-byte-record table walker itself**
+  (`[0x6FE]`), not a separate function - confirms that whole area is
+  one coherent response-record-matching system, not several unrelated
+  ones that happen to share a shape.
+- `0x84ACB` (`cmp byte [0x604], 0x15`) - a *different* variable
+  (`[0x604]`, already known as "a phase value set by `compute_
+  response_format_flags`'s caller") holding a copy of the command ID,
+  checked here to **skip** a decimal-digit formatting step
+  (`putchar_serial` calls building a number from `[0x5F8]`) when the
+  current command is `MESsage` - still building the *serial reply*,
+  not writing to the CRT.
+- `0x8584F` (`cmp es:[bx+0x1F], 0x15`) - inside an argument-delimiter
+  state machine that also checks for `0x1E` (`REFStat`) and walks a
+  small table of "stop" byte values (`0x22`='"', `0x2C`=',', plus a
+  few control codes) via far pointer `[0x71E]` - adjusts a parsing
+  offset by `+8` specifically for `MESsage`, consistent with
+  `MESsage`'s argument being shaped differently (a quoted string)
+  than other commands' arguments. This is **argument parsing**, the
+  closest of the 5 sites to where the string itself gets handled - but
+  it's still about recognizing the argument's boundaries, not about
+  what happens to the text afterward.
+
+**None of the 5 total sites writes to the CRT or calls a drawing
+primitive.** This more thoroughly confirms (rather than overturns) the
+"not the display-side handler" conclusion above: every place this ROM
+checks for `MESsage`'s specific ID is part of parsing the incoming
+command or formatting the serial reply, never triggering the readout
+write. The actual state-change handler - and the stroke-font hunt's
+"who reads `[0x1DB0]`'s neighbor entries" question it was hoped to
+unlock - remains in the same still-unfound intermediary (a shared-
+memory mailbox polled by the main ROM's own task scheduler is still
+the leading, unconfirmed architectural guess).
+
+**Also found, tangentially, while checking a related variable**:
+`[0x71E]` (used in the delimiter state machine above) indexes far
+pointer `[0x1DB4]` in `SUB_F09C6` (per `VARIABLES.md`) - the same RAM
+cell `init_far_pointer_table_sysrom` was found writing (with value
+`E947:0002` = `merge_record_flags_if_changed`'s own address) during
+this session's `[0x1DB0]` write-source investigation (see
+`docs/display/vector-display-and-stroke-font.md`). Not chased further
+this pass, but a real, concrete connection between the comm-ROM
+command parser and the `[0x1DB0]`-`[0x1DBC]` RAM cluster - worth
+revisiting.
