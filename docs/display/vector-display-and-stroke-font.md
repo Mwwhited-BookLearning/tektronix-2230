@@ -392,11 +392,16 @@ own base pointer `[0x1CC4]`" - see `init_print_region_home`/`init_
 selftest_report_screen` in `FUNCTIONS.md`), tagging each with the same
 delimiter-marker value (`2`) `mark_readout_delimiter` uses. `[0x46E]`
 gets incremented elsewhere (physical `0xEC706`/`0xEC71B`) by the return
-value of `SUB_F6510`, called with a character code argument - almost
-certainly a **character-width measurement function**, making `[0x46E]`
-a running horizontal-layout accumulator (the per-character X-advance
-this project has been looking for, structurally - though its exact
-scale/units weren't traced further).
+value of a call to `0xF6510`, made with a byte argument that's a
+character code at one of its two call sites. **Correction, checked
+right after first writing this up**: `0xF6510` is *not* a
+character-width function - reading its actual body shows a min/max
+bounding-box clamp against a `0xFFF` (4095) limit over a `×14`-stride
+record table (fields at `+0x576`/`+0x578`/`+0x580`), structurally
+unrelated to characters or the stroke font. What `[0x46E]` really
+accumulates, and why one of the two calls into `0xF6510` passes a
+character byte, is genuinely unresolved - don't trust the earlier
+"character-width measurement" framing if it's echoed anywhere else.
 
 **This function - and the giant function it's embedded in,
 `FUNC_3633_DF56` (`0xEDF56`) - are both heuristic-only, `ref_count: 0`
@@ -418,11 +423,11 @@ doesn't reveal a `×4` factor either - `fine` and `coarse` are still
 combined by raw addition here, just with a running accumulator instead
 of a fixed baseline), and neither this function nor its containing
 `FUNC_3633_DF56` have a confirmed caller to trace forward from. If
-picked up again: check what calls `SUB_F6510` elsewhere for more
-context on the width-measurement/layout system, and try find_landing_
-artifacts.py-style caller-count ranking on far calls into this whole
-address neighborhood (`0xEDF56`-`0xEE705`) to see if anything real
-reaches it despite the heuristic scanner's `ref_count: 0`.
+picked up again: figure out what `[0x46E]` actually represents (its
+real feeder isn't a width lookup, per the correction above), and try
+find_landing_artifacts.py-style caller-count ranking on far calls into
+this whole address neighborhood (`0xEDF56`-`0xEE705`) to see if
+anything real reaches it despite the heuristic scanner's `ref_count: 0`.
 
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 

@@ -230,11 +230,14 @@ top item.
   (a landing artifact of the same neighborhood, unrelated to the
   stroke font) - full detail and the exact disassembly in
   `docs/display/vector-display-and-stroke-font.md`'s "Found a second,
-  independent reader of `[0x1DB0]`" section. **Most promising next
-  step now**: trace `SUB_F6510` (called with a character-code argument,
-  likely a width-measurement function feeding `[0x46E]`'s accumulator)
-  for more context, or find and trace whatever produces real CRT/
-  plotter output from either `[0x1CC4]` or `[0x45E]`'s buffer - still
+  independent reader of `[0x1DB0]`" section. **Correction, checked
+  right after finding this**: `[0x46E]`'s accumulator is fed by a call
+  to `0xF6510`, which was first guessed to be a character-width lookup
+  - it isn't; its actual body is a bounding-box min/max clamp against
+  a `0xFFF` limit over an unrelated `×14`-stride record table. What
+  `[0x46E]` really represents is unresolved again. **Most promising
+  next step now**: find and trace whatever produces real CRT/plotter
+  output from either `[0x1CC4]` or `[0x45E]`'s buffer - still
   not found, many candidates, none traced.
 
 ## Front-panel switches
