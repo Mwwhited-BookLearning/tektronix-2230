@@ -21,6 +21,21 @@ instead of assuming bare `nasm` resolves.
       would do for the acquisition/DAC path what that review did for
       the comm option: name the actual decode/support chips around the
       already-known address range, not just the RAM itself.
+
+      **Unconfirmed hypothesis, added while previewing the page**:
+      `U3418`/`U3419`'s own address lines are `AA1`-`AA11` (11 lines,
+      matching each chip's own 2048-byte capacity exactly -
+      `2^11=2048`). User's guess, explicitly not yet verified against
+      the actual logic: **`AA0`** (one bit lower than the chips' own
+      address bus) selects between `CH1`/`CH2` - i.e. the 2 RAM chips
+      might be a per-channel pair rather than an interleaved/depth-
+      doubling pair, with `AA0` as the bank-select bit sitting outside
+      each chip's own address pins. No existing finding in this
+      project to cross-check against (checked `MEMORY_MAP.md`/
+      `VARIABLES.md` for any prior channel-select-bit note for the
+      acquisition RAM specifically - none found, this is new
+      territory). Confirm or refute directly from the page 415 logic
+      when reviewed.
 - [ ] **`emulator/` next steps** (built 2026-09-16, see `emulator/
       README.md`/`emulator/docs/design.md`): resolved the stroke-font
       glyph-table hunt for this project's real hardware (full story in
