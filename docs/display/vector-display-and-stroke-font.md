@@ -498,6 +498,43 @@ find_landing_artifacts.py-style caller-count ranking on far calls into
 this whole address neighborhood (`0xEDF56`-`0xEE705`) to see if
 anything real reaches it despite the heuristic scanner's `ref_count: 0`.
 
+## Follow-up, 2026-09-15: a full-alphabet HPGL capture confirms the "9 levels" puzzle is universal, not sample noise
+
+User captured (via `MESsage`) and plotted the **entire character set** -
+upper and lower case, digits, and punctuation - in one HPGL session
+(`scratchpad/full_charset_capture.hpgl`, extracted from a raw serial
+log). Segmented it into individual characters by X-position and
+checked every uppercase letter's own Y span independently (not pooled,
+unlike the earlier "2"/"V" analysis - this directly addresses whether
+that was a pooling artifact).
+
+**Every single uppercase letter, A through Z, spans exactly the same
+32 HPGL units (Y `163` to `195`), needing exactly 9 distinct levels at
+the confirmed step-4 grid - with zero exceptions across all 26
+letters.** This rules out "insufficient/unlucky sampling" as the
+explanation once and for all - it's a universal property of this
+row's encoding, not noise from having only 2 samples before. Checked
+whether excluding each letter's very first (`moveto`) point resolves
+the span (testing the theory that the untracked initial anchor
+accounts for the extra level) - it doesn't: the character's own
+drawn strokes (not just the anchor) revisit both the bottom (`163`)
+and top (`195`) of the range multiple times, so the full 9-level span
+is a real property of the stroke data itself, not an artifact of one
+untracked point.
+
+**This deepens the puzzle rather than resolving it**: a 3-bit `coarse`
+field (confirmed exactly from `draw_readout_char`'s own disassembly -
+`(byte & 0x70) >> 4`, unambiguously 3 bits) cannot hold 9 values under
+any simple `baseline + coarse` model, at any consistent step size -
+yet the real, physical CRT clearly draws every uppercase letter across
+this full range. Whatever resolves this most likely lives in the
+still-unfound downstream renderer, and probably involves something
+beyond a flat linear scale of the raw `coarse` value (see the "keep
+going" list below for what's still open). Full character-by-character
+segmentation and analysis was done ad hoc this session, not saved as a
+reusable tool yet - worth turning into one (`disasm/parse_hpgl_
+charset.py` or similar) if this capture gets revisited.
+
 ## Follow-up, 2026-09-15: tried shape-matching instead of structural scanning - a better technique, still no hit
 
 Prompted by a direct question: if the real *shape* of a captured letter
