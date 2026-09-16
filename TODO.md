@@ -408,3 +408,97 @@ See `changes/` for a dated log of completed work per session. Keep
 this file trimmed to active/pending items only — when something gets
 resolved, move its detail into the current day's `changes/YYYY-MM-DD.md`
 entry instead of leaving a long `[x]`-marked writeup here.
+
+## Architect Notes
+
+The service manual has a memory map/address decoder for the Option RAM.  Though this is listed for A23 Option Memory Board.  I dont know is this is additive to the Communication Module
+
+There are 4 Other ICs on this coard... U1122, U1132, U1142, U1162.  U1162 is listed as the Address Decoder as a 74LS139
+
+| Board         |  IC    | Component | Labled function        | Address Range |
+|---------------|--------|-----------|------------------------|---------------|
+| Option Memory | U1122  |           |                        |               |
+| Option Memory | U1132  |           |                        |               |
+| Option Memory | U1142  | LM339     | Power Sense            |               |
+| Option Memory | U1162  | 74LS139   | Address Decoder        |               |  
+| Option Memory | U118   |           | STATIC RAM             | 88000-89FFF   |
+| Option Memory | U128   |           | STATIC RAM             | 8A000-8BFFF   |
+| Option Memory | U138   |           | STATIC RAM             | 8C000-8DFFF   |
+| Option Memory | U148   |           | STATIC RAM             | 8E000-8FFFF   | 
+| RS-232 Option | U1242  | 6116P     | 2048x8 RAM             | ?             | 
+| RS-232 Option | U1244  | 27512     | 65536x8 EPROM          | ?             | 
+| RS-232 Option | U1251  | 82C52     | UART                   | ?             | 
+| RS-232 Option | U1225  | MC1489    | TTL/RS-232C Tranmitter |               | 
+| RS-232 Option | U1224  | MC1489    | TTL/RS-232C Receiver   |               | 
+| RS-232 Option | U1244F | 74LS04A   | UART-Reset             |               | 
+| RS-232 Option | U1232  | 74LS245   | AD0-7 -> BD0-7         |               | 
+| RS-232 Option | U1241  | 74LS541   | A0-7  -> BA0-7         |               | 
+| RS-232 Option | U1233  | 74LS541   | A8-13 -> BA8-13        |               | 
+| RS-232 Option | U1244A | 74LS04A   | BA12 -> U1245:14       |               | 
+| RS-232 Option | U1244B | 74LS04A   | BA13 -> U1245:13       |               | 
+| RS-232 Option | U1222  | 74LS541   | Parameter Buffer       |               | 
+| RS-232 Option | U1223  | 74LS541   | State Buffer           |               | 
+| RS-232 Option | U1235  | 74HCT259  | 8bit latch             |               |
+
+### the UART Pins
+
+- BA0 -> A0
+- BA1 -> A1
+- U1245 out6 (pin 9) -> CS0
+
+### ecode Logic on Option Board though the U1245 74F548.  this is a octal decoder.  
+
+| Source                        | Pin | Pin Function | Target               |
+|-------------------------------|-----|--------------|----------------------|
+| BA3?                          | 6   | A0           |                      |
+| BA6                           | 7   | A1           |                      |
+| BA7                           | 17  | A2           |                      |
+| BLK0                          | 16  | /E1          |                      |
+| /IO_SEG                       | 15  | /E2          |                      |
+| BA12 (inverted from U1244:A)  | 14  | E3           |                      |
+| BA13 (inverted from U1244:B)  | 13  | E4           |                      |
+| +5v                           | 5   | /RD          |                      |
+| BA8                           | 4   | /WR          |                      |
+|                               | 12  | /O0          | N/C                  |
+|                               | 2   | /O1          | N/C                  |
+|                               | 1   | /O2          | N/C                  |
+|                               | 19  | /O3          | /STATE (U1223:E1)    |
+|                               | 18  | /O4          | /N/C                 |
+|                               | 8   | /O5          | /PARAM (U1222:E1)    |
+|                               | 9   | /O6          | /232EN (U1251:/CSO)  |
+|                               | 11  | /O7          | /LATCH               |
+
+### Buffered Register Table
+
+| Source           | Buffer    | Address |
+|------------------|-----------|---------|
+| Parameter Dip 1  | Parameter | BD0     | 
+| Parameter Dip 2  | Parameter | BD1     | 
+| Parameter Dip 3  | Parameter | BD2     | 
+| Parameter Dip 4  | Parameter | BD3     | 
+| Parameter Dip 5  | Parameter | BD4     | 
+| Parameter Dip 6  | Parameter | BD5     | 
+| Parameter Dip 7  | Parameter | BD6     | 
+| UART SDO         | Parameter | BD7     | 
+| PWR INT?         | State     | BD0     | 
+| UART INTR+DR     | State     | BD1     | 
+| UART TBRE        | State     | BD2     | 
+| Parameter Dip 8  | State     | BD3     | 
+| Parameter Dip 9  | State     | BD4     | 
+| Parameter Dip 10 | State     | BD5     | 
+| DIAG? (U1235 6?) | State     | BD6     | 
+| RS-232 DCD ->    | State     | BD7     | 
+
+### U1235 labeled as Interrupt Mask Latch
+
+- Z9 from BD0
+- G8 from /Latch or PWR INT (this looks like it works as the chip select)
+- G10 from Inverted Reset
+- A0-2 from BA0-2
+- Q0 to DR + INTR Mask
+- Q1 to TBRE Mask
+- Q2 to RLSO? (RLSO is buffered to RS-232 DCE DB25:8)
+- Q3 to DIAG
+- Q4 - Q7 not connected
+
+Note, PWR INT is a logic OR of Chassis GND + /WR
