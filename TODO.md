@@ -9,6 +9,18 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **Reminder (user, 2026-09-16)**: review service manual **page
+      415** - the acquisition memory logic (RAM chips + decode logic).
+      User's own preview while noting this down: 2x 2048x8 static RAM,
+      **`U3418`/`U3419`**, that look fed by the DAC. These 2 chips are
+      already independently confirmed in this project as the physical
+      backing for `MEMORY_MAP.md`'s `0x48000-0x4BFFF` "Acquisition
+      Memory - 4 images of Acquisition RAM U3418/U3419" range - a
+      component-level schematic trace here (matching the RS-232 option
+      board reviews already integrated, see `changes/2026-09-16.md`)
+      would do for the acquisition/DAC path what that review did for
+      the comm option: name the actual decode/support chips around the
+      already-known address range, not just the RAM itself.
 - [ ] **`emulator/` next steps** (built 2026-09-16, see `emulator/
       README.md`/`emulator/docs/design.md`): resolved the stroke-font
       glyph-table hunt for this project's real hardware (full story in
