@@ -25,15 +25,31 @@ instead of assuming bare `nasm` resolves.
       wraparound Unicorn doesn't model automatically, a false-positive
       "vector installed" check firing on transient boot-time RAM-test
       patterns) - see `emulator/docs/design.md`'s "Findings and
-      gotchas" section. **Currently blocked**: a deterministic
-      unmapped read at physical `0x0C69B9` (from a stack-local
-      far-pointer read, physical `0xE38ED`) happens after exactly 33
-      scheduler ticks regardless of tick interval (tested
-      2000/20000/100000/500000 - all identical), ruling out timing
-      noise; likely some tick-count-derived dispatch/index reads
-      uninitialized state. Next step: instrument `[0x752]` and any
-      `%N`-style index derived from it, rather than further
-      tick-interval tuning.
+      gotchas" section. **Resolved the "33 ticks" blocker**: not a
+      timing artifact at all - the unmapped read at `0x0C69B9` is
+      `draw_readout_char` (physical `0xE3854`) genuinely walking
+      `[0x1DB0]`'s incoherent per-character pointers while rendering
+      the real power-up self-test banner (`" POWE"`, confirmed against
+      `STRINGS.md`). Instrumented it directly and got a real result:
+      **live confirmation** that `[0x1DB0]=E9A3:0000` produces garbage
+      pointers (not just a hand-computed static claim anymore), *and* a
+      bigger, previously-unconsidered finding - `draw_readout_char`
+      checks `detect_comm_option_hw`'s result flag first and returns
+      immediately (no rendering at all) when the comm option is
+      detected. This emulator run has it stubbed as "not detected," but
+      **both of this project's real physical test units have RS-232
+      installed** - meaning this whole function may be dead code on the
+      actual hardware being tested, and the real readout-text path on
+      comm-equipped units might be `write_readout_port_byte`'s
+      long-standing, separately-documented `0x40000+0x6F0` UART-bank
+      overlap puzzle (`MEMORY_MAP.md`'s "Puzzle" section) - possibly the
+      same mystery, not two. See `docs/display/vector-display-and-
+      stroke-font.md`'s "Live emulation confirms..." section and
+      `STILL_PENDING_DECODE.md` for full detail. **Next step**: stub
+      `detect_comm_option_hw`'s hardware probe to reflect "comm
+      installed" and see what code path actually renders text in that
+      configuration - a much higher-value next step than continuing to
+      poke at the current "comm absent" boot path.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-

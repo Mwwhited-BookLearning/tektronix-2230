@@ -193,6 +193,36 @@ top item.
   specific (different) lead. Full detail in `docs/display/vector-
   display-and-stroke-font.md`'s "Follow-up, 2026-09-15" section right
   after "The readout vector display list".
+- **2026-09-16: emulator confirms `E9A3:0000` produces incoherent
+  per-character pointers live, and surfaces a bigger, previously-
+  unconsidered question.** Built `emulator/` (a headless Unicorn-Engine
+  tracer, see `emulator/docs/design.md`), booted the real firmware, and
+  instrumented `draw_readout_char` directly. Watched it render the
+  power-up self-test banner text (`" POWE"`, confirmed against
+  `STRINGS.md`'s "POWER UP FAILURES") - real, meaningful execution, not
+  an artifact - and confirmed `[0x1DB0]` really is `E9A3:0000` live in
+  RAM, with the 5 resulting per-character far pointers scattered across
+  completely unrelated segments (one landing outside any mapped device
+  entirely). This is the first *dynamic* confirmation of the "incoherent
+  pointers" finding, not just a hand-computed static one. **Bigger
+  finding**: `draw_readout_char` starts with `cmp byte[0x1b83],0x14 /
+  je <return-immediately>`, and `[0x1B83]` is `detect_comm_option_hw`'s
+  own comm-option-presence flag. This emulator run reads `0x1E` (comm
+  absent, because the I/O stub for the presence probe is plain
+  unbacked RAM) - but **both of this project's real physical test
+  units have the RS-232 option installed**, meaning on the actual
+  hardware `[0x1B83]` would be `0x14` and this function would return
+  immediately, drawing nothing. If that holds up, this function may be
+  dead code for readout text on the units actually being tested, and
+  the real text-rendering path on comm-equipped units might be
+  `write_readout_port_byte`'s still-unresolved `0x40000+0x6F0`
+  UART-register-bank overlap (`MEMORY_MAP.md`'s "Puzzle" section) -
+  potentially the same mystery as this one, not two separate open
+  questions. Not yet confirmed either way - next step is stubbing
+  `detect_comm_option_hw`'s hardware probe to reflect "comm installed"
+  and seeing what code path actually renders text in that
+  configuration. Full detail in `docs/display/vector-display-and-
+  stroke-font.md`'s "Live emulation confirms..." section.
 - A structural search for the 128-entry far-pointer array's *shape*
   found zero real candidates in any of the 3 chips (main ROMs and comm
   ROM all tried as of 2026-09-14) - a real scoring bug was found and

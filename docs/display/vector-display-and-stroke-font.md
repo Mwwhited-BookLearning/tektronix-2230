@@ -601,6 +601,102 @@ once the correct native-coordinate transform is known. That makes it
 a more promising path to the actual glyph data than continuing the
 pointer-table hunt.
 
+## Live emulation confirms `[0x1DB0]`'s current value produces incoherent per-character pointers, and surfaces a bigger open question about whether this code even runs on comm-equipped units
+
+2026-09-16, using the new `emulator/` project (see `emulator/docs/
+design.md`) - the first time this project has run the actual firmware
+rather than only statically reading it. Booted the real 160-3633/-3532
+ROM images from reset in Unicorn with a synthetic scheduler tick (see
+that doc's "Findings and gotchas"), and instrumented `draw_readout_char`
+(physical `0xE3854`) directly: hooked its argument load (`[bp+6]`, the
+character byte), the `les di, [0x1db0]` at `0xE386E` (the table-base
+load), and the `les ax, [es:bx+di]` at `0xE3874` (the per-character
+entry resolution) to print live register values as the real CPU
+executes them.
+
+**The run legitimately reaches this code while rendering the power-up
+self-test banner.** 5 consecutive calls decoded characters `0x20 0x50
+0x4F 0x57 0x45` = `" POWE"` - an exact match against the start of
+`STRINGS.md`'s "POWER UP FAILURES"/"2230/2220 Power up tests complete."
+- strong, independent confirmation the trace is capturing something
+real, not an artifact of premature/out-of-order emulation.
+
+**Caught and fixed an instrumentation bug worth flagging for future
+sessions**: the first pass read `[0x1B83]` and `[0x1DB0]` assuming
+`DS=0` (physical address = the raw offset), which silently reads the
+*wrong* memory cell - `MEMORY_MAP.md` already documents `DS=0x41`
+(physical base `0x410`) as the convention most flat variables use, and
+this run confirmed it directly: `DS` was `0x0041` at every one of
+these hook points, making `[0x1B83]`'s *real* physical address
+`0x410+0x1B83 = 0x1F93`, not `0x1B83`. Re-read using the CPU's actual
+live `DS` register rather than assuming a fixed segment - a mistake
+worth remembering any time a future emulator instrumentation script
+reads a flat-pool variable by address without checking the live
+segment register first.
+
+**With that fixed, the confirmed live values**:
+- `[0x1DB0]` = `E9A3:0000` (physical `0xE9A30`) at every one of the 5
+  calls - matches this doc's earlier static finding
+  (`init_far_pointer_table_sysrom` writes this value) exactly, now
+  confirmed as the value actually live in RAM during real execution,
+  not just "found by tracing a `movsw` loop."
+- The 5 resolved per-character far pointers (`table_base + char*4`)
+  are: `0x20`→`FC80:0574`, `0x50`→`FCE4:8021` (physical `0x104E61`,
+  itself only reachable at all because of the 8086 1MB address
+  wraparound this project's emulator has to model - see `emulator/
+  docs/design.md`), `0x4F`→`8A26:0B74`, `0x57`→`001E:000A`, and
+  `0x45`→`C683:0189` (physical `0x0C69B9`, completely unmapped -
+  this is what actually stopped the emulator run). These do not form
+  any plausible, internally-consistent glyph table - wildly different
+  segments per adjacent character, one landing in the middle of
+  low-memory IVT space, one entirely outside any real device's address
+  range. **This is the first direct, dynamic (not inferential)
+  confirmation that `E9A3:0000` does not behave as a working glyph
+  table** when actually walked by the real code, for this run's
+  configuration - stronger evidence than the earlier static "sampled
+  char-lookups produce incoherent pointers" note, which was itself
+  computed by hand rather than watched live.
+
+**Important open caveat, not yet resolved - arguably the bigger
+finding of the two**: `draw_readout_char` starts with `cmp byte
+[0x1b83], 0x14 / je <skip-everything-and-return>` - and `[0x1B83]` is
+`detect_comm_option_hw`'s own comm-option-presence result flag (`0x14`
+= comm option detected, `0x1E`/other = not detected; confirmed by
+reading that function's own body, physical `0xE75C0`-`0xE7624`, 3
+write sites, no ambiguity). **In this emulator run, `[0x1B83]` reads
+`0x1E`** (confirmed via the same DS-corrected trace, right after
+`detect_comm_option_hw` itself ran and returned) - because the
+emulator's current I/O stubbing for `detect_comm_option_hw`'s
+hardware presence probe (`MEMORY_MAP.md`'s confirmed `0x4007DE`/
+`0x4377E` write/readback pair) is just plain RAM with no real hardware
+behind it, so the presence test naturally reads back "not installed."
+That means this run is faithfully exercising the **"no comm option"**
+configuration's code path. **But this project's own hardware notes
+confirm both real physical test units ARE Option 12 (RS-232)
+equipped** - meaning on the *actual* scopes this project has hardware
+access to, `[0x1B83]` would read `0x14`, and `draw_readout_char` would
+take the **other** branch: an immediate return, drawing nothing at
+all. If that's really how it plays out on real hardware, **this
+function may be dead code for text rendering on the specific units
+this project has been using for live RS-232 testing** - and the real
+mechanism for readout text on comm-equipped units might be an entirely
+different path, quite possibly `print_string_far`/`write_readout_port_
+byte` writing straight to the `0x40000+0x6F0` port bank that
+`MEMORY_MAP.md`'s "Puzzle: `write_readout_port_byte`'s address
+overlaps the comm-option UART register bank" section already flags as
+structurally comm-hardware-shaped and unresolved. If that's right, the
+stroke-font hunt and that separate long-standing puzzle are the same
+mystery wearing two names, and the reason the stroke-font table has
+never been found on live hardware captures might simply be that **it
+was never being used** for the units actually being tested against.
+**Not yet confirmed either way** - next step is emulating with
+`[0x1B83]` forced to `0x14` (or, better, properly stubbing the
+`detect_comm_option_hw` hardware probe to reflect "comm installed") to
+see whether `write_readout_port_byte` is what actually gets called
+for readout text instead, and whether *its* output can be correlated
+against a real captured HPGL/serial log the way this whole
+investigation started.
+
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 
 Found 2026-09-15 while investigating `UNKNOWN_DATA.md`'s exported
