@@ -149,6 +149,28 @@ would be invisible to this kind of static search. Not found, not ruled
 out - would need data-flow tracing of those specific call sites, not
 another text search.
 
+**Checked whether a large ROM block gets bulk-copied ("shadowed") into
+this RAM neighborhood at boot** - a different mechanism than a single
+4-byte far-pointer write, and one that could plant real glyph *data*
+(not just a pointer) near `[0x1DB0]` without ever showing up as a
+literal reference to `0x1DB0`/`0x21C0` at all. Checked exhaustively:
+`memcpy_far` (the confirmed general-purpose far-copy primitive) has
+exactly 14 call sites in the entire corpus - none copy anywhere near
+this address, and none use a byte count remotely close to what a
+128-entry × 4-byte glyph-pointer array (512 bytes) or real stroke data
+would need (observed counts: `4`, `20`-byte-stride records, `170`
+bytes - all small, specific, unrelated record copies). Also searched
+for *any* `rep movsw`/`rep movsb` bulk-copy instruction used directly
+(bypassing the `memcpy_far` wrapper) across both the proven and
+heuristic listings - **there is exactly one such instruction pair in
+the entire disassembled corpus, and it's `memcpy_far`'s own
+implementation** (already covered by the 14 call sites above). No
+other bulk-copy mechanism exists anywhere in the ~91% of the ROM this
+project has actually disassembled (`disasm/compute_coverage.py`:
+89.99% `160-3633`, 91.48% `160-3532`, 91.69% `160-2998`, 91.06%
+overall). **This doesn't rule out a copy happening in the unreached
+~9%** - it rules it out everywhere this project has actually looked.
+
 ## Attempted: locating the stroke-font glyph table for SVG extraction
 
 Per the user's request (they noticed vector graphics/icons on the CRT
