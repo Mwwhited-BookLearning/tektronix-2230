@@ -212,12 +212,30 @@ top item.
   either. **Also corrected a real error found along the way**:
   `FUNCTIONS.md` said `draw_readout_char` calls `plot_readout_point_
   relative` - it actually calls `plot_readout_point` directly, verified
-  against the real `lcall` target. **Most promising next step now**:
-  find and trace whatever reads `[0x1CC4]` and produces real CRT/
-  plotter output (many candidates found, none traced - see
-  `docs/display/vector-display-and-stroke-font.md`'s "Follow-up,
-  2026-09-15" section) rather than continuing to fit HPGL samples
-  against the wrong equation.
+  against the real `lcall` target.
+- **Found a second, independent reader of `[0x1DB0]`** while chasing
+  the above: `FUNC_3633_E60C` (physical `0xEE60C`) uses the exact same
+  `char*4` indexing and `[0x1DB0]` far-pointer read as `draw_readout_
+  char`, and its own stroke loop extracts `fine`/`coarse` with the
+  identical mask/shift formula - a real, structurally-verified second
+  consumer, not a landing-artifact coincidence. It writes into a
+  different target (`[0x45E]`, with `coarse` added to a running
+  accumulator `[0x46E]` instead of a fixed per-character baseline) and
+  is embedded in a giant, currently-unnamed function (`FUNC_3633_DF56`,
+  `0xEDF56`). **Neither has a confirmed caller** - both are
+  `ref_count: 0` in the heuristic symbol table, so this doesn't prove
+  reachability, but it's real code worth someone naming and tracing
+  forward from. Don't confuse this with the nearby, already-documented
+  `dispatch_item_handler_if_enabled`/`[0x1D10]` item-table mechanism
+  (a landing artifact of the same neighborhood, unrelated to the
+  stroke font) - full detail and the exact disassembly in
+  `docs/display/vector-display-and-stroke-font.md`'s "Found a second,
+  independent reader of `[0x1DB0]`" section. **Most promising next
+  step now**: trace `SUB_F6510` (called with a character-code argument,
+  likely a width-measurement function feeding `[0x46E]`'s accumulator)
+  for more context, or find and trace whatever produces real CRT/
+  plotter output from either `[0x1CC4]` or `[0x45E]`'s buffer - still
+  not found, many candidates, none traced.
 
 ## Front-panel switches
 

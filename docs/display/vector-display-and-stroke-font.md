@@ -354,6 +354,76 @@ downstream renderer does with `baseline`+`coarse` isn't a simple
 `Y_hpgl = A + 4*(baseline+coarse)` - solving it precisely needs that
 renderer's own disassembly, not more sample-fitting.
 
+## Found a second, independent reader of `[0x1DB0]` - `FUNC_3633_E60C` (real, structurally confirmed; not proven-reachable)
+
+Went hunting for "whatever reads `[0x1CC4]` and produces real output"
+per the previous section's own next-step suggestion - traced through
+~30 reference sites and found something more specific and more
+valuable than a renderer: **a second function that independently reads
+the exact same `[0x1DB0]` stroke-font pointer table** `draw_readout_
+char` uses, with the identical indexing and extraction formula:
+
+```
+3633:E612  mov dl, [bp+6]     ; char code argument
+3633:E618  shl dx, 1          ; dx *= 4  (same "char*4" indexing as draw_readout_char)
+3633:E61A  shl dx, 1
+3633:E61C  les di, ptr [0x1DB0]        ; SAME table pointer
+3633:E622  les ax, ptr es:[bx+di]      ; SAME "read a far pointer per character" step
+```
+
+Its stroke-fetch loop (`L_EE6C3`/`L_EE62E`, physical `0xEE62E`-
+`0xEE705`) fetches bytes from that far pointer one at a time until a
+`0x00` terminator (identical shape to `draw_readout_char`'s own loop,
+down to checking the *same* `[0x1CC4]+0x1400` = 5120-byte wraparound
+boundary `plot_readout_point` uses), and for each stroke byte extracts
+`fine = byte & 0xF` and `coarse = (byte & 0x70) >> 4` using the
+identical mask-and-shift sequence (`and dx,0x70` / `sar dx,1` x4) as
+`draw_readout_char`. This isn't a coincidental byte-pattern match -
+it's the same formula, applied to the same source table, independently
+implemented a second time.
+
+**What it does differently**: instead of calling `plot_readout_point`
+to append into the display list via the `[0x1AF4]`-tracked write
+cursor, this function writes `fine` and `coarse + [0x46E]` (a running
+accumulator, **added** directly, not `draw_readout_char`'s fixed
+per-character `baseline`) into a buffer via the `[0x45E]` pointer
+(already documented elsewhere as "a saved copy of the readout buffer's
+own base pointer `[0x1CC4]`" - see `init_print_region_home`/`init_
+selftest_report_screen` in `FUNCTIONS.md`), tagging each with the same
+delimiter-marker value (`2`) `mark_readout_delimiter` uses. `[0x46E]`
+gets incremented elsewhere (physical `0xEC706`/`0xEC71B`) by the return
+value of `SUB_F6510`, called with a character code argument - almost
+certainly a **character-width measurement function**, making `[0x46E]`
+a running horizontal-layout accumulator (the per-character X-advance
+this project has been looking for, structurally - though its exact
+scale/units weren't traced further).
+
+**This function - and the giant function it's embedded in,
+`FUNC_3633_DF56` (`0xEDF56`) - are both heuristic-only, `ref_count: 0`
+in the symbol table: no confirmed caller was found.** So this is a
+real, structurally solid second consumer of the stroke-font table, not
+a landing-artifact coincidence - but not proven to execute on real
+hardware. Worth noting for anyone who names it later: don't confuse it
+with the *other* label found nearby, `dispatch_item_handler_if_enabled`
+(`0xEDFFD`, already documented in `FUNCTIONS.md`) - that label sits on
+a landing artifact (`sub ax,[bx]; or ah,dh`, 3 bytes before its real
+semantic start at `0xEE004`), and its own already-confirmed mechanism
+(the `[0x1D10]` per-item handler table, called from `tag_position_
+marker_and_dispatch` at `0xF5D89` in `160-3532`) is unrelated to the
+stroke-font reading found here, even though both sit inside the same
+outer function and were easy to conflate mid-trace.
+
+**Still not found**: the actual HPGL-scale/output stage (this function
+doesn't reveal a `×4` factor either - `fine` and `coarse` are still
+combined by raw addition here, just with a running accumulator instead
+of a fixed baseline), and neither this function nor its containing
+`FUNC_3633_DF56` have a confirmed caller to trace forward from. If
+picked up again: check what calls `SUB_F6510` elsewhere for more
+context on the width-measurement/layout system, and try find_landing_
+artifacts.py-style caller-count ranking on far calls into this whole
+address neighborhood (`0xEDF56`-`0xEE705`) to see if anything real
+reaches it despite the heuristic scanner's `ref_count: 0`.
+
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 
 Found 2026-09-15 while investigating `UNKNOWN_DATA.md`'s exported
