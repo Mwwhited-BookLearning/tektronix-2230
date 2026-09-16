@@ -9,6 +9,13 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **Hardware fix needed (user, 2026-09-16)**: reopen **Scope 1**
+  and swap its `CH1`/`CH2` connections to the acquisition DACs back to
+  correct - they got connected swapped after the power-supply repair.
+  Analog front-end stages are confirmed correct; this is specifically
+  a DAC-connection swap. Scope 2 is unaffected. See `HARDWARE.md`'s
+  "Two physical units" section for the caveat this adds to any
+  `CH1`-vs-`CH2` live-test result gathered from Scope 1 until fixed.
 - [ ] **Reminder (user, 2026-09-16)**: review service manual **page
       415** - the acquisition memory logic (RAM chips + decode logic).
       User's own preview while noting this down: 2x 2048x8 static RAM,
