@@ -1077,7 +1077,7 @@ putchar_serial:
     push bp                                  ; 3241: push bp
     mov bp, sp                               ; 3242: mov bp, sp
     sub sp, 6                                ; 3244: sub sp, 6
-    mov dl, byte [bp + 6]                    ; 3247: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 3247: mov dl, byte ptr [bp + 6]  -> char
     mov byte [5], dl                         ; 324A: mov byte ptr [5], dl
     call 0x9687:0x02f8                       ; 324E: lcall 0x9687, 0x2f8
     mov sp, bp                               ; 3253: mov sp, bp
