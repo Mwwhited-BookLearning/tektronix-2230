@@ -689,13 +689,52 @@ stroke-font hunt and that separate long-standing puzzle are the same
 mystery wearing two names, and the reason the stroke-font table has
 never been found on live hardware captures might simply be that **it
 was never being used** for the units actually being tested against.
-**Not yet confirmed either way** - next step is emulating with
-`[0x1B83]` forced to `0x14` (or, better, properly stubbing the
-`detect_comm_option_hw` hardware probe to reflect "comm installed") to
-see whether `write_readout_port_byte` is what actually gets called
-for readout text instead, and whether *its* output can be correlated
-against a real captured HPGL/serial log the way this whole
-investigation started.
+**Confirmed, same session, immediately after**: built `emulator/
+io_stubs.py`'s `CommPresenceProbe`, which couples the two registers
+`detect_comm_option_hw`'s probe actually uses (`0x407DE` write,
+`0x4377E` readback - **caught and fixed a real, pre-existing typo in
+`MEMORY_MAP.md` along the way**: that table's own row key said
+`0x4007DE`, an extra digit, despite the row's own body text already
+saying the correct `0x407DE` - the typo was invisible until a wrong
+constant copied from it silently made the first version of this stub
+target an address the real code never touches, with zero effect and no
+error). With the probe correctly stubbed as "installed" (`--comm-
+installed`), `[0x1B83]` reads `0x14` exactly as predicted, and
+`draw_readout_char` returns immediately on **every single one** of the
+~48 calls made while rendering the full self-test banner - the boot
+run also proceeds cleanly to 60,000,000 instructions with zero crashes
+this way, versus reliably crashing inside the broken glyph walk every
+time under the default "not installed" stub. **Meanwhile,
+`print_string_far`/`write_readout_port_byte` fire regardless of the
+comm-detection stub** (confirmed: 33 calls happen even without
+`--comm-installed`, before the crash cuts that run short) - not a
+comm-gated alternate path, an unconditional one - and carry the
+complete, real diagnostic text live: `'2230/2220 boot : 160-3633-14'`,
+`'POWER UP FAILURES'`, `'PRESS MENU KEYS TO CONTINUE'`, `'ROM/RAM/NMI
+:'`, `'Display controller : TIMEOUT'`, `'ACQ_AB read-back 0 <> 2'` -
+captured byte-for-byte by hooking `print_string_far`'s far-pointer
+argument and reading the string directly out of ROM/RAM as the real
+CPU executes.
+
+**Conclusion**: on this project's own real physical test units (both
+confirmed Option 12/RS-232-equipped), `draw_readout_char`'s entire
+vector-stroke-font mechanism is inert for this diagnostic text - the
+only channel that ever carries it is `write_readout_port_byte`'s
+`0x40000+0x6F0` port write, confirmed unconditional. This resolves the
+stroke-font glyph-table hunt for the hardware actually available to
+this project: the table was never found in a live capture because the
+code path that would read it never runs on these units. `MEMORY_MAP.md`'s
+long-standing "Puzzle: `write_readout_port_byte`'s address overlaps the
+comm-option UART register bank" section is updated to match - the
+*practical* question (where does this text actually go) is settled,
+even though the port's exact schematic identity (UART/GPIB chip vs.
+something else) still isn't proven beyond the existing 8-register-count
+coincidence. The vector/stroke-font mechanism and `[0x1DB0]`'s bad
+`E9A3:0000` value remain genuinely interesting mysteries (this doc's
+earlier sections stand), but they're now understood to be about a code
+path that's dead weight on the hardware this project can actually test
+against - not the practical route to explaining any live-captured HPGL
+or serial text output.
 
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 

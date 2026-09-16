@@ -51,7 +51,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x41000` | **CONFIRMED: "Display chip interrupt reset"** (Table 3-1) | Matches `read_display_chip_int_reset`/`clear_display_chip_int_reset`'s address exactly - the earlier "per-channel front-end status" guess was wrong; it's the CRT/readout display controller chip's interrupt-reset line, not a channel status register |
 | `0x42000` (labeled "FRAME" in the manual) | **CONFIRMED: "Display chip next frame"** (Table 3-1) | Matches `read_display_chip_frame_trigger`/`clear_display_chip_frame_trigger`'s address exactly - same correction as `0x41000` above; this is the display chip's next-frame trigger |
 | `0x403FFA`, `0x403FFB` | **CONFIRMED: "Front Panel Buffer U9301"** (=`SWB2`) / **"Front Panel Buffer U9302"** (=`SWB1`) (Table 3-1, cross-referenced against Tables 6-16/6-17) | Confirms the long-standing "front-panel key/encoder status is the leading candidate" guess for `scheduler_tick_service`'s `[0x758]`/`[0x759]` source exactly. **Bit-level validated 2026-09-13**, not just address-matched: `[0x758]`'s (`SWB2`) exact bit map is `MEM 3`/`MEM 1`/`POS-SEL`/`1K-4K`/`MENU`/`MEM 2`/`MENU ADV`/`SELECT C1-C2` (bit0-7) - and self-test code masking `[0x758]&0x63` (bits 0,1,5,6 = the 3 `MEM` buttons + `MENU ADV`) plus a separate `&0x80` (`SELECT C1/C2`) check exactly reproduces the service manual's own documented self-test-abort behavior ("If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error") - see `VARIABLES.md` for the full bit table and `docs/self-test/front-panel-switches.md` for the code-structure comparison |
-| `0x4007DE` | **CONFIRMED: "Time Base Mode Register U4119"** (Table 3-1, address `0x407DE`) | Exact match for `detect_comm_option_hw`'s write-probe address (`0x40000+0x7DE`) - the register `[0x1B83]`'s detection probe pokes is a general Time Base Mode register, not a comm-specific latch; the comm-option detection apparently rides on a specific bit within this general register |
+| `0x407DE` | **CONFIRMED: "Time Base Mode Register U4119"** (Table 3-1, address `0x407DE`) | Exact match for `detect_comm_option_hw`'s write-probe address (`0x40000+0x7DE`) - the register `[0x1B83]`'s detection probe pokes is a general Time Base Mode register, not a comm-specific latch; the comm-option detection apparently rides on a specific bit within this general register. **Fixed 2026-09-16**: this row's own key had a typo (`0x4007DE`, an extra digit) despite its body text already saying the correct `0x407DE` - caught while building `emulator/io_stubs.py`'s `CommPresenceProbe`, where copying the wrong key silently made the stub target an address the real code never touches |
 | `0x4377E` (readback side of the same probe, i.e. `0x40000+0x377E`) | **RESOLVED 2026-09-13, exact match: "Acquisition Memory Address Buffer Low bits U3427"** (Table 3-1's full page image) | The earlier "off by `0x40` from `0x437BE`" note was comparing against the wrong neighboring row - an OCR/text-extraction gap in the previously-read garbled table, not a real discrepancy. `detect_comm_option_hw`'s readback probe reads a bit of `U3427` (the acquisition address buffer, already independently confirmed elsewhere at this same address) - not a comm-specific register at all, consistent with the write side also being a general-purpose register (`U4119`, Time Base Mode) rather than dedicated comm hardware |
 | `0x4067C` | **CONFIRMED: "Option Status Latch (in)"** (Table 3-1) | Resolves the old "unreconciled" `selftest_comm_readback` thread - this genuinely is the comm option's status latch, not a readout-memory-window coincidence as that note speculated |
 | `0x406BC` | **CONFIRMED: "Option Parameters Latch (in)"** (Table 3-1) | The comm option's PARAMETERS DIP-switch readback register - ties `read_dip_switches_serial_config`/`read_dip_switches_gpib_config` to this exact address |
@@ -148,6 +148,32 @@ confirmed, and what this function's caller/purpose actually is hasn't
 been traced. Flagged here rather than guessed at further.
 
 ## Puzzle: `write_readout_port_byte`'s address overlaps the comm-option UART register bank
+
+**RESOLVED (in practice, not by schematic ID) 2026-09-16 via the new
+`emulator/` project** - see `docs/display/vector-display-and-stroke-
+font.md`'s "Live emulation confirms..." section for the full trace.
+Booted the real firmware and instrumented both text-output paths at
+once. Confirmed directly: `print_string_far`/`write_readout_port_byte`
+fire **unconditionally** (33 calls happen even with the comm-option
+detection stubbed as "not installed"), carrying the complete, real
+self-test/POST banner text (`'2230/2220 boot : 160-3633-14'`,
+`'POWER UP FAILURES'`, `'Display controller : TIMEOUT'`, etc. -
+watched live, byte for byte). `draw_readout_char` (the CRT vector-
+stroke-font path), by contrast, is **conditionally gated** on
+`detect_comm_option_hw`'s result (`[0x1B83]`) - it returns immediately,
+rendering nothing, whenever the comm option is detected as present.
+**Both of this project's real physical test units have the RS-232
+option installed**, so on that actual hardware: `write_readout_port_
+byte` is the *only* channel that ever carries this diagnostic text; the
+vector/stroke-font path is completely inert. This still doesn't pin
+`write_readout_port_byte`'s address to a specific schematic device (the
+TMS9914A-count coincidence below remains suggestive, not proven), but
+it settles the practical question this whole thread was really about:
+**where does self-test/readout text actually go on the hardware this
+project has access to** - through this port, never through the vector
+display list. This also resolves the long-standing stroke-font glyph-
+table hunt for these specific units: the table was never found because
+the code path that would use it never runs on comm-equipped hardware.
 
 **Re-examined 2026-09-13 against the manual's actual page image** (not
 just OCR text) - the picture is clearer but still unresolved. Table

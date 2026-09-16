@@ -218,11 +218,27 @@ top item.
   `write_readout_port_byte`'s still-unresolved `0x40000+0x6F0`
   UART-register-bank overlap (`MEMORY_MAP.md`'s "Puzzle" section) -
   potentially the same mystery as this one, not two separate open
-  questions. Not yet confirmed either way - next step is stubbing
-  `detect_comm_option_hw`'s hardware probe to reflect "comm installed"
-  and seeing what code path actually renders text in that
-  configuration. Full detail in `docs/display/vector-display-and-
-  stroke-font.md`'s "Live emulation confirms..." section.
+  questions. **Confirmed true, same day, immediately after**: built
+  `emulator/io_stubs.py`'s `CommPresenceProbe` to stub the hardware
+  probe as "installed" (catching a real pre-existing typo in
+  `MEMORY_MAP.md`'s own address table along the way - `0x4007DE`
+  instead of the correct `0x407DE`, an extra digit). With `[0x1B83]`
+  correctly reading `0x14`, `draw_readout_char` returns immediately on
+  every single one of ~48 calls made while rendering the full self-test
+  banner, and the emulator runs cleanly to 60M instructions with no
+  crash (versus reliably crashing under the default stub). Separately
+  confirmed `print_string_far`/`write_readout_port_byte` fire
+  **unconditionally** regardless of comm-detection status, carrying the
+  complete real diagnostic text live (`'POWER UP FAILURES'`, `'Display
+  controller : TIMEOUT'`, etc., captured byte-for-byte). **This closes
+  the loop**: on this project's real physical hardware (both units
+  confirmed RS-232-equipped), the vector-stroke-font path is dead code
+  for this text, and `write_readout_port_byte` is the only channel that
+  ever carries it - `MEMORY_MAP.md`'s "Puzzle" section is now marked
+  resolved for the practical question, though the port's exact
+  schematic device identity is still not proven. Full detail in
+  `docs/display/vector-display-and-stroke-font.md`'s "Live emulation
+  confirms..." section.
 - A structural search for the 128-entry far-pointer array's *shape*
   found zero real candidates in any of the 3 chips (main ROMs and comm
   ROM all tried as of 2026-09-14) - a real scoring bug was found and

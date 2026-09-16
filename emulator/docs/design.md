@@ -146,6 +146,19 @@ Milestone 4 is the actual goal; 1-3 are checkpoints proving the
 infrastructure is trustworthy enough to believe milestone 4's answer
 once reached.
 
+**All 4 milestones done, 2026-09-16, with a real answer.** Milestone
+4's dereferenced address turned out to be incoherent garbage (per
+`docs/display/vector-display-and-stroke-font.md`'s "Live emulation
+confirms..." section) - but chasing *why* led to the actual resolution:
+`draw_readout_char` is conditionally dead code whenever the comm option
+is detected as installed, which both of this project's real physical
+test units are. `io_stubs.py` (a new module, see its docstring and
+`design.md`'s "I/O port and MMIO stub strategy" above) stubs the
+comm-presence hardware probe to confirm this directly - see
+`changes/2026-09-16.md` for the full story. The emulator remains active
+infrastructure for whatever's next (the still-open HPGL transform
+puzzle is the leading candidate), not a one-shot tool that's now done.
+
 ## Findings and gotchas from the first implementation pass, 2026-09-16
 
 Moved past design-only once Unicorn's install was confirmed working -

@@ -9,47 +9,20 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
-- [ ] **User request 2026-09-16**: build a headless Unicorn-Engine
-      emulator/tracer for the firmware, motivated directly by the
-      stroke-font glyph-table hunt (`docs/display/vector-display-and-
-      stroke-font.md`) hitting a wall static analysis alone can't
-      resolve - two candidate writers of `[0x1DB0]` found, neither
-      confirmed as the real one, and the downstream HPGL transform
-      still unmatched by static shape-matching. Design phase complete,
-      first implementation pass done: `unicorn` installed (`2.1.4`),
-      boots the real firmware from reset, and a synthetic scheduler
-      tick (INT 2/NMI) is working - milestones 1 and 3 of `emulator/
-      docs/design.md` both function. Found and fixed 4 real emulation
-      gotchas (RAM-vs-ROM mapping at `0x88000-0x8FFFF`, INT 2 being
-      NMI so it must never be gated on `IF`, the 8086's 1MB address
-      wraparound Unicorn doesn't model automatically, a false-positive
-      "vector installed" check firing on transient boot-time RAM-test
-      patterns) - see `emulator/docs/design.md`'s "Findings and
-      gotchas" section. **Resolved the "33 ticks" blocker**: not a
-      timing artifact at all - the unmapped read at `0x0C69B9` is
-      `draw_readout_char` (physical `0xE3854`) genuinely walking
-      `[0x1DB0]`'s incoherent per-character pointers while rendering
-      the real power-up self-test banner (`" POWE"`, confirmed against
-      `STRINGS.md`). Instrumented it directly and got a real result:
-      **live confirmation** that `[0x1DB0]=E9A3:0000` produces garbage
-      pointers (not just a hand-computed static claim anymore), *and* a
-      bigger, previously-unconsidered finding - `draw_readout_char`
-      checks `detect_comm_option_hw`'s result flag first and returns
-      immediately (no rendering at all) when the comm option is
-      detected. This emulator run has it stubbed as "not detected," but
-      **both of this project's real physical test units have RS-232
-      installed** - meaning this whole function may be dead code on the
-      actual hardware being tested, and the real readout-text path on
-      comm-equipped units might be `write_readout_port_byte`'s
-      long-standing, separately-documented `0x40000+0x6F0` UART-bank
-      overlap puzzle (`MEMORY_MAP.md`'s "Puzzle" section) - possibly the
-      same mystery, not two. See `docs/display/vector-display-and-
-      stroke-font.md`'s "Live emulation confirms..." section and
-      `STILL_PENDING_DECODE.md` for full detail. **Next step**: stub
-      `detect_comm_option_hw`'s hardware probe to reflect "comm
-      installed" and see what code path actually renders text in that
-      configuration - a much higher-value next step than continuing to
-      poke at the current "comm absent" boot path.
+- [ ] **`emulator/` next steps** (built 2026-09-16, see `emulator/
+      README.md`/`emulator/docs/design.md`): resolved the stroke-font
+      glyph-table hunt for this project's real hardware (full story in
+      `changes/2026-09-16.md`) - remaining open threads for the
+      emulator itself: (1) the still-unsolved HPGL native-coordinate
+      transform puzzle (`docs/display/vector-display-and-stroke-
+      font.md`'s "Follow-up, 2026-09-14/15" sections) could potentially
+      be chased dynamically the same way, by stubbing more hardware and
+      watching what a real plot/print command actually produces; (2)
+      more I/O stubs (the front-panel ADC/switch registers, the
+      display-chip reset/frame lines) would let the boot trace get
+      further past self-test - currently "Display controller : TIMEOUT"
+      and "ACQ_AB read-back 0 <> 2" are genuine self-test failures
+      caused by unstubbed hardware, not firmware bugs.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-

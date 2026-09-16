@@ -18,6 +18,7 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
+from io_stubs import CommPresenceProbe
 
 # A genuine 8086 (20 address lines, unlike 286+) wraps any computed
 # physical address above 1MB back into the bottom of the address space
@@ -78,6 +79,13 @@ def main():
                      help="instructions between synthetic INT2 ticks, "
                           "0 disables the scheduler timer entirely "
                           "(default 2000)")
+    ap.add_argument("--comm-installed", action="store_true",
+                     help="stub detect_comm_option_hw's hardware probe "
+                          "to read back as 'comm option installed', "
+                          "matching this project's real physical test "
+                          "units (both confirmed Option 12/RS-232) "
+                          "instead of the default 'not installed' plain-"
+                          "RAM behavior - see io_stubs.CommPresenceProbe")
     args = ap.parse_args()
 
     emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
@@ -104,6 +112,11 @@ def main():
         print(f"mapped {region.name:28s} 0x{region.start:06X}-"
               f"0x{region.start + region.size - 1:06X} "
               f"{'RW' if region.writable else 'RO'}")
+
+    if args.comm_installed:
+        CommPresenceProbe().install(emu, uc)
+        print("stubbed detect_comm_option_hw's presence probe as "
+              "'installed' (--comm-installed)")
 
     emu.hook_add(uc.UC_HOOK_MEM_INVALID, hook_mem_invalid, user_data)
     emu.hook_add(uc.UC_HOOK_INSN, lambda e, port, size, ud=user_data:
