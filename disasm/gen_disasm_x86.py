@@ -3997,10 +3997,13 @@ PARAMETER_NAMES = {
     # close_print_record (0xE374E): far-pointer record argument, byte
     # 0 tagged with the completion code `0x11`.
     0xE374E: {6: "record_off", 8: "record_seg"},
-    # array_index_16 (0xFBC2F): "(base far ptr, index) -> base +
-    # index*16" per FUNCTIONS.md - bp+6/8 is the far pointer base,
-    # bp+0xa is shl'd 4 times (*16) and added to it.
-    0xFBC2F: {6: "base_off", 8: "base_seg", 0xA: "index"},
+    # array_index_16 (0xFBC2F): corrected 2026-09-16 - `retf 4` (only
+    # 4 bytes of args) proves this takes 2 plain words, not a far
+    # pointer + index as FUNCTIONS.md's "(base far ptr, index)" prose
+    # implied. bp+6 (`base`) is used directly as `di`, unmodified;
+    # bp+8 (`index`) is what's actually shl'd 4 times (*16) before
+    # being added to it - not a segment half at all.
+    0xFBC2F: {6: "base", 8: "index"},
     # copy_word_far (0xFBC4D): confirmed bp+6/8 is read from (src),
     # bp+0xa/0xc is written to (dest).
     0xFBC4D: {6: "src_off", 8: "src_seg", 0xA: "dest_off", 0xC: "dest_seg"},

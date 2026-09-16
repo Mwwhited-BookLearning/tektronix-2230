@@ -4744,8 +4744,8 @@ array_index_16:
     push bp                                  ; BC2F: push bp
     mov bp, sp                               ; BC30: mov bp, sp
     sub sp, 6                                ; BC32: sub sp, 6
-    mov di, word [bp + 6]                    ; BC35: mov di, word ptr [bp + 6]  -> base_off
-    mov dx, word [bp + 8]                    ; BC38: mov dx, word ptr [bp + 8]  -> base_seg
+    mov di, word [bp + 6]                    ; BC35: mov di, word ptr [bp + 6]  -> base
+    mov dx, word [bp + 8]                    ; BC38: mov dx, word ptr [bp + 8]  -> index
     shl dx, 1                                ; BC3B: shl dx, 1
     shl dx, 1                                ; BC3D: shl dx, 1
     shl dx, 1                                ; BC3F: shl dx, 1
