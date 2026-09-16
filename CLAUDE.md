@@ -102,6 +102,23 @@ are already settled and documented there and in `docs/` (start at
   stick; it gets overwritten the next time anything regenerates it.
   Add the matching entry to `FUNCTIONS.md`/`VARIABLES.md` at the same
   time — don't rename in only one place.
+- Once a function's incoming stack parameters (`[bp+N]` operands, not
+  local variables) are understood well enough to name, add
+  `{physical_address: {offset: "name", ...}}` to `disasm/
+  gen_disasm_x86.PARAMETER_NAMES` (offsets as they appear in the
+  disassembly's own `[bp + N]` text, e.g. `6`, `0xa`) and regenerate
+  via `gen_source_readable.py` — this annotates every `[bp+N]`
+  reference to that offset with a trailing `-> name` comment in the
+  `_readable.asm` output (comment-only, never rewrites the real
+  operand, so it can't affect `binary/aligned/`'s NASM reassembly).
+  Derive the offset-to-name mapping from the function's own
+  disassembly (cross-check against a call site that passes
+  self-describing literal values where one exists, e.g. `format_
+  number`'s argument order was confirmed this way from `format_hex_
+  word`/`format_decimal_word`'s fixed pushes) rather than guessing from
+  a generic calling-convention assumption. Add the same `(name1,
+  name2, ...)` signature to `FUNCTIONS.md`'s entry for that function at
+  the same time.
 - Don't re-litigate settled facts (currently: the CPU is a confirmed
   Intel 8088/8086, not the 6809 originally guessed) — check
   `docs/README.md` and its area files first.

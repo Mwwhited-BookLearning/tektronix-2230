@@ -103,11 +103,20 @@ def classify_readable(chip_name, buf, visited, chip_base, nasm_exe):
     return result
 
 
-def build_source(chip_name, buf, visited, chip_base, nasm_exe):
+def build_source(chip_name, buf, visited, chip_base, nasm_exe, func_starts=None):
     readable = classify_readable(chip_name, buf, visited, chip_base, nasm_exe)
     string_regions = gs.find_string_regions(buf)
     string_start = {lo: hi for lo, hi in string_regions}
     by_chip_off = {e["chip_off"]: e for e in visited.values() if e["chip"] == chip_name}
+    func_starts = func_starts or {}
+    current_func_phys = [None]  # mutable cell, closed over by the loop below
+
+    def annotate(comment, op):
+        """Append the semantic parameter name for a [bp+N] operand in
+        `op`, if PARAMETER_NAMES has one for the function currently
+        being rendered - see gen_disasm_x86.lookup_param_name()."""
+        name = g.lookup_param_name(current_func_phys[0], op)
+        return f"{comment}  -> {name}" if name else comment
 
     lines = [
         f"; Tektronix 2230 ROM chip {chip_name} - READABLE reconstruction",
@@ -145,6 +154,8 @@ def build_source(chip_name, buf, visited, chip_base, nasm_exe):
             filler_start = None
 
     while addr < n:
+        if addr in func_starts:
+            current_func_phys[0] = func_starts[addr]
         lab = gs.labels_by_addr.get((chip_name, addr))
 
         if addr in readable:
@@ -152,7 +163,8 @@ def build_source(chip_name, buf, visited, chip_base, nasm_exe):
             if lab:
                 lines.append(f"{lab}:")
             size, nasm_line, mnem, op, pad = readable[addr]
-            lines.append(f"    {nasm_line:<40s} ; {addr:04X}: {mnem} {op}")
+            comment = annotate(f"{addr:04X}: {mnem} {op}", op)
+            lines.append(f"    {nasm_line:<40s} ; {comment}")
             if pad:
                 lines.append(f"    times {pad} nop"
                               f"  ; padding to preserve address alignment")
@@ -216,19 +228,27 @@ def main(nasm_exe, entry_points=None, only_chips=None):
     chips, visited, labels = g.main(None, entry_points)
 
     gs.labels_by_addr = {}
+    func_starts_by_chip = {}
     for phys, lab in labels.items():
         name = lab.get("fixed_name") or g.FUNCTIONAL_NAMES.get(phys) or (
             ("SUB_%05X" % phys) if lab["kind"] == "sub" else ("L_%05X" % phys))
         chip_name, chip_off = v.g.phys_to_chip_offset(chips, phys)
         if chip_name:
             gs.labels_by_addr[(chip_name, chip_off)] = name
+            # Track function-entry addresses (call targets and real
+            # entry points, not branch-only labels) so build_source()
+            # knows which function's PARAMETER_NAMES apply at any given
+            # address - see gen_disasm_x86.lookup_param_name().
+            if lab["kind"] in ("sub", "entry"):
+                func_starts_by_chip.setdefault(chip_name, {})[chip_off] = phys
 
     for name, info in chips.items():
         if only_chips is not None and name not in only_chips:
             continue
         if "alias" in name:
             continue
-        src = build_source(name, info["buf"], visited, info["base"], nasm_exe)
+        src = build_source(name, info["buf"], visited, info["base"], nasm_exe,
+                            func_starts_by_chip.get(name))
         out_path = f"160-{name}-14_readable.asm"
         open(out_path, "w").write(src)
         print(f"wrote {out_path} ({len(src)} bytes)")

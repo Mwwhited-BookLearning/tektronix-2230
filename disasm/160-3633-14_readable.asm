@@ -4004,7 +4004,7 @@ strncat_far:
     push bp                                  ; 31DC: push bp
     mov bp, sp                               ; 31DD: mov bp, sp
     sub sp, 0xa                              ; 31DF: sub sp, 0xa
-    les di, [bp + 6]                         ; 31E2: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 31E2: les di, ptr [bp + 6]  -> dest_off
     mov word [bp - 0xa], di                  ; 31E5: mov word ptr [bp - 0xa], di
     mov word [bp - 8], es                    ; 31E8: mov word ptr [bp - 8], es
     jmp 0x31f1                               ; 31EB: jmp 0x21
@@ -4014,8 +4014,8 @@ L_E31F1:
     les di, [bp - 0xa]                       ; 31F1: les di, ptr [bp - 0xa]
     cmp byte [es:di], 0                      ; 31F4: cmp byte ptr es:[di], 0
     je short 0x3205                          ; 31F8: je 0x35
-    mov dx, word [bp + 0xe]                  ; 31FA: mov dx, word ptr [bp + 0xe]
-    dec word [bp + 0xe]                      ; 31FD: dec word ptr [bp + 0xe]
+    mov dx, word [bp + 0xe]                  ; 31FA: mov dx, word ptr [bp + 0xe]  -> max_len
+    dec word [bp + 0xe]                      ; 31FD: dec word ptr [bp + 0xe]  -> max_len
     cmp dx, 0                                ; 3200: cmp dx, 0
     jg short 0x31ee                          ; 3203: jg 0x1e
 L_E3205:
@@ -4023,18 +4023,18 @@ L_E3205:
 L_E3208:
     les di, [bp - 0xa]                       ; 3208: les di, ptr [bp - 0xa]
     mov dx, es                               ; 320B: mov dx, es
-    les bx, [bp + 0xa]                       ; 320D: les bx, ptr [bp + 0xa]
+    les bx, [bp + 0xa]                       ; 320D: les bx, ptr [bp + 0xa]  -> src_off
     mov al, byte [es:bx]                     ; 3210: mov al, byte ptr es:[bx]
     mov es, dx                               ; 3213: mov es, dx
     mov byte [es:di], al                     ; 3215: mov byte ptr es:[di], al
     inc word [bp - 0xa]                      ; 3218: inc word ptr [bp - 0xa]
-    inc word [bp + 0xa]                      ; 321B: inc word ptr [bp + 0xa]
+    inc word [bp + 0xa]                      ; 321B: inc word ptr [bp + 0xa]  -> src_off
 L_E321E:
-    les di, [bp + 0xa]                       ; 321E: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 321E: les di, ptr [bp + 0xa]  -> src_off
     cmp byte [es:di], 0                      ; 3221: cmp byte ptr es:[di], 0
     je short 0x3232                          ; 3225: je 0x62
-    mov dx, word [bp + 0xe]                  ; 3227: mov dx, word ptr [bp + 0xe]
-    dec word [bp + 0xe]                      ; 322A: dec word ptr [bp + 0xe]
+    mov dx, word [bp + 0xe]                  ; 3227: mov dx, word ptr [bp + 0xe]  -> max_len
+    dec word [bp + 0xe]                      ; 322A: dec word ptr [bp + 0xe]  -> max_len
     cmp dx, 0                                ; 322D: cmp dx, 0
     jg short 0x3208                          ; 3230: jg 0x38
 L_E3232:
@@ -4049,24 +4049,24 @@ strncpy_far:
     sub sp, 6                                ; 3242: sub sp, 6
     jmp 0x325e                               ; 3245: jmp 0x8e
 L_E3248:
-    les di, [bp + 6]                         ; 3248: les di, ptr [bp + 6]
-    inc word [bp + 6]                        ; 324B: inc word ptr [bp + 6]
+    les di, [bp + 6]                         ; 3248: les di, ptr [bp + 6]  -> dest_off
+    inc word [bp + 6]                        ; 324B: inc word ptr [bp + 6]  -> dest_off
     mov dx, es                               ; 324E: mov dx, es
-    les bx, [bp + 0xa]                       ; 3250: les bx, ptr [bp + 0xa]
-    inc word [bp + 0xa]                      ; 3253: inc word ptr [bp + 0xa]
+    les bx, [bp + 0xa]                       ; 3250: les bx, ptr [bp + 0xa]  -> src_off
+    inc word [bp + 0xa]                      ; 3253: inc word ptr [bp + 0xa]  -> src_off
     mov al, byte [es:bx]                     ; 3256: mov al, byte ptr es:[bx]
     mov es, dx                               ; 3259: mov es, dx
     mov byte [es:di], al                     ; 325B: mov byte ptr es:[di], al
 L_E325E:
-    les di, [bp + 0xa]                       ; 325E: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 325E: les di, ptr [bp + 0xa]  -> src_off
     cmp byte [es:di], 0                      ; 3261: cmp byte ptr es:[di], 0
     je short 0x3272                          ; 3265: je 0xa2
-    mov dx, word [bp + 0xe]                  ; 3267: mov dx, word ptr [bp + 0xe]
-    dec word [bp + 0xe]                      ; 326A: dec word ptr [bp + 0xe]
+    mov dx, word [bp + 0xe]                  ; 3267: mov dx, word ptr [bp + 0xe]  -> max_len
+    dec word [bp + 0xe]                      ; 326A: dec word ptr [bp + 0xe]  -> max_len
     cmp dx, 0                                ; 326D: cmp dx, 0
     jg short 0x3248                          ; 3270: jg 0x78
 L_E3272:
-    les di, [bp + 6]                         ; 3272: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 3272: les di, ptr [bp + 6]  -> dest_off
     mov byte [es:di], 0                      ; 3275: mov byte ptr es:[di], 0
     mov sp, bp                               ; 3279: mov sp, bp
     pop bp                                   ; 327B: pop bp
@@ -4076,32 +4076,32 @@ format_number:
     mov bp, sp                               ; 3280: mov bp, sp
     sub sp, 0xc                              ; 3282: sub sp, 0xc
     mov word [bp - 0xa], 0                   ; 3285: mov word ptr [bp - 0xa], 0
-    mov di, word [bp + 0xa]                  ; 328A: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; 328A: mov di, word ptr [bp + 0xa]  -> width
     inc di                                   ; 328D: inc di
     mov word [bp - 8], di                    ; 328E: mov word ptr [bp - 8], di
-    mov dx, word [bp + 6]                    ; 3291: mov dx, word ptr [bp + 6]
+    mov dx, word [bp + 6]                    ; 3291: mov dx, word ptr [bp + 6]  -> value
     and dx, strict word 0x8000               ; 3294: and dx, 0x8000
     cmp dx, 0                                ; 3298: cmp dx, 0
     je short 0x32ad                          ; 329B: je 0xdd
-    cmp byte [bp + 0xc], 1                   ; 329D: cmp byte ptr [bp + 0xc], 1
+    cmp byte [bp + 0xc], 1                   ; 329D: cmp byte ptr [bp + 0xc], 1  -> overflow_flag
     jne short 0x32ad                         ; 32A1: jne 0xdd
-    add word [bp + 6], strict word 0x8000    ; 32A3: add word ptr [bp + 6], 0x8000
+    add word [bp + 6], strict word 0x8000    ; 32A3: add word ptr [bp + 6], 0x8000  -> value
     mov word [bp - 0xa], 0xffff              ; 32A8: mov word ptr [bp - 0xa], 0xffff
 L_E32AD:
     mov di, word [bp - 8]                    ; 32AD: mov di, word ptr [bp - 8]
     dec word [bp - 8]                        ; 32B0: dec word ptr [bp - 8]
     mov byte [di + 0x1b34], 0                ; 32B3: mov byte ptr [di + 0x1b34], 0
-    cmp word [bp + 6], 0                     ; 32B8: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 32B8: cmp word ptr [bp + 6], 0  -> value
     jne short 0x330a                         ; 32BC: jne 0x13a
     mov bx, word [bp - 8]                    ; 32BE: mov bx, word ptr [bp - 8]
     dec word [bp - 8]                        ; 32C1: dec word ptr [bp - 8]
     mov byte [bx + 0x1b34], 0x30             ; 32C4: mov byte ptr [bx + 0x1b34], 0x30
-    dec word [bp + 0xe]                      ; 32C9: dec word ptr [bp + 0xe]
+    dec word [bp + 0xe]                      ; 32C9: dec word ptr [bp + 0xe]  -> extra
     jmp 0x330a                               ; 32CC: jmp 0x13a
 L_E32CF:
-    mov ax, word [bp + 6]                    ; 32CF: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 32CF: mov ax, word ptr [bp + 6]  -> value
     sub dx, dx                               ; 32D2: sub dx, dx
-    div word [bp + 8]                        ; 32D4: div word ptr [bp + 8]
+    div word [bp + 8]                        ; 32D4: div word ptr [bp + 8]  -> radix
     mov word [bp - 0xc], dx                  ; 32D7: mov word ptr [bp - 0xc], dx
     push dx                                  ; 32DA: push dx
     cmp dx, 9                                ; 32DB: cmp dx, 9
@@ -4117,15 +4117,15 @@ L_E32E9:
     mov di, word [bp - 8]                    ; 32EE: mov di, word ptr [bp - 8]
     dec word [bp - 8]                        ; 32F1: dec word ptr [bp - 8]
     mov byte [di + 0x1b34], bl               ; 32F4: mov byte ptr [di + 0x1b34], bl
-    mov ax, word [bp + 8]                    ; 32F8: mov ax, word ptr [bp + 8]
+    mov ax, word [bp + 8]                    ; 32F8: mov ax, word ptr [bp + 8]  -> radix
     mov di, ax                               ; 32FB: mov di, ax
-    mov ax, word [bp + 6]                    ; 32FD: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 32FD: mov ax, word ptr [bp + 6]  -> value
     sub dx, dx                               ; 3300: sub dx, dx
     div di                                   ; 3302: div di
-    mov word [bp + 6], ax                    ; 3304: mov word ptr [bp + 6], ax
-    dec word [bp + 0xe]                      ; 3307: dec word ptr [bp + 0xe]
+    mov word [bp + 6], ax                    ; 3304: mov word ptr [bp + 6], ax  -> value
+    dec word [bp + 0xe]                      ; 3307: dec word ptr [bp + 0xe]  -> extra
 L_E330A:
-    cmp word [bp + 6], 0                     ; 330A: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 330A: cmp word ptr [bp + 6], 0  -> value
     jbe short 0x3316                         ; 330E: jbe 0x146
     cmp word [bp - 8], 0                     ; 3310: cmp word ptr [bp - 8], 0
     jge short 0x32cf                         ; 3314: jge 0xff
@@ -4135,11 +4135,11 @@ L_E3319:
     mov di, word [bp - 8]                    ; 3319: mov di, word ptr [bp - 8]
     dec word [bp - 8]                        ; 331C: dec word ptr [bp - 8]
     mov byte [di + 0x1b34], 0x30             ; 331F: mov byte ptr [di + 0x1b34], 0x30
-    dec word [bp + 0xe]                      ; 3324: dec word ptr [bp + 0xe]
+    dec word [bp + 0xe]                      ; 3324: dec word ptr [bp + 0xe]  -> extra
 L_E3327:
     cmp word [bp - 8], 0                     ; 3327: cmp word ptr [bp - 8], 0
     jl short 0x3333                          ; 332B: jl 0x163
-    cmp word [bp + 0xe], 0                   ; 332D: cmp word ptr [bp + 0xe], 0
+    cmp word [bp + 0xe], 0                   ; 332D: cmp word ptr [bp + 0xe], 0  -> extra
     jg short 0x3319                          ; 3331: jg 0x149
 L_E3333:
     jmp 0x3356                               ; 3333: jmp 0x186
@@ -4160,7 +4160,7 @@ L_E334A:
 L_E3356:
     cmp word [bp - 8], 0                     ; 3356: cmp word ptr [bp - 8], 0
     jge short 0x3336                         ; 335A: jge 0x166
-    cmp word [bp + 6], 0                     ; 335C: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 335C: cmp word ptr [bp + 6], 0  -> value
     je short 0x3367                          ; 3360: je 0x197
     mov byte [0x1b34], 0x2a                  ; 3362: mov byte ptr [0x1b34], 0x2a
 L_E3367:
@@ -4660,16 +4660,16 @@ plot_readout_point_relative:
     push bp                                  ; 3900: push bp
     mov bp, sp                               ; 3901: mov bp, sp
     sub sp, 6                                ; 3903: sub sp, 6
-    mov dl, byte [bp + 0xa]                  ; 3906: mov dl, byte ptr [bp + 0xa]
+    mov dl, byte [bp + 0xa]                  ; 3906: mov dl, byte ptr [bp + 0xa]  -> attr
     sub dh, dh                               ; 3909: sub dh, dh
     push dx                                  ; 390B: push dx
     mov ax, word [0x1afa]                    ; 390C: mov ax, word ptr [0x1afa]
-    mov bl, byte [bp + 8]                    ; 390F: mov bl, byte ptr [bp + 8]
+    mov bl, byte [bp + 8]                    ; 390F: mov bl, byte ptr [bp + 8]  -> dy
     sub bh, bh                               ; 3912: sub bh, bh
     add ax, bx                               ; 3914: add ax, bx
     push ax                                  ; 3916: push ax
     mov ax, word [0x1af8]                    ; 3917: mov ax, word ptr [0x1af8]
-    mov dl, byte [bp + 6]                    ; 391A: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 391A: mov dl, byte ptr [bp + 6]  -> dx
     sub dh, dh                               ; 391D: sub dh, dh
     add ax, dx                               ; 391F: add ax, dx
     push ax                                  ; 3921: push ax
@@ -4682,23 +4682,23 @@ plot_readout_point:
     push bp                                  ; 3930: push bp
     mov bp, sp                               ; 3931: mov bp, sp
     sub sp, 6                                ; 3933: sub sp, 6
-    mov dl, byte [bp + 6]                    ; 3936: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 3936: mov dl, byte ptr [bp + 6]  -> x
     sub dh, dh                               ; 3939: sub dh, dh
     mov word [0x1af8], dx                    ; 393B: mov word ptr [0x1af8], dx
-    mov bl, byte [bp + 8]                    ; 393F: mov bl, byte ptr [bp + 8]
+    mov bl, byte [bp + 8]                    ; 393F: mov bl, byte ptr [bp + 8]  -> y
     sub bh, bh                               ; 3942: sub bh, bh
     mov word [0x1afa], bx                    ; 3944: mov word ptr [0x1afa], bx
     les di, [0x1af4]                         ; 3948: les di, ptr [0x1af4]
     mov byte [es:di], bl                     ; 394C: mov byte ptr es:[di], bl
-    mov al, byte [bp + 0xa]                  ; 394F: mov al, byte ptr [bp + 0xa]
+    mov al, byte [bp + 0xa]                  ; 394F: mov al, byte ptr [bp + 0xa]  -> attr
     les di, [0x1af4]                         ; 3952: les di, ptr [0x1af4]
     inc word [0x1af4]                        ; 3956: inc word ptr [0x1af4]
     mov bx, word [0x1c02]                    ; 395A: mov bx, word ptr [0x1c02]
     mov byte [es:bx + di], al                ; 395E: mov byte ptr es:[bx + di], al
     les di, [0x1af4]                         ; 3961: les di, ptr [0x1af4]
-    mov dl, byte [bp + 6]                    ; 3965: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 3965: mov dl, byte ptr [bp + 6]  -> x
     mov byte [es:di], dl                     ; 3968: mov byte ptr es:[di], dl
-    mov al, byte [bp + 0xa]                  ; 396B: mov al, byte ptr [bp + 0xa]
+    mov al, byte [bp + 0xa]                  ; 396B: mov al, byte ptr [bp + 0xa]  -> attr
     les di, [0x1af4]                         ; 396E: les di, ptr [0x1af4]
     inc word [0x1af4]                        ; 3972: inc word ptr [0x1af4]
     mov bx, word [0x1c02]                    ; 3976: mov bx, word ptr [0x1c02]
@@ -5408,11 +5408,11 @@ print_banner_line:
     push bp                                  ; 4217: push bp
     mov bp, sp                               ; 4218: mov bp, sp
     sub sp, 6                                ; 421A: sub sp, 6
-    les di, [bp + 6]                         ; 421D: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 421D: les di, ptr [bp + 6]  -> string_off
     push es                                  ; 4220: push es
     push di                                  ; 4221: push di
     call 0xe352:0x0301                       ; 4222: lcall 0xe352, 0x301
-    les di, [bp + 6]                         ; 4227: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 4227: les di, ptr [bp + 6]  -> string_off
     push es                                  ; 422A: push es
     push di                                  ; 422B: push di
     call 0xe06b:0x0445                       ; 422C: lcall 0xe06b, 0x445
@@ -8187,8 +8187,8 @@ seg_off_to_linear:
     push bp                                  ; 6D2F: push bp
     mov bp, sp                               ; 6D30: mov bp, sp
     sub sp, 6                                ; 6D32: sub sp, 6
-    mov di, word [bp + 6]                    ; 6D35: mov di, word ptr [bp + 6]
-    mov dx, word [bp + 8]                    ; 6D38: mov dx, word ptr [bp + 8]
+    mov di, word [bp + 6]                    ; 6D35: mov di, word ptr [bp + 6]  -> offset
+    mov dx, word [bp + 8]                    ; 6D38: mov dx, word ptr [bp + 8]  -> segment
     shl dx, 1                                ; 6D3B: shl dx, 1
     shl dx, 1                                ; 6D3D: shl dx, 1
     shl dx, 1                                ; 6D3F: shl dx, 1
@@ -10038,7 +10038,7 @@ L_E97FA:
     db 0x0a, 0xeb, 0x07, 0x90, 0x2b, 0xf0, 0xff, 0x46, 0x0a, 0x49, 0x83, 0xf9, 0x00, 0x7f, 0xf5, 0x89  ; 9828
     db 0x76, 0x06, 0x8b, 0x5e, 0x0a, 0x81, 0xe3, 0x07, 0x00, 0x89, 0x5e, 0xfe, 0x8b, 0x56, 0x0a, 0xd1  ; 9838
     db 0xea, 0xd1, 0xea, 0xd1, 0xea, 0x83, 0xfa, 0x00, 0x75, 0x03, 0xe9, 0xb5, 0x00, 0x83, 0x7e, 0x12  ; 9848
-SUB_E9858:
+decimate_peakdet_samples:
     add byte [di + 0x55], dh                 ; 9858: add byte ptr [di + 0x55], dh
 L_E985B:
     mov cx, 8                                ; 985B: mov cx, 8

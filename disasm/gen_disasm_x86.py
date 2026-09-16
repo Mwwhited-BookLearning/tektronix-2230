@@ -3700,6 +3700,98 @@ FUNCTIONAL_NAMES = {
                                                # escalate_acq_timeout_reset
 }
 
+# Semantic names for a function's own incoming stack parameters
+# ([bp+N] operands - real args, not local variables, which stay
+# unnamed for now; see docs/README.md's architecture entry for the
+# broader naming convention this extends). Keyed the same way as
+# FUNCTIONAL_NAMES (by the function's own physical entry address),
+# each value a {offset: name} map. `offset` is the same signed integer
+# that appears in the disassembly's own `[bp + N]`/`[bp - N]` operand
+# text (e.g. `6`, `0xa` -> `10`). Applied as a trailing comment
+# annotation only (see gen_source_readable.py's build_source()) -
+# never rewrites the actual operand text, so it can never affect NASM
+# reassembly of binary/aligned/'s reconstructions.
+#
+# Argument order and offsets below are read directly off each
+# function's own disassembly (not guessed from the calling
+# convention) - cross-checked wherever possible against a real call
+# site that passes literal, self-describing values (e.g.
+# format_hex_word/format_decimal_word's fixed pushes into
+# format_number nail down its 5-argument order exactly).
+PARAMETER_NAMES = {
+    # memcpy_far (160-3532, 0xFBC09): "lds si,[bp+6]; les di,[bp+0xa];
+    # mov cx,[bp+0xe]" - (src far ptr, dest far ptr, byte count) per
+    # FUNCTIONS.md.
+    0xFBC09: {6: "src_off", 8: "src_seg", 0xA: "dest_off", 0xC: "dest_seg",
+              0xE: "count"},
+    # strncat_far (0xE31DC): dest far ptr copied into a local write
+    # cursor first (bp+6/8), src far ptr read from bp+0xa/0xc, bp+0xe
+    # is the max-length countdown - confirmed by reading the full body,
+    # not just FUNCTIONS.md's prose order.
+    0xE31DC: {6: "dest_off", 8: "dest_seg", 0xA: "src_off", 0xC: "src_seg",
+              0xE: "max_len"},
+    # strncpy_far (0xE323F): same argument shape as strncat_far (dest
+    # write cursor at bp+6/8, src read cursor at bp+0xa/0xc, max_len at
+    # bp+0xe) - confirmed the same way.
+    0xE323F: {6: "dest_off", 8: "dest_seg", 0xA: "src_off", 0xC: "src_seg",
+              0xE: "max_len"},
+    # format_number (0xE327F): confirmed via format_hex_word/format_
+    # decimal_word's own fixed call sites, which push (in order)
+    # extra=0, overflow_flag=0, width=5|6, radix=0x10|0xa, then
+    # value=[bp+6] last - matching this function's own bp+6=value
+    # (sign-checked/negated), bp+8=radix (the actual `div` divisor),
+    # bp+0xa=width (the digit-count/padding loop counter), bp+0xc=
+    # overflow_flag (gates the negative-value special case), bp+0xe=
+    # extra (decremented once per digit, a padding-column countdown).
+    0xE327F: {6: "value", 8: "radix", 0xA: "width", 0xC: "overflow_flag",
+              0xE: "extra"},
+    # plot_readout_point_relative (0xE3900): confirmed by tracing its 3
+    # pushes into plot_readout_point's own bp+6/8/0xa=x/y/attr - bp+0xa
+    # here is passed straight through as attr, bp+8 is added to the
+    # current Y ([0x1AFA]) before the call, bp+6 to the current X
+    # ([0x1AF8]) - i.e. (dx, dy, attr), matching FUNCTIONS.md.
+    0xE3900: {6: "dx", 8: "dy", 0xA: "attr"},
+    # plot_readout_point (0xE3930): bp+6 stored straight into the
+    # current-X variable [0x1AF8], bp+8 into current-Y [0x1AFA], bp+0xa
+    # is the attribute byte written into both display-list planes -
+    # (x, y, attr) per FUNCTIONS.md, confirmed directly from the body.
+    0xE3930: {6: "x", 8: "y", 0xA: "attr"},
+    # print_banner_line (0xE4217): single far-pointer argument (the
+    # string to print via print_readout_string, before 2 fixed strings
+    # from the 0xFF7B table) - "(far-ptr string)" per FUNCTIONS.md.
+    0xE4217: {6: "string_off", 8: "string_seg"},
+    # seg_off_to_linear (0xE6D2F): "(offset, segment) -> offset +
+    # segment*16" per FUNCTIONS.md - bp+6 is the base added to at the
+    # end, bp+8 is shifted left 4 times (i.e. *16) first.
+    0xE6D2F: {6: "offset", 8: "segment"},
+    # set_ds_return_old (comm ROM, 0x9470E): "push ds; mov ds,[bp+6];
+    # pop ax" - single word argument, the new DS segment value to swap
+    # in (the old DS comes back in ax as the return value, not a
+    # parameter).
+    0x9470E: {6: "new_segment"},
+}
+
+_BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")
+
+
+def lookup_param_name(func_phys, op_str):
+    """Given the physical entry address of the function currently
+    being rendered and an operand string, return the semantic
+    parameter name for any `[bp+N]`/`[bp-N]` reference it contains (per
+    PARAMETER_NAMES), or None if this function/offset isn't named yet."""
+    names = PARAMETER_NAMES.get(func_phys)
+    if not names:
+        return None
+    m = _BP_OFFSET_RE.search(op_str)
+    if not m:
+        return None
+    sign, raw = m.groups()
+    off = int(raw, 16) if raw.lower().startswith("0x") else int(raw)
+    if sign == "-":
+        off = -off
+    return names.get(off)
+
+
 CALL_MNEMONICS = {"call", "lcall"}
 JUMP_MNEMONICS = {"jmp", "ljmp"}
 COND_JUMP_PREFIX = "j"  # je, jne, jg, jl, ... (capstone x86 conditional jumps)

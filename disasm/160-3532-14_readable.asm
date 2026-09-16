@@ -4726,12 +4726,12 @@ memcpy_far:
     push cx                                  ; BC0D: push cx
     pushf                                    ; BC0E: pushf 
     cld                                      ; BC0F: cld 
-    lds si, [bp + 6]                         ; BC10: lds si, ptr [bp + 6]
-    les di, [bp + 0xa]                       ; BC13: les di, ptr [bp + 0xa]
-    mov cx, word [bp + 0xe]                  ; BC16: mov cx, word ptr [bp + 0xe]
+    lds si, [bp + 6]                         ; BC10: lds si, ptr [bp + 6]  -> src_off
+    les di, [bp + 0xa]                       ; BC13: les di, ptr [bp + 0xa]  -> dest_off
+    mov cx, word [bp + 0xe]                  ; BC16: mov cx, word ptr [bp + 0xe]  -> count
     shr cx, 1                                ; BC19: shr cx, 1
     rep movsw                                ; BC1B: rep movsw word ptr es:[di], word ptr [si]
-    mov cx, word [bp + 0xe]                  ; BC1D: mov cx, word ptr [bp + 0xe]
+    mov cx, word [bp + 0xe]                  ; BC1D: mov cx, word ptr [bp + 0xe]  -> count
     and cx, strict word 1                    ; BC20: and cx, 1
     rep movsb                                ; BC24: rep movsb byte ptr es:[di], byte ptr [si]
     popf                                     ; BC26: popf 
