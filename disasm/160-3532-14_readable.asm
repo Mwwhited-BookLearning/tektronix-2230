@@ -4744,8 +4744,8 @@ array_index_16:
     push bp                                  ; BC2F: push bp
     mov bp, sp                               ; BC30: mov bp, sp
     sub sp, 6                                ; BC32: sub sp, 6
-    mov di, word [bp + 6]                    ; BC35: mov di, word ptr [bp + 6]
-    mov dx, word [bp + 8]                    ; BC38: mov dx, word ptr [bp + 8]
+    mov di, word [bp + 6]                    ; BC35: mov di, word ptr [bp + 6]  -> base_off
+    mov dx, word [bp + 8]                    ; BC38: mov dx, word ptr [bp + 8]  -> base_seg
     shl dx, 1                                ; BC3B: shl dx, 1
     shl dx, 1                                ; BC3D: shl dx, 1
     shl dx, 1                                ; BC3F: shl dx, 1
@@ -4759,9 +4759,9 @@ copy_word_far:
     push bp                                  ; BC4D: push bp
     mov bp, sp                               ; BC4E: mov bp, sp
     sub sp, 6                                ; BC50: sub sp, 6
-    les di, [bp + 0xa]                       ; BC53: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; BC53: les di, ptr [bp + 0xa]  -> dest_off
     mov dx, es                               ; BC56: mov dx, es
-    les bx, [bp + 6]                         ; BC58: les bx, ptr [bp + 6]
+    les bx, [bp + 6]                         ; BC58: les bx, ptr [bp + 6]  -> src_off
     mov ax, word [es:bx]                     ; BC5B: mov ax, word ptr es:[bx]
     mov es, dx                               ; BC5E: mov es, dx
     mov word [es:di], ax                     ; BC60: mov word ptr es:[di], ax
@@ -4772,10 +4772,10 @@ pack_low5_bits:
     push bp                                  ; BC69: push bp
     mov bp, sp                               ; BC6A: mov bp, sp
     sub sp, 6                                ; BC6C: sub sp, 6
-    les di, [bp + 6]                         ; BC6F: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; BC6F: les di, ptr [bp + 6]  -> target_off
     mov dl, byte [es:di]                     ; BC72: mov dl, byte ptr es:[di]
     and dl, 0xe0                             ; BC75: and dl, 0xe0
-    or dl, byte [bp + 0xa]                   ; BC78: or dl, byte ptr [bp + 0xa]
+    or dl, byte [bp + 0xa]                   ; BC78: or dl, byte ptr [bp + 0xa]  -> value
     mov byte [es:di], dl                     ; BC7B: mov byte ptr es:[di], dl
     mov sp, bp                               ; BC7E: mov sp, bp
     pop bp                                   ; BC80: pop bp
@@ -4784,24 +4784,24 @@ set_position_record_3532:
     push bp                                  ; BC84: push bp
     mov bp, sp                               ; BC85: mov bp, sp
     sub sp, 6                                ; BC87: sub sp, 6
-    mov di, word [bp + 0xa]                  ; BC8A: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; BC8A: mov di, word ptr [bp + 0xa]  -> coord
     sar di, 1                                ; BC8D: sar di, 1
     sar di, 1                                ; BC8F: sar di, 1
     sar di, 1                                ; BC91: sar di, 1
-    les bx, [bp + 6]                         ; BC93: les bx, ptr [bp + 6]
-    dec word [bp + 6]                        ; BC96: dec word ptr [bp + 6]
+    les bx, [bp + 6]                         ; BC93: les bx, ptr [bp + 6]  -> record_off
+    dec word [bp + 6]                        ; BC96: dec word ptr [bp + 6]  -> record_off
     mov dx, di                               ; BC99: mov dx, di
     mov byte [es:bx], dl                     ; BC9B: mov byte ptr es:[bx], dl
-    les di, [bp + 6]                         ; BC9E: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; BC9E: les di, ptr [bp + 6]  -> record_off
     and byte [es:di], 0x1f                   ; BCA1: and byte ptr es:[di], 0x1f
-    mov dx, word [bp + 0xa]                  ; BCA5: mov dx, word ptr [bp + 0xa]
+    mov dx, word [bp + 0xa]                  ; BCA5: mov dx, word ptr [bp + 0xa]  -> coord
     and dx, strict word 7                    ; BCA8: and dx, 7
     shl dx, 1                                ; BCAC: shl dx, 1
     shl dx, 1                                ; BCAE: shl dx, 1
     shl dx, 1                                ; BCB0: shl dx, 1
     shl dx, 1                                ; BCB2: shl dx, 1
     shl dx, 1                                ; BCB4: shl dx, 1
-    les bx, [bp + 6]                         ; BCB6: les bx, ptr [bp + 6]
+    les bx, [bp + 6]                         ; BCB6: les bx, ptr [bp + 6]  -> record_off
     or byte [es:bx], dl                      ; BCB9: or byte ptr es:[bx], dl
     mov sp, bp                               ; BCBC: mov sp, bp
     pop bp                                   ; BCBE: pop bp

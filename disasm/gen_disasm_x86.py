@@ -3968,6 +3968,53 @@ PARAMETER_NAMES = {
     # reachable body and is left unnamed rather than guessed.
     0xE9744: {6: "src_off", 8: "src_seg", 0xA: "skip", 0xC: "dst_off",
                0xE: "dst_seg", 0x10: "count", 0x12: "elem_size_flag"},
+    # The following entries had no existing FUNCTIONS.md signature at
+    # all before this pass - added there at the same time, not just
+    # formalizing an already-documented order.
+    #
+    # format_hex_word/format_decimal_word (0xE3372/0xE3395): each
+    # pushes exactly one caller value (bp+6) through to format_number
+    # as its `value` argument, with everything else fixed.
+    0xE3372: {6: "value"},
+    0xE3395: {6: "value"},
+    # format_word_radix (0xE33B8): same shape, but radix (bp+8) is
+    # also caller-supplied - `push word[bp+8]` happens before `push
+    # word[bp+6]`, matching format_number's own (value, radix, ...)
+    # order once resolved through the call.
+    0xE33B8: {6: "value", 8: "radix"},
+    # format_byte_hex (0xE34CB): single byte argument, high nibble
+    # extracted first via `and 0xf0`+shifts.
+    0xE34CB: {6: "value"},
+    # print_char (0xE0B2A): single byte argument, passed straight
+    # through to write_readout_port_byte.
+    0xE0B2A: {6: "char"},
+    # print_string_far (0xE0AF5): far-pointer argument walked byte-by-
+    # byte via `les di,[bp+6]; inc word[bp+6]`.
+    0xE0AF5: {6: "str_off", 8: "str_seg"},
+    # print_readout_string (0xE3821): same far-pointer walk shape as
+    # print_string_far, but calls draw_readout_char per byte instead.
+    0xE3821: {6: "str_off", 8: "str_seg"},
+    # close_print_record (0xE374E): far-pointer record argument, byte
+    # 0 tagged with the completion code `0x11`.
+    0xE374E: {6: "record_off", 8: "record_seg"},
+    # array_index_16 (0xFBC2F): "(base far ptr, index) -> base +
+    # index*16" per FUNCTIONS.md - bp+6/8 is the far pointer base,
+    # bp+0xa is shl'd 4 times (*16) and added to it.
+    0xFBC2F: {6: "base_off", 8: "base_seg", 0xA: "index"},
+    # copy_word_far (0xFBC4D): confirmed bp+6/8 is read from (src),
+    # bp+0xa/0xc is written to (dest).
+    0xFBC4D: {6: "src_off", 8: "src_seg", 0xA: "dest_off", 0xC: "dest_seg"},
+    # pack_low5_bits (0xFBC69): bp+6/8 is the far-pointer target (read-
+    # modify-write), bp+0xa is the value whose low 5 bits get ORed in.
+    0xFBC69: {6: "target_off", 8: "target_seg", 0xA: "value"},
+    # set_position_record_3532 (0xFBC84): bp+6/8 is the far-pointer
+    # record, bp+0xa is the single coordinate encoded (>>3 scaling,
+    # unlike set_position_record's sibling which takes two).
+    0xFBC84: {6: "record_off", 8: "record_seg", 0xA: "coord"},
+    # plot_line_to (0xE7E0D): confirmed (x, y) - each shl'd twice (*4)
+    # early on, the same HPGL coordinate-scaling shape as
+    # update_plot_position.
+    0xE7E0D: {6: "x", 8: "y"},
 }
 
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")

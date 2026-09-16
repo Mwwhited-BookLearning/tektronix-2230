@@ -743,14 +743,14 @@ print_string_far:
     jmp 0x0b1b                               ; 0B02: jmp 0x46b
 L_E0B05:
     call 0xe06b:0x042d                       ; 0B05: lcall 0xe06b, 0x42d
-    les di, [bp + 6]                         ; 0B0A: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 0B0A: les di, ptr [bp + 6]  -> str_off
     mov dl, byte [es:di]                     ; 0B0D: mov dl, byte ptr es:[di]
     sub dh, dh                               ; 0B10: sub dh, dh
     push dx                                  ; 0B12: push dx
     call 0xe06b:0x047a                       ; 0B13: lcall 0xe06b, 0x47a
-    inc word [bp + 6]                        ; 0B18: inc word ptr [bp + 6]
+    inc word [bp + 6]                        ; 0B18: inc word ptr [bp + 6]  -> str_off
 L_E0B1B:
-    les di, [bp + 6]                         ; 0B1B: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 0B1B: les di, ptr [bp + 6]  -> str_off
     cmp byte [es:di], 0                      ; 0B1E: cmp byte ptr es:[di], 0
     jne short 0x0b05                         ; 0B22: jne 0x455
 L_E0B24:
@@ -761,7 +761,7 @@ print_char:
     push bp                                  ; 0B2A: push bp
     mov bp, sp                               ; 0B2B: mov bp, sp
     sub sp, 6                                ; 0B2D: sub sp, 6
-    mov dl, byte [bp + 6]                    ; 0B30: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 0B30: mov dl, byte ptr [bp + 6]  -> char
     sub dh, dh                               ; 0B33: sub dh, dh
     push dx                                  ; 0B35: push dx
     call 0xe06b:0x04a0                       ; 0B36: lcall 0xe06b, 0x4a0
@@ -4181,7 +4181,7 @@ format_hex_word:
     push dx                                  ; 337F: push dx
     mov dx, 0x10                             ; 3380: mov dx, 0x10
     push dx                                  ; 3383: push dx
-    push word [bp + 6]                       ; 3384: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 3384: push word ptr [bp + 6]  -> value
     call 0xe31d:0x00af                       ; 3387: lcall 0xe31d, 0xaf
     add sp, 8                                ; 338C: add sp, 8
     mov sp, bp                               ; 338F: mov sp, bp
@@ -4198,7 +4198,7 @@ format_decimal_word:
     push dx                                  ; 33A2: push dx
     mov dx, 0xa                              ; 33A3: mov dx, 0xa
     push dx                                  ; 33A6: push dx
-    push word [bp + 6]                       ; 33A7: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 33A7: push word ptr [bp + 6]  -> value
     call 0xe31d:0x00af                       ; 33AA: lcall 0xe31d, 0xaf
     add sp, 8                                ; 33AF: add sp, 8
     mov sp, bp                               ; 33B2: mov sp, bp
@@ -4208,14 +4208,14 @@ format_word_radix:
     push bp                                  ; 33B8: push bp
     mov bp, sp                               ; 33B9: mov bp, sp
     sub sp, 6                                ; 33BB: sub sp, 6
-    push word [bp + 8]                       ; 33BE: push word ptr [bp + 8]
+    push word [bp + 8]                       ; 33BE: push word ptr [bp + 8]  -> radix
     sub di, di                               ; 33C1: sub di, di
     push di                                  ; 33C3: push di
     mov dx, 5                                ; 33C4: mov dx, 5
     push dx                                  ; 33C7: push dx
     mov bx, 0x10                             ; 33C8: mov bx, 0x10
     push bx                                  ; 33CB: push bx
-    push word [bp + 6]                       ; 33CC: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 33CC: push word ptr [bp + 6]  -> value
     call 0xe31d:0x00af                       ; 33CF: lcall 0xe31d, 0xaf
     add sp, 8                                ; 33D4: add sp, 8
     mov sp, bp                               ; 33D7: mov sp, bp
@@ -4240,7 +4240,7 @@ format_byte_hex:
     push bp                                  ; 34CB: push bp
     mov bp, sp                               ; 34CC: mov bp, sp
     sub sp, 6                                ; 34CE: sub sp, 6
-    mov dl, byte [bp + 6]                    ; 34D1: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 34D1: mov dl, byte ptr [bp + 6]  -> value
     sub dh, dh                               ; 34D4: sub dh, dh
     and dx, strict word 0xf0                 ; 34D6: and dx, 0xf0
     sar dx, 1                                ; 34DA: sar dx, 1
@@ -4254,7 +4254,7 @@ format_byte_hex:
     jbe short 0x34f7                         ; 34F0: jbe 0x327
     add byte [0x1b4a], 7                     ; 34F2: add byte ptr [0x1b4a], 7
 L_E34F7:
-    mov dl, byte [bp + 6]                    ; 34F7: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 34F7: mov dl, byte ptr [bp + 6]  -> value
     and dl, 0xf                              ; 34FA: and dl, 0xf
     add dl, 0x30                             ; 34FD: add dl, 0x30
     mov byte [0x1b4b], dl                    ; 3500: mov byte ptr [0x1b4b], dl
@@ -4500,7 +4500,7 @@ close_print_record:
     mov bp, sp                               ; 374F: mov bp, sp
     sub sp, 6                                ; 3751: sub sp, 6
     call 0xe352:0x0246                       ; 3754: lcall 0xe352, 0x246
-    les di, [bp + 6]                         ; 3759: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 3759: les di, ptr [bp + 6]  -> record_off
     mov byte [es:di], 0x11                   ; 375C: mov byte ptr es:[di], 0x11
     mov sp, bp                               ; 3760: mov sp, bp
     pop bp                                   ; 3762: pop bp
@@ -4571,7 +4571,7 @@ L_E382F:
     push dx                                  ; 3834: push dx
     call 0xe352:0x0334                       ; 3835: lcall 0xe352, 0x334
 L_E383A:
-    les di, [bp + 6]                         ; 383A: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 383A: les di, ptr [bp + 6]  -> str_off
     mov bx, word [bp - 8]                    ; 383D: mov bx, word ptr [bp - 8]
     inc word [bp - 8]                        ; 3840: inc word ptr [bp - 8]
     mov dl, byte [es:bx + di]                ; 3843: mov dl, byte ptr es:[bx + di]
@@ -9088,18 +9088,18 @@ plot_line_to:
     push bp                                  ; 7E0D: push bp
     mov bp, sp                               ; 7E0E: mov bp, sp
     sub sp, 0xa                              ; 7E10: sub sp, 0xa
-    mov di, word [bp + 6]                    ; 7E13: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 7E13: mov di, word ptr [bp + 6]  -> x
     shl di, 1                                ; 7E16: shl di, 1
     shl di, 1                                ; 7E18: shl di, 1
     mov word [bp - 8], di                    ; 7E1A: mov word ptr [bp - 8], di
-    mov dx, word [bp + 8]                    ; 7E1D: mov dx, word ptr [bp + 8]
+    mov dx, word [bp + 8]                    ; 7E1D: mov dx, word ptr [bp + 8]  -> y
     shl dx, 1                                ; 7E20: shl dx, 1
     shl dx, 1                                ; 7E22: shl dx, 1
     mov word [bp - 0xa], dx                  ; 7E24: mov word ptr [bp - 0xa], dx
     jmp 0x7e95                               ; 7E27: jmp 0x125
 L_E7E2A:
-    push word [bp + 8]                       ; 7E2A: push word ptr [bp + 8]
-    push word [bp + 6]                       ; 7E2D: push word ptr [bp + 6]
+    push word [bp + 8]                       ; 7E2A: push word ptr [bp + 8]  -> y
+    push word [bp + 6]                       ; 7E2D: push word ptr [bp + 6]  -> x
     mov di, 0xff7b                           ; 7E30: mov di, 0xff7b
     push di                                  ; 7E33: push di
     mov dx, 0x3b3                            ; 7E34: mov dx, 0x3b3
