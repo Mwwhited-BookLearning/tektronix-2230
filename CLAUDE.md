@@ -22,6 +22,13 @@ are already settled and documented there and in `docs/` (start at
   once the rest of the analysis is further along.
 - `disasm/` — the disassembly project: generator scripts, listings, and
   the symbol table that gets refined over time.
+- `decompile/` — a local Ghidra project (`Tek2230.gpr`/`.rep/`), a
+  second, independent cross-check tool. **Not git-tracked** (the
+  `.rep/` database is gitignored) — a local artifact, not something a
+  fresh clone will have. See `docs/architecture/ghidra-project.md`
+  before scripting against it — its segment-addressing convention is
+  non-obvious and has already caused two real mistakes worth avoiding
+  a second time.
 - `docs/` — the authoritative technical log (CPU identity, ROM roles,
   every investigation/finding), split by topic under `docs/{area}/
   {feature}.md` since a single running-log file grew too long to

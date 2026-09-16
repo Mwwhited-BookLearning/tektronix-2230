@@ -23,6 +23,7 @@ itself.
 - [CPU identity and source language](architecture/cpu-and-language.md) - confirming the 8088/8086 CPU and that the firmware is compiled C, not hand-assembled
 - [Disassembly tooling](architecture/tooling.md) - the recursive-descent disassembler, the loop/function-boundary separator tool
 - [Validation and coverage](architecture/validation-and-coverage.md) - how the disassembly is checked for correctness, the heuristic layer, current code coverage, the NOP-aligned reconstruction
+- [The decompile/ Ghidra project](architecture/ghidra-project.md) - a second, independent cross-check tool; the non-obvious segment-addressing convention and two real mistakes to avoid when scripting against it
 
 ## Comm ROM (RS-232/GPIB option board)
 
