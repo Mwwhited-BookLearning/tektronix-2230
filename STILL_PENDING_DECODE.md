@@ -192,9 +192,32 @@ top item.
   step-size assumption, one more than the 3-bit coarse field can hold.
   Not resolved; see `docs/display/vector-display-and-stroke-font.md`'s
   "Follow-up, 2026-09-14" for the exact numbers and what's been ruled
-  out. Most promising next step: solve for the true HPGL-to-native
-  transform using more captured samples, or find the ROM's own
-  plot-scale-for-readout-text constant directly.
+  out.
+- **2026-09-15: found why the sample-fitting approach was stuck, but
+  still didn't resolve it.** Re-read `draw_readout_char`/`plot_readout_
+  point` line-by-line and pinned down the *exact* arithmetic: `Y =
+  baseline([0x1AF8], captured once at function entry) + coarse` is a
+  **raw add** (not `coarse*4`), and `X = fine` is raw/unscaled with no
+  per-character offset - `print_readout_string` itself doesn't advance
+  any X position between characters either. The confirmed HPGL step of
+  4 units, and the character-cell X positions seen in captures (10, 38,
+  ...), can't come from this arithmetic - there must be a **separate,
+  unfound downstream stage** that walks the `[0x1CC4]` display list and
+  converts these internal coordinates into real output. The HPGL-
+  sample-fitting approach was implicitly modeling a single-stage
+  transform when there are actually (at least) two - explains the
+  earlier "overflows by one slot no matter what" result, but checking
+  per-character (not pooled) still shows `V`'s own points alone
+  overflowing by one slot, so this doesn't fully resolve the puzzle
+  either. **Also corrected a real error found along the way**:
+  `FUNCTIONS.md` said `draw_readout_char` calls `plot_readout_point_
+  relative` - it actually calls `plot_readout_point` directly, verified
+  against the real `lcall` target. **Most promising next step now**:
+  find and trace whatever reads `[0x1CC4]` and produces real CRT/
+  plotter output (many candidates found, none traced - see
+  `docs/display/vector-display-and-stroke-font.md`'s "Follow-up,
+  2026-09-15" section) rather than continuing to fit HPGL samples
+  against the wrong equation.
 
 ## Front-panel switches
 

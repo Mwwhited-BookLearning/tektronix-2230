@@ -291,6 +291,69 @@ most likely the same still-unfound mechanism behind "who walks the
 command-ID dispatch table" - so solving that would likely unlock this
 approach too.
 
+## Follow-up, 2026-09-15: the exact draw_readout_char/plot_readout_point arithmetic, and why the HPGL-matching puzzle above may be attacking the wrong stage
+
+Went back to the disassembly line-by-line (`draw_readout_char` at
+`0xE3854`, `plot_readout_point` at `0xE3930`, `plot_readout_point_
+relative` at `0xE3900`, `print_readout_string` at `0xE3821`) to pin
+down the *exact* arithmetic behind "coarse -> Y, fine -> X" rather than
+the high-level description above - this was prompted by trying to
+resolve the "9 slots needed for an 8-value 3-bit field" puzzle from
+the HPGL-matching section below, and it surfaces something that
+changes how that puzzle should be attacked.
+
+**Confirmed, byte-exact**, from `draw_readout_char`'s stroke loop:
+```
+attr  = stroke_byte & 0x80 ? char_default_pen : 0    // char_default_pen = 1 if (char & 0x80)==0 else 3
+fine  = stroke_byte & 0x0F                            // 0-15, pushed RAW, no baseline added
+coarse= (stroke_byte & 0x70) >> 4                     // 0-7
+Y     = baseline + coarse                             // RAW ADD - not coarse*4, not scaled at all
+X     = fine                                          // RAW, unscaled, no per-character offset
+plot_readout_point(Y, X, attr)
+```
+`baseline` is `[0x1AF8]`, read into a local **once, at the very start
+of `draw_readout_char`, before the stroke loop begins** - literally
+verified as `al=[0x1AF8]` executing before any stroke byte is
+processed, confirming "captured once per character" precisely (not
+once per line, not recomputed per stroke). `plot_readout_point` itself
+does no arithmetic at all - it just overwrites `[0x1AF8]`/`[0x1AFA]`
+directly with whatever `Y`/`X` it's given and appends `(Y, attr, X,
+attr)` to the display list at `[0x1CC4]`.
+
+**This means the "coarse" field is added directly (1 native unit per
+step), not multiplied by 4** - the confirmed HPGL step of 4 units
+seen in every capture below **cannot come from this arithmetic at
+all**. `draw_readout_char`/`plot_readout_point` operate in an internal
+display-list coordinate space; there must be a **separate, not-yet-
+traced downstream stage** that walks `[0x1CC4]`'s buffer and converts
+these internal `(Y, X)` values into whatever the CRT/plotter actually
+receives - that's where the real HPGL step-4 scale factor (and
+whatever combines each character's local `X:0-15` cell coordinate
+with its position along the line - `print_readout_string` itself,
+confirmed above, does **not** advance any X position between
+characters; it just calls `draw_readout_char` once per byte in a
+plain loop) must live. **This wasn't identified or traced this
+session** - finding it is now the more promising next step than
+continuing to reverse-solve the scale factor from HPGL samples alone,
+since those samples are two transform stages removed from the raw
+stroke bytes (stroke byte -> internal display list -> *unfound
+renderer* -> HPGL), not one stage as the section below effectively
+assumed.
+
+**Does this resolve the "9 slots" puzzle below?** Partially - it
+explains *why* naive baseline-fitting hit a wall (the model was
+missing an entire pipeline stage, so no amount of curve-fitting
+against the wrong equation would ever land cleanly), but it does not
+resolve it outright: even reasoning per-character (using each
+letter's own local baseline) rather than pooling both captured
+characters together, `V`'s own points alone already span 8 native
+`coarse` steps (0-7) *plus* one more (its first plotted point needs
+what would be `coarse=8` under a naive baseline read) - so the
+overflow isn't purely a pooling artifact either. Whatever the
+downstream renderer does with `baseline`+`coarse` isn't a simple
+`Y_hpgl = A + 4*(baseline+coarse)` - solving it precisely needs that
+renderer's own disassembly, not more sample-fitting.
+
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 
 Found 2026-09-15 while investigating `UNKNOWN_DATA.md`'s exported
