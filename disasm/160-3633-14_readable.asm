@@ -911,7 +911,7 @@ format_selftest_result_string:
 L_E0C85:
     mov byte [0x476], 0                      ; 0C85: mov byte ptr [0x476], 0
 L_E0C8A:
-    mov di, word [bp + 6]                    ; 0C8A: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 0C8A: mov di, word ptr [bp + 6]  -> status_bits
     and di, strict word 0x20                 ; 0C8D: and di, 0x20
     cmp di, 0                                ; 0C91: cmp di, 0
     je short 0x0cb2                          ; 0C94: je 0x602
@@ -930,7 +930,7 @@ L_E0C8A:
 L_E0CB2:
     mov di, 0x28                             ; 0CB2: mov di, 0x28
     push di                                  ; 0CB5: push di
-    mov di, word [bp + 6]                    ; 0CB6: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 0CB6: mov di, word ptr [bp + 6]  -> status_bits
     and di, strict word 2                    ; 0CB9: and di, 2
     cmp di, 0                                ; 0CBD: cmp di, 0
     je short 0x0ccd                          ; 0CC0: je 0x61d
@@ -939,7 +939,7 @@ L_E0CB2:
     mov dx, 0x7e8                            ; 0CC7: mov dx, 0x7e8
     jmp 0x0cee                               ; 0CCA: jmp 0x63e
 L_E0CCD:
-    mov di, word [bp + 6]                    ; 0CCD: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 0CCD: mov di, word ptr [bp + 6]  -> status_bits
     and di, strict word 1                    ; 0CD0: and di, 1
     cmp di, 0                                ; 0CD4: cmp di, 0
     je short 0x0ce4                          ; 0CD7: je 0x634
@@ -962,7 +962,7 @@ L_E0CEE:
     call 0xe31d:0x000c                       ; 0CF5: lcall 0xe31d, 0xc
     add sp, 6                                ; 0CFA: add sp, 6
 L_E0CFD:
-    mov ax, word [bp + 6]                    ; 0CFD: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 0CFD: mov ax, word ptr [bp + 6]  -> status_bits
     mov sp, bp                               ; 0D00: mov sp, bp
     pop bp                                   ; 0D02: pop bp
     retf 2                                   ; 0D03: retf 2
@@ -2020,7 +2020,7 @@ ram_pattern_test:
     jmp 0x1c0e                               ; 1B99: jmp 0x29e
 L_E1B9C:
     mov si, cx                               ; 1B9C: mov si, cx
-    les di, [bp + 0xc]                       ; 1B9E: les di, ptr [bp + 0xc]
+    les di, [bp + 0xc]                       ; 1B9E: les di, ptr [bp + 0xc]  -> start_off
     mov word [bp - 0xa], di                  ; 1BA1: mov word ptr [bp - 0xa], di
     mov word [bp - 8], es                    ; 1BA4: mov word ptr [bp - 8], es
     jmp 0x1bbe                               ; 1BA7: jmp 0x24e
@@ -2028,18 +2028,18 @@ L_E1BAA:
     les di, [bp - 0xa]                       ; 1BAA: les di, ptr [bp - 0xa]
     mov dx, si                               ; 1BAD: mov dx, si
     mov byte [es:di], dl                     ; 1BAF: mov byte ptr es:[di], dl
-    mov bx, word [bp + 0x14]                 ; 1BB2: mov bx, word ptr [bp + 0x14]
+    mov bx, word [bp + 0x14]                 ; 1BB2: mov bx, word ptr [bp + 0x14]  -> step
     add word [bp - 0xa], bx                  ; 1BB5: add word ptr [bp - 0xa], bx
     mov ax, si                               ; 1BB8: mov ax, si
     not ax                                   ; 1BBA: not ax
     mov si, ax                               ; 1BBC: mov si, ax
 L_E1BBE:
     mov di, word [bp - 0xa]                  ; 1BBE: mov di, word ptr [bp - 0xa]
-    mov dx, word [bp + 0x10]                 ; 1BC1: mov dx, word ptr [bp + 0x10]
+    mov dx, word [bp + 0x10]                 ; 1BC1: mov dx, word ptr [bp + 0x10]  -> end
     cmp di, dx                               ; 1BC4: cmp di, dx
     jbe short 0x1baa                         ; 1BC6: jbe 0x23a
     mov si, cx                               ; 1BC8: mov si, cx
-    les di, [bp + 0xc]                       ; 1BCA: les di, ptr [bp + 0xc]
+    les di, [bp + 0xc]                       ; 1BCA: les di, ptr [bp + 0xc]  -> start_off
     mov word [bp - 0xa], di                  ; 1BCD: mov word ptr [bp - 0xa], di
     mov word [bp - 8], es                    ; 1BD0: mov word ptr [bp - 8], es
     jmp 0x1c01                               ; 1BD3: jmp 0x291
@@ -2048,22 +2048,22 @@ L_E1BD6:
     mov dl, byte [es:di]                     ; 1BD9: mov dl, byte ptr es:[di]
     sub dh, dh                               ; 1BDC: sub dh, dh
     mov word [bp - 0xc], dx                  ; 1BDE: mov word ptr [bp - 0xc], dx
-    and dx, word [bp + 0x16]                 ; 1BE1: and dx, word ptr [bp + 0x16]
+    and dx, word [bp + 0x16]                 ; 1BE1: and dx, word ptr [bp + 0x16]  -> mask
     mov bx, si                               ; 1BE4: mov bx, si
-    and bx, word [bp + 0x16]                 ; 1BE6: and bx, word ptr [bp + 0x16]
+    and bx, word [bp + 0x16]                 ; 1BE6: and bx, word ptr [bp + 0x16]  -> mask
     cmp dx, bx                               ; 1BE9: cmp dx, bx
     je short 0x1bf5                          ; 1BEB: je 0x285
     mov word [bp - 0xe], 2                   ; 1BED: mov word ptr [bp - 0xe], 2
     jmp 0x1c14                               ; 1BF2: jmp 0x2a4
 L_E1BF5:
-    mov di, word [bp + 0x14]                 ; 1BF5: mov di, word ptr [bp + 0x14]
+    mov di, word [bp + 0x14]                 ; 1BF5: mov di, word ptr [bp + 0x14]  -> step
     add word [bp - 0xa], di                  ; 1BF8: add word ptr [bp - 0xa], di
     mov dx, si                               ; 1BFB: mov dx, si
     not dx                                   ; 1BFD: not dx
     mov si, dx                               ; 1BFF: mov si, dx
 L_E1C01:
     mov di, word [bp - 0xa]                  ; 1C01: mov di, word ptr [bp - 0xa]
-    mov dx, word [bp + 0x10]                 ; 1C04: mov dx, word ptr [bp + 0x10]
+    mov dx, word [bp + 0x10]                 ; 1C04: mov dx, word ptr [bp + 0x10]  -> end
     cmp di, dx                               ; 1C07: cmp di, dx
     jbe short 0x1bd6                         ; 1C09: jbe 0x266
     mov cx, 0x55                             ; 1C0B: mov cx, 0x55
@@ -2127,7 +2127,7 @@ L_E1C14:
 L_E1C91:
     jmp 0x1cb1                               ; 1C91: jmp 0x341
 L_E1C94:
-    and di, word [bp + 0x16]                 ; 1C94: and di, word ptr [bp + 0x16]
+    and di, word [bp + 0x16]                 ; 1C94: and di, word ptr [bp + 0x16]  -> mask
     push di                                  ; 1C97: push di
     call 0xe31d:0x01a2                       ; 1C98: lcall 0xe31d, 0x1a2
     push es                                  ; 1C9D: push es
@@ -2701,7 +2701,7 @@ run_indexed_adc_selftest:
     add sp, 6                                ; 2327: add sp, 6
     mov di, 0x14                             ; 232A: mov di, 0x14
     push di                                  ; 232D: push di
-    mov ax, word [bp + 6]                    ; 232E: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 232E: mov ax, word ptr [bp + 6]  -> index
     mov dx, 0xa                              ; 2331: mov dx, 0xa
     imul dx                                  ; 2334: imul dx
     les di, [0x1dcc]                         ; 2336: les di, ptr [0x1dcc]
@@ -2715,7 +2715,7 @@ run_indexed_adc_selftest:
     call 0xe31d:0x000c                       ; 2347: lcall 0xe31d, 0xc
     add sp, 6                                ; 234C: add sp, 6
     mov word [bp - 0x10], 2                  ; 234F: mov word ptr [bp - 0x10], 2
-    mov ax, word [bp + 6]                    ; 2354: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 2354: mov ax, word ptr [bp + 6]  -> index
     mov dx, 0xa                              ; 2357: mov dx, 0xa
     imul dx                                  ; 235A: imul dx
     les di, [0x1dcc]                         ; 235C: les di, ptr [0x1dcc]
@@ -2727,7 +2727,7 @@ run_indexed_adc_selftest:
     mov di, 0x1000                           ; 236E: mov di, 0x1000
     sub di, 2                                ; 2371: sub di, 2
     mov word [bp - 0xc], di                  ; 2374: mov word ptr [bp - 0xc], di
-    mov ax, word [bp + 6]                    ; 2377: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 2377: mov ax, word ptr [bp + 6]  -> index
     mov dx, 0xa                              ; 237A: mov dx, 0xa
     imul dx                                  ; 237D: imul dx
     les di, [0x1dcc]                         ; 237F: les di, ptr [0x1dcc]
@@ -2762,7 +2762,7 @@ run_indexed_adc_selftest:
     mov dl, byte [es:bx + di]                ; 23CE: mov dl, byte ptr es:[bx + di]
     sub dh, dh                               ; 23D1: sub dh, dh
     mov word [bp - 0x12], dx                 ; 23D3: mov word ptr [bp - 0x12], dx
-    mov ax, word [bp + 6]                    ; 23D6: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 23D6: mov ax, word ptr [bp + 6]  -> index
     mov dx, 0xa                              ; 23D9: mov dx, 0xa
     imul dx                                  ; 23DC: imul dx
     les di, [0x1dcc]                         ; 23DE: les di, ptr [0x1dcc]

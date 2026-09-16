@@ -3939,6 +3939,35 @@ PARAMETER_NAMES = {
     # - the REVERSE of FUNCTIONS.md's previous "(count, far ptr
     # device_array)" prose order (fixed there to match this).
     0x95B69: {6: "device_off", 8: "device_seg", 0xA: "count"},
+    # format_selftest_result_string (0xE0C3D): "(status_bits)" - the
+    # single argument, tested against 0x20/0x02/0x01 bit patterns.
+    0xE0C3D: {6: "status_bits"},
+    # ram_pattern_test (0xE1B89): confirmed real layout is (start_off,
+    # start_seg, end, step, mask) - `end` (bp+0x10) is compared as a
+    # plain word against the running near offset, NOT a second far
+    # pointer as FUNCTIONS.md's prior "(start far ptr, end far ptr,
+    # step, mask)" implied (fixed there to match this) - it's a bound
+    # within the same segment as `start`. bp+0x12 is an unused gap
+    # (left unnamed).
+    0xE1B89: {0xC: "start_off", 0xE: "start_seg", 0x10: "end",
+               0x14: "step", 0x16: "mask"},
+    # run_indexed_adc_selftest (0xE230B): "(index)" - used repeatedly
+    # to compute offsets into the 10-byte-per-record device table at
+    # [0x1DCC].
+    0xE230B: {6: "index"},
+    # extract_strided_channel_samples (0xE9744): confirmed real layout
+    # for the offsets actually used by this primary entry point is
+    # (src_off, src_seg, skip, dst_off, dst_seg, count,
+    # elem_size_flag) - NOT the same left-to-right order as
+    # FUNCTIONS.md's "(far ptr src, far ptr dst, count, skip,
+    # elem_size_flag, sub_offset_flag)" prose (that prose describes
+    # the conceptual argument list, not necessarily this stack order -
+    # left as-is rather than corrected, since the 2 secondary entry
+    # points documented there may see a different layout).
+    # sub_offset_flag's offset was not found within this entry's own
+    # reachable body and is left unnamed rather than guessed.
+    0xE9744: {6: "src_off", 8: "src_seg", 0xA: "skip", 0xC: "dst_off",
+               0xE: "dst_seg", 0x10: "count", 0x12: "elem_size_flag"},
 }
 
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")
