@@ -498,6 +498,72 @@ find_landing_artifacts.py-style caller-count ranking on far calls into
 this whole address neighborhood (`0xEDF56`-`0xEE705`) to see if
 anything real reaches it despite the heuristic scanner's `ref_count: 0`.
 
+## Follow-up, 2026-09-15: tried shape-matching instead of structural scanning - a better technique, still no hit
+
+Prompted by a direct question: if the real *shape* of a captured letter
+is known, searching for that shape's geometry directly in the ROM
+should be a much stronger discriminator than the structural/statistical
+scans tried so far (`scan_pointer_table`, byte-validity scoring) -
+those are weak specifically because every byte `0x01`-`0xFF` is a
+syntactically legal stroke byte (already established above), so
+there's no "looks wrong" signal to filter on. A real letter's stroke
+*topology* (the specific sequence of up/down/left/right movements
+tracing its outline), on the other hand, is a rare, specific pattern
+essentially never produced by coincidence in unrelated data - a much
+better thing to search for.
+
+**Built and ran this for real**, using the already-captured "2" glyph
+from `plot1.hpgl` (its own 12 points, not pooled with "V"). Converted
+its HPGL point sequence into a sequence of 11 consecutive `(dx, dy)`
+deltas, divided by the confirmed `fine` step of 4 (X axis) and the
+best-supported `coarse` step of 4 (Y axis, per the GCD analysis
+earlier), giving a target native delta pattern:
+```
+[(1,1), (2,0), (1,-1), (0,-2), (-1,-1), (-2,0), (-1,-1), (0,-2), (0,-1), (2,0), (2,0)]
+```
+Scanned every possible byte offset in all three ROM chips (masking the
+pen bit, computing each window's own decoded `(fine, coarse)` deltas,
+comparing against the target) for:
+- an exact match of the full 11-delta pattern, in the original
+  orientation and all 3 axis-flip variants (X-flip, Y-flip, both) -
+  **zero hits in any chip, any orientation**
+- a **sign-only** match (direction of movement only, ignoring
+  magnitude) of the same 11-delta pattern in all 4 orientations -
+  **also zero hits** - a striking result on its own, since a
+  sign-only pattern is far more permissive than an exact one
+- progressively shorter sub-patterns (6, 5, 4, 3 deltas) to see where
+  matching starts succeeding - match counts grow smoothly as the
+  window shrinks (0 at length 11 and 6, low single digits at length
+  4-5, dozens at length 3), exactly the growth curve you'd expect from
+  coincidental short-pattern noise, not from approaching a real match
+  that's slightly miscalibrated
+- a sweep of candidate Y-axis (`coarse`) scale factors (2, 4 - the
+  only two that evenly divide every one of "2"'s own Y deltas without
+  a fractional remainder) - **zero exact matches at either scale**
+
+**Conclusion**: the technique itself is sound and worth keeping (see
+`STILL_PENDING_DECODE.md` and `TODO.md` for it as a reusable next
+step) - but the *current numeric model* of the native coordinate
+encoding doesn't match anything in the ~91%-reached ROM, at any
+tested scale or orientation. This is actually a useful negative
+result: it's a second, independent line of evidence (distinct from
+the "9 slots needed" HPGL-fitting puzzle from the 2026-09-14 section)
+that something in the assumed native-to-HPGL transform is still wrong
+- not just "the pointer table hasn't been found yet," but "even a
+direct shape search fails," which means fixing the transform (most
+likely by finding the still-unidentified downstream renderer that
+converts internal display-list coordinates to real output, per the
+2026-09-15 section above) should come *before* trying more ROM-wide
+searches with the current model, since another search built on the
+same broken scale assumption would just fail the same way again.
+
+**If this gets resolved and picked up again**: the shape-matching
+script here doesn't depend on finding `[0x1DB0]`'s pointer table at
+all - it can find real glyph data directly, wherever it lives in ROM,
+once the correct native-coordinate transform is known. That makes it
+a more promising path to the actual glyph data than continuing the
+pointer-table hunt.
+
 ## A separate candidate vector shape table, `160-3633` `0xAE64`-`0xB061` - not the same table as this glyph hunt
 
 Found 2026-09-15 while investigating `UNKNOWN_DATA.md`'s exported

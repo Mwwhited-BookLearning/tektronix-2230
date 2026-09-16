@@ -258,6 +258,24 @@ top item.
   next step now**: find and trace whatever produces real CRT/plotter
   output from either `[0x1CC4]` or `[0x45E]`'s buffer - still
   not found, many candidates, none traced.
+- **Tried shape-matching instead of structural scanning - a better
+  technique, still no hit.** Rather than searching for a plausible
+  pointer-table *structure* (weak, since every byte is a syntactically
+  legal stroke byte per the earlier bug-fix finding), converted the
+  captured "2" glyph's own HPGL points into a native `(fine, coarse)`
+  delta sequence and searched all three ROMs for that exact geometry -
+  no valid pointer table needed, since this searches for the glyph
+  *data* directly. Zero exact matches (any orientation), zero even for
+  a fully permissive sign-only match, and a scale sweep of the Y axis
+  found nothing either - match counts only appear once the window
+  shrinks to 3-4 deltas, the expected shape of coincidental noise, not
+  a near-miss. **The technique is sound and worth reusing once the
+  native-to-HPGL transform is fixed** (see the previous bullet's
+  "downstream renderer" lead) - it doesn't depend on finding `[0x1DB0]`'s
+  pointer table at all, so it's a more direct path to the real glyph
+  data than continuing to chase the pointer. Full detail in `docs/
+  display/vector-display-and-stroke-font.md`'s "Follow-up, 2026-09-15:
+  tried shape-matching" section.
 
 ## Front-panel switches
 
