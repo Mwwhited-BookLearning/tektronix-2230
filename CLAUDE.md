@@ -29,6 +29,12 @@ are already settled and documented there and in `docs/` (start at
   before scripting against it — its segment-addressing convention is
   non-obvious and has already caused two real mistakes worth avoiding
   a second time.
+- `emulator/` — a headless Unicorn-Engine-based tracer for running the
+  real firmware from reset and observing runtime behavior directly,
+  for questions static disassembly can't settle on its own (e.g. the
+  stroke-font glyph-table hunt). See `emulator/docs/design.md` for
+  scope and status — as of 2026-09-16 this is design-phase only, no
+  implementation yet.
 - `docs/` — the authoritative technical log (CPU identity, ROM roles,
   every investigation/finding), split by topic under `docs/{area}/
   {feature}.md` since a single running-log file grew too long to

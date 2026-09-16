@@ -24,6 +24,7 @@ itself.
 - [Disassembly tooling](architecture/tooling.md) - the recursive-descent disassembler, the loop/function-boundary separator tool
 - [Validation and coverage](architecture/validation-and-coverage.md) - how the disassembly is checked for correctness, the heuristic layer, current code coverage, the NOP-aligned reconstruction
 - [The decompile/ Ghidra project](architecture/ghidra-project.md) - a second, independent cross-check tool; the non-obvious segment-addressing convention and two real mistakes to avoid when scripting against it
+- [The emulator/ project (design phase)](../emulator/docs/design.md) - a headless Unicorn-Engine tracer for observing runtime behavior directly, motivated by the stroke-font hunt hitting static analysis's limits; see `emulator/README.md`
 
 ## Comm ROM (RS-232/GPIB option board)
 

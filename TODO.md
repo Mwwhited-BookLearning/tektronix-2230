@@ -9,6 +9,19 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **User request 2026-09-16**: build a headless Unicorn-Engine
+      emulator/tracer for the firmware, motivated directly by the
+      stroke-font glyph-table hunt (`docs/display/vector-display-and-
+      stroke-font.md`) hitting a wall static analysis alone can't
+      resolve - two candidate writers of `[0x1DB0]` found, neither
+      confirmed as the real one, and the downstream HPGL transform
+      still unmatched by static shape-matching. Design phase complete:
+      see `emulator/docs/design.md` for scope (headless boot+trace
+      tool, not a full-system emulator), memory-map wiring (reuse
+      `MEMORY_MAP.md` directly), I/O stub strategy, and milestones.
+      Not yet implemented - `unicorn` confirmed installable
+      (`pip install unicorn` resolves to `2.1.4`) but not yet
+      installed in this environment.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-
