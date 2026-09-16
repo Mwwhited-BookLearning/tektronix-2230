@@ -27,7 +27,7 @@ scale_and_plot_point_default:
 scale_and_plot_point:
     push dx                                  ; 0086: push dx
     push ax                                  ; 0087: push ax
-    mov ax, word [bp + 8]                    ; 0088: mov ax, word ptr [bp + 8]
+    mov ax, word [bp + 8]                    ; 0088: mov ax, word ptr [bp + 8]  -> reciprocal
     cwd                                      ; 008B: cdq 
     call 0xe772:0x005d                       ; 008C: lcall 0xe772, 0x5d
     mov word [bp - 0x12], ax                 ; 0091: mov word ptr [bp - 0x12], ax
@@ -3317,10 +3317,10 @@ read_acq_sample_with_wrap:
     mov bp, sp                               ; 830F: mov bp, sp
     sub sp, 0x12                             ; 8311: sub sp, 0x12
     push cx                                  ; 8314: push cx
-    mov di, word [bp + 0xa]                  ; 8315: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; 8315: mov di, word ptr [bp + 0xa]  -> type_idx
     sar di, 1                                ; 8318: sar di, 1
     mov word [bp - 0xc], di                  ; 831A: mov word ptr [bp - 0xc], di
-    mov ax, word [bp + 0xa]                  ; 831D: mov ax, word ptr [bp + 0xa]
+    mov ax, word [bp + 0xa]                  ; 831D: mov ax, word ptr [bp + 0xa]  -> type_idx
     mov dx, 0x14                             ; 8320: mov dx, 0x14
     imul dx                                  ; 8323: imul dx
     mov bx, ax                               ; 8325: mov bx, ax
@@ -3336,7 +3336,7 @@ read_acq_sample_with_wrap:
     mov word [bp - 8], dx                    ; 833F: mov word ptr [bp - 8], dx
     cmp word [bp - 0xc], 0                   ; 8342: cmp word ptr [bp - 0xc], 0
     jne short 0x83ab                         ; 8346: jne 0x30b
-    mov ax, word [bp + 0xa]                  ; 8348: mov ax, word ptr [bp + 0xa]
+    mov ax, word [bp + 0xa]                  ; 8348: mov ax, word ptr [bp + 0xa]  -> type_idx
     mov di, dx                               ; 834B: mov di, dx
     mov dx, 0xa                              ; 834D: mov dx, 0xa
     imul dx                                  ; 8350: imul dx
@@ -3344,7 +3344,7 @@ read_acq_sample_with_wrap:
     mov dx, word [bx + 0x68]                 ; 8354: mov dx, word ptr [bx + 0x68]
     times 1 nop  ; padding to preserve address alignment
     sub dx, di                               ; 8358: sub dx, di
-    add dx, word [bp + 0xc]                  ; 835A: add dx, word ptr [bp + 0xc]
+    add dx, word [bp + 0xc]                  ; 835A: add dx, word ptr [bp + 0xc]  -> position
     mov ax, word [0x2a]                      ; 835D: mov ax, word ptr [0x2a]
     cmp dx, ax                               ; 8360: cmp dx, ax
     jle short 0x8379                         ; 8362: jle 0x2d9
@@ -3352,30 +3352,30 @@ read_acq_sample_with_wrap:
     mov dx, word [bx + 0x68]                 ; 8367: mov dx, word ptr [bx + 0x68]
     times 1 nop  ; padding to preserve address alignment
     sub dx, di                               ; 836B: sub dx, di
-    add dx, word [bp + 0xc]                  ; 836D: add dx, word ptr [bp + 0xc]
+    add dx, word [bp + 0xc]                  ; 836D: add dx, word ptr [bp + 0xc]  -> position
     sub dx, ax                               ; 8370: sub dx, ax
     dec dx                                   ; 8372: dec dx
-    mov word [bp + 0xc], dx                  ; 8373: mov word ptr [bp + 0xc], dx
+    mov word [bp + 0xc], dx                  ; 8373: mov word ptr [bp + 0xc], dx  -> position
     jmp 0x8444                               ; 8376: jmp 0x3a4
 L_F8379:
     mov di, word [bp - 8]                    ; 8379: mov di, word ptr [bp - 8]
-    mov ax, word [bp + 0xa]                  ; 837C: mov ax, word ptr [bp + 0xa]
+    mov ax, word [bp + 0xa]                  ; 837C: mov ax, word ptr [bp + 0xa]  -> type_idx
     mov dx, 0xa                              ; 837F: mov dx, 0xa
     imul dx                                  ; 8382: imul dx
     mov bx, ax                               ; 8384: mov bx, ax
     mov dx, word [bx + 0x68]                 ; 8386: mov dx, word ptr [bx + 0x68]
     times 1 nop  ; padding to preserve address alignment
     sub dx, di                               ; 838A: sub dx, di
-    add dx, word [bp + 0xc]                  ; 838C: add dx, word ptr [bp + 0xc]
+    add dx, word [bp + 0xc]                  ; 838C: add dx, word ptr [bp + 0xc]  -> position
     cmp dx, 0                                ; 838F: cmp dx, 0
     jge short 0x83ae                         ; 8392: jge 0x30e
     mov ax, word [bx + 0x68]                 ; 8394: mov ax, word ptr [bx + 0x68]
     times 1 nop  ; padding to preserve address alignment
     sub ax, di                               ; 8398: sub ax, di
-    add ax, word [bp + 0xc]                  ; 839A: add ax, word ptr [bp + 0xc]
+    add ax, word [bp + 0xc]                  ; 839A: add ax, word ptr [bp + 0xc]  -> position
     add ax, word [0x2a]                      ; 839D: add ax, word ptr [0x2a]
     inc ax                                   ; 83A1: inc ax
-    mov word [bp + 0xc], ax                  ; 83A2: mov word ptr [bp + 0xc], ax
+    mov word [bp + 0xc], ax                  ; 83A2: mov word ptr [bp + 0xc], ax  -> position
     jmp 0x8444                               ; 83A5: jmp 0x3a4
 L_F83A8:
     jmp 0x8444                               ; 83A8: jmp 0x3a4
@@ -3383,20 +3383,20 @@ L_F83AB:
     jmp 0x83ca                               ; 83AB: jmp 0x32a
 L_F83AE:
     mov di, word [bp - 8]                    ; 83AE: mov di, word ptr [bp - 8]
-    mov ax, word [bp + 0xa]                  ; 83B1: mov ax, word ptr [bp + 0xa]
+    mov ax, word [bp + 0xa]                  ; 83B1: mov ax, word ptr [bp + 0xa]  -> type_idx
     mov dx, 0xa                              ; 83B4: mov dx, 0xa
     imul dx                                  ; 83B7: imul dx
     mov bx, ax                               ; 83B9: mov bx, ax
     mov dx, word [bx + 0x68]                 ; 83BB: mov dx, word ptr [bx + 0x68]
     times 1 nop  ; padding to preserve address alignment
     sub dx, di                               ; 83BF: sub dx, di
-    add dx, word [bp + 0xc]                  ; 83C1: add dx, word ptr [bp + 0xc]
-    mov word [bp + 0xc], dx                  ; 83C4: mov word ptr [bp + 0xc], dx
+    add dx, word [bp + 0xc]                  ; 83C1: add dx, word ptr [bp + 0xc]  -> position
+    mov word [bp + 0xc], dx                  ; 83C4: mov word ptr [bp + 0xc], dx  -> position
     jmp 0x8444                               ; 83C7: jmp 0x3a4
 L_F83CA:
     cmp word [bp - 0xc], 4                   ; 83CA: cmp word ptr [bp - 0xc], 4
     jne short 0x8435                         ; 83CE: jne 0x395
-    cmp word [bp + 0xa], 8                   ; 83D0: cmp word ptr [bp + 0xa], 8
+    cmp word [bp + 0xa], 8                   ; 83D0: cmp word ptr [bp + 0xa], 8  -> type_idx
     jne short 0x83e3                         ; 83D4: jne 0x343
     mov ax, word [0x68]                      ; 83D6: mov ax, word ptr [0x68]
     sar ax, 1                                ; 83D9: sar ax, 1
@@ -3411,50 +3411,50 @@ L_F83E3:
 L_F83ED:
     mov di, word [bp - 0x12]                 ; 83ED: mov di, word ptr [bp - 0x12]
     sub di, word [bp - 8]                    ; 83F0: sub di, word ptr [bp - 8]
-    add di, word [bp + 0xc]                  ; 83F3: add di, word ptr [bp + 0xc]
+    add di, word [bp + 0xc]                  ; 83F3: add di, word ptr [bp + 0xc]  -> position
     mov ax, word [0x176]                     ; 83F6: mov ax, word ptr [0x176]
     inc ax                                   ; 83F9: inc ax
     cmp di, ax                               ; 83FA: cmp di, ax
     jle short 0x8411                         ; 83FC: jle 0x371
     mov dx, word [bp - 0x12]                 ; 83FE: mov dx, word ptr [bp - 0x12]
     sub dx, word [bp - 8]                    ; 8401: sub dx, word ptr [bp - 8]
-    add dx, word [bp + 0xc]                  ; 8404: add dx, word ptr [bp + 0xc]
+    add dx, word [bp + 0xc]                  ; 8404: add dx, word ptr [bp + 0xc]  -> position
     sub dx, word [0x176]                     ; 8407: sub dx, word ptr [0x176]
-    mov word [bp + 0xc], dx                  ; 840B: mov word ptr [bp + 0xc], dx
+    mov word [bp + 0xc], dx                  ; 840B: mov word ptr [bp + 0xc], dx  -> position
     jmp 0x8444                               ; 840E: jmp 0x3a4
 L_F8411:
     mov di, word [bp - 0x12]                 ; 8411: mov di, word ptr [bp - 0x12]
     sub di, word [bp - 8]                    ; 8414: sub di, word ptr [bp - 8]
-    add di, word [bp + 0xc]                  ; 8417: add di, word ptr [bp + 0xc]
+    add di, word [bp + 0xc]                  ; 8417: add di, word ptr [bp + 0xc]  -> position
     cmp di, 0                                ; 841A: cmp di, 0
     jge short 0x8438                         ; 841D: jge 0x398
     mov dx, word [bp - 0x12]                 ; 841F: mov dx, word ptr [bp - 0x12]
     sub dx, word [bp - 8]                    ; 8422: sub dx, word ptr [bp - 8]
-    add dx, word [bp + 0xc]                  ; 8425: add dx, word ptr [bp + 0xc]
+    add dx, word [bp + 0xc]                  ; 8425: add dx, word ptr [bp + 0xc]  -> position
     add dx, word [0x176]                     ; 8428: add dx, word ptr [0x176]
     add dx, 2                                ; 842C: add dx, 2
-    mov word [bp + 0xc], dx                  ; 842F: mov word ptr [bp + 0xc], dx
+    mov word [bp + 0xc], dx                  ; 842F: mov word ptr [bp + 0xc], dx  -> position
     jmp 0x8444                               ; 8432: jmp 0x3a4
 L_F8435:
     jmp 0x8444                               ; 8435: jmp 0x3a4
 L_F8438:
     mov di, word [bp - 0x12]                 ; 8438: mov di, word ptr [bp - 0x12]
     sub di, word [bp - 8]                    ; 843B: sub di, word ptr [bp - 8]
-    add di, word [bp + 0xc]                  ; 843E: add di, word ptr [bp + 0xc]
-    mov word [bp + 0xc], di                  ; 8441: mov word ptr [bp + 0xc], di
+    add di, word [bp + 0xc]                  ; 843E: add di, word ptr [bp + 0xc]  -> position
+    mov word [bp + 0xc], di                  ; 8441: mov word ptr [bp + 0xc], di  -> position
 L_F8444:
-    cmp word [bp + 0xc], 0                   ; 8444: cmp word ptr [bp + 0xc], 0
+    cmp word [bp + 0xc], 0                   ; 8444: cmp word ptr [bp + 0xc], 0  -> position
     jl short 0x8451                          ; 8448: jl 0x3b1
-    cmp word [bp + 0xc], strict word 0x2000  ; 844A: cmp word ptr [bp + 0xc], 0x2000
+    cmp word [bp + 0xc], strict word 0x2000  ; 844A: cmp word ptr [bp + 0xc], 0x2000  -> position
     jle short 0x845b                         ; 844F: jle 0x3bb
 L_F8451:
     mov byte [0x3b0], 1                      ; 8451: mov byte ptr [0x3b0], 1
     sub ax, ax                               ; 8456: sub ax, ax
     jmp 0x84db                               ; 8458: jmp 0x43b
 L_F845B:
-    mov di, word [bp + 0xc]                  ; 845B: mov di, word ptr [bp + 0xc]
-    les dx, [bp + 6]                         ; 845E: les dx, ptr [bp + 6]
-    mov bx, word [bp + 0xa]                  ; 8461: mov bx, word ptr [bp + 0xa]
+    mov di, word [bp + 0xc]                  ; 845B: mov di, word ptr [bp + 0xc]  -> position
+    les dx, [bp + 6]                         ; 845E: les dx, ptr [bp + 6]  -> record_off
+    mov bx, word [bp + 0xa]                  ; 8461: mov bx, word ptr [bp + 0xa]  -> type_idx
     shl bx, 1                                ; 8464: shl bx, 1
     shl bx, 1                                ; 8466: shl bx, 1
     add di, word [bx + 0x3c]                 ; 8468: add di, word ptr [bx + 0x3c]
@@ -3463,7 +3463,7 @@ L_F845B:
     add ax, di                               ; 846E: add ax, di
     mov word [bp - 0x10], ax                 ; 8470: mov word ptr [bp - 0x10], ax
     mov word [bp - 0xe], es                  ; 8473: mov word ptr [bp - 0xe], es
-    mov ax, word [bp + 0xa]                  ; 8476: mov ax, word ptr [bp + 0xa]
+    mov ax, word [bp + 0xa]                  ; 8476: mov ax, word ptr [bp + 0xa]  -> type_idx
     sar ax, 1                                ; 8479: sar ax, 1
     shl ax, 1                                ; 847B: shl ax, 1
     shl ax, 1                                ; 847D: shl ax, 1
@@ -3688,7 +3688,7 @@ deselect_item_pair:
     push bp                                  ; 8E98: push bp
     mov bp, sp                               ; 8E99: mov bp, sp
     sub sp, 8                                ; 8E9B: sub sp, 8
-    mov di, word [bp + 6]                    ; 8E9E: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 8E9E: mov di, word ptr [bp + 6]  -> pair_index
     shl di, 1                                ; 8EA1: shl di, 1
     mov word [bp - 8], di                    ; 8EA3: mov word ptr [bp - 8], di
     sub dx, dx                               ; 8EA6: sub dx, dx
@@ -3746,9 +3746,9 @@ disable_item_pair:
     push bp                                  ; 8F24: push bp
     mov bp, sp                               ; 8F25: mov bp, sp
     sub sp, 8                                ; 8F27: sub sp, 8
-    push word [bp + 6]                       ; 8F2A: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 8F2A: push word ptr [bp + 6]  -> pair_index
     call 0xf8e6:0x0038                       ; 8F2D: lcall 0xf8e6, 0x38
-    mov di, word [bp + 6]                    ; 8F32: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 8F32: mov di, word ptr [bp + 6]  -> pair_index
     shl di, 1                                ; 8F35: shl di, 1
     mov word [bp - 8], di                    ; 8F37: mov word ptr [bp - 8], di
     and byte [di + 0x1be2], 0xfd             ; 8F3A: and byte ptr [di + 0x1be2], 0xfd
@@ -3938,7 +3938,7 @@ compute_print_cell_size:
     push bp                                  ; 9650: push bp
     mov bp, sp                               ; 9651: mov bp, sp
     sub sp, 8                                ; 9653: sub sp, 8
-    les di, [bp + 0xa]                       ; 9656: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 9656: les di, ptr [bp + 0xa]  -> src_off
     mov dl, byte [es:di]                     ; 9659: mov dl, byte ptr es:[di]
     mov byte [bp - 7], dl                    ; 965C: mov byte ptr [bp - 7], dl
     and dl, 8                                ; 965F: and dl, 8
@@ -3946,17 +3946,17 @@ compute_print_cell_size:
     jne short 0x96ba                         ; 9665: jne 0x55a
     cmp word [es:di + 0x12], 0               ; 9667: cmp word ptr es:[di + 0x12], 0
     jne short 0x9679                         ; 966C: jne 0x519
-    les bx, [bp + 6]                         ; 966E: les bx, ptr [bp + 6]
+    les bx, [bp + 6]                         ; 966E: les bx, ptr [bp + 6]  -> dest_off
     mov byte [es:bx + 7], 0                  ; 9671: mov byte ptr es:[bx + 7], 0
     jmp 0x96b6                               ; 9676: jmp 0x556
 L_F9679:
-    les di, [bp + 6]                         ; 9679: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 9679: les di, ptr [bp + 6]  -> dest_off
     mov byte [es:di + 7], 1                  ; 967C: mov byte ptr es:[di + 7], 1
     mov dl, byte [bp - 7]                    ; 9681: mov dl, byte ptr [bp - 7]
     and dl, 4                                ; 9684: and dl, 4
     cmp dl, 0                                ; 9687: cmp dl, 0
     je short 0x96a4                          ; 968A: je 0x544
-    les bx, [bp + 0xa]                       ; 968C: les bx, ptr [bp + 0xa]
+    les bx, [bp + 0xa]                       ; 968C: les bx, ptr [bp + 0xa]  -> src_off
     mov di, word [es:bx + 0x12]              ; 968F: mov di, word ptr es:[bx + 0x12]
     sar di, 1                                ; 9693: sar di, 1
     sar di, 1                                ; 9695: sar di, 1
@@ -3967,30 +3967,30 @@ L_F9679:
     mov dx, di                               ; 969F: mov dx, di
     jmp 0x96af                               ; 96A1: jmp 0x54f
 L_F96A4:
-    les di, [bp + 0xa]                       ; 96A4: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 96A4: les di, ptr [bp + 0xa]  -> src_off
     mov dx, word [es:di + 0x12]              ; 96A7: mov dx, word ptr es:[di + 0x12]
     shl dx, 1                                ; 96AB: shl dx, 1
     shl dx, 1                                ; 96AD: shl dx, 1
 L_F96AF:
-    les di, [bp + 6]                         ; 96AF: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 96AF: les di, ptr [bp + 6]  -> dest_off
     mov word [es:di + 8], dx                 ; 96B2: mov word ptr es:[di + 8], dx
 L_F96B6:
-    add word [bp + 6], 0xa                   ; 96B6: add word ptr [bp + 6], 0xa
+    add word [bp + 6], 0xa                   ; 96B6: add word ptr [bp + 6], 0xa  -> dest_off
 L_F96BA:
-    les di, [bp + 0xa]                       ; 96BA: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 96BA: les di, ptr [bp + 0xa]  -> src_off
     cmp word [es:di + 0x10], 0               ; 96BD: cmp word ptr es:[di + 0x10], 0
     jne short 0x96cf                         ; 96C2: jne 0x56f
-    les bx, [bp + 6]                         ; 96C4: les bx, ptr [bp + 6]
+    les bx, [bp + 6]                         ; 96C4: les bx, ptr [bp + 6]  -> dest_off
     mov byte [es:bx + 7], 0                  ; 96C7: mov byte ptr es:[bx + 7], 0
     jmp 0x970a                               ; 96CC: jmp 0x5aa
 L_F96CF:
-    les di, [bp + 6]                         ; 96CF: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 96CF: les di, ptr [bp + 6]  -> dest_off
     mov byte [es:di + 7], 1                  ; 96D2: mov byte ptr es:[di + 7], 1
     mov dl, byte [bp - 7]                    ; 96D7: mov dl, byte ptr [bp - 7]
     and dl, 4                                ; 96DA: and dl, 4
     cmp dl, 0                                ; 96DD: cmp dl, 0
     je short 0x96f8                          ; 96E0: je 0x598
-    les bx, [bp + 0xa]                       ; 96E2: les bx, ptr [bp + 0xa]
+    les bx, [bp + 0xa]                       ; 96E2: les bx, ptr [bp + 0xa]  -> src_off
     mov dx, word [es:bx + 0x10]              ; 96E5: mov dx, word ptr es:[bx + 0x10]
     sar dx, 1                                ; 96E9: sar dx, 1
     sar dx, 1                                ; 96EB: sar dx, 1
@@ -4000,12 +4000,12 @@ L_F96CF:
     sar dx, 1                                ; 96F3: sar dx, 1
     jmp 0x9703                               ; 96F5: jmp 0x5a3
 L_F96F8:
-    les di, [bp + 0xa]                       ; 96F8: les di, ptr [bp + 0xa]
+    les di, [bp + 0xa]                       ; 96F8: les di, ptr [bp + 0xa]  -> src_off
     mov dx, word [es:di + 0x10]              ; 96FB: mov dx, word ptr es:[di + 0x10]
     shl dx, 1                                ; 96FF: shl dx, 1
     shl dx, 1                                ; 9701: shl dx, 1
 L_F9703:
-    les di, [bp + 6]                         ; 9703: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 9703: les di, ptr [bp + 6]  -> dest_off
     mov word [es:di + 8], dx                 ; 9706: mov word ptr es:[di + 8], dx
 L_F970A:
     mov sp, bp                               ; 970A: mov sp, bp
@@ -4398,28 +4398,28 @@ init_print_record_fields:
     push bp                                  ; AD6E: push bp
     mov bp, sp                               ; AD6F: mov bp, sp
     sub sp, 8                                ; AD71: sub sp, 8
-    les di, [bp + 6]                         ; AD74: les di, ptr [bp + 6]
-    mov dx, word [bp + 0xa]                  ; AD77: mov dx, word ptr [bp + 0xa]
+    les di, [bp + 6]                         ; AD74: les di, ptr [bp + 6]  -> record_off
+    mov dx, word [bp + 0xa]                  ; AD77: mov dx, word ptr [bp + 0xa]  -> pos
     mov word [es:di], dx                     ; AD7A: mov word ptr es:[di], dx
     mov word [es:di + 2], dx                 ; AD7D: mov word ptr es:[di + 2], dx
-    mov bl, byte [bp + 0xc]                  ; AD81: mov bl, byte ptr [bp + 0xc]
-    les di, [bp + 6]                         ; AD84: les di, ptr [bp + 6]
+    mov bl, byte [bp + 0xc]                  ; AD81: mov bl, byte ptr [bp + 0xc]  -> type
+    les di, [bp + 6]                         ; AD84: les di, ptr [bp + 6]  -> record_off
     mov byte [es:di + 6], bl                 ; AD87: mov byte ptr es:[di + 6], bl
-    mov dl, byte [bp + 0xe]                  ; AD8B: mov dl, byte ptr [bp + 0xe]
+    mov dl, byte [bp + 0xe]                  ; AD8B: mov dl, byte ptr [bp + 0xe]  -> attr1
     sub dh, dh                               ; AD8E: sub dh, dh
     and dx, strict word 0x80                 ; AD90: and dx, 0x80
     cmp dx, 0                                ; AD94: cmp dx, 0
     jne short 0xada5                         ; AD97: jne 0x2f5
-    mov dl, byte [bp + 0xe]                  ; AD99: mov dl, byte ptr [bp + 0xe]
-    add dl, byte [bp + 0x10]                 ; AD9C: add dl, byte ptr [bp + 0x10]
+    mov dl, byte [bp + 0xe]                  ; AD99: mov dl, byte ptr [bp + 0xe]  -> attr1
+    add dl, byte [bp + 0x10]                 ; AD9C: add dl, byte ptr [bp + 0x10]  -> attr2
     mov byte [bp - 7], dl                    ; AD9F: mov byte ptr [bp - 7], dl
     jmp 0xadab                               ; ADA2: jmp 0x2fb
 L_FADA5:
-    mov dl, byte [bp + 0x10]                 ; ADA5: mov dl, byte ptr [bp + 0x10]
+    mov dl, byte [bp + 0x10]                 ; ADA5: mov dl, byte ptr [bp + 0x10]  -> attr2
     mov byte [bp - 7], dl                    ; ADA8: mov byte ptr [bp - 7], dl
 L_FADAB:
     mov dl, byte [bp - 7]                    ; ADAB: mov dl, byte ptr [bp - 7]
-    les di, [bp + 6]                         ; ADAE: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; ADAE: les di, ptr [bp + 6]  -> record_off
     mov byte [es:di + 4], dl                 ; ADB1: mov byte ptr es:[di + 4], dl
     mov byte [es:di + 5], dl                 ; ADB5: mov byte ptr es:[di + 5], dl
     mov sp, bp                               ; ADB9: mov sp, bp
@@ -4610,7 +4610,7 @@ clear_readout_attrs_and_flag_dirty:
     sub sp, 0xc                              ; B8EB: sub sp, 0xc
     mov word [bp - 0xa], 0x18c               ; B8EE: mov word ptr [bp - 0xa], 0x18c
     mov word [bp - 8], ds                    ; B8F3: mov word ptr [bp - 8], ds
-    cmp word [bp + 6], 0                     ; B8F6: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; B8F6: cmp word ptr [bp + 6], 0  -> skip_clear
     jne short 0xb965                         ; B8FA: jne 0x3d5
     mov al, byte [0x18c]                     ; B8FC: mov al, byte ptr [0x18c]
     and al, 0x10                             ; B8FF: and al, 0x10
@@ -4863,13 +4863,13 @@ clear_attr_bits_at_prev_delimiter:
     push bx                                  ; BD8B: push bx
     push cx                                  ; BD8C: push cx
     push dx                                  ; BD8D: push dx
-    mov bx, word [bp + 6]                    ; BD8E: mov bx, word ptr [bp + 6]
-    mov ds, word [bp + 8]                    ; BD91: mov ds, word ptr [bp + 8]
+    mov bx, word [bp + 6]                    ; BD8E: mov bx, word ptr [bp + 6]  -> buf_off
+    mov ds, word [bp + 8]                    ; BD91: mov ds, word ptr [bp + 8]  -> buf_seg
     mov ax, ds                               ; BD94: mov ax, ds
     add ax, strict word 0x800                ; BD96: add ax, 0x800
     mov es, ax                               ; BD99: mov es, ax
-    mov si, word [bp + 0xa]                  ; BD9B: mov si, word ptr [bp + 0xa]
-    cmp byte [bp + 0xc], 0                   ; BD9E: cmp byte ptr [bp + 0xc], 0
+    mov si, word [bp + 0xa]                  ; BD9B: mov si, word ptr [bp + 0xa]  -> start
+    cmp byte [bp + 0xc], 0                   ; BD9E: cmp byte ptr [bp + 0xc], 0  -> mode
     jne short 0xbdc4                         ; BDA2: jne 0x44
 L_FBDA4:
     sub si, 1                                ; BDA4: sub si, 1
@@ -4887,7 +4887,7 @@ L_FBDB5:
 L_FBDC1:
     jmp 0xbe59                               ; BDC1: jmp 0xd9
 L_FBDC4:
-    cmp byte [bp + 0xc], 1                   ; BDC4: cmp byte ptr [bp + 0xc], 1
+    cmp byte [bp + 0xc], 1                   ; BDC4: cmp byte ptr [bp + 0xc], 1  -> mode
     jne short 0xbdef                         ; BDC8: jne 0x6f
     and bx, strict word 0xfffe               ; BDCA: and bx, 0xfffe
 L_FBDCE:

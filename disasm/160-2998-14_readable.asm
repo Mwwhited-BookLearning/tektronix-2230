@@ -712,7 +712,7 @@ L_82214:
     mov byte [0x559], 0x55                   ; 2241: mov byte ptr [0x559], 0x55
     jmp 0x2251                               ; 2246: jmp 0x771
 L_82249:
-    mov ax, word [bp + 6]                    ; 2249: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 2249: mov ax, word ptr [bp + 6]  -> mode
     cmp ax, strict word 1                    ; 224C: cmp ax, 1
     je short 0x2200                          ; 224F: je 0x720
 L_82251:

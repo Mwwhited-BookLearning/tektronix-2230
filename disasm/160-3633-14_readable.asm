@@ -347,7 +347,7 @@ update_menu_position:
     sub sp, 6                                ; 06B9: sub sp, 6
     jmp 0x0719                               ; 06BC: jmp 0x69
 L_E06BF:
-    mov di, word [bp + 6]                    ; 06BF: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 06BF: mov di, word ptr [bp + 6]  -> min
     dec di                                   ; 06C2: dec di
     mov dx, di                               ; 06C3: mov dx, di
     mov byte [0x1b50], dl                    ; 06C5: mov byte ptr [0x1b50], dl
@@ -356,7 +356,7 @@ L_E06CE:
     mov ax, 0xfffe                           ; 06CE: mov ax, 0xfffe
     jmp 0x076a                               ; 06D1: jmp 0xba
 L_E06D4:
-    mov di, word [bp + 0xa]                  ; 06D4: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; 06D4: mov di, word ptr [bp + 0xa]  -> op_nibble
     and di, strict word 0xf0                 ; 06D7: and di, 0xf0
     cmp di, 0                                ; 06DB: cmp di, 0
     je short 0x06e7                          ; 06DE: je 0x37
@@ -383,7 +383,7 @@ L_E06FB:
 L_E0716:
     jmp 0x0739                               ; 0716: jmp 0x89
 L_E0719:
-    mov di, word [bp + 0xa]                  ; 0719: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; 0719: mov di, word ptr [bp + 0xa]  -> op_nibble
     and di, strict word 0xf                  ; 071C: and di, 0xf
     mov ax, di                               ; 0720: mov ax, di
     cmp ax, strict word 1                    ; 0722: cmp ax, 1
@@ -396,21 +396,21 @@ L_E0719:
     je short 0x06d4                          ; 0734: je 0x24
     jmp 0x0716                               ; 0736: jmp 0x66
 L_E0739:
-    mov di, word [bp + 8]                    ; 0739: mov di, word ptr [bp + 8]
+    mov di, word [bp + 8]                    ; 0739: mov di, word ptr [bp + 8]  -> max
     mov al, byte [0x1b50]                    ; 073C: mov al, byte ptr [0x1b50]
     sub ah, ah                               ; 073F: sub ah, ah
     cmp ax, di                               ; 0741: cmp ax, di
     jle short 0x0752                         ; 0743: jle 0xa2
-    mov dl, byte [bp + 6]                    ; 0745: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 0745: mov dl, byte ptr [bp + 6]  -> min
     mov byte [0x1b50], dl                    ; 0748: mov byte ptr [0x1b50], dl
     mov word [0x1b18], 1                     ; 074C: mov word ptr [0x1b18], 1
 L_E0752:
-    mov di, word [bp + 6]                    ; 0752: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 0752: mov di, word ptr [bp + 6]  -> min
     mov al, byte [0x1b50]                    ; 0755: mov al, byte ptr [0x1b50]
     sub ah, ah                               ; 0758: sub ah, ah
     cmp ax, di                               ; 075A: cmp ax, di
     jge short 0x0765                         ; 075C: jge 0xb5
-    mov dl, byte [bp + 8]                    ; 075E: mov dl, byte ptr [bp + 8]
+    mov dl, byte [bp + 8]                    ; 075E: mov dl, byte ptr [bp + 8]  -> max
     mov byte [0x1b50], dl                    ; 0761: mov byte ptr [0x1b50], dl
 L_E0765:
     mov al, byte [0x1b50]                    ; 0765: mov al, byte ptr [0x1b50]
@@ -605,7 +605,7 @@ append_selftest_report_char:
     les di, [0x1b56]                         ; 0982: les di, ptr [0x1b56]
     cmp byte [es:di], 3                      ; 0986: cmp byte ptr es:[di], 3
     jbe short 0x09e3                         ; 098A: jbe 0x333
-    mov dl, byte [bp + 6]                    ; 098C: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 098C: mov dl, byte ptr [bp + 6]  -> char
     sub dh, dh                               ; 098F: sub dh, dh
     and dx, strict word 0xf0                 ; 0991: and dx, 0xf0
     cmp dx, 0                                ; 0995: cmp dx, 0
@@ -621,12 +621,12 @@ append_selftest_report_char:
     mov dl, byte [es:bx + di - 1]            ; 09AF: mov dl, byte ptr es:[bx + di - 1]
     sub dh, dh                               ; 09B3: sub dh, dh
     and dx, strict word 0xf0                 ; 09B5: and dx, 0xf0
-    mov cl, byte [bp + 6]                    ; 09B9: mov cl, byte ptr [bp + 6]
+    mov cl, byte [bp + 6]                    ; 09B9: mov cl, byte ptr [bp + 6]  -> char
     sub ch, ch                               ; 09BC: sub ch, ch
     and cx, strict word 0xf0                 ; 09BE: and cx, 0xf0
     cmp dx, cx                               ; 09C2: cmp dx, cx
     jne short 0x09e3                         ; 09C4: jne 0x333
-    mov dl, byte [bp + 6]                    ; 09C6: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 09C6: mov dl, byte ptr [bp + 6]  -> char
     les cx, [0x1b56]                         ; 09C9: les cx, ptr [0x1b56]
     mov ax, es                               ; 09CD: mov ax, es
     les di, [0x1b56]                         ; 09CF: les di, ptr [0x1b56]
@@ -637,7 +637,7 @@ append_selftest_report_char:
     or byte [es:bx + di - 1], dl             ; 09DC: or byte ptr es:[bx + di - 1], dl
     jmp 0x0a1c                               ; 09E0: jmp 0x36c
 L_E09E3:
-    mov dl, byte [bp + 6]                    ; 09E3: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 09E3: mov dl, byte ptr [bp + 6]  -> char
     les di, [0x1b56]                         ; 09E6: les di, ptr [0x1b56]
     mov cx, es                               ; 09EA: mov cx, es
     les bx, [0x1b56]                         ; 09EC: les bx, ptr [0x1b56]
@@ -970,7 +970,7 @@ save_restore_measurement_settings:
     push bp                                  ; 0D06: push bp
     mov bp, sp                               ; 0D07: mov bp, sp
     sub sp, 6                                ; 0D09: sub sp, 6
-    cmp word [bp + 6], 1                     ; 0D0C: cmp word ptr [bp + 6], 1
+    cmp word [bp + 6], 1                     ; 0D0C: cmp word ptr [bp + 6], 1  -> mode
     jne short 0x0d58                         ; 0D10: jne 0x6a8
     mov al, byte [0x256]                     ; 0D12: mov al, byte ptr [0x256]
     sub ah, ah                               ; 0D15: sub ah, ah
@@ -998,7 +998,7 @@ save_restore_measurement_settings:
     mov ax, word [0x264]                     ; 0D52: mov ax, word ptr [0x264]
     mov word [0x1b32], ax                    ; 0D55: mov word ptr [0x1b32], ax
 L_E0D58:
-    cmp word [bp + 6], 2                     ; 0D58: cmp word ptr [bp + 6], 2
+    cmp word [bp + 6], 2                     ; 0D58: cmp word ptr [bp + 6], 2  -> mode
     jne short 0x0da0                         ; 0D5C: jne 0x6f0
     mov al, byte [0x1b20]                    ; 0D5E: mov al, byte ptr [0x1b20]
     mov byte [0x256], al                     ; 0D61: mov byte ptr [0x256], al
@@ -1023,9 +1023,9 @@ L_E0D58:
     mov ax, word [0x1b32]                    ; 0D9A: mov ax, word ptr [0x1b32]
     mov word [0x264], ax                     ; 0D9D: mov word ptr [0x264], ax
 L_E0DA0:
-    cmp word [bp + 6], 3                     ; 0DA0: cmp word ptr [bp + 6], 3
+    cmp word [bp + 6], 3                     ; 0DA0: cmp word ptr [bp + 6], 3  -> mode
     je short 0x0dac                          ; 0DA4: je 0x6fc
-    cmp word [bp + 6], 1                     ; 0DA6: cmp word ptr [bp + 6], 1
+    cmp word [bp + 6], 1                     ; 0DA6: cmp word ptr [bp + 6], 1  -> mode
     jne short 0x0dc6                         ; 0DAA: jne 0x716
 L_E0DAC:
     mov dl, byte [bp + 0xc]                  ; 0DAC: mov dl, byte ptr [bp + 0xc]
@@ -5589,7 +5589,7 @@ init_selftest_register_group:
     push bp                                  ; 4443: push bp
     mov bp, sp                               ; 4444: mov bp, sp
     sub sp, 6                                ; 4446: sub sp, 6
-    cmp word [bp + 6], 1                     ; 4449: cmp word ptr [bp + 6], 1
+    cmp word [bp + 6], 1                     ; 4449: cmp word ptr [bp + 6], 1  -> group
     jne short 0x44b7                         ; 444D: jne 0x9a7
     mov ax, 0x8000                           ; 444F: mov ax, 0x8000
     mov dx, 0x4000                           ; 4452: mov dx, 0x4000
@@ -5759,19 +5759,19 @@ refresh_report_display:
     push bp                                  ; 4680: push bp
     mov bp, sp                               ; 4681: mov bp, sp
     sub sp, 6                                ; 4683: sub sp, 6
-    push word [bp + 6]                       ; 4686: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 4686: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x00f3                       ; 4689: lcall 0xe45d, 0xf3
-    push word [bp + 6]                       ; 468E: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 468E: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x013b                       ; 4691: lcall 0xe45d, 0x13b
-    push word [bp + 6]                       ; 4696: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 4696: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x0192                       ; 4699: lcall 0xe45d, 0x192
-    push word [bp + 6]                       ; 469E: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 469E: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x01f5                       ; 46A1: lcall 0xe45d, 0x1f5
-    push word [bp + 6]                       ; 46A6: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 46A6: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x023e                       ; 46A9: lcall 0xe45d, 0x23e
     cmp byte [0x1b7a], 1                     ; 46AE: cmp byte ptr [0x1b7a], 1
     je short 0x46bd                          ; 46B3: je 0xed
-    push word [bp + 6]                       ; 46B5: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 46B5: push word ptr [bp + 6]  -> mode
     call 0xe45d:0x0288                       ; 46B8: lcall 0xe45d, 0x288
 L_E46BD:
     mov sp, bp                               ; 46BD: mov sp, bp
@@ -6297,7 +6297,7 @@ draw_selftest_report_frame:
     push bp                                  ; 5676: push bp
     mov bp, sp                               ; 5677: mov bp, sp
     sub sp, 0xa                              ; 5679: sub sp, 0xa
-    les di, [bp + 6]                         ; 567C: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 567C: les di, ptr [bp + 6]  -> region_off
     push es                                  ; 567F: push es
     push di                                  ; 5680: push di
     call 0xe352:0x0079                       ; 5681: lcall 0xe352, 0x79
@@ -6313,14 +6313,14 @@ draw_selftest_report_frame:
     push di                                  ; 5698: push di
     call 0xe45d:0x1269                       ; 5699: lcall 0xe45d, 0x1269
     add sp, 8                                ; 569E: add sp, 8
-    les di, [bp + 6]                         ; 56A1: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 56A1: les di, ptr [bp + 6]  -> region_off
     push es                                  ; 56A4: push es
     push di                                  ; 56A5: push di
     call 0xe352:0x022e                       ; 56A6: lcall 0xe352, 0x22e
     sub di, di                               ; 56AB: sub di, di
     push di                                  ; 56AD: push di
     push di                                  ; 56AE: push di
-    les dx, [bp + 6]                         ; 56AF: les dx, ptr [bp + 6]
+    les dx, [bp + 6]                         ; 56AF: les dx, ptr [bp + 6]  -> region_off
     mov bx, dx                               ; 56B2: mov bx, dx
     add bx, 9                                ; 56B4: add bx, 9
     push es                                  ; 56B7: push es
@@ -6339,12 +6339,12 @@ draw_selftest_report_frame:
     push di                                  ; 56D4: push di
     call 0xe45d:0x1269                       ; 56D5: lcall 0xe45d, 0x1269
     add sp, 8                                ; 56DA: add sp, 8
-    les di, [bp + 6]                         ; 56DD: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 56DD: les di, ptr [bp + 6]  -> region_off
     lea dx, [di + 9]                         ; 56E0: lea dx, [di + 9]
     push es                                  ; 56E3: push es
     push dx                                  ; 56E4: push dx
     call 0xe352:0x022e                       ; 56E5: lcall 0xe352, 0x22e
-    les di, [bp + 6]                         ; 56EA: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 56EA: les di, ptr [bp + 6]  -> region_off
     mov byte [es:di + 9], 0x31               ; 56ED: mov byte ptr es:[di + 9], 0x31
     sub dx, dx                               ; 56F2: sub dx, dx
     push dx                                  ; 56F4: push dx
@@ -6400,7 +6400,7 @@ L_E575C:
 L_E5778:
     cmp word [bp - 8], strict word 0xfa      ; 5778: cmp word ptr [bp - 8], 0xfa
     jle short 0x575c                         ; 577D: jle 0x118c
-    les di, [bp + 6]                         ; 577F: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 577F: les di, ptr [bp + 6]  -> region_off
     lea dx, [di + 0x12]                      ; 5782: lea dx, [di + 0x12]
     push es                                  ; 5785: push es
     push dx                                  ; 5786: push dx
@@ -6408,7 +6408,7 @@ L_E5778:
     sub di, di                               ; 578C: sub di, di
     push di                                  ; 578E: push di
     push di                                  ; 578F: push di
-    les dx, [bp + 6]                         ; 5790: les dx, ptr [bp + 6]
+    les dx, [bp + 6]                         ; 5790: les dx, ptr [bp + 6]  -> region_off
     mov bx, dx                               ; 5793: mov bx, dx
     add bx, 0x1b                             ; 5795: add bx, 0x1b
     push es                                  ; 5798: push es
@@ -6462,7 +6462,7 @@ L_E57BD:
 L_E5820:
     cmp word [bp - 8], 0x19                  ; 5820: cmp word ptr [bp - 8], 0x19
     jl short 0x57bd                          ; 5824: jl 0x11ed
-    les di, [bp + 6]                         ; 5826: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 5826: les di, ptr [bp + 6]  -> region_off
     lea dx, [di + 0x1b]                      ; 5829: lea dx, [di + 0x1b]
     push es                                  ; 582C: push es
     push dx                                  ; 582D: push dx
@@ -6519,10 +6519,10 @@ draw_readout_line:
     sub sp, 0xa                              ; 58B0: sub sp, 0xa
     sub di, di                               ; 58B3: sub di, di
     push di                                  ; 58B5: push di
-    mov dx, word [bp + 8]                    ; 58B6: mov dx, word ptr [bp + 8]
+    mov dx, word [bp + 8]                    ; 58B6: mov dx, word ptr [bp + 8]  -> y1
     mov word [bp - 0xa], dx                  ; 58B9: mov word ptr [bp - 0xa], dx
     push dx                                  ; 58BC: push dx
-    mov bx, word [bp + 6]                    ; 58BD: mov bx, word ptr [bp + 6]
+    mov bx, word [bp + 6]                    ; 58BD: mov bx, word ptr [bp + 6]  -> x1
     mov word [bp - 8], bx                    ; 58C0: mov word ptr [bp - 8], bx
     push bx                                  ; 58C3: push bx
     call 0xe352:0x0410                       ; 58C4: lcall 0xe352, 0x410
@@ -6537,15 +6537,15 @@ L_E58CF:
     push di                                  ; 58DE: push di
     call 0xe352:0x0291                       ; 58DF: lcall 0xe352, 0x291
     add sp, 2                                ; 58E4: add sp, 2
-    mov di, word [bp + 0xe]                  ; 58E7: mov di, word ptr [bp + 0xe]
+    mov di, word [bp + 0xe]                  ; 58E7: mov di, word ptr [bp + 0xe]  -> dx
     add word [bp - 8], di                    ; 58EA: add word ptr [bp - 8], di
-    mov dx, word [bp + 0x10]                 ; 58ED: mov dx, word ptr [bp + 0x10]
+    mov dx, word [bp + 0x10]                 ; 58ED: mov dx, word ptr [bp + 0x10]  -> dy
     add word [bp - 0xa], dx                  ; 58F0: add word ptr [bp - 0xa], dx
 L_E58F3:
-    mov di, word [bp + 0xa]                  ; 58F3: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; 58F3: mov di, word ptr [bp + 0xa]  -> x_max
     cmp word [bp - 8], di                    ; 58F6: cmp word ptr [bp - 8], di
     jg short 0x5903                          ; 58F9: jg 0x1333
-    mov dx, word [bp + 0xc]                  ; 58FB: mov dx, word ptr [bp + 0xc]
+    mov dx, word [bp + 0xc]                  ; 58FB: mov dx, word ptr [bp + 0xc]  -> y_max
     cmp word [bp - 0xa], dx                  ; 58FE: cmp word ptr [bp - 0xa], dx
     jle short 0x58cf                         ; 5901: jle 0x12ff
 L_E5903:
@@ -8959,14 +8959,14 @@ print_string_serial_seg:
     sub sp, 6                                ; 7A0D: sub sp, 6
     jmp 0x7a24                               ; 7A10: jmp 0x114
 L_E7A13:
-    les di, [bp + 6]                         ; 7A13: les di, ptr [bp + 6]
-    inc word [bp + 6]                        ; 7A16: inc word ptr [bp + 6]
+    les di, [bp + 6]                         ; 7A13: les di, ptr [bp + 6]  -> str_off
+    inc word [bp + 6]                        ; 7A16: inc word ptr [bp + 6]  -> str_off
     mov dl, byte [es:di]                     ; 7A19: mov dl, byte ptr es:[di]
     sub dh, dh                               ; 7A1C: sub dh, dh
     push dx                                  ; 7A1E: push dx
     call 0x82c9:0x05c9                       ; 7A1F: lcall 0x82c9, 0x5c9
 L_E7A24:
-    les di, [bp + 6]                         ; 7A24: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 7A24: les di, ptr [bp + 6]  -> str_off
     cmp byte [es:di], 0                      ; 7A27: cmp byte ptr es:[di], 0
     jne short 0x7a13                         ; 7A2B: jne 0x103
     mov sp, bp                               ; 7A2D: mov sp, bp

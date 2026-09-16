@@ -3853,6 +3853,92 @@ PARAMETER_NAMES = {
     # plain near/flat-DS pointers (`mov di,word[bp+N]`, no `les`), not
     # far pointers, despite the 4-byte gap between them.
     0xFC624: {6: "req_byte_ptr", 0xA: "out_status_ptr"},
+    # update_menu_position (0xE06B6): "(min, max, op_nibble)" -
+    # confirmed by the clamp logic at the end of the function: position
+    # is clamped down to bp+8 (max) and up to bp+6 (min); bp+0xa is
+    # masked both `&0xF0` and `&0xF` separately (2 packed op nibbles).
+    0xE06B6: {6: "min", 8: "max", 0xA: "op_nibble"},
+    # draw_readout_line (0xE58AD): "(x1, y1, x_max, y_max, dx, dy)" -
+    # confirmed directly: bp+6/8 seed the running (x,y), bp+0xa/0xc
+    # bound the step loop, bp+0xe/0x10 are added each iteration.
+    0xE58AD: {6: "x1", 8: "y1", 0xA: "x_max", 0xC: "y_max", 0xE: "dx",
+               0x10: "dy"},
+    # init_selftest_register_group (0xE4443): "(group)" - `cmp
+    # word[bp+6],1` selects the group-1 vs default branch.
+    0xE4443: {6: "group"},
+    # save_restore_measurement_settings (0xE0D06): "(mode)" - `cmp
+    # word[bp+6],1` selects save vs restore.
+    0xE0D06: {6: "mode"},
+    # append_selftest_report_char (0xE097B): "(char)" - the byte
+    # argument, ANDed with 0xF0 to check its high nibble.
+    0xE097B: {6: "char"},
+    # refresh_report_display (0xE4680): "(mode)" - pushed unchanged
+    # into each of the 5-6 sub-function calls.
+    0xE4680: {6: "mode"},
+    # draw_selftest_report_frame (0xE5676): "(far ptr region)" -
+    # loaded via `les di,[bp+6]` and passed straight through.
+    0xE5676: {6: "region_off", 8: "region_seg"},
+    # print_string_serial_seg (0xE7A0A): "(far_str_ptr)" - walked
+    # byte-by-byte the same way print_string_serial walks its own.
+    0xE7A0A: {6: "str_off", 8: "str_seg"},
+    # scale_and_plot_point (0xF0086): FUNCTIONS.md already cites the
+    # exact offset in its own prose ("reciprocal [bp+8]") - the other
+    # argument (raw_value) arrives in the DX:AX register pair, not on
+    # the stack, so there's no second offset to name here.
+    0xF0086: {8: "reciprocal"},
+    # deselect_item_pair (0xF8E98): "(pair_index)" - shl'd by 1 to
+    # get the pair's first item index.
+    0xF8E98: {6: "pair_index"},
+    # disable_item_pair (0xF8F24): "(pair_index)" - same shape as
+    # deselect_item_pair.
+    0xF8F24: {6: "pair_index"},
+    # read_acq_sample_with_wrap (0xF830E): "(far_ptr record, type_idx,
+    # position)" - confirmed: bp+0xa is scaled `*0x14` to index a
+    # per-type table, bp+0xc is added into the resolved buffer offset,
+    # bp+6/8 (a far pointer) is only read once, late, on a fallback
+    # path - easy to miss without scanning the whole function body.
+    0xF830E: {6: "record_off", 8: "record_seg", 0xA: "type_idx",
+               0xC: "position"},
+    # clear_attr_bits_at_prev_delimiter (0xFBD86): "(far_ptr buf,
+    # start, mode)" - bp+6/8 loaded into bx/ds directly (not via
+    # `les`, but still the far-pointer pair), bp+0xa is the backward-
+    # scan start position, bp+0xc selects the byte/word/dword stride.
+    0xFBD86: {6: "buf_off", 8: "buf_seg", 0xA: "start", 0xC: "mode"},
+    # clear_readout_attrs_and_flag_dirty (0xFB8E8): "(skip_clear)" -
+    # `cmp word[bp+6],0` gates the whole clear-attrs path.
+    0xFB8E8: {6: "skip_clear"},
+    # init_print_record_fields (0xFAD6E): "(far ptr record, pos, type,
+    # attr1, attr2)" - confirmed exactly: bp+0xe (attr1) bit 0x80
+    # selects whether bp+0x10 (attr2) is added to it or used alone.
+    0xFAD6E: {6: "record_off", 8: "record_seg", 0xA: "pos", 0xC: "type",
+               0xE: "attr1", 0x10: "attr2"},
+    # compute_print_cell_size (0xF9650): "(far ptr dest, far ptr src)"
+    # - confirmed: bp+0xa/0xc (src) is only ever read from, bp+6/8
+    # (dest) is only ever written to.
+    0xF9650: {6: "dest_off", 8: "dest_seg", 0xA: "src_off", 0xC: "src_seg"},
+    # init_comm_default_params (comm ROM, 0x821F7): "(mode)" - `cmp
+    # ax,1` (loaded from bp+6) gates the whole init path.
+    0x821F7: {6: "mode"},
+    # build_comm_status_message (comm ROM, 0x924D2): "(index 0-3)" -
+    # `cmp ax,0/1/2/3` (loaded from bp+6) selects which message chunk.
+    0x924D2: {6: "index"},
+    # compute_response_format_flags (comm ROM, 0x85C9D): "(word
+    # flags, passed by value)" - `or word[bp+6],N` modifies the
+    # caller's stack slot directly (the modified value is what gets
+    # returned in ax) rather than through a pointer.
+    0x85C9D: {6: "flags"},
+    # init_gpib_record (comm ROM, 0x961E9): "(record_index)" - `imul
+    # dx=0xc` (12, this table's record size) directly on bp+6.
+    0x961E9: {6: "record_index"},
+    # validate_gpib_record_consistency (comm ROM, 0x951AA): "(index)"
+    # - same `imul 0xc` record-indexing shape as init_gpib_record.
+    0x951AA: {6: "index"},
+    # validate_gpib_device_records (comm ROM, 0x95B69): confirmed real
+    # stack order is (device_off, device_seg, count) - bp+6/8 is a far
+    # pointer (`les di,[bp+6]`), bp+0xa is a decrementing loop counter
+    # - the REVERSE of FUNCTIONS.md's previous "(count, far ptr
+    # device_array)" prose order (fixed there to match this).
+    0x95B69: {6: "device_off", 8: "device_seg", 0xA: "count"},
 }
 
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")
