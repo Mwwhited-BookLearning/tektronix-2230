@@ -209,6 +209,58 @@ tied to anything in the disassembly.
 **Caution label**: "≤25Vpk and <100mA ABS, MAX applied to any
 connector" — a hardware safety limit, not firmware-relevant.
 
+### Internal board layout — two physically separate boards, from the user's own service-manual schematic trace (2026-09-16)
+
+The comm option is **two separate boards**, not one — confirmed by
+directly tracing the service manual's own schematics (not just the
+Theory of Operation prose used elsewhere in this file):
+
+1. **"Option Memory" board** — a RAM board shared between the RS-232
+   and GPIB riser options (the user reviewed only the RS-232 riser in
+   detail — "I dont care about the GPIB riser as I dont have one").
+   Carries the 4 static-RAM chips backing `MEMORY_MAP.md`'s confirmed
+   `0x88000-0x8FFFF` "Option nonvolatile RAM" range, plus its own
+   address-decode/power-sense support chips:
+
+   | IC | Part | Function | Address range |
+   |---|---|---|---|
+   | `U118` | (static RAM) | RAM | `0x88000-0x89FFF` |
+   | `U128` | (static RAM) | RAM | `0x8A000-0x8BFFF` |
+   | `U138` | (static RAM) | RAM | `0x8C000-0x8DFFF` |
+   | `U148` | (static RAM) | RAM | `0x8E000-0x8FFFF` |
+   | `U1122` | ? | unidentified | — |
+   | `U1132` | ? | unidentified | — |
+   | `U1142` | LM339 | power sense | — |
+   | `U1162` | 74LS139 | address decoder (this board's own, separate from the RS-232 board's `U1245`) | — |
+
+2. **RS-232 option riser** — the RS-232-specific logic, including the
+   UART and its register-buffer support chips:
+
+   | IC | Part | Function |
+   |---|---|---|
+   | `U1242` | 6116P (2048x8 RAM) | comm-option RAM (separate from the shared Option Memory board above) |
+   | `U1244` | 27512 (65536x8 EPROM) | the `160-2998` comm ROM itself |
+   | `U1251` | **82C52** | the UART (`MEMORY_MAP.md`'s already-confirmed `U1251` — part number now identified) |
+   | `U1225` | MC1489 | TTL/RS-232C transmitter |
+   | `U1224` | MC1489 | TTL/RS-232C receiver |
+   | `U1244F` | 74LS04A | UART reset |
+   | `U1232` | 74LS245 | `AD0-7` -> `BD0-7` data-bus buffer |
+   | `U1241` | 74LS541 | `A0-7` -> `BA0-7` address-bus buffer |
+   | `U1233` | 74LS541 | `A8-13` -> `BA8-13` address-bus buffer |
+   | `U1244A` | 74LS04A | `BA12` inverter -> `U1245` pin 14 |
+   | `U1244B` | 74LS04A | `BA13` inverter -> `U1245` pin 13 |
+   | `U1222` | 74LS541 | **Parameter Buffer** (`0x406BC`, "Option Parameters Latch") |
+   | `U1223` | 74LS541 | **State Buffer** (`0x4067C`, "Option Status Latch") |
+   | `U1235` | 74HCT259 | **Interrupt Mask Latch** (`U1236` in the service manual's own prose elsewhere — same chip, `0x406F8`-`0x406FB`) |
+   | `U1245` | 74F548 | **the real address decoder** for this board's registers — see `MEMORY_MAP.md`'s "RS-232 option board" section for the full pin-out and truth table |
+
+   See `MEMORY_MAP.md`'s "RS-232 option board: the actual chip-select
+   decoder and register-buffer identities" section (added the same
+   day) for the `U1245` decoder's full input/output pin mapping, the
+   Parameter/State buffer bit maps, and the `U1235`/`U1236`
+   Interrupt Mask Latch's `Q0`-`Q3` output mapping — all derived
+   directly from this same schematic trace.
+
 ## Front panel (`hardware/photos/front_panel.jpg`)
 
 Two stacked Tektronix 2230 units are visible (plus an unrelated bench

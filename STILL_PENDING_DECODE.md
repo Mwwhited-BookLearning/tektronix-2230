@@ -150,9 +150,14 @@ The single biggest cluster of open items - see
   PRACTICAL_GUIDE.md`) - `read_dip_switches_serial_config`/
   `read_dip_switches_gpib_config` decode the other switch positions
   too, but which physical switch controls which decoded bit beyond
-  baud rate isn't confirmed. Service manual confirms `0x406BC` is the
-  right register but doesn't give a bit-by-bit switch map in the
-  sections read so far.
+  baud rate isn't confirmed. **Narrowed 2026-09-16** (user's schematic
+  trace, see `MEMORY_MAP.md`'s "RS-232 option board" section): the
+  physical *register layout* is now known - switches 1-7 land in the
+  Parameter Buffer (`0x406BC`, `BD0`-`BD6`), switches 8-10 in the State
+  Buffer (`0x4067C`, `BD3`-`BD5`) - but the still-open part is
+  unchanged: which *specific* switch number (within each group)
+  controls which *specific* decoded firmware setting (parity, stop
+  bits, etc. beyond the already-confirmed baud-rate nibble).
 - **`COMM/DATA/STOP_BITS`/`FLOW` (runtime menu) vs. the rear-panel DIP
   switch** - both configure overlapping RS-232 parameters; not clear
   which wins or whether the DIP switch only sets power-on defaults.
@@ -345,17 +350,33 @@ See `docs/self-test/front-panel-switches.md` and `VARIABLES.md`.
 
 See `docs/display/readout-memory.md` and `TODO.md`.
 
-- **The `write_readout_port_byte`/UART theory doesn't hold up, and
-  there's no confident alternative yet.** Physical `0x406F0`-
-  `0x406F3` (written exclusively by the self-test text banner path)
-  sits inside the comm option's UART/GPIB register bank, and desk
-  research built a real case for "genuine UART transmit register" -
-  but a live self-test with an RS-232 listener attached at the correct
-  baud rate produced **zero bytes**. Back to genuinely unresolved.
-  Next concrete step if picked up: check whether
-  `init_readout_port_config`'s literal bytes (`0x29`/`0x23`/`0x06`)
-  match documented UART/GPIB mode-register constants for a chip of
-  this era.
+- **Reconciled 2026-09-16 - this item's own two halves had drifted out
+  of sync with each other; see `MEMORY_MAP.md`'s "Puzzle" section for
+  the up-to-date version.** The *live-hardware* half below (an RS-232
+  listener at the correct baud rate seeing zero bytes during whatever
+  was tested) is left as-is - genuinely not re-tested since. But the
+  *mechanism* half is now settled by the 2026-09-16 emulator work:
+  `write_readout_port_byte` (physical `0x40000+0x6F0`) demonstrably
+  **is** the real, unconditional channel for self-test/POST banner
+  text - confirmed dynamically by booting the real firmware and
+  watching it carry the complete real diagnostic text (`"POWER UP
+  FAILURES"`, etc.) live, regardless of comm-option-installed status.
+  So the *role* (real text-output channel, not a dead/mistaken guess)
+  is confirmed; what's still genuinely open is only whether that
+  channel's *physical destination* is the RS-232 UART specifically (as
+  the address's location inside the UART/GPIB register bank suggests)
+  or something else the address happens to overlap with, given the
+  live-listener test's zero-byte result was never explained away. If
+  picked up again: check whether the zero-byte live test was run
+  during the *same* kind of self-test/boot text this emulator finding
+  covers, or a different code path (e.g. an `ID?`/command-response
+  path) - a mismatch there would resolve this cleanly without any
+  further hardware contradiction. `init_readout_port_config`'s literal
+  bytes (`0x29`/`0x23`/`0x06`) still haven't been checked against
+  documented UART/GPIB mode-register constants for a chip of this
+  era - now more concretely checkable, since `MEMORY_MAP.md`'s
+  "RS-232 option board" section (same day) identifies the UART part
+  number directly as an **82C52**.
 - **Whether `0x40000-0x4FFFF` is a single memory-mapped display or two
   separate chips (character + attribute/inverse-video planes) isn't
   confirmed** - the `+0x8000` dual-plane pattern is observed but not

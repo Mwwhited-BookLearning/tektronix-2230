@@ -69,7 +69,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x00000-0x07FFF` | **CONFIRMED: "8-bit display RAM - waveforms, interrupt vectors, miscellaneous"** (Table 3-1, part of "RAM SEG" `0x00000-0x3FFFF`, 4 mirror images of Memory Segment 0) | The IVT and the flat `DS=0x41` variable pool both live inside this range, consistent with what's already been traced from the code side |
 | `0x08000-0x0FFFF` | **CONFIRMED: "4 bits of display RAM for waveform attributes (LSB)"** (Table 3-1) | A genuine attribute/LSB plane for waveform display - distinct from (and a better fit for the "attribute plane" concept than) the `0x48000` acquisition-memory window above |
 | `0x80000-0x87FFF` | `160-2998` file offset `0x0000-0x7FFF` (comm/GPIB-RS232 option ROM, **lower 32KB half**) | **CONFIRMED exactly from Table 3-1's full page image (2026-09-13)**: `"80000-87FFF: Half of Communication Options ROMs U1243 or U1343"`. Every far-call target landing in this range resolves against this file offset range directly |
-| `0x88000-0x8F7FF` | **CONFIRMED: "Option nonvolatile RAM"** (Table 3-1) | **This is genuinely RAM, not ROM** - corrects this project's earlier blanket "0x80000-0x8FFFF is one flat 64KB ROM device" statement, which conflated this RAM range with the ROM. The comm ROM's `init_far_pointer_table` writes its RAM-resident far-pointer destinations here/below (physical `0x8FED6`-`0x8FF60`, all landing correctly in this RAM range or the next row) - fully consistent, not a contradiction, once the RAM/ROM split is correctly drawn |
+| `0x88000-0x8F7FF` | **CONFIRMED: "Option nonvolatile RAM"** (Table 3-1) | **This is genuinely RAM, not ROM** - corrects this project's earlier blanket "0x80000-0x8FFFF is one flat 64KB ROM device" statement, which conflated this RAM range with the ROM. The comm ROM's `init_far_pointer_table` writes its RAM-resident far-pointer destinations here/below (physical `0x8FED6`-`0x8FF60`, all landing correctly in this RAM range or the next row) - fully consistent, not a contradiction, once the RAM/ROM split is correctly drawn. **Physical chip layout confirmed 2026-09-16** (user's own schematic review, `TODO.md`'s "Architect Notes"): this range is 4 separate static-RAM chips on a genuinely distinct physical board (the "Option Memory" board, shared between the RS-232 and GPIB riser options, not part of the RS-232-specific board) - `U118`=`0x88000-0x89FFF`, `U128`=`0x8A000-0x8BFFF`, `U138`=`0x8C000-0x8DFFF`, `U148`=`0x8E000-0x8FFFF`, each a 8KB device (matching the 4x8KB=32KB total this range spans). Address decoding for this board is `U1162` (74LS139); `U1142` (LM339) is a power-sense comparator, not involved in addressing |
 | `0x8F800-0x8FFFF` | **CONFIRMED: "Nonvolatile RAM"** (Table 3-1) | Second RAM sub-range, same image. `[0x712]`'s comm-ROM dispatch-table far pointer (see `docs/comm-rom/rs232-early-investigation.md`) lives at physical `0x8FF12`, inside this range - a RAM-resident variable, exactly as already documented, now with its address's RAM identity independently confirmed |
 | `0x90000-0x97FFF` | `160-2998` file offset `0x8000-0xFFFF` (comm/GPIB-RS232 option ROM, **upper 32KB half**) | **CORRECTED 2026-09-13, from the same Table 3-1 page image**: `"90000-97FFF: Half of Communication Options ROMs U1243 or U1343"` - this is the ROM's own genuine, deliberately-separate upper half, **not an "address-decode alias" of `0x88000-0x8FFFF`** as this project previously guessed (that range is real RAM, a completely different device - see above). The lower/upper 32KB ROM halves are split across the address space with the option's 2 RAM regions sitting *between* them, not through incomplete address-line decoding. This project's own empirical formula (`file_offset = (phys-0x90000)+0x8000`) was already numerically correct and remains so - only the *explanation* for why it works was wrong. Still wired into the tooling as `"2998_alias_90000"` in `gen_disasm_x86.CHIPS` (naming now known to be a misnomer, kept for now to avoid an unnecessary rename churn) |
 | `0xE0000-0xEFFFF` | `160-3633` (main ROM, low half) | Confirmed via TekWiki + validated disassembly |
@@ -104,6 +104,13 @@ INTR, TBRE, and DR, inform the Microprocessor that intervention is
 required.**"* (`DR` = Data Ready, i.e. "a byte has arrived" - the
 interrupt that would fire on every incoming RS-232 byte.)
 
+**`U1251`'s actual part number confirmed 2026-09-16** (user's own
+schematic review, `TODO.md`'s "Architect Notes"): **82C52** - not
+independently identified in this project before this (only the
+schematic designator and its behavior were known). Directly wired:
+`BA0`->`A0`, `BA1`->`A1`, chip-select from the board's address decoder
+(see below).
+
 **Interrupt Mask Latch (`U1236`, physical `0x406F8`-`0x406FB`,
 `BA0`/`BA1`-selected outputs `0D`/`1D`/`2D`/`3D`)**: *"provides four
 signals that are directly controlled by the Microprocessor... Two of
@@ -121,17 +128,23 @@ reading the Status Latch (`0x4067C`) each time, consistent with a
 latch self-test (Table 7-38's Status Buffer bit 6 is literally
 "Interrupt mask latch D3" - a software-readable loopback of whatever
 was last latched into output `3D`, exactly matching this code's
-read-after-toggle shape). **Not yet found: any code writing to
-outputs `0D`/`1D`/`2D`** (physical `0x406F8`/`F9`/`FA`) - specifically
-whichever *one* of those is the real "RS-232 port" interrupt mask. If
-nothing in this project's traced code ever unmasks it, **the DR
-(byte-received) interrupt would never reach the microprocessor at
-all** - a genuinely strong, concrete candidate for why incoming RS-232
-bytes produce no visible effect, independent of cabling/baud/parity
-(all already proven correct this session). Worth a dedicated search
-next time: does *anything* write a nonzero byte through the `0x6F8`
-base at offset `0`, `1`, or `2` (as opposed to the `+3` self-test
-write already found)?
+read-after-toggle shape).
+
+**All 4 outputs fully resolved as of 2026-09-16** (this section's own
+"not yet found" note below is stale, kept for the historical trail -
+see `docs/comm-rom/rs232-early-investigation.md`'s "Traced the
+interrupt mask latch's real outputs" for the full derivation and the
+2026-09-16 schematic-review follow-up that closed the last gap):
+`0D`=RX-ready/`DR` mask (`set_comm_queue_busy`), `1D`=TX-ready/`TBRE`
+mask (`update_comm_tx_ready_flag`), `2D`=`RLSO`/`RLSD`-DCD generation
+(never toggled by code - confirmed via the user's own schematic trace
+to be a modem-control-signal driver, not an interrupt mask, explaining
+why no toggle code was ever found), `3D`=diagnostic strobe (the
+self-test toggle above). The masking mechanism is genuinely correctly
+implemented and exercised during normal comm-channel init - this
+closes the "DR interrupt never unmasked" theory as a real bug
+candidate; see the linked doc for what's still open about the comm
+ROM's real byte-reception path.
 
 **One more oddity surfaced while looking for that**: a function ending
 around `0xE48A0` writes through the *same* `0x6F8` base but at a
@@ -146,6 +159,55 @@ than the `0x90000`/`0x88000` question below, which turned out **not**
 to be an alias at all - see the correction there) - but this isn't
 confirmed, and what this function's caller/purpose actually is hasn't
 been traced. Flagged here rather than guessed at further.
+
+## RS-232 option board: the actual chip-select decoder and register-buffer identities
+
+Confirmed 2026-09-16 from the user's own component-level schematic
+trace of the RS-232 option board (`TODO.md`'s "Architect Notes"
+section - not just the manual's own prose/tables used above, an
+actual pin-by-pin decoder trace). **Two physically separate boards**
+make up the comm option, not one: the "Option Memory" board (the
+shared nonvolatile RAM at `0x88000-0x8FFFF`, above) and a distinct
+RS-232-specific riser carrying the UART and its support logic - see
+`HARDWARE.md` for the full board-level chip list.
+
+**`U1245` (74F548 octal decoder) is the real address decoder for this
+board's registers** - not previously identified in this project. Its
+inputs are `BA3`(?)/`BA6`/`BA7` (the 3-bit select), `BLK0`/`/IO_SEG`
+(enables), and `BA12`/`BA13` (inverted via `U1244`, further enables);
+its 8 outputs (`/O0`-`/O7`) select: `/O3`->`/STATE` (State Buffer
+chip-select), `/O5`->`/PARAM` (Parameter Buffer chip-select),
+`/O6`->`/232EN` (the UART's own `/CS0` chip-select - confirmed this is
+literally what turns the UART on), `/O7`->`/LATCH` (the Interrupt Mask
+Latch's chip-select); `/O0`/`/O1`/`/O2`/`/O4` are not connected (spare
+decoder outputs). This is the missing piece between "physical address
+range" and "which chip actually responds" for every comm-option
+register this project has already confirmed by address alone.
+
+**Register-buffer chip identities and bit maps, from the same trace**:
+- **Parameter Buffer = `U1222`** (74LS541), the chip behind the
+  already-confirmed `0x406BC` "Option Parameters Latch (in)". Bit map:
+  `BD0`-`BD6` = PARAMETERS DIP switches 1-7, `BD7` = **UART SDO**
+  (the UART's live serial-data-output line, not a switch at all).
+  This directly explains a previously-unexplained finding
+  (`MEMORY_MAP.md`'s own "New exerciser screen" section below,
+  `comm_param` reading `...000` vs `...001` between the two physical
+  units at the same DIP-switch setting) - it isn't a switch-mirror
+  discrepancy, it's simply the live, constantly-changing transmit bit
+  being sampled at two different instants.
+- **State Buffer = `U1223`** (74LS541), the chip behind the already-
+  confirmed `0x4067C` "Option Status Latch (in)". Bit map: `BD0` =
+  power-interrupt flag (`PWR INT`, itself a logic OR of chassis-ground
+  and `/WR`), `BD1` = UART `INTR`+`DR` (the byte-received interrupt
+  line, readable directly as a status bit, not just via the interrupt
+  path), `BD2` = UART `TBRE`, `BD3`-`BD5` = PARAMETERS DIP switches
+  8-10, `BD6` = a diagnostic bit (source not fully traced, `U1235`
+  pin 6-ish), `BD7` = RS-232 `DCD` (from `RLSO`, see below).
+- **Interrupt Mask Latch `U1236`'s actual schematic reference on this
+  trace is `U1235`** (74HCT259) - see `docs/comm-rom/rs232-early-
+  investigation.md`'s "Traced the interrupt mask latch's real
+  outputs" section for the full `Q0`-`Q3` -> `0D`-`3D` mapping this
+  confirmed, resolving that section's last open output (`2D`/`RLSO`).
 
 ## Puzzle: `write_readout_port_byte`'s address overlaps the comm-option UART register bank
 
@@ -281,6 +343,25 @@ sharper photo to confirm exactly.
   routines are actually reading - worth reconciling against those
   functions' known register addresses (`0x4067C`/`0x406BC`/`0x406F3`)
   next time the comm ROM is revisited.
+
+  **RESOLVED 2026-09-16** (user's own schematic trace, see the "RS-232
+  option board" section above): `comm_param` genuinely is the
+  Parameter Buffer (`U1222`), and its bit map is `BD0`-`BD6` = DIP
+  switches 1-7, **`BD7` = the UART's own live serial-data-output
+  line, not a switch at all** - the "differing last bit" was never a
+  switch-mismatch puzzle, it's simply this live transmit bit caught at
+  two different instants on the two scopes. `comm_stat` is the State
+  Buffer (`U1223`); using this project's own established bit0=LSB
+  convention (see `VARIABLES.md`'s `SWB2`/`SWB1` entries), its
+  `01111101` byte is `BD7`=`0`, `BD6`=`1`, `BD5`=`1`, `BD4`=`1`,
+  `BD3`=`1`, `BD2`=`1`, `BD1`=`0`, `BD0`=`1` - i.e. `PWR INT`(`BD0`)
+  and `TBRE`(`BD2`) read `1`, `INTR+DR`(`BD1`) and `DCD`(`BD7`) read
+  `0`, DIP switches 8-10 (`BD3`-`BD5`) all read `1`. Structural bit
+  positions are confirmed; **not yet confirmed** which of `1`/`0` means
+  "active" for each status bit (polarity), so treat this specific
+  8-bit snapshot as a real, physically-grounded reading rather than a
+  fully-interpreted one - the bit *map* is solid, individual bit
+  *polarity* isn't independently verified yet.
 
 ## Resolved this session (2026-09-13, from the service manual)
 

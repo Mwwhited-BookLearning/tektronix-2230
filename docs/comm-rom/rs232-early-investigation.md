@@ -471,6 +471,32 @@ latch are the same hardware.
   rather than being dynamically toggled, explaining why it's harder to
   find.
 
+**RESOLVED 2026-09-16, from the user's own direct service-manual
+schematic review** (`TODO.md`'s "Architect Notes" section - a
+component-level trace of the RS-232 option board, not just the
+prose/table excerpts used above). `U1235` is `U1236`'s actual
+schematic reference on this trace (74HCT259, "8bit latch", labeled
+directly as the Interrupt Mask Latch) with its 4 output pins mapped
+individually:
+
+| Latch output (this doc) | `U1235` pin (user's trace) | Confirmed role |
+|---|---|---|
+| `0D` | `Q0` | `DR + INTR` mask - **exact match**, independently confirmed twice now |
+| `1D` | `Q1` | `TBRE` mask - **exact match**, independently confirmed twice now |
+| `2D` | `Q2` | `RLSO` (buffered to the RS-232 DCE connector's pin 8, i.e. `RLSD`/`DCD`) - **this is the missing confirmation**, exactly matching this doc's own "possibly drives RLSD/DCD" guess above, now from primary-source schematic detail rather than inference |
+| `3D` | `Q3` | `DIAG` - matches this doc's own "diagnostics output" conclusion |
+
+All 4 outputs now agree between this project's independent code-trace
+and the user's independent schematic trace, with zero contradictions -
+a strong cross-check in both directions. `2D`/`RLSO` being a DCD-
+generation line (not a UART interrupt mask at all) also explains why
+no code was ever found toggling it dynamically: unlike `0D`/`1D`
+(genuine interrupt enable/disable bits toggled per critical section),
+a modem-control-signal driver bit is far more likely to be set once
+(or left at its `BRST`-forced power-on default) than repeatedly
+toggled - consistent with the "no reference found" result above being
+a real absence, not a search failure.
+
 **The "never unmasked" theory is weakened, not confirmed**: `set_comm_
 queue_busy`'s disengage path (which restores `0D`=1, unmasking RX)
 **is** called during normal comm-channel initialization - traced a
