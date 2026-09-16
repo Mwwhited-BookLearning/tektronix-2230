@@ -1,4 +1,4 @@
-*.rep/
+#*.rep/
 *.gpr.lock
 *.lock
 *.lock~
