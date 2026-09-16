@@ -166,14 +166,33 @@ The single biggest cluster of open items - see
 See `docs/display/vector-display-and-stroke-font.md` and `TODO.md`'s
 top item.
 
-- **`[0x1DB0]`'s value (the glyph pointer-array's actual address) has
-  never been found.** The bit-packing mechanism is fully understood
-  and has a working tool (`disasm/decode_stroke_font.py`), but nothing
-  in proven or heuristic code writes `[0x1DB0]` itself - confirmed
-  2026-09-14 across all 3 chips' proven+heuristic listings (every hit
-  is a read, zero writes). `boot_init`'s own data-driven init loop was
-  fully traced 2026-09-14 and confirmed to be an unrelated RAM
-  march-test routine, closing off that specific lead.
+- **`[0x1DB0]`'s value probably isn't right yet, but it IS written -
+  revised 2026-09-15.** The 2026-09-14 claim "nothing writes `[0x1DB0]`"
+  was based on a text search for literal `mov [0x1DB0], ...`-style
+  instructions, which misses a real write that exists: `init_far_
+  pointer_table_sysrom` (`0xE5EAE`, proven-reachable at boot) copies a
+  far pointer into it via a data-driven `movsw` loop, whose destination
+  only appears as a raw word value inside an embedded table, never as
+  an instruction operand - a literal grep was never going to find that.
+  The written value, `E9A3:0000`, was previously argued against because
+  it "lands on real compiled code" - rechecked directly and that
+  argument was flawed (the real code starts 4 bytes later, a landing
+  artifact; a data table has no reason to avoid looking code-adjacent
+  either way). The *actually valid* reason to doubt this value stands
+  on its own: sampled `char*4`-indexed lookups against it produce
+  incoherent far pointers, not a real per-character pattern. Also
+  checked whether an aliased write could be hiding under a different
+  `DS` segment convention - cataloged every fixed-immediate `DS` load
+  in the entire corpus, found only two (`0x41`, the standard convention;
+  `0xE5D1`, this same table's own transient source read), no hidden
+  third path. The one gap that can't be closed by static text search:
+  a few functions load `DS` from a caller-supplied far-pointer argument
+  rather than a fixed value - not checked for aliasing. `boot_init`'s
+  own separate data-driven init loop was fully traced 2026-09-14 and
+  confirmed to be an unrelated RAM march-test routine, closing off that
+  specific (different) lead. Full detail in `docs/display/vector-
+  display-and-stroke-font.md`'s "Follow-up, 2026-09-15" section right
+  after "The readout vector display list".
 - A structural search for the 128-entry far-pointer array's *shape*
   found zero real candidates in any of the 3 chips (main ROMs and comm
   ROM all tried as of 2026-09-14) - a real scoring bug was found and

@@ -79,28 +79,75 @@ hardware sink; whatever hardware actually turns these buffered points
 into a drawn vector on the CRT (if anything does, on this build) hasn't
 been identified.
 
-**Loose thread found while checking this, not resolved**: the same
-table entry cluster (`dest_off` `0x130`/`0x134`/`0x138`/`0x13C`,
-spaced exactly 4 bytes apart - matching `[0x1DB0]`/`[0x1DB4]`/
-`[0x1DB8]`/`[0x1DBC]`'s real spacing, strong evidence these are the
-right variables and not a coincidence) also appears to initialize the
-still-unlocated stroke-font pointer `[0x1DB0]` and `[0x1DB4]`. But
-those two entries' resulting far pointers (`E9A3:0000` for `[0x1DB0]`,
-`E947:0002` for `[0x1DB4]`) land on **real compiled code** (a normal
-`push bp; mov bp,sp` function prologue right after `[0x1DB0]`'s target;
-`E947:0002` is `merge_record_flags_if_changed`'s own address for
-`[0x1DB4]`), not a plausible glyph-pointer-array header. Checking a
-few sample per-character second-level lookups (assuming `[0x1DB0]`
-really does point to a 128-entry `char*4`-indexed array starting right
-there) produced incoherent, seemingly-random far pointers, not a
-sensible pattern. **Not claiming this resolves the stroke-font table**
-- flagging it honestly as an unresolved puzzle: either these two
-specific entries are stale/leftover initialization values (matching
-this session's broader theme of dead/unused table rows), or the real
-per-character lookup structure is more complex than assumed. `[0x1DB8]`/
-`[0x1DBC]`'s entries (`0033:0008`→phys `0x338`, `002E:0008`→phys
-`0x2E8`, both low-memory/IVT-region addresses) are more plausible for
-their already-confirmed simple byte-cache usage, for what it's worth.
+**Follow-up, 2026-09-15: `[0x1DB0]` does get written - re-verified the whole table directly from raw bytes, and corrected a flawed argument in the original "loose thread" note below.**
+
+Something *does* write `[0x1DB0]`: `init_far_pointer_table_sysrom`
+(`0xE5EAE`, `160-3633`) - a real, proven-reachable boot-time step (it's
+the confirmed `SUB_E5EAE` call in `JUMP_MAP.md`'s Level-0 boot
+sequence, since renamed). Its embedded table (80 entries, format
+`dest_offset, src_offset, src_segment` repeating, terminated by
+`0xFFFF`, all destinations under a single `ES` segment `0x0209` read
+once from the table's own first word) was re-parsed directly from the
+raw ROM bytes this session (not re-quoted from memory) to be sure:
+
+| dest_off | phys (destination) | source far ptr | phys (source) |
+|---|---|---|---|
+| `0x120` | `0x21B0` | `EACB:0004` | `0xEACB4` |
+| `0x130` | **`0x21C0` = `[0x1DB0]`** | `E9A3:0000` | `0xE9A30` |
+| `0x134` | `0x21C4` = `[0x1DB4]` | `E947:0002` | `0xE9472` |
+| `0x138` | `0x21C8` = `[0x1DB8]` | `0033:0008` | `0x00338` |
+| `0x13C` | `0x21CC` = `[0x1DBC]` | `002E:0008` | `0x002E8` |
+| `0x140` | `0x21D0` | `E6F2:000C` | `0xE6F2C` |
+| `0x144` | `0x21D4` | `E3A9:000A` | `0xE3A9A` |
+| `0x148` | `0x21D8` | `E316:0009` | `0xE3169` |
+| `0x14C` | `0x21DC` | `E242:000E` | `0xE242E` |
+| `0x150` | `0x21E0` | `E05C:002F` | `0xE05EF` |
+
+So the honest, precise answer to "what writes `[0x1DB0]`" is: **`init_
+far_pointer_table_sysrom`, at boot, with the far-pointer value
+`E9A3:0000`** - and this whole cluster of nearby RAM cells (`0x1D90`
+through `0x1DF0`-ish) gets initialized together in the same call, all
+from this one table.
+
+**Corrected a flawed argument from the original version of this note**:
+it previously said `E9A3:0000` "lands on real compiled code (a normal
+`push bp; mov bp,sp` function prologue right after `[0x1DB0]`'s
+target)" as the reason to doubt this value. Rechecked the actual bytes
+at physical `0xE9A30` directly: `DE E9 9E 00 55 8B EC ...` - the real
+`push bp; mov bp,sp` (`55 8B EC`) starts **4 bytes later**, at
+`0xE9A34`, not at `0xE9A30` itself. That's this project's own
+well-documented landing-artifact pattern (a real address landing a
+few bytes short of where coherent structure resumes) - so "it lands on
+code" was based on a misread of *where* the code actually starts, and
+isn't by itself good evidence against `E9A3:0000` being a genuine data
+table base (a data table has no reason to "look like code" one way or
+the other - that test was never really diagnostic here). The
+*separate*, still-valid reason to doubt it stands on its own: sampling
+per-character `char*4` lookups assuming `E9A3:0000` is a real 128-entry
+array produced incoherent, seemingly-random far pointers, not a
+sensible pattern - that test doesn't depend on what's at the base
+address looking like code or not, and it's the test that actually
+argues against this being the real table. `[0x1DB8]`/`[0x1DBC]`'s
+entries (`0x338`/`0x2E8`, both low-memory/IVT-region addresses) remain
+more plausible for their already-confirmed simple byte-cache usage.
+
+**Checked for aliased/shadowed writes via a different segment
+convention** (prompted by a direct question: could a write to this
+same physical byte be hiding under a different `DS` value that a text
+search for `1db0` would never match?). Cataloged every place in the
+*entire* proven+heuristic corpus that loads `DS` with a fixed
+immediate value - there are only two: `0x0041` (the standard flat
+convention every other confirmed variable access uses) and `0xE5D1`
+(this same init table's own transient source-read segment, out of
+range for reaching `0x21C0` anyway). No third, hidden fixed-segment
+convention exists anywhere in the disassembled code. The one
+un-closeable gap: a handful of functions load `DS` from a **runtime
+argument** (`mov ds, [bp+6]`/`[bp+8]`, a caller-supplied far pointer's
+segment) rather than a fixed value - if one of those ever gets called
+with a segment that happens to alias physical `0x21C0`, that write
+would be invisible to this kind of static search. Not found, not ruled
+out - would need data-flow tracing of those specific call sites, not
+another text search.
 
 ## Attempted: locating the stroke-font glyph table for SVG extraction
 
