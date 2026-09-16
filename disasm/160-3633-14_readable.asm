@@ -6474,40 +6474,40 @@ draw_box_outline:
     push bp                                  ; 5839: push bp
     mov bp, sp                               ; 583A: mov bp, sp
     sub sp, 6                                ; 583C: sub sp, 6
-    push word [bp + 0xe]                     ; 583F: push word ptr [bp + 0xe]
+    push word [bp + 0xe]                     ; 583F: push word ptr [bp + 0xe]  -> step
     sub di, di                               ; 5842: sub di, di
     push di                                  ; 5844: push di
-    push word [bp + 0xc]                     ; 5845: push word ptr [bp + 0xc]
-    push word [bp + 6]                       ; 5848: push word ptr [bp + 6]
-    push word [bp + 8]                       ; 584B: push word ptr [bp + 8]
-    push word [bp + 6]                       ; 584E: push word ptr [bp + 6]
+    push word [bp + 0xc]                     ; 5845: push word ptr [bp + 0xc]  -> y2
+    push word [bp + 6]                       ; 5848: push word ptr [bp + 6]  -> x1
+    push word [bp + 8]                       ; 584B: push word ptr [bp + 8]  -> y1
+    push word [bp + 6]                       ; 584E: push word ptr [bp + 6]  -> x1
     call 0xe45d:0x12dd                       ; 5851: lcall 0xe45d, 0x12dd
     add sp, 0xa                              ; 5856: add sp, 0xa
     sub di, di                               ; 5859: sub di, di
     push di                                  ; 585B: push di
-    push word [bp + 0xe]                     ; 585C: push word ptr [bp + 0xe]
-    push word [bp + 0xc]                     ; 585F: push word ptr [bp + 0xc]
-    push word [bp + 0xa]                     ; 5862: push word ptr [bp + 0xa]
-    push word [bp + 0xc]                     ; 5865: push word ptr [bp + 0xc]
-    push word [bp + 6]                       ; 5868: push word ptr [bp + 6]
+    push word [bp + 0xe]                     ; 585C: push word ptr [bp + 0xe]  -> step
+    push word [bp + 0xc]                     ; 585F: push word ptr [bp + 0xc]  -> y2
+    push word [bp + 0xa]                     ; 5862: push word ptr [bp + 0xa]  -> x2
+    push word [bp + 0xc]                     ; 5865: push word ptr [bp + 0xc]  -> y2
+    push word [bp + 6]                       ; 5868: push word ptr [bp + 6]  -> x1
     call 0xe45d:0x12dd                       ; 586B: lcall 0xe45d, 0x12dd
     add sp, 0xa                              ; 5870: add sp, 0xa
-    push word [bp + 0xe]                     ; 5873: push word ptr [bp + 0xe]
+    push word [bp + 0xe]                     ; 5873: push word ptr [bp + 0xe]  -> step
     sub di, di                               ; 5876: sub di, di
     push di                                  ; 5878: push di
-    push word [bp + 0xc]                     ; 5879: push word ptr [bp + 0xc]
-    push word [bp + 0xa]                     ; 587C: push word ptr [bp + 0xa]
-    push word [bp + 8]                       ; 587F: push word ptr [bp + 8]
-    push word [bp + 0xa]                     ; 5882: push word ptr [bp + 0xa]
+    push word [bp + 0xc]                     ; 5879: push word ptr [bp + 0xc]  -> y2
+    push word [bp + 0xa]                     ; 587C: push word ptr [bp + 0xa]  -> x2
+    push word [bp + 8]                       ; 587F: push word ptr [bp + 8]  -> y1
+    push word [bp + 0xa]                     ; 5882: push word ptr [bp + 0xa]  -> x2
     call 0xe45d:0x12dd                       ; 5885: lcall 0xe45d, 0x12dd
     add sp, 0xa                              ; 588A: add sp, 0xa
     sub di, di                               ; 588D: sub di, di
     push di                                  ; 588F: push di
-    push word [bp + 0xe]                     ; 5890: push word ptr [bp + 0xe]
-    push word [bp + 8]                       ; 5893: push word ptr [bp + 8]
-    push word [bp + 0xa]                     ; 5896: push word ptr [bp + 0xa]
-    push word [bp + 8]                       ; 5899: push word ptr [bp + 8]
-    push word [bp + 6]                       ; 589C: push word ptr [bp + 6]
+    push word [bp + 0xe]                     ; 5890: push word ptr [bp + 0xe]  -> step
+    push word [bp + 8]                       ; 5893: push word ptr [bp + 8]  -> y1
+    push word [bp + 0xa]                     ; 5896: push word ptr [bp + 0xa]  -> x2
+    push word [bp + 8]                       ; 5899: push word ptr [bp + 8]  -> y1
+    push word [bp + 6]                       ; 589C: push word ptr [bp + 6]  -> x1
     call 0xe45d:0x12dd                       ; 589F: lcall 0xe45d, 0x12dd
     add sp, 0xa                              ; 58A4: add sp, 0xa
     mov sp, bp                               ; 58A7: mov sp, bp

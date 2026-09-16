@@ -4015,6 +4015,15 @@ PARAMETER_NAMES = {
     # early on, the same HPGL coordinate-scaling shape as
     # update_plot_position.
     0xE7E0D: {6: "x", 8: "y"},
+    # draw_box_outline (0xE5839): no existing FUNCTIONS.md signature -
+    # resolved by tracing all 4 of its calls into draw_readout_line
+    # against that function's own confirmed (x1, y1, x_max, y_max, dx,
+    # dy) push order: edges are (x1,y1)-(x1,y2), (x1,y2)-(x2,y2),
+    # (x2,y1)-(x2,y2), (x1,y1)-(x2,y1), each stepped by `step`.
+    0xE5839: {6: "x1", 8: "y1", 0xA: "x2", 0xC: "y2", 0xE: "step"},
+    # putchar_serial (comm ROM, 0x83241): single byte argument, same
+    # shape as the confirmed print_char.
+    0x83241: {6: "char"},
 }
 
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")
