@@ -234,3 +234,50 @@ far calls specifically for decompiler-based cross-checks; direct calls
 using a function's own home segment (the vast majority) don't show
 this problem. Regenerate `decompile/exports/*.c` after any batch of
 parameter or function-name changes to keep this cross-check current.
+
+## Bookmarks: flagging "needs deep analysis" spots for later
+
+`decompile/apply_bookmarks.py` writes Ghidra Bookmarks (`Window >
+Bookmarks` in the GUI; also shown as gutter markers) at addresses this
+project has flagged as unresolved but worth returning to, from a
+single git-tracked `BOOKMARKS` list in the script itself - the same
+"text is the source of truth, the script is the recipe" pattern as
+`apply_names.py`/`apply_parameters.py`. Currently covers the 5
+addresses that fail `CreateFunctionCmd` (category "Decode anomaly" -
+see the previous section) and the candidate vector shape table
+(category "Unresolved data", `0xEAE64`). Add an entry any time this
+project finds something worth flagging but not yet resolved, rather
+than only noting it in a doc - a bookmark surfaces immediately when
+someone opens the project, a doc has to be remembered and searched.
+
+## Rebuilding this project from scratch
+
+Because `decompile/Tek2230.rep/` isn't (and shouldn't be) the thing
+that gets backed up or carried to a new machine, here's the full
+recipe to reconstruct the current analysis state from what *is*
+git-tracked - the 3 ROM binaries plus `disasm/gen_disasm_x86.py`,
+`FUNCTIONS.md`, and the 3 scripts in this folder:
+
+1. Install Ghidra 12.x and PyGhidra (`pip install <ghidra_install>/
+   Ghidra/Features/PyGhidra/pypkg`).
+2. Create a new Ghidra project named `Tek2230` at `decompile/`.
+3. Import 4 programs via `analyzeHeadless ... -import ... -loader
+   BinaryLoader -loader-baseAddr "<segment>:0000"`, one per row of
+   the "The four imported programs" table above - `160-3633-14.bin`
+   and `160-3532-14.bin` whole, `160-2998-14.bin` whole (as
+   `160-2998-14.bin`), and a second import of the **same** file's
+   upper 32KB (file offset `0x8000`-`0xFFFF`, saved as a separate
+   source file first) as `160-2998-14-shadow.bin` at base `0009:0000`.
+   Run default auto-analysis on each.
+4. `python decompile/apply_names.py` - applies every confirmed
+   function name + description/confidence plate comment.
+5. `python decompile/apply_parameters.py` - applies every confirmed
+   function's stack parameters with correct byte/word sizes.
+6. `python decompile/apply_bookmarks.py` - flags the known unresolved
+   spots.
+7. (optional) `python decompile/export_decompiled_c.py <program>
+   decompile/exports/<program-without-.bin>.c` for each of the 4
+   programs, to regenerate the decompiled-C cross-check artifacts.
+
+Steps 4-7 are all idempotent (safe to rerun after any change to their
+git-tracked source) and each takes a few seconds.
