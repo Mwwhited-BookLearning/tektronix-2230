@@ -756,9 +756,9 @@ void __cdecl16far wait_readout_tick(void)
 
 /* print_string_far (confidence: Confirmed)
    
-   Evidence: Loops a far-pointer nul-terminated string byte-by-byte, calling `print_char` per byte.
-   Every observed call site passes a far pointer into segment `0xFF7B` (landing in `160-3532`), i.e.
-   a fixed string table */
+   Evidence: `(str_off, str_seg)` - loops a far-pointer nul-terminated string byte-by-byte, calling
+   `print_char` per byte. Every observed call site passes a far pointer into segment `0xFF7B`
+   (landing in `160-3532`), i.e. a fixed string table */
 
 void __stdcall16far print_string_far(word str_off,word str_seg)
 
@@ -781,7 +781,7 @@ void __stdcall16far print_string_far(word str_off,word str_seg)
 
 /* print_char (confidence: Confirmed)
    
-   Evidence: Thin wrapper: unpacks one byte argument, calls `write_readout_port_byte` */
+   Evidence: `(char)` - thin wrapper: unpacks one byte argument, calls `write_readout_port_byte` */
 
 void __stdcall16far print_char(byte char)
 
@@ -1712,9 +1712,11 @@ uint __cdecl16far selftest_acq_ram(void)
 
 /* ram_pattern_test (confidence: Confirmed from code alone (classic march-pattern RAM test shape))
    
-   Evidence: `(start far ptr, end far ptr, step, mask)` - generic RAM test engine: writes an
-   alternating `0xAA`/`0x55` pattern across the range, then reads back and compares (masked). The
-   shared implementation likely behind the `SYS_RAM`/`NIB_RAM`/`ACQ_RAM`/`COMM_RAM` self-tests */
+   Evidence: `(start_off, start_seg, end, step, mask)` **(corrected 2026-09-16 - `end` is a plain
+   word bound within `start`'s own segment, not a second far pointer as previously listed)** -
+   generic RAM test engine: writes an alternating `0xAA`/`0x55` pattern across the range, then reads
+   back and compares (masked). The shared implementation likely behind the
+   `SYS_RAM`/`NIB_RAM`/`ACQ_RAM`/`COMM_RAM` self-tests */
 
 int __stdcall16far ram_pattern_test(word start_off,word start_seg,word end,word step,word mask)
 
@@ -2871,9 +2873,9 @@ undefined2 __stdcall16far verify_adc_calibration(uint param_1)
 
 /* strncat_far (confidence: Confirmed)
    
-   Evidence: `(dest far ptr, src far ptr, max_len)` - walks `dest` to its existing NUL terminator
-   (decrementing `max_len` as it goes), then copies bytes from `src` until NUL or `max_len` is
-   exhausted, re-terminates. A bounded string-append, i.e. `strncat` */
+   Evidence: `(dest_off, dest_seg, src_off, src_seg, max_len)` - walks `dest` to its existing NUL
+   terminator (decrementing `max_len` as it goes), then copies bytes from `src` until NUL or
+   `max_len` is exhausted, re-terminates. A bounded string-append, i.e. `strncat` */
 
 void __stdcall16far strncat_far(word dest_off,word dest_seg,word src_off,word src_seg,word max_len)
 
@@ -2989,7 +2991,7 @@ void __stdcall16far format_number(word value,word radix,word width,byte overflow
 
 /* format_hex_word (confidence: Confirmed)
    
-   Evidence: `format_number` wrapper: fixed `radix=16, width=5` */
+   Evidence: `(value)` - `format_number` wrapper: fixed `radix=16, width=5` */
 
 void __stdcall16far format_hex_word(word value)
 
@@ -3002,7 +3004,7 @@ void __stdcall16far format_hex_word(word value)
 
 /* format_decimal_word (confidence: Confirmed)
    
-   Evidence: `format_number` wrapper: fixed `radix=10, width=6` */
+   Evidence: `(value)` - `format_number` wrapper: fixed `radix=10, width=6` */
 
 void __stdcall16far format_decimal_word(word value)
 
@@ -3015,7 +3017,7 @@ void __stdcall16far format_decimal_word(word value)
 
 /* format_word_radix (confidence: Confirmed)
    
-   Evidence: `format_number` wrapper: caller-supplied `radix`, fixed `width=5` */
+   Evidence: `(value, radix)` - `format_number` wrapper: caller-supplied `radix`, fixed `width=5` */
 
 void __stdcall16far format_word_radix(word value,word radix)
 
@@ -3081,8 +3083,9 @@ void __stdcall16far FUN_000e_33dd(int param_1,int param_2,int param_3)
 
 /* format_byte_hex (confidence: Confirmed)
    
-   Evidence: Byte -> 2 hex ASCII digits + NUL, written to a *separate* fixed scratch buffer at
-   `[0x1B4A]` (not `format_number`'s `[0x1B34]`) - a simpler, dedicated byte-to-hex formatter */
+   Evidence: `(value)` - byte -> 2 hex ASCII digits + NUL, written to a *separate* fixed scratch
+   buffer at `[0x1B4A]` (not `format_number`'s `[0x1B34]`) - a simpler, dedicated byte-to-hex
+   formatter */
 
 void __stdcall16far format_byte_hex(byte value)
 
@@ -3281,10 +3284,11 @@ void __stdcall16far close_print_record_b(undefined1 *param_1)
 
 /* close_print_record (confidence: Confirmed)
    
-   Evidence: Calls `mark_readout_delimiter`, then tags the caller's record (byte 0) with completion
-   code `0x11`. **Correction**: earlier notes/pseudocode wrongly assumed this printed a string via
-   its far-pointer argument (same shape as `print_string_far`) - it doesn't; it only tags the
-   record. Fixed in `PSEUDOCODE.md` and `docs/display/vector-display-and-stroke-font.md` */
+   Evidence: `(record_off, record_seg)` - calls `mark_readout_delimiter`, then tags the caller's
+   record (byte 0) with completion code `0x11`. **Correction**: earlier notes/pseudocode wrongly
+   assumed this printed a string via its far-pointer argument (same shape as `print_string_far`) -
+   it doesn't; it only tags the record. Fixed in `PSEUDOCODE.md` and
+   `docs/display/vector-display-and-stroke-font.md` */
 
 void __stdcall16far close_print_record(word record_off,word record_seg)
 
@@ -3370,9 +3374,9 @@ void __stdcall16far FUN_000e_37fe(void)
 
 /* print_readout_string (confidence: Confirmed)
    
-   Evidence: Loops a far-pointer nul-terminated string, calling `draw_readout_char` per byte - the
-   vector-display-list sibling of `print_string_far` (which instead writes straight to the
-   `0x40000+0x6F0` hardware port) */
+   Evidence: `(str_off, str_seg)` - loops a far-pointer nul-terminated string, calling
+   `draw_readout_char` per byte - the vector-display-list sibling of `print_string_far` (which
+   instead writes straight to the `0x40000+0x6F0` hardware port) */
 
 void __stdcall16far print_readout_string(word str_off,word str_seg)
 
@@ -4986,7 +4990,9 @@ void __stdcall16far draw_selftest_report_frame(word region_off,word region_seg)
 
 /* draw_box_outline (confidence: Confirmed)
    
-   Evidence: Draws a rectangle's 4 edges via 4 calls to `draw_readout_line` */
+   Evidence: `(x1, y1, x2, y2, step)` - draws a rectangle's 4 edges via 4 calls to
+   `draw_readout_line`, resolved by tracing each call's exact push order against
+   `draw_readout_line`'s own confirmed `(x1, y1, x_max, y_max, dx, dy)` signature */
 
 void __stdcall16far draw_box_outline(word x1,word y1,word x2,word y2,word step)
 
@@ -5974,7 +5980,7 @@ void __cdecl16far restart_current_task(void)
 
 /* mark_task_ready (confidence: Confirmed)
    
-   Evidence: `(task idx)` - clears that task's `[+0x744]` flag, increments its ready-flags byte
+   Evidence: `(task_idx)` - clears that task's `[+0x744]` flag, increments its ready-flags byte
    (`[idx+0x1A91]`), then calls `create_task_b` */
 
 void __stdcall16far mark_task_ready(word task_idx)
@@ -7256,8 +7262,8 @@ void __stdcall16far update_plot_position(word x,word y)
 
 /* plot_line_to (confidence: Confirmed)
    
-   Evidence: HPGL `PD%d,%d;` (pen-down draw) - the drawing counterpart to `update_plot_position`'s
-   pen-up move */
+   Evidence: `(x, y)` - HPGL `PD%d,%d;` (pen-down draw) - the drawing counterpart to
+   `update_plot_position`'s pen-up move */
 
 void __stdcall16far plot_line_to(word x,word y)
 
@@ -8240,21 +8246,24 @@ uint __stdcall16far FUN_000e_9611(undefined2 param_1,uint param_2)
    inference from its 3 callers all being per-channel measurement/readout functions, not
    independently proven)
    
-   Evidence: `(far ptr src, far ptr dst, count, skip, elem_size_flag, sub_offset_flag)` - found
-   2026-09-14 tracing what `compute_and_format_sample_delta_readout`,
-   `compute_and_print_item_delta_readout`, and `compute_and_print_cursor_position_readout` (all 3
-   landing-artifact finds from this session) call as `SUB_E97DC`. The real entry point is here;
-   `0xE97CA` and `0xE97DC` are legitimate **secondary entry points** (real, unambiguous `lcall`
-   targets, not byte-corruption artifacts) that skip this function's own remainder-alignment
-   preamble - the same "caller already has the parameters computed" pattern documented for
-   `write_hw_shift_register`. Copies every Nth byte/word from `src` to `dst` with a caller-selected
-   stride (2/3/6 bytes seen across the 3 entry points), gated by 2 flag bytes selecting element size
-   and which interleaved sub-stream to extract */
+   Evidence: `(far ptr src, far ptr dst, count, skip, elem_size_flag, sub_offset_flag)` conceptually
+   - **this primary entry point's own real stack order is `(src_off, src_seg, skip, dst_off,
+   dst_seg, count, elem_size_flag)`**, confirmed 2026-09-16; `sub_offset_flag`'s offset wasn't found
+   within this entry's own reachable body (only used via the other 2 entry points below, not
+   independently confirmed) - found 2026-09-14 tracing what
+   `compute_and_format_sample_delta_readout`, `compute_and_print_item_delta_readout`, and
+   `compute_and_print_cursor_position_readout` (all 3 landing-artifact finds from this session) call
+   as `SUB_E97DC`. The real entry point is here; `0xE97CA` and `0xE97DC` are legitimate **secondary
+   entry points** (real, unambiguous `lcall` targets, not byte-corruption artifacts) that skip this
+   function's own remainder-alignment preamble - the same "caller already has the parameters
+   computed" pattern documented for `write_hw_shift_register`. Copies every Nth byte/word from `src`
+   to `dst` with a caller-selected stride (2/3/6 bytes seen across the 3 entry points), gated by 2
+   flag bytes selecting element size and which interleaved sub-stream to extract */
 
 uint __stdcall16far
 extract_strided_channel_samples
           (word src_off,word src_seg,word skip,word dst_off,word dst_seg,word count,
-          byte elem_size_flag)
+          word elem_size_flag)
 
 {
   int iVar1;
@@ -8264,10 +8273,9 @@ extract_strided_channel_samples
   undefined2 *puVar5;
   undefined1 *puVar6;
   undefined2 *puVar7;
-  char in_stack_00000011;
   
   iVar1 = 1;
-  if (elem_size_flag != 0) {
+  if ((char)elem_size_flag != '\0') {
     iVar1 = 2;
   }
   for (; 0 < (int)count; count = count - 1) {
@@ -8280,7 +8288,7 @@ extract_strided_channel_samples
     uVar3 = uVar3 + 1;
   }
   if (uVar3 != 0) {
-    if (elem_size_flag == 0) {
+    if ((char)elem_size_flag == '\0') {
       do {
         do {
           puVar6 = (undefined1 *)dst_off;
@@ -8293,7 +8301,7 @@ extract_strided_channel_samples
           uVar3 = uVar4 - 1;
           src_off = (word)(puVar5 + 2);
           dst_off = (word)(puVar6 + 1);
-        } while (in_stack_00000011 != '\0');
+        } while (elem_size_flag._1_1_ != '\0');
         puVar6[1] = *(undefined1 *)((int)puVar5 + 5);
         if (uVar4 == 2) {
           return uVar2;
@@ -8321,7 +8329,7 @@ extract_strided_channel_samples
           uVar3 = uVar4 - 1;
           src_off = (word)(puVar5 + 4);
           dst_off = (word)(puVar7 + 1);
-        } while (in_stack_00000011 != '\0');
+        } while (elem_size_flag._1_1_ != '\0');
         puVar7[1] = puVar5[5];
         if (uVar4 == 2) {
           return uVar2;

@@ -4029,6 +4029,25 @@ PARAMETER_NAMES = {
     0x83241: {6: "char"},
 }
 
+# Byte-vs-word size overrides for PARAMETER_NAMES entries whose access
+# width can't be read back out of disasm/*_readable.asm (the default
+# source of truth decompile/apply_parameters.py infers sizes from) -
+# only needed for functions not reachable in the default entry-point
+# set (comm-ROM functions requiring heuristic entries, see
+# gen_disasm_2998.py) where the byte-sized access was confirmed once,
+# directly, via capstone against the raw binary, and would otherwise
+# silently default to word. Every offset NOT listed here defaults
+# correctly to word on its own (a far-pointer half is always word by
+# definition; every other unlisted case checked this way turned out to
+# already be genuinely word-sized) - keep this list minimal, only add
+# an entry once you've hit a real, confirmed mismatch.
+PARAMETER_SIZE_OVERRIDES = {
+    (0x944A2, 8): "byte",   # set_comm_config_flag: value
+    (0x97BE6, 6): "byte",   # engage_comm_hold: reason
+    (0x96087, 0xC): "byte",  # memset_far: fill_byte
+    (0x96872, 6): "byte",   # spawn_task_with_tag: tag
+}
+
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")
 
 

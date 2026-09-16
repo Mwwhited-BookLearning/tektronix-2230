@@ -3008,7 +3008,8 @@ void __stdcall16far FUN_0008_31f1(byte *param_1,byte param_2)
 
 /* putchar_serial (confidence: Confirmed)
    
-   Evidence: Thin wrapper: stores the byte argument at local `[5]`, calls `serial_tx_buffer_put` */
+   Evidence: `(char)` - thin wrapper: stores the byte argument at local `[5]`, calls
+   `serial_tx_buffer_put` */
 
 void __stdcall16far putchar_serial(byte char)
 

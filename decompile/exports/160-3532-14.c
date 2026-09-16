@@ -7536,8 +7536,8 @@ memset_word_pattern_far(word dest_off,word dest_seg,word byte_count,byte fill_lo
 
 /* memcpy_far (confidence: Confirmed)
    
-   Evidence: Generic memcpy-style utility: `lds si,[bp+6]; les di,[bp+0xa]; mov cx,[bp+0xe]; shr
-   cx,1; rep movsw`. Takes (src far ptr, dest far ptr, byte count) */
+   Evidence: `(src_off, src_seg, dest_off, dest_seg, count)` - generic memcpy-style utility: `lds
+   si,[bp+6]; les di,[bp+0xa]; mov cx,[bp+0xe]; shr cx,1; rep movsw` */
 
 void __stdcall16far memcpy_far(word src_off,word src_seg,word dest_off,word dest_seg,word count)
 
@@ -7567,7 +7567,9 @@ void __stdcall16far memcpy_far(word src_off,word src_seg,word dest_off,word dest
 
 /* array_index_16 (confidence: Confirmed)
    
-   Evidence: `(base far ptr, index) -> base + index*16` - 16-byte-record array indexing */
+   Evidence: `(base, index) -> base + index*16` **(corrected 2026-09-16 - `base` is a plain word
+   used directly, not a far pointer; `retf 4` proves only 2 words of arguments)** - 16-byte-record
+   array indexing */
 
 int __stdcall16far array_index_16(word base,word index)
 
@@ -7579,7 +7581,8 @@ int __stdcall16far array_index_16(word base,word index)
 
 /* copy_word_far (confidence: Confirmed)
    
-   Evidence: Copies one word from a far source pointer to a far destination pointer */
+   Evidence: `(src_off, src_seg, dest_off, dest_seg)` - copies one word from a far source pointer to
+   a far destination pointer */
 
 void __stdcall16far copy_word_far(word src_off,word src_seg,word dest_off,word dest_seg)
 
@@ -7592,8 +7595,9 @@ void __stdcall16far copy_word_far(word src_off,word src_seg,word dest_off,word d
 
 /* pack_low5_bits (confidence: Confirmed)
    
-   Evidence: Packs the low 5 bits of a value into a record byte, preserving its high 3 bits - same
-   pattern as `pack_row_col_bits` but a separate `160-3532` implementation */
+   Evidence: `(target_off, target_seg, value)` - packs the low 5 bits of `value` into `*target`,
+   preserving its high 3 bits - same pattern as `pack_row_col_bits` but a separate `160-3532`
+   implementation */
 
 void __stdcall16far pack_low5_bits(word target_off,word target_seg,byte value)
 
@@ -7606,8 +7610,9 @@ void __stdcall16far pack_low5_bits(word target_off,word target_seg,byte value)
 
 /* set_position_record_3532 (confidence: Confirmed)
    
-   Evidence: `value>>3` (character-cell scaling) written across 2 record bytes - same pattern as
-   `set_position_record` but in `160-3532` */
+   Evidence: `(record_off, record_seg, coord)` - `coord>>3` (character-cell scaling) written across
+   2 record bytes - same pattern as `set_position_record` but in `160-3532`, and only ever encodes
+   one coordinate per call unlike its sibling's two */
 
 void __stdcall16far set_position_record_3532(word record_off,word record_seg,word coord)
 
@@ -8118,11 +8123,12 @@ FUN_000f_c5d1(byte *param_1,undefined2 param_2,byte *param_3,undefined2 param_4,
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* ack_comm_hw_status_bits (confidence: Confirmed)
    
-   Evidence: `(out_status_ptr, req_byte_ptr)` - reads the comm-option hw status register at physical
-   `0x40377E` into `*out_status_ptr`; for each of 3 request bits (`0x80`/`0x20`/`0x40`) in
-   `*req_byte_ptr`, if both the request bit and the matching status bit are set, clears it and
-   writes the updated byte to the comm-option hw control register at physical `0x4007DE` (same pair
-   as `detect_comm_option_hw`); returns a bitmask of acknowledged bits */
+   Evidence: `(req_byte_ptr, out_status_ptr)` **(corrected argument order 2026-09-16 - was listed
+   reversed)** - reads the comm-option hw status register at physical `0x40377E` into
+   `*out_status_ptr`; for each of 3 request bits (`0x80`/`0x20`/`0x40`) in `*req_byte_ptr`, if both
+   the request bit and the matching status bit are set, clears it and writes the updated byte to the
+   comm-option hw control register at physical `0x407DE` (same pair as `detect_comm_option_hw`);
+   returns a bitmask of acknowledged bits */
 
 uint __stdcall16far ack_comm_hw_status_bits(word req_byte_ptr,word out_status_ptr)
 

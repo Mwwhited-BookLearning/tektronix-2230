@@ -362,9 +362,7 @@ void __stdcall16far FUN_0009_15ee(uint param_1,int param_2,undefined4 param_3)
    
    Evidence: Clears a 36-entry address/status table, dispatches on command code `[0x686]`,
    busy-waits via `restart_current_task` for a pending operation to finish, then calls the main
-   ROM's `decimate_peakdet_samples` (cross-ROM)
-   
-   (physical 0x0916D6, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   ROM's `decimate_peakdet_samples` (cross-ROM) */
 
 void __cdecl16far handle_gpib_device_clear(void)
 
@@ -1126,9 +1124,7 @@ void __cdecl16far FUN_0009_2426(void)
    evidence this surfaced)
    
    Evidence: `(index 0-3)` - picks one of 4 message chunks by index, appends it onto a base template
-   via `SUB_EAC86(dest, src)`, terminates with `0xFF`
-   
-   (physical 0x0924D2, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   via `SUB_EAC86(dest, src)`, terminates with `0xFF` */
 
 void __stdcall16far build_comm_status_message(word index)
 
@@ -2989,9 +2985,7 @@ void __cdecl16far FUN_0009_4470(void)
 
 /* get_comm_config_flag (confidence: Confirmed)
    
-   Evidence: `(index)` - reads a byte from a config/flag array at far ptr `[0x73A]`
-   
-   (physical 0x094488, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   Evidence: `(index)` - reads a byte from a config/flag array at far ptr `[0x73A]` */
 
 undefined1 __stdcall16far get_comm_config_flag(word index)
 
@@ -3006,9 +3000,7 @@ undefined1 __stdcall16far get_comm_config_flag(word index)
 /* set_comm_config_flag (confidence: Confirmed)
    
    Evidence: `(index, value)` - writes into the config/flag array at `[0x73A]`, then invalidates a
-   cache at `es:[0x736]` and sets flags in `[0x603]`
-   
-   (physical 0x0944A2, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   cache at `es:[0x736]` and sets flags in `[0x603]` */
 
 void __stdcall16far set_comm_config_flag(word index,byte value)
 
@@ -3139,11 +3131,10 @@ void __stdcall16far FUN_0009_46c2(int param_1)
 
 /* set_ds_return_old (confidence: Confirmed)
    
-   Evidence: `push ds; mov ds,[bp+6]; pop ax` - swaps `DS` to the caller-given segment word, returns
-   the *old* `DS` in `ax` so a later call with that saved value restores it. Called 40x; every
-   checked call site pairs a "swap in" with a matching "swap back"
-   
-   (physical 0x09470E, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   Evidence: `(new_segment)` - `push ds; mov ds,[bp+6]; pop ax` - swaps `DS` to the caller-given
+   segment word and returns the *old* `DS` in `ax`, so a later call with that saved value restores
+   it. Called 40x; every checked call site pairs a "swap in" with a matching "swap back" using the
+   saved return value */
 
 undefined2 __stdcall16far set_ds_return_old(word new_segment)
 
@@ -3540,9 +3531,7 @@ undefined1 __stdcall16far FUN_0009_5067(byte param_1)
    
    Evidence: Indexes a 78-byte record table at `[0x742]` and a 12-byte record table at `[0x73E]` by
    a caller-given index, computes checksums (via `checksum_bytes`) over message regions derived from
-   those records' fields - part of GPIB message building/verification
-   
-   (physical 0x0950C2, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   those records' fields - part of GPIB message building/verification */
 
 void __stdcall16far build_gpib_message_checksum(int param_1)
 
@@ -3584,9 +3573,7 @@ void __stdcall16far build_gpib_message_checksum(int param_1)
    `[0,0x6800]`, and several cross-field comparisons; each failure ORs a distinct bit into an
    accumulator and records a diagnostic code (`0x387`, `0x38F`, `0x39B`, ... `0x3F6`) into
    `[0x690]`; returns the accumulated failure bitmask - a GPIB parameter-record consistency
-   validator, sibling to `SUB_95B69`/`SUB_96DBE` which use the same 3 tables
-   
-   (physical 0x0951AA, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   validator, sibling to `SUB_95B69`/`SUB_96DBE` which use the same 3 tables */
 
 undefined4 __stdcall16far validate_gpib_record_consistency(word index)
 
@@ -3770,9 +3757,7 @@ undefined4 FUN_0009_526b(void)
    `validate_gpib_record_consistency`; on failure, increments an error counter and accumulates the
    failure bitmask into `[0x746]+0xA`/`+0xC`, then either calls `init_gpib_record` to reset a minor
    failure or takes a more elaborate recovery path for more severe ones - a boot/reinit-time GPIB
-   record-table integrity scrub
-   
-   (physical 0x095476, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   record-table integrity scrub */
 
 undefined2 __cdecl16far scan_and_repair_gpib_records(void)
 
@@ -4015,15 +4000,14 @@ undefined2 __cdecl16far scan_and_repair_gpib_records(void)
 /* validate_gpib_device_records (confidence: Mechanism confirmed at a high level; internal logic not
    exhaustively traced)
    
-   Evidence: `(count, far ptr device_array)` - called during GPIB device-table setup (sibling checks
-   in the same caller reset via `init_comm_device_table` on failure); large function (~1000 lines)
-   that searches the caller-given device array for a matching/available entry, cross-referencing the
+   Evidence: `(device_off, device_seg, count)` **(corrected argument order 2026-09-16 - was listed
+   as "count, far ptr device_array")** - called during GPIB device-table setup (sibling checks in
+   the same caller reset via `init_comm_device_table` on failure); large function (~1000 lines) that
+   searches the caller-given device array for a matching/available entry, cross-referencing the
    `[0x73E]` GPIB record table (same one
    `validate_gpib_record_consistency`/`build_gpib_message_checksum` use, bound by the same `0x6800`
    range) and writing diagnostic codes to `[0x690]`; returns nonzero on failure - full internal
-   logic not exhaustively traced given its size
-   
-   (physical 0x095B69, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   logic not exhaustively traced given its size */
 
 undefined2 __stdcall16far validate_gpib_device_records(word device_off,word device_seg,word count)
 
@@ -4201,9 +4185,7 @@ void __stdcall16far FUN_0009_5d81(int param_1)
    confirmed)
    
    Evidence: Zeroes bytes 0-9 and sets byte `0xA=1` for each of 26 12-byte records at far pointer
-   `[0x73E]`, then `memset_far`s a large block at `[0x742]` and clears fields at `[0x746]`
-   
-   (physical 0x095F69, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `[0x73E]`, then `memset_far`s a large block at `[0x742]` and clears fields at `[0x746]` */
 
 void __cdecl16far init_comm_device_table(void)
 
@@ -4239,9 +4221,7 @@ void __cdecl16far init_comm_device_table(void)
 /* checksum_bytes (confidence: Confirmed)
    
    Evidence: `(far ptr, count)` - sums `count` bytes into a byte accumulator (wrapping), returns it
-   - a plain byte checksum
-   
-   (physical 0x09605A, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   - a plain byte checksum */
 
 char __stdcall16far checksum_bytes(word ptr_off,word ptr_seg,word count)
 
@@ -4262,9 +4242,8 @@ char __stdcall16far checksum_bytes(word ptr_off,word ptr_seg,word count)
 
 /* memset_far (confidence: Confirmed)
    
-   Evidence: `(far ptr, fill_byte, count)` - writes `fill_byte` to `count` consecutive bytes
-   
-   (physical 0x096087, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   Evidence: `(dest_off, dest_seg, count, fill_byte)` **(corrected argument order 2026-09-16 - was
+   listed as "far ptr, fill_byte, count")** - writes `fill_byte` to `count` consecutive bytes */
 
 void __stdcall16far memset_far(word dest_off,word dest_seg,word count,byte fill_byte)
 
@@ -4359,9 +4338,7 @@ void __stdcall16far FUN_0009_61af(undefined4 param_1)
    
    Evidence: `(record_index)` - zeroes 5 word fields and sets a status byte to 1 within one 12-byte
    entry of the `[0x73E]` record table (the same table `build_gpib_message_checksum` reads a length
-   field from)
-   
-   (physical 0x0961E9, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   field from) */
 
 void __stdcall16far init_gpib_record(word record_index)
 
@@ -4385,9 +4362,7 @@ void __stdcall16far init_gpib_record(word record_index)
    Evidence: Called exactly once, cross-ROM, from the main ROM's boot sequence (`0xE6D5A`), gated by
    `[0x1BF9]!=0` (the comm-option-installed result from `check_comm_option_installed`) - bootstraps
    the comm ROM via `init_far_pointer_table`, `init_comm_device_type_and_defaults`,
-   `poll_dip_switch_change`
-   
-   (physical 0x09628C, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `poll_dip_switch_change` */
 
 void __cdecl16far comm_rom_boot_init(void)
 
@@ -4411,9 +4386,7 @@ void __cdecl16far comm_rom_boot_init(void)
    not confirmed)
    
    Evidence: Toggles a strobe flag (`es:[0x6E2+3]`) bracketing two reads of the GPIB-config DIP
-   switch byte (`[0x6DA]`), XORs them to detect changed bits, branches on bits `0x40`/`0x80`
-   
-   (physical 0x0962C2, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   switch byte (`[0x6DA]`), XORs them to detect changed bits, branches on bits `0x40`/`0x80` */
 
 void __cdecl16far poll_dip_switch_change(void)
 
@@ -4554,9 +4527,7 @@ void __cdecl16far poll_dip_switch_change(void)
 /* init_comm_channel_state_a (confidence: Confirmed)
    
    Evidence: Resets default far pointers and counters/flags, sets the channel status byte
-   `es:[0x6D6+3]` to 2 or 3; first half of a channel reinit pair
-   
-   (physical 0x096597, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `es:[0x6D6+3]` to 2 or 3; first half of a channel reinit pair */
 
 void __cdecl16far init_comm_channel_state_a(void)
 
@@ -4599,9 +4570,7 @@ void __cdecl16far init_comm_channel_state_a(void)
    
    Evidence: Resets the tx ring buffer pointers (`[0x448]`/`[0x44C]`, base `0xAF` - same as
    `service_comm_tx_queue`) and sets the channel status byte or clears tx-ready depending on
-   `[0x629]`; second half of the pair with `init_comm_channel_state_a`
-   
-   (physical 0x096634, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `[0x629]`; second half of the pair with `init_comm_channel_state_a` */
 
 void __cdecl16far init_comm_tx_queue_and_ready_flags(void)
 
@@ -4636,9 +4605,7 @@ void __cdecl16far init_comm_tx_queue_and_ready_flags(void)
    
    Evidence: Clears the 10-byte scratch buffer at `[0x586]` used elsewhere for building a GPIB
    device-address list, conditionally calls `SUB_97905` when in GPIB mode and not device 1, sets
-   `[0x581]=0x80`
-   
-   (physical 0x096696, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `[0x581]=0x80` */
 
 void __cdecl16far reset_gpib_addr_scratch(void)
 
@@ -4667,9 +4634,7 @@ void __cdecl16far reset_gpib_addr_scratch(void)
    
    Evidence: Reads two hardware switch bytes via far pointers `[0x6DE]`/`[0x6DA]` (inverted,
    active-low) and decodes RS-232 settings: a baud-rate-like code into `[0x4EC]`, parity mode into
-   `[0x4ED]`, a CR/LF option into `[0x4EF]`, and another config byte into `[0x461]`
-   
-   (physical 0x0966E7, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `[0x4ED]`, a CR/LF option into `[0x4EF]`, and another config byte into `[0x461]` */
 
 void __cdecl16far read_dip_switches_serial_config(void)
 
@@ -4704,9 +4669,7 @@ void __cdecl16far read_dip_switches_serial_config(void)
    
    Evidence: Reads the same two switch bytes as `read_dip_switches_serial_config` but decodes GPIB
    fields instead: a 5-bit primary address (0-30) into `[0x4F0]`, mode flags into
-   `[0x4F1]`/`[0x461]`
-   
-   (physical 0x096781, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `[0x4F1]`/`[0x461]` */
 
 void __cdecl16far read_dip_switches_gpib_config(void)
 
@@ -4749,9 +4712,7 @@ void __cdecl16far read_dip_switches_gpib_config(void)
    Evidence: Dispatches on DIP-switch-derived `[0x461]` to produce a standard parity code stored
    into the config array at `es:[0x73A+0x20]`; also brackets the dispatch with 2 calls to
    `scale_and_plot_point_default` in a DS-switch-like argument/save/restore shape - see
-   `docs/comm-rom/rs232-flow-control-and-open-puzzle.md` "Open puzzle"
-   
-   (physical 0x096800, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `docs/comm-rom/rs232-flow-control-and-open-puzzle.md` "Open puzzle" */
 
 void __cdecl16far compute_parity_mode_code(void)
 
@@ -4798,9 +4759,7 @@ void __cdecl16far compute_parity_mode_code(void)
    deliberate scheduling yield (presumably to let a higher-priority tick service something) before
    continuing the same call chain. Note: `[x+0x744]` is the same per-item table
    `update_plot_retry_counters` iterates - likely a general per-task scratch byte, not specifically
-   a "plot retry counter"
-   
-   (physical 0x096872, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   a "plot retry counter" */
 
 void spawn_task_with_tag(byte tag)
 
@@ -4989,9 +4948,7 @@ void __cdecl16far FUN_0009_6aaf(void)
    
    Evidence: Writes a byte into a ring buffer at `[0x44C]`, wrapping at a fixed boundary (`0x433`
    bytes); the byte's source depends on mode flags `[0x459]`/`[0x629]` - likely the GPIB/RS-232
-   transmit buffer
-   
-   (physical 0x096B68, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   transmit buffer */
 
 void __cdecl16far serial_tx_buffer_put(void)
 
@@ -5061,9 +5018,7 @@ void __cdecl16far serial_tx_buffer_put(void)
 /* send_response_terminator (confidence: Confirmed)
    
    Evidence: If `[0x459]` set, sends CR+LF (directly for GPIB, or via `send_serial_newline` for
-   RS-232), marks completion flags, calls `set_comm_critical_flag(0)`
-   
-   (physical 0x096C5F, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   RS-232), marks completion flags, calls `set_comm_critical_flag(0)` */
 
 void __cdecl16far send_response_terminator(void)
 
@@ -5097,9 +5052,7 @@ void __cdecl16far send_response_terminator(void)
 /* send_serial_newline (confidence: Confirmed)
    
    Evidence: Sends CR (`0xD`) via `serial_tx_buffer_put`, and also LF (`0xA`) afterward if `[0x629]`
-   is clear and `[0x4EF]` (a CR+LF line-ending option) is set; otherwise CR only
-   
-   (physical 0x096CB5, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   is clear and `[0x4EF]` (a CR+LF line-ending option) is set; otherwise CR only */
 
 void __cdecl16far send_serial_newline(void)
 
@@ -5177,9 +5130,7 @@ void __cdecl16far FUN_0009_6d24(void)
    Evidence: When the RS-232 strap `[0x629]` is set, folds bit `0x10` from `[0]` into `[0x57F]`
    (keeping other bits, clearing bit `0x40`) and writes the result to the UART-like register pair at
    far ptr `[0x6D6]+5` - the same register family `parse_next_gpib_command_byte` writes `[+3]` of
-   with tag `0x98`; called from `init_comm_channel_state_a`
-   
-   (physical 0x096DBE, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   with tag `0x98`; called from `init_comm_channel_state_a` */
 
 void __cdecl16far sync_rs232_control_bit(void)
 
@@ -5229,9 +5180,7 @@ void __cdecl16far FUN_0009_6de5(void)
    
    Evidence: Checks a channel-ready bit; if set, sends a `0xFF` marker byte then calls
    `send_response_terminator`; if data was left pending, sets busy flags and calls
-   `set_comm_critical_flag(0)`
-   
-   (physical 0x096E5F, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `set_comm_critical_flag(0)` */
 
 void __cdecl16far finish_comm_response(void)
 
@@ -5261,9 +5210,7 @@ void __cdecl16far finish_comm_response(void)
 /* release_comm_hold_critical (confidence: Confirmed)
    
    Evidence: RS-232-only wrapper: engages `set_comm_critical_flag(0xFFFF)`, calls
-   `release_comm_hold(2)`, restores the critical flag
-   
-   (physical 0x096EC6, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `release_comm_hold(2)`, restores the critical flag */
 
 void __cdecl16far release_comm_hold_critical(void)
 
@@ -5288,9 +5235,7 @@ void __cdecl16far release_comm_hold_critical(void)
 
 /* engage_comm_hold_critical (confidence: Confirmed)
    
-   Evidence: Mirror of `release_comm_hold_critical`, calling `engage_comm_hold(2)` instead
-   
-   (physical 0x096F0D, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   Evidence: Mirror of `release_comm_hold_critical`, calling `engage_comm_hold(2)` instead */
 
 void __cdecl16far engage_comm_hold_critical(void)
 
@@ -5614,9 +5559,7 @@ void __cdecl16far FUN_0009_7253(void)
    Evidence: The consumer side of the tx ring buffer `serial_tx_buffer_put` produces into
    (`[0x448]`/`[0x44A]` read ptr, base `0xAF`, size `0x384`, wrapping); pulls one byte, forwards a
    pending XON/XOFF byte or the next queued outgoing byte via `enqueue_comm_char`, sets `[0x455]`
-   once caught up to the write pointer `[0x44C]`
-   
-   (physical 0x097431, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   once caught up to the write pointer `[0x44C]` */
 
 void __cdecl16far service_comm_tx_queue(void)
 
@@ -5666,9 +5609,7 @@ void __cdecl16far service_comm_tx_queue(void)
    
    Evidence: Applies the parity mode in `[0x4ED]` to the argument byte (0=unchanged, else strip bit
    7, and force bit 7 set if mode==3 - space/mark parity), stores it into the tx path at `[0x6D6]`,
-   clears `[0x45A]`, calls `SUB_800FC(0)`
-   
-   (physical 0x0974E1, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   clears `[0x45A]`, calls `SUB_800FC(0)` */
 
 void __stdcall16far enqueue_comm_char(byte param_1)
 
@@ -5689,9 +5630,7 @@ void __stdcall16far enqueue_comm_char(byte param_1)
 /* get_xon_xoff_byte (confidence: Confirmed - matches standard RS-232 software flow control codes)
    
    Evidence: Checks `[0x460]` flow-control-request bits: bit 2 -> clears it, returns `AL=0x13`
-   (XOFF); bit 1 -> clears it, returns `AL=0x11` (XON); else `AL=0`
-   
-   (physical 0x09751A, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   (XOFF); bit 1 -> clears it, returns `AL=0x11` (XON); else `AL=0` */
 
 undefined1 __cdecl16far get_xon_xoff_byte(void)
 
@@ -5962,9 +5901,7 @@ void __cdecl16far FUN_0009_785b(void)
    `0x80` clear) looks up its data byte via `[0x712][byte*4+1]` into `[0x57F]`, and when the
    RS-232/GPIB strap `[0x629]` is set, folds a bit from `[0]` into it and writes it plus tag `0x98`
    to a UART-like register pair via far ptr `[0x6D6]` - called unconditionally as the first step of
-   `process_gpib_command_byte`
-   
-   (physical 0x097905, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `process_gpib_command_byte` */
 
 void __cdecl16far parse_next_gpib_command_byte(void)
 
@@ -6090,9 +6027,7 @@ void __cdecl16far FUN_0009_7a9c(void)
    Evidence: The comm ROM's own top-level channel reinit sequence (analogous to
    `reinit_system_state`): conditionally calls `reinit_system_state` itself cross-ROM, then
    unconditionally runs `reset_comm_parser_state`, `init_comm_channel_state_a`,
-   `init_comm_tx_queue_and_ready_flags`, `SUB_96696`, and resets several more flags
-   
-   (physical 0x097B01, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `init_comm_tx_queue_and_ready_flags`, `SUB_96696`, and resets several more flags */
 
 void __cdecl16far reinit_comm_channel(void)
 
@@ -6139,9 +6074,7 @@ void __cdecl16far reinit_comm_channel(void)
    Evidence: Sets a critical-section-style flag `[0x5A3]` to the given value; on the "leaving" edge
    (new value `0`, old value nonzero, `[0x5A1]` set), swaps `DS` to the main ROM's low-RAM segment
    (`0x41`, via `set_ds_return_old`) and calls a main-ROM routine before swapping back - a cross-ROM
-   notify-on-unlock pattern
-   
-   (physical 0x097B94, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   notify-on-unlock pattern */
 
 char __stdcall16far set_comm_critical_flag(int param_1)
 
@@ -6168,9 +6101,7 @@ char __stdcall16far set_comm_critical_flag(int param_1)
 /* engage_comm_hold (confidence: Confirmed)
    
    Evidence: `(reason)` - ORs reason into hold bitmask `[0x45C]`; if this is the first hold,
-   requests XOFF via `[0x460]` and services the tx queue if data pending
-   
-   (physical 0x097BE6, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   requests XOFF via `[0x460]` and services the tx queue if data pending */
 
 void __stdcall16far engage_comm_hold(byte reason)
 
@@ -6194,9 +6125,7 @@ void __stdcall16far engage_comm_hold(byte reason)
    
    Evidence: `(reason)` - clears reason from hold bitmask `[0x45C]`; if this releases the last hold,
    requests XON via `[0x460]` and services the tx queue if pending - counterpart to
-   `engage_comm_hold`
-   
-   (physical 0x097C28, reached via the comm ROM's 0x90000-0x97FFF alias of 0x88000-0x8FFFF) */
+   `engage_comm_hold` */
 
 void __stdcall16far release_comm_hold(word reason)
 
