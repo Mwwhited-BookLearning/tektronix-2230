@@ -3666,7 +3666,7 @@ set_item_pair_active:
     push bp                                  ; 8E66: push bp
     mov bp, sp                               ; 8E67: mov bp, sp
     sub sp, 8                                ; 8E69: sub sp, 8
-    mov di, word [bp + 6]                    ; 8E6C: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 8E6C: mov di, word ptr [bp + 6]  -> pair_index
     shl di, 1                                ; 8E6F: shl di, 1
     mov word [bp - 8], di                    ; 8E71: mov word ptr [bp - 8], di
     mov dx, 1                                ; 8E74: mov dx, 1
@@ -3710,9 +3710,9 @@ set_item_active_flag:
     push bp                                  ; 8EC8: push bp
     mov bp, sp                               ; 8EC9: mov bp, sp
     sub sp, 6                                ; 8ECB: sub sp, 6
-    cmp byte [bp + 8], 0                     ; 8ECE: cmp byte ptr [bp + 8], 0
+    cmp byte [bp + 8], 0                     ; 8ECE: cmp byte ptr [bp + 8], 0  -> set_flag
     je short 0x8ef9                          ; 8ED2: je 0x99
-    mov di, word [bp + 6]                    ; 8ED4: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 8ED4: mov di, word ptr [bp + 6]  -> item_index
     mov dl, byte [di + 0x1be2]               ; 8ED7: mov dl, byte ptr [di + 0x1be2]
     and dl, 2                                ; 8EDB: and dl, 2
     cmp dl, 0                                ; 8EDE: cmp dl, 0
@@ -3725,7 +3725,7 @@ set_item_active_flag:
     or byte [bx + 0xb0], 1                   ; 8EF1: or byte ptr [bx + 0xb0], 1
     jmp 0x8f0f                               ; 8EF6: jmp 0xaf
 L_F8EF9:
-    mov di, word [bp + 6]                    ; 8EF9: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 8EF9: mov di, word ptr [bp + 6]  -> item_index
     and byte [di + 0x1be2], 0xfe             ; 8EFC: and byte ptr [di + 0x1be2], 0xfe
     mov ax, di                               ; 8F01: mov ax, di
     mov dx, 0x14                             ; 8F03: mov dx, 0x14
@@ -3733,7 +3733,7 @@ L_F8EF9:
     mov bx, ax                               ; 8F08: mov bx, ax
     and byte [bx + 0xb0], 0xfe               ; 8F0A: and byte ptr [bx + 0xb0], 0xfe
 L_F8F0F:
-    mov ax, word [bp + 6]                    ; 8F0F: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 8F0F: mov ax, word ptr [bp + 6]  -> item_index
     mov dx, 0x14                             ; 8F12: mov dx, 0x14
     imul dx                                  ; 8F15: imul dx
     mov di, ax                               ; 8F17: mov di, ax
@@ -4707,11 +4707,11 @@ memset_word_pattern_far:
     push cx                                  ; BBED: push cx
     pushf                                    ; BBEE: pushf 
     cld                                      ; BBEF: cld 
-    les di, [bp + 6]                         ; BBF0: les di, ptr [bp + 6]
-    mov cx, word [bp + 0xa]                  ; BBF3: mov cx, word ptr [bp + 0xa]
+    les di, [bp + 6]                         ; BBF0: les di, ptr [bp + 6]  -> dest_off
+    mov cx, word [bp + 0xa]                  ; BBF3: mov cx, word ptr [bp + 0xa]  -> byte_count
     shr cx, 1                                ; BBF6: shr cx, 1
-    mov al, byte [bp + 0xc]                  ; BBF8: mov al, byte ptr [bp + 0xc]
-    mov ah, byte [bp + 0xe]                  ; BBFB: mov ah, byte ptr [bp + 0xe]
+    mov al, byte [bp + 0xc]                  ; BBF8: mov al, byte ptr [bp + 0xc]  -> fill_lo
+    mov ah, byte [bp + 0xe]                  ; BBFB: mov ah, byte ptr [bp + 0xe]  -> fill_hi
     rep stosw                                ; BBFE: rep stosw word ptr es:[di], ax
     popf                                     ; BC00: popf 
     pop cx                                   ; BC01: pop cx
@@ -5090,10 +5090,10 @@ ack_comm_hw_status_bits:
     mov es, ax                               ; C62A: mov es, ax
     mov di, 0x377e                           ; C62C: mov di, 0x377e
     mov bx, word [es:di]                     ; C62F: mov bx, word ptr es:[di]
-    mov di, word [bp + 0xa]                  ; C632: mov di, word ptr [bp + 0xa]
+    mov di, word [bp + 0xa]                  ; C632: mov di, word ptr [bp + 0xa]  -> out_status_ptr
     mov word [di], bx                        ; C635: mov word ptr [di], bx
     mov si, 0x7de                            ; C637: mov si, 0x7de
-    mov di, word [bp + 6]                    ; C63A: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; C63A: mov di, word ptr [bp + 6]  -> req_byte_ptr
     mov dl, byte [di]                        ; C63D: mov dl, byte ptr [di]
     mov ax, 0                                ; C63F: mov ax, 0
     test dl, 0x80                            ; C642: test dl, 0x80
@@ -5977,7 +5977,7 @@ clear_item_flag_bit_all:
     push bp                                  ; F469: push bp
     mov bp, sp                               ; F46A: mov bp, sp
     sub sp, 0xa                              ; F46C: sub sp, 0xa
-    cmp word [bp + 6], 0                     ; F46F: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; F46F: cmp word ptr [bp + 6], 0  -> which_bit
     jne short 0xf47c                         ; F473: jne 0xbc
     mov byte [bp - 7], 0xfe                  ; F475: mov byte ptr [bp - 7], 0xfe
     jmp 0xf480                               ; F479: jmp 0xc0

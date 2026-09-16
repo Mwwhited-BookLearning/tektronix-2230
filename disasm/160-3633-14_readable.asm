@@ -5725,9 +5725,9 @@ compute_range_checksum:
     sub sp, 6                                ; 45A9: sub sp, 6
     push si                                  ; 45AC: push si
     push di                                  ; 45AD: push di
-    les si, [bp + 8]                         ; 45AE: les si, ptr [bp + 8]
-    les di, [bp + 0xc]                       ; 45B1: les di, ptr [bp + 0xc]
-    mov cx, word [bp + 6]                    ; 45B4: mov cx, word ptr [bp + 6]
+    les si, [bp + 8]                         ; 45AE: les si, ptr [bp + 8]  -> start_off
+    les di, [bp + 0xc]                       ; 45B1: les di, ptr [bp + 0xc]  -> end_off
+    mov cx, word [bp + 6]                    ; 45B4: mov cx, word ptr [bp + 6]  -> seed
 L_E45B7:
     mov al, byte [es:si]                     ; 45B7: mov al, byte ptr es:[si]
     sub ah, ah                               ; 45BA: sub ah, ah
@@ -8018,7 +8018,7 @@ mark_task_ready:
     push bp                                  ; 6A8E: push bp
     mov bp, sp                               ; 6A8F: mov bp, sp
     sub sp, 6                                ; 6A91: sub sp, 6
-    mov di, word [bp + 6]                    ; 6A94: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 6A94: mov di, word ptr [bp + 6]  -> task_idx
     mov byte [di + 0x744], 0                 ; 6A97: mov byte ptr [di + 0x744], 0
     inc byte [di + 0x1a91]                   ; 6A9C: inc byte ptr [di + 0x1a91]
     call 0xe60b:0x0133                       ; 6AA0: lcall 0xe60b, 0x133
@@ -8934,7 +8934,7 @@ putchar_serial_with_newline_handling:
     push bp                                  ; 79D3: push bp
     mov bp, sp                               ; 79D4: mov bp, sp
     sub sp, 6                                ; 79D6: sub sp, 6
-    cmp byte [bp + 6], 0xa                   ; 79D9: cmp byte ptr [bp + 6], 0xa
+    cmp byte [bp + 6], 0xa                   ; 79D9: cmp byte ptr [bp + 6], 0xa  -> char
     jne short 0x79f9                         ; 79DD: jne 0xe9
     mov di, 0x8f80                           ; 79DF: mov di, 0x8f80
     push di                                  ; 79E2: push di
@@ -8945,7 +8945,7 @@ putchar_serial_with_newline_handling:
     call 0x9470:0x000e                       ; 79F1: lcall 0x9470, 0xe
     jmp 0x7a04                               ; 79F6: jmp 0xf4
 L_E79F9:
-    mov dl, byte [bp + 6]                    ; 79F9: mov dl, byte ptr [bp + 6]
+    mov dl, byte [bp + 6]                    ; 79F9: mov dl, byte ptr [bp + 6]  -> char
     sub dh, dh                               ; 79FC: sub dh, dh
     push dx                                  ; 79FE: push dx
     call 0x82c9:0x05c9                       ; 79FF: lcall 0x82c9, 0x5c9
@@ -9029,18 +9029,18 @@ update_plot_position:
     push bp                                  ; 7D7D: push bp
     mov bp, sp                               ; 7D7E: mov bp, sp
     sub sp, 0xa                              ; 7D80: sub sp, 0xa
-    mov di, word [bp + 6]                    ; 7D83: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 7D83: mov di, word ptr [bp + 6]  -> x
     shl di, 1                                ; 7D86: shl di, 1
     shl di, 1                                ; 7D88: shl di, 1
     mov word [bp - 8], di                    ; 7D8A: mov word ptr [bp - 8], di
-    mov dx, word [bp + 8]                    ; 7D8D: mov dx, word ptr [bp + 8]
+    mov dx, word [bp + 8]                    ; 7D8D: mov dx, word ptr [bp + 8]  -> y
     shl dx, 1                                ; 7D90: shl dx, 1
     shl dx, 1                                ; 7D92: shl dx, 1
     mov word [bp - 0xa], dx                  ; 7D94: mov word ptr [bp - 0xa], dx
     jmp 0x7de3                               ; 7D97: jmp 0x73
 L_E7D9A:
-    push word [bp + 8]                       ; 7D9A: push word ptr [bp + 8]
-    push word [bp + 6]                       ; 7D9D: push word ptr [bp + 6]
+    push word [bp + 8]                       ; 7D9A: push word ptr [bp + 8]  -> y
+    push word [bp + 6]                       ; 7D9D: push word ptr [bp + 6]  -> x
     mov di, 0xff7b                           ; 7DA0: mov di, 0xff7b
     push di                                  ; 7DA3: push di
     mov dx, 0x3aa                            ; 7DA4: mov dx, 0x3aa

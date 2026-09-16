@@ -3769,6 +3769,90 @@ PARAMETER_NAMES = {
     # in (the old DS comes back in ax as the return value, not a
     # parameter).
     0x9470E: {6: "new_segment"},
+    # mark_task_ready (0xE6A8E): "(task idx)" per FUNCTIONS.md - bp+6
+    # is used directly as a pointer base for [di+0x744]/[di+0x1a91].
+    0xE6A8E: {6: "task_idx"},
+    # update_plot_position (0xE7D7D): "(x, y)" per FUNCTIONS.md,
+    # confirmed directly (bp+6 and bp+8 each shl'd by 4 as an early
+    # step, consistent with a coordinate being scaled).
+    0xE7D7D: {6: "x", 8: "y"},
+    # compute_range_checksum (0xE45A6): "(seed, start_far_ptr,
+    # end_far_ptr)" - confirmed bp+6 is the running checksum
+    # accumulator's *initial* value (seed), bp+8/0xa is the far pointer
+    # `si` walks forward from (start), bp+0xc/0xe is the far pointer
+    # `di` walks toward (end).
+    0xE45A6: {6: "seed", 8: "start_off", 0xA: "start_seg", 0xC: "end_off",
+              0xE: "end_seg"},
+    # putchar_serial_with_newline_handling (0xE79D3): "(char)" - the
+    # single byte argument, compared against 0x0A (LF).
+    0xE79D3: {6: "char"},
+    # print_unsigned_decimal_serial (comm ROM, 0x8142F): "(n)" - the
+    # value being converted to decimal (dividend in the `div 10` loop).
+    0x8142F: {6: "n"},
+    # print_signed_decimal_serial (comm ROM, 0x81404): "(n)" - same
+    # value, checked for its sign bit and negated in place if negative.
+    0x81404: {6: "n"},
+    # print_string_serial (comm ROM, 0x82D01): "(far_str_ptr)" - walked
+    # byte-by-byte via `les di,[bp+6]; inc word[bp+6]` until NUL.
+    0x82D01: {6: "str_off", 8: "str_seg"},
+    # set_comm_flow_hold (comm ROM, 0x80060): "(engage)" - `al` from
+    # bp+6 selects the XOFF (`0x93`) vs XON/release (`0x13`) branch.
+    0x80060: {6: "engage"},
+    # update_comm_tx_ready_flag (comm ROM, 0x800FC): "(clear)" -
+    # `cmp word[bp+6],0` selects the set-vs-clear branch directly.
+    0x800FC: {6: "clear"},
+    # set_comm_queue_busy (comm ROM, 0x8009B): "(engage)" - same
+    # `cmp word[bp+6],0` branch-select shape as update_comm_tx_ready_
+    # flag above.
+    0x8009B: {6: "engage"},
+    # get_comm_config_flag (comm ROM, 0x94488): "(index)" - indexes the
+    # config/flag array at far ptr [0x73A] directly by bp+6.
+    0x94488: {6: "index"},
+    # set_comm_config_flag (comm ROM, 0x944A2): "(index, value)" -
+    # bp+8 (value) is written into the array at bp+6's (index) slot.
+    0x944A2: {6: "index", 8: "value"},
+    # engage_comm_hold (comm ROM, 0x97BE6): "(reason)" - ORed into the
+    # hold bitmask [0x45C] at the end of the function.
+    0x97BE6: {6: "reason"},
+    # release_comm_hold (comm ROM, 0x97C28): "(reason)" - NOT'd then
+    # ANDed into [0x45C], clearing that reason's bit.
+    0x97C28: {6: "reason"},
+    # checksum_bytes (comm ROM, 0x9605A): "(far ptr, count)" - bp+6/8
+    # is the far pointer walked by `les di,[bp+6]; inc word[bp+6]`,
+    # bp+0xa is the count decremented each iteration.
+    0x9605A: {6: "ptr_off", 8: "ptr_seg", 0xA: "count"},
+    # memset_far (comm ROM, 0x96087): confirmed real stack order is
+    # (dest ptr, count, fill_byte) - bp+0xa is the decrementing loop
+    # counter, bp+0xc is the fill byte - NOT "(far ptr, fill_byte,
+    # count)" as FUNCTIONS.md's prose previously stated (fixed there
+    # to match this).
+    0x96087: {6: "dest_off", 8: "dest_seg", 0xA: "count", 0xC: "fill_byte"},
+    # spawn_task_with_tag (comm ROM, 0x96872): "(tag)" - stored into
+    # the current task's scratch byte at [task_index+0x744].
+    0x96872: {6: "tag"},
+    # set_item_active_flag (0xF8EC8): "(item_index, set_flag)" - bp+8
+    # gates the set-vs-clear branch, bp+6 indexes the per-item arrays.
+    0xF8EC8: {6: "item_index", 8: "set_flag"},
+    # set_item_pair_active (0xF8E66): "(pair_index)" - shl'd by 1 to
+    # get the first of the pair's 2 item indices.
+    0xF8E66: {6: "pair_index"},
+    # clear_item_flag_bit_all (0xFF469): "(which_bit)" - `cmp
+    # word[bp+6],0` selects which bitmask (0xFE vs 0xFD) to AND with.
+    0xFF469: {6: "which_bit"},
+    # memset_word_pattern_far (0xFBBE9): "(far_ptr dest, byte_count,
+    # fill_lo, fill_hi)" per FUNCTIONS.md, confirmed exactly - bp+0xa
+    # is halved into the `rep stosw` word count, bp+0xc/0xe become
+    # al/ah of the repeated fill word.
+    0xFBBE9: {6: "dest_off", 8: "dest_seg", 0xA: "byte_count",
+              0xC: "fill_lo", 0xE: "fill_hi"},
+    # ack_comm_hw_status_bits (0xFC624): confirmed real stack order is
+    # (req_byte_ptr, out_status_ptr) - bp+6 is read from
+    # (request bits), bp+0xa is written to (status output) - the
+    # REVERSE of FUNCTIONS.md's previous "(out_status_ptr,
+    # req_byte_ptr)" prose order (fixed there to match this). Both are
+    # plain near/flat-DS pointers (`mov di,word[bp+N]`, no `les`), not
+    # far pointers, despite the 4-byte gap between them.
+    0xFC624: {6: "req_byte_ptr", 0xA: "out_status_ptr"},
 }
 
 _BP_OFFSET_RE = re.compile(r"\[bp\s*([+-])\s*(0x[0-9a-fA-F]+|\d+)\]")

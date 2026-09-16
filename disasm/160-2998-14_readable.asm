@@ -22,7 +22,7 @@ set_comm_flow_hold:
     sub sp, 6                                ; 0063: sub sp, 6
     pushf                                    ; 0066: pushf 
     cli                                      ; 0067: cli 
-    mov ax, word [bp + 6]                    ; 0068: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 0068: mov ax, word ptr [bp + 6]  -> engage
     cmp al, 0                                ; 006B: cmp al, 0
     jne short 0x007b                         ; 006D: jne 0x1b
     cmp byte [0x5a1], 0                      ; 006F: cmp byte ptr [0x5a1], 0
@@ -52,7 +52,7 @@ set_comm_queue_busy:
     pushf                                    ; 00A1: pushf 
     cli                                      ; 00A2: cli 
     les di, [0x6e2]                          ; 00A3: les di, ptr [0x6e2]
-    cmp word [bp + 6], 0                     ; 00A7: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 00A7: cmp word ptr [bp + 6], 0  -> engage
     je short 0x00cf                          ; 00AB: je 0x6f
     mov byte [0x68e], 0xff                   ; 00AD: mov byte ptr [0x68e], 0xff
     mov word [es:di], 0                      ; 00B2: mov word ptr es:[di], 0
@@ -88,7 +88,7 @@ update_comm_tx_ready_flag:
     pushf                                    ; 0102: pushf 
     cli                                      ; 0103: cli 
     les di, [0x6e2]                          ; 0104: les di, ptr [0x6e2]
-    cmp word [bp + 6], 0                     ; 0108: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 0108: cmp word ptr [bp + 6], 0  -> clear
     je short 0x011b                          ; 010C: je 0xbb
     mov byte [es:di + 1], 0                  ; 010E: mov byte ptr es:[di + 1], 0
     mov byte [0x596], 0xff                   ; 0113: mov byte ptr [0x596], 0xff
@@ -425,16 +425,16 @@ print_signed_decimal_serial:
     push bp                                  ; 1404: push bp
     mov bp, sp                               ; 1405: mov bp, sp
     sub sp, 6                                ; 1407: sub sp, 6
-    cmp word [bp + 6], 0                     ; 140A: cmp word ptr [bp + 6], 0
+    cmp word [bp + 6], 0                     ; 140A: cmp word ptr [bp + 6], 0  -> n
     jge short 0x1421                         ; 140E: jge 0x1161
     mov di, 0x2d                             ; 1410: mov di, 0x2d
     push di                                  ; 1413: push di
     call 0x82c9:0x05b1                       ; 1414: lcall 0x82c9, 0x5b1
-    mov di, word [bp + 6]                    ; 1419: mov di, word ptr [bp + 6]
+    mov di, word [bp + 6]                    ; 1419: mov di, word ptr [bp + 6]  -> n
     neg di                                   ; 141C: neg di
-    mov word [bp + 6], di                    ; 141E: mov word ptr [bp + 6], di
+    mov word [bp + 6], di                    ; 141E: mov word ptr [bp + 6], di  -> n
 L_81421:
-    push word [bp + 6]                       ; 1421: push word ptr [bp + 6]
+    push word [bp + 6]                       ; 1421: push word ptr [bp + 6]  -> n
     call 0x802c:0x116f                       ; 1424: lcall 0x802c, 0x116f
     mov sp, bp                               ; 1429: mov sp, bp
     pop bp                                   ; 142B: pop bp
@@ -447,7 +447,7 @@ print_unsigned_decimal_serial:
     mov byte [bp - 7], 0                     ; 1436: mov byte ptr [bp - 7], 0
     mov si, 5                                ; 143A: mov si, 5
 L_8143D:
-    mov ax, word [bp + 6]                    ; 143D: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 143D: mov ax, word ptr [bp + 6]  -> n
     sub dx, dx                               ; 1440: sub dx, dx
     mov di, 0xa                              ; 1442: mov di, 0xa
     div di                                   ; 1445: div di
@@ -455,10 +455,10 @@ L_8143D:
     mov bx, dx                               ; 144A: mov bx, dx
     dec si                                   ; 144C: dec si
     mov byte [bp + si - 0xc], bl             ; 144D: mov byte ptr [bp + si - 0xc], bl
-    mov ax, word [bp + 6]                    ; 1450: mov ax, word ptr [bp + 6]
+    mov ax, word [bp + 6]                    ; 1450: mov ax, word ptr [bp + 6]  -> n
     sub dx, dx                               ; 1453: sub dx, dx
     div di                                   ; 1455: div di
-    mov word [bp + 6], ax                    ; 1457: mov word ptr [bp + 6], ax
+    mov word [bp + 6], ax                    ; 1457: mov word ptr [bp + 6], ax  -> n
     cmp ax, strict word 0                    ; 145A: cmp ax, 0
     ja short 0x143d                          ; 145D: ja 0x117d
     lea dx, [bp + si - 0xc]                  ; 145F: lea dx, [bp + si - 0xc]
@@ -896,13 +896,13 @@ print_string_serial:
     sub sp, 6                                ; 2D04: sub sp, 6
     jmp 0x2d1c                               ; 2D07: jmp 0x8c
 L_82D0A:
-    les di, [bp + 6]                         ; 2D0A: les di, ptr [bp + 6]
-    inc word [bp + 6]                        ; 2D0D: inc word ptr [bp + 6]
+    les di, [bp + 6]                         ; 2D0A: les di, ptr [bp + 6]  -> str_off
+    inc word [bp + 6]                        ; 2D0D: inc word ptr [bp + 6]  -> str_off
     mov dl, byte [es:di]                     ; 2D10: mov dl, byte ptr es:[di]
     mov byte [5], dl                         ; 2D13: mov byte ptr [5], dl
     call 0x9687:0x02f8                       ; 2D17: lcall 0x9687, 0x2f8
 L_82D1C:
-    les di, [bp + 6]                         ; 2D1C: les di, ptr [bp + 6]
+    les di, [bp + 6]                         ; 2D1C: les di, ptr [bp + 6]  -> str_off
     cmp byte [es:di], 0                      ; 2D1F: cmp byte ptr es:[di], 0
     jne short 0x2d0a                         ; 2D23: jne 0x7a
     mov sp, bp                               ; 2D25: mov sp, bp
