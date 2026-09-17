@@ -901,6 +901,36 @@ at increasing `x` positions before the 6th wraps to the next row -
 confirming the multi-column layout actually took effect, not just
 that the CSS parsed without error.
 
+## 8-column grid with scroll-on-overflow, and command history
+
+User request: "the buttons can be 8 columns instead of 5 and the box
+should be able to scroll on overflow." Bumped `grid-size` to 8 (and
+`#horizontal-mode`'s `column-span` to match). Changed `#front-panel`
+from `height: auto; max-height: 30%` to a fixed `height: 30%` plus
+`overflow-y: auto` - `height: auto` means "grow to fit all content,"
+which by definition never overflows, so scrolling needs an actual
+bounded height instead. Verified via a headless test: forcing a tiny
+height directly confirms `max_scroll_y` becomes nonzero once content
+genuinely exceeds the visible region - the key signal Textual
+recognizes real overflow to scroll through, confirming the CSS wiring
+works (the exact interactive scroll gesture - mouse wheel, PageDown -
+is standard built-in `Widget` behavior once `overflow-y` is set, not
+something this project implements itself).
+
+**Then**: "I would like a command history list so I can use the up/
+down arrows to select and resend a command." Checked `Input`'s own
+`BINDINGS` first - no existing up/down binding to conflict with or
+shadow. Added `action_history_prev`/`_next` at the App level (fires
+only when the command `Input` has focus, checked explicitly so a
+front-panel `Select`'s own up/down navigation isn't affected), with
+the same shell-history convention bash/zsh use: the first `up` press
+saves whatever's currently typed (an unsent draft) so a later `down`
+past the newest entry restores it, rather than just clearing the
+field. Verified via a headless test: after 3 commands, walking up 3x
+correctly returns them newest-first and stops at the oldest, walking
+back down 3x returns to each newer entry in turn and finally restores
+an unsent draft that was being typed before navigation started.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

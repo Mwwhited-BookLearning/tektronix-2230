@@ -70,14 +70,14 @@ class Tek2230App(App):
     #front-panel {
         border: solid $accent;
         border-title-align: center;
-        height: auto;
-        max-height: 30%;
-        grid-size: 5;
+        height: 30%;
+        overflow-y: auto;
+        grid-size: 8;
         grid-gutter: 0 2;
         padding: 1 1;
     }
     #horizontal-mode {
-        column-span: 5;
+        column-span: 8;
         margin-bottom: 1;
     }
     Input {
@@ -92,11 +92,22 @@ class Tek2230App(App):
         ("f4", "do_continue", "Continue"),
         ("f5", "toggle_trace", "Trace on/off"),
         ("ctrl+q", "quit_app", "Quit"),
+        # `Input` has no built-in binding for these (checked directly:
+        # its own BINDINGS list has left/right/home/end/delete/etc. but
+        # nothing for up/down), so adding them here doesn't shadow any
+        # existing behavior - they only fire when nothing more specific
+        # (e.g. the front-panel Select's own up/down) claims the key
+        # first, i.e. exactly when the command Input has focus.
+        ("up", "history_prev", "Prev command"),
+        ("down", "history_next", "Next command"),
     ]
 
     def __init__(self, args):
         super().__init__()
         self.args = args
+        self._command_history = []
+        self._history_index = None  # None = not currently navigating
+        self._history_draft = ""    # unsent text saved when history nav starts
         self.dbg = None
         self._busy = False
         self._outgoing_buffer = []
@@ -337,8 +348,46 @@ class Tek2230App(App):
         event.input.value = ""
         if not line:
             return
+        # Don't record a duplicate of the immediately-preceding command
+        # (matches typical shell history behavior - retyping the same
+        # command repeatedly shouldn't fill history with N copies of it).
+        if not self._command_history or self._command_history[-1] != line:
+            self._command_history.append(line)
+        self._history_index = None
+        self._history_draft = ""
         self._append_log(f"(tek2230) {line}")
         self._launch(line)
+
+    def action_history_prev(self):
+        """Up arrow - step to an older command, same convention as a
+        shell history (bash/zsh): the first press saves whatever was
+        already typed (so Down can restore it later), then walks
+        backward from the most recent command."""
+        inp = self.query_one(Input)
+        if not inp.has_focus or not self._command_history:
+            return
+        if self._history_index is None:
+            self._history_draft = inp.value
+            self._history_index = len(self._command_history)
+        if self._history_index > 0:
+            self._history_index -= 1
+            inp.value = self._command_history[self._history_index]
+            inp.cursor_position = len(inp.value)
+
+    def action_history_next(self):
+        """Down arrow - step to a newer command, or back to whatever
+        was being typed before history navigation started once past
+        the newest entry."""
+        inp = self.query_one(Input)
+        if not inp.has_focus or self._history_index is None:
+            return
+        self._history_index += 1
+        if self._history_index >= len(self._command_history):
+            inp.value = self._history_draft
+            self._history_index = None
+        else:
+            inp.value = self._command_history[self._history_index]
+        inp.cursor_position = len(inp.value)
 
     # ---- key-bound shortcuts for the most common actions ------------
 
