@@ -880,6 +880,27 @@ visible continuously without asking. Folded its refresh into
 after every command, and periodically via `on_progress` during a long
 run) rather than adding a second, easy-to-forget call site.
 
+## Front-panel controls moved below the log, full-width grid
+
+User request: "put the front panel items under the log. it can be the
+same width with multiple columns for the inputs." Restructured the
+layout: everything that was previously inside the narrow (`width: 44`)
+`#side` sidebar column now sits in a new `#root` Vertical wrapping
+`#main` (the existing registers/incoming/outgoing + log row) and a new
+`#front-panel` `Grid` sibling below it, so the front-panel section
+spans the *combined* width of the sidebar and the log rather than
+being squeezed into the sidebar's own narrow column. `grid-size: 5`
+lays the 14 checkboxes out 5-per-row instead of one per row; the
+`HORIZONTAL MODE` dropdown spans the full 5-column width above them
+(`column-span: 5`) since it's a single, wider control.
+
+Verified via a headless test: the front-panel `Grid`'s rendered width
+now exactly equals `#main`'s width (both `160` in a 160-column test
+terminal), and 5 consecutive checkboxes land on the same row (`y=35`)
+at increasing `x` positions before the 6th wraps to the next row -
+confirming the multi-column layout actually took effect, not just
+that the CSS parsed without error.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

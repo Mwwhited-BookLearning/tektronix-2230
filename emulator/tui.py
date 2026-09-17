@@ -24,7 +24,7 @@ import argparse
 
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, Vertical, Grid
 from textual.widgets import Header, Footer, Static, RichLog, Input, Checkbox, Select
 
 from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
@@ -42,6 +42,7 @@ CHECKBOX_BUTTONS = [name for name in InteractiveFrontPanel.BUTTONS
 
 class Tek2230App(App):
     CSS = """
+    #root { height: 1fr; }
     #main { height: 1fr; }
     #side {
         width: 44;
@@ -50,19 +51,13 @@ class Tek2230App(App):
         border: solid $accent;
         padding: 1 2;
         height: auto;
-        max-height: 40%;
+        max-height: 60%;
     }
     #incoming {
         border: solid $accent;
         border-title-align: center;
         height: 4;
         padding: 0 1;
-    }
-    #front-panel {
-        border: solid $accent;
-        border-title-align: center;
-        height: auto;
-        max-height: 30%;
     }
     #outgoing {
         border: solid $accent;
@@ -71,6 +66,19 @@ class Tek2230App(App):
     #log {
         border: solid $accent;
         border-title-align: center;
+    }
+    #front-panel {
+        border: solid $accent;
+        border-title-align: center;
+        height: auto;
+        max-height: 30%;
+        grid-size: 5;
+        grid-gutter: 0 2;
+        padding: 1 1;
+    }
+    #horizontal-mode {
+        column-span: 5;
+        margin-bottom: 1;
     }
     Input {
         dock: bottom;
@@ -96,18 +104,19 @@ class Tek2230App(App):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        with Horizontal(id="main"):
-            with Vertical(id="side"):
-                yield Static(id="registers")
-                yield Static(id="incoming")
-                with VerticalScroll(id="front-panel"):
-                    yield Select(
-                        [("A ONLY", "A_ONLY"), ("BOTH", "BOTH"), ("B ONLY", "B_ONLY")],
-                        id="horizontal-mode", allow_blank=False, value="A_ONLY")
-                    for name in CHECKBOX_BUTTONS:
-                        yield Checkbox(name, id=f"btn-{name}")
-                yield RichLog(id="outgoing", wrap=True, highlight=False, markup=False, max_lines=5000)
-            yield RichLog(id="log", wrap=True, highlight=False, markup=False, max_lines=5000)
+        with Vertical(id="root"):
+            with Horizontal(id="main"):
+                with Vertical(id="side"):
+                    yield Static(id="registers")
+                    yield Static(id="incoming")
+                    yield RichLog(id="outgoing", wrap=True, highlight=False, markup=False, max_lines=5000)
+                yield RichLog(id="log", wrap=True, highlight=False, markup=False, max_lines=5000)
+            with Grid(id="front-panel"):
+                yield Select(
+                    [("A ONLY", "A_ONLY"), ("BOTH", "BOTH"), ("B ONLY", "B_ONLY")],
+                    id="horizontal-mode", allow_blank=False, value="A_ONLY")
+                for name in CHECKBOX_BUTTONS:
+                    yield Checkbox(name, id=f"btn-{name}")
         yield Input(placeholder="command (F1 for help) - e.g. step 10, run, "
                                  "continue, press MENU, serial ID?\\n ...",
                     id="cmdline")
@@ -117,7 +126,7 @@ class Tek2230App(App):
         self.title = "Tek 2230 Emulator"
         self.query_one("#registers", Static).border_title = "registers"
         self.query_one("#incoming", Static).border_title = "incoming serial (UART RX)"
-        self.query_one("#front-panel", VerticalScroll).border_title = "front panel"
+        self.query_one("#front-panel", Grid).border_title = "front panel"
         self.query_one("#outgoing", RichLog).border_title = "outgoing serial (UART TX)"
         self.query_one("#log", RichLog).border_title = "log"
         self.dbg = Debugger(self.args, output=self._sink_from_worker,
