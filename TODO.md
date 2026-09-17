@@ -448,3 +448,6 @@ this file trimmed to active/pending items only — when something gets
 resolved, move its detail into the current day's `changes/YYYY-MM-DD.md`
 entry instead of leaving a long `[x]`-marked writeup here.
 
+## From the Architect
+
+For the emulator ... in trace the messages should be a mediam gray while stuff like the diag and comm messages hsould be white. I would also liek the ability to clean the outgoing buffer and the crlf in those message should actuall be crlf not encoded as \x0a\x0d
