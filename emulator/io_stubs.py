@@ -180,9 +180,10 @@ class DiagnosticTextCapture:
 
     WRITE_INSN_ADDR = 0xE0B63
 
-    def __init__(self):
+    def __init__(self, sink=print):
         self.buffer = []
         self.lines = []
+        self.sink = sink
 
     def install(self, emu, uc_module):
         emu.hook_add(uc_module.UC_HOOK_CODE, self._on_exec,
@@ -194,7 +195,7 @@ class DiagnosticTextCapture:
         if bl in (0, 13, 10) or ch is None:
             if self.buffer:
                 self.lines.append("".join(self.buffer))
-                print(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r}{ANSI_RESET}")
+                self.sink(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r}{ANSI_RESET}")
                 self.buffer = []
         else:
             self.buffer.append(ch)
@@ -202,7 +203,7 @@ class DiagnosticTextCapture:
     def flush(self):
         if self.buffer:
             self.lines.append("".join(self.buffer))
-            print(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r} (unterminated){ANSI_RESET}")
+            self.sink(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r} (unterminated){ANSI_RESET}")
             self.buffer = []
 
 
@@ -297,18 +298,44 @@ class InteractiveUartMock:
     `COMM_OPTION_STUBS`' fixed `comm_stat` value so it can adjust just
     bit1 on top of that baseline rather than replacing the whole byte -
     Unicorn calls same-address read hooks in installation order, so
-    this only works correctly if installed second."""
+    this only works correctly if installed second.
+
+    **2026-09-16 addition**: real hardware doesn't just leave a status
+    bit lying around for software to notice whenever it happens to
+    poll - the UART actively asserts its interrupt line (`INTR`+`DR`,
+    routed through `INT255` per `docs/interrupts/ivt-and-int255.md`)
+    the moment a byte arrives. A passive status-bit stub can never
+    trigger a code path that's genuinely interrupt-driven rather than
+    polled - confirmed empirically 2026-09-16: injecting bytes and
+    running 40M further instructions left the queue completely
+    untouched, exactly the outcome you'd predict from a purely-passive
+    stub regardless of whether the real firmware is interrupt-driven.
+    So `inject()` now also tries to fire `INT255` (via `timer.
+    fire_interrupt`, the same mechanism `TickScheduler` already uses
+    for `INT2`), gated on the Option Interrupt Mask Latch's `0D`
+    output (`0x406F8`, documented as the `DR`/RX-ready mask - see
+    `docs/comm-rom/rs232-early-investigation.md`) being nonzero
+    (unmasked). **The exact bit-level write convention for that mask
+    output hasn't been re-traced in this pass** - `set_comm_queue_busy`
+    (`0x8009B`) writes it through a RAM-resident far pointer
+    (`[0x6E2]`) whose own initialization wasn't tracked down here, so
+    this checks "is the byte nonzero" as a reasonable approximation of
+    "has firmware unmasked it," not a fully re-confirmed bit convention."""
 
     DATA_ADDR = 0x406F0
     STATUS_ADDR = 0x4067C
     DR_BIT = 0x02
+    MASK_LATCH_ADDR = 0x406F8
 
-    def __init__(self):
+    def __init__(self, sink=print):
         self.queue = bytearray()
         self.rx_log = []   # bytes actually popped by a real read (confirms consumption)
         self.tx_log = []   # bytes written to the same address, from ANY code path
+        self._emu = None
+        self.sink = sink
 
     def install(self, emu, uc_module):
+        self._emu = emu
         emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_status_read,
                      None, self.STATUS_ADDR, self.STATUS_ADDR)
         emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_data_read,
@@ -324,7 +351,36 @@ class InteractiveUartMock:
                      None, self.DATA_ADDR, self.DATA_ADDR)
 
     def inject(self, text):
+        was_empty = not self.queue
         self.queue.extend(text.encode("ascii", errors="replace"))
+        if was_empty and self.queue:
+            self._try_fire_interrupt()
+
+    def _try_fire_interrupt(self):
+        """Simulate the real UART asserting its interrupt line the
+        moment new data arrives, gated on the DR-mask output being
+        unmasked - see the class docstring for what's approximated
+        here vs. fully re-confirmed."""
+        if self._emu is None:
+            return
+        from timer import fire_interrupt  # local import: avoid a hard
+                                           # module-load dependency for
+                                           # code paths that never inject
+        try:
+            mask_byte = self._emu.mem_read(self.MASK_LATCH_ADDR, 1)[0]
+        except Exception:
+            mask_byte = 0
+        if not mask_byte:
+            self.sink(f"{ANSI_WHITE}[SERIAL] DR interrupt masked "
+                      f"(0x{self.MASK_LATCH_ADDR:X}=0) - byte(s) queued but "
+                      f"no INT255 fired{ANSI_RESET}")
+            return
+        if fire_interrupt(self._emu, 255, respect_if=True):
+            self.sink(f"{ANSI_WHITE}[SERIAL] fired INT255 (UART DR) to "
+                      f"signal new data{ANSI_RESET}")
+        else:
+            self.sink(f"{ANSI_WHITE}[SERIAL] INT255 not delivered (IF clear "
+                      f"or vector not installed){ANSI_RESET}")
 
     def _on_status_read(self, uc_eng, access, address, size, value, user_data):
         current = uc_eng.mem_read(address, 1)[0]
@@ -338,8 +394,8 @@ class InteractiveUartMock:
         if self.queue or byte:
             self.rx_log.append(byte)
             ch = chr(byte) if 32 <= byte < 127 else f"\\x{byte:02x}"
-            print(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
-                  f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
+            self.sink(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
+                      f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
         return True
 
     def _on_data_write(self, uc_eng, access, address, size, value, user_data):
@@ -354,6 +410,17 @@ class InteractiveUartMock:
     def status(self):
         rx = f"RX queue: {len(self.queue)} byte(s) pending, next={chr(self.queue[0])!r}" if self.queue else "RX queue empty"
         return f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen"
+
+    def incoming_text(self):
+        """Everything still sitting in the RX queue, not yet consumed
+        by a real read - same rendering convention as `outgoing_text`."""
+        out = []
+        for b in self.queue:
+            if b in (13, 10, 9) or 32 <= b < 127:
+                out.append(chr(b))
+            else:
+                out.append(f"\\x{b:02x}")
+        return "".join(out)
 
     def outgoing_text(self):
         """Real `\\r`/`\\n`/tab pass through as actual control bytes (so

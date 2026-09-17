@@ -1,7 +1,8 @@
 @echo off
 rem Sets up (or reuses) a venv in emulator\.venv with the packages from
-rem requirements.txt, then runs the REPL debugger. See tui.bat for the
-rem Textual-based alternative - same venv, same requirements.
+rem requirements.txt, then runs the Textual-based TUI. See
+rem interactive.bat for the plain REPL alternative - same venv, same
+rem requirements.
 setlocal
 cd /d "%~dp0"
 
@@ -20,4 +21,4 @@ if errorlevel 1 (
     exit /b 1
 )
 
-".venv\Scripts\python.exe" interactive.py %*
+".venv\Scripts\python.exe" tui.py %*

@@ -60,6 +60,28 @@ no per-step Python round-trip); `interactive.py` is for poking at a
 specific point in execution. Type `help` at its prompt for the full
 command list.
 
+**TUI mode, 2026-09-16**: `tui.bat` (or `python tui.py` once
+`requirements.txt` is installed) is a Textual-based full-screen
+dashboard alternative to `interactive.py`'s REPL - a live registers
+panel plus a scrolling trace/diagnostic/serial log, same command set
+(`step`/`run`/`continue`/`press`/`serial`/... - see `debugger_core.
+HELP`, bound to F1) typed into an input bar, with F2-F5 shortcuts for
+step/run/continue/trace. Built on `debugger_core.py`, the engine now
+shared by both front ends so they can't drift apart - `interactive.py`
+got noticeably shorter as a result, since it's just the REPL loop now.
+Genuinely cross-platform (Textual has its own native Windows Terminal/
+PowerShell driver, unlike plain `curses` which needs a `windows-
+curses` shim on Windows and still has rough edges there); verified
+headless via Textual's own test harness (`App.run_test()`) before ever
+touching a real terminal - stepping, the `serial` interrupt-masking
+diagnostic, and `incoming` all behaved identically to the REPL.
+
+**Both `interactive.bat` and `tui.bat` now set up their own venv** in
+`emulator\.venv` (created on first run) and install `requirements.txt`
+into it automatically - no manual `pip install` step needed on a fresh
+machine. `emu.py`/`interactive.py`/`tui.py` can still be run directly
+with `python` if you're managing your own environment.
+
 Not to be confused with `decompile/`, the Ghidra static-analysis
 project (see `docs/architecture/ghidra-project.md`) - that's a second
 disassembler/cross-check tool; this is dynamic execution.

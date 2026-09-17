@@ -449,7 +449,7 @@ underlying stubs, same result, just interactively inspectable now.
    `25000000`, half the previous hardcoded `50000000`); `continue <n>`
    at the prompt also updates the stored length for the rest of the
    session, not just that one call.
-7. **Trace coloring, outgoing-buffer clear, real CRLF rendering**
+8. **Trace coloring, outgoing-buffer clear, real CRLF rendering**
    (left directly in `TODO.md` as "From the Architect" notes): added
    `io_stubs.ANSI_GRAY`/`ANSI_WHITE`/`ANSI_RESET`, applied gray to
    `trace`'s scrolling lines and white to `[DIAG TEXT]`/`[SERIAL RX]`
@@ -459,6 +459,112 @@ underlying stubs, same result, just interactively inspectable now.
    instead of the `\xNN` escape form (only genuinely unprintable bytes
    still get escaped) - confirmed with `cat -v` that both the color
    codes and the real line breaks render as intended.
+9. **Tested `serial` against the real, confirmed live-hardware answer,
+   and made the RX path interrupt-driven** (user: "test the serial
+   operations yourself... when ID?\n is sent in it should return the
+   same messages you were getting from the real hardware tests
+   before"). `docs/comm-rom/rs232-breakthrough.md` has the confirmed
+   real answer: `ID?` -> `ID TEK/2230,V81.1,VERS:14;`. Injected
+   `ID?\n` and ran 40M+ instructions past self-test completion -
+   **the real response never appears**, confirmed by grepping the
+   captured outgoing text for `ID TEK`/`VERS:14` (zero matches).
+
+   User's follow-up diagnosis, and it was right: "serial should
+   probably be setting the interrupt that is used on the UART" - a
+   passive status-bit stub can never trigger code that's genuinely
+   interrupt-driven rather than polled. `InteractiveUartMock.inject()`
+   now also tries to fire `INT255` (via `timer.fire_interrupt`, the
+   same mechanism `TickScheduler` already uses for `INT2`), gated on
+   the Option Interrupt Mask Latch's `0D`/DR output (`0x406F8`) being
+   nonzero. Rerunning with this in place gave a **precise diagnosis
+   instead of a vague negative result**: `0x406F8` is still `0`
+   (masked) even 40M instructions in - the firmware genuinely hasn't
+   reached whatever point in its own init sequence unmasks RS-232
+   receive interrupts, matching the documented real-hardware behavior
+   ("forced LO by BRST... masked until firmware explicitly unmasks
+   it"). **Caveat honestly documented in `InteractiveUartMock`'s own
+   docstring**: the exact bit-level write convention for that mask
+   output wasn't re-traced in this pass (`set_comm_queue_busy` writes
+   it through a RAM-resident far pointer, `[0x6E2]`, whose own
+   initialization wasn't tracked down here) - "nonzero byte" is a
+   reasonable approximation, not a re-confirmed bit convention.
+
+   Also added `incoming` (shows the RX queue's actual byte contents,
+   matching `outgoing`'s rendering) per a follow-up request to see
+   what's queued, not just how much.
+
+   **Real next step this surfaces**: find what code path actually
+   writes nonzero to `0x406F8`, and whether the emulator can be
+   steered there directly (a specific self-test branch? a comm-menu
+   action?) rather than just running the boot trace longer - a much
+   more specific target than "run more instructions and hope."
+
+## Textual TUI + shared debugger core + venv-aware launchers, 2026-09-16
+
+User asked whether a Python TUI would work on both Windows and Linux
+before requesting one, then confirmed wanting it as an additional
+option alongside the REPL (not a replacement), plus venv-aware
+launchers so packages don't need manual installation.
+
+**Answered the portability question with a real distinction, not a
+flat yes**: plain `curses` needs a separate `windows-curses` shim on
+Windows and still has rough edges there; **Textual** has its own
+native Windows Terminal/PowerShell driver, genuinely no
+platform-specific code needed. Chose Textual over `prompt_toolkit` for
+its purpose-built live-dashboard widgets (`RichLog`, reactive panels).
+
+**Refactored first, before writing any Textual code**: extracted the
+entire CPU/memory/stub setup, stepping, register/instruction
+formatting, and command dispatch out of `interactive.py` into a new
+`debugger_core.py` - the `Debugger` class, `dispatch_command()`
+(the single source of truth for what every command does, returning
+response lines rather than printing directly), and `HELP`. Both
+`interactive.py` and `tui.py` now import from here; `interactive.py`
+shrank to just its REPL loop as a result. This was worth doing *before*
+the TUI, not after - writing the TUI against the same tested engine the
+REPL already uses avoids two copies of the command logic drifting
+apart the first time either one gets a bug fix.
+
+**One real design problem solved**: `io_stubs.DiagnosticTextCapture`/
+`InteractiveUartMock` used to call `print()` directly for their live
+`[DIAG TEXT]`/`[SERIAL ...]` messages - fine for the REPL, but a
+Textual app fully owns the terminal, so a stray direct `print()` during
+a run would corrupt the display. Both classes now take a `sink=print`
+callable instead, and `Debugger.__init__` forwards its own `output`
+parameter into them - so the *same* stub classes work unmodified under
+either front end, each just supplying a different sink (`print` for
+the REPL, a widget-append function for the TUI).
+
+**A second real problem, and its fix**: `dbg.step()`/`dbg.run()` are
+synchronous and can run for tens of millions of instructions
+(`continue`) - calling them directly from a Textual event handler would
+freeze the whole UI. Every command (not just step/run - all of them,
+for one uniform threading model) now runs inside `self.run_worker(...,
+thread=True)`, and the `output` sink passed to `Debugger` always goes
+through `self.call_from_thread(...)` to get back onto the app's own
+thread safely.
+
+**A pleasant surprise**: Rich's `Text.from_ansi()` parses the exact raw
+ANSI escape codes `io_stubs.ANSI_GRAY`/`ANSI_WHITE` already produce
+into proper styled `Text` objects - the TUI's log reuses the REPL's
+existing gray/white coloring scheme verbatim, no parallel Rich-markup
+color scheme needed.
+
+**Verified working headless, before ever opening a real terminal**:
+Textual ships `App.run_test()` specifically for this - drove the app
+with a `Pilot` (typing `step 5`, `serial ID?\n`, `incoming` into the
+input, pressing Enter/F1) and confirmed the register count advanced
+correctly, the interrupt-masking diagnostic printed with correct white
+styling (`Style(color=Color('color(15)'...`, confirming the ANSI
+parsing worked), and `incoming` showed the queued text with its real
+trailing newline intact - all identical to the REPL's already-verified
+behavior for the same command sequence.
+
+**venv-aware launchers**: `interactive.bat` and `tui.bat` now create
+(if missing) and use a venv at `emulator\.venv`, installing
+`requirements.txt` into it before running - `.venv/` added to the root
+`.gitignore`. Both scripts share the same venv and requirements file,
+so either one being run first sets it up for both.
 
 ## Non-goals reminder
 

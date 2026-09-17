@@ -10,3 +10,4 @@ _final_check_*.bin
 
 scratchpad/
 ~*.xlsx
+.venv/
