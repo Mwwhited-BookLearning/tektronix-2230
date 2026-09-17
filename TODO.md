@@ -46,17 +46,22 @@ instead of assuming bare `nasm` resolves.
 - [ ] **`emulator/` next steps** (built 2026-09-16, see `emulator/
       README.md`/`emulator/docs/design.md`): resolved the stroke-font
       glyph-table hunt for this project's real hardware (full story in
-      `changes/2026-09-16.md`) - remaining open threads for the
-      emulator itself: (1) the still-unsolved HPGL native-coordinate
+      `changes/2026-09-16.md`). **Updated same day**: fed this
+      session's hardware findings into `io_stubs.py` (8 new register
+      stubs, 6 backed by real captured values) - the full power-up
+      self-test sequence now completes for the first time. Remaining
+      open threads: (1) the still-unsolved HPGL native-coordinate
       transform puzzle (`docs/display/vector-display-and-stroke-
       font.md`'s "Follow-up, 2026-09-14/15" sections) could potentially
-      be chased dynamically the same way, by stubbing more hardware and
-      watching what a real plot/print command actually produces; (2)
-      more I/O stubs (the front-panel ADC/switch registers, the
-      display-chip reset/frame lines) would let the boot trace get
-      further past self-test - currently "Display controller : TIMEOUT"
-      and "ACQ_AB read-back 0 <> 2" are genuine self-test failures
-      caused by unstubbed hardware, not firmware bugs.
+      be chased dynamically the same way; (2) trace what actually sets
+      `[0x1AEE]` during `selftest_display_irq_idle`'s momentary
+      `sti`/`cli` window (confirmed genuinely deterministic, not a
+      synthetic-ticker artifact - see `FUNCTIONS.md`'s entry) - needs
+      real interrupt-vector tracing, not another stub guess; (3) build
+      a write-then-readback coupling stub for the `ACQ_AB` address-line
+      walking test against the Acquisition Memory Address Buffer (see
+      `MEMORY_MAP.md`'s `0x4377E`/`0x4377F` entry) the way
+      `CommPresenceProbe` already couples a different register pair.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-

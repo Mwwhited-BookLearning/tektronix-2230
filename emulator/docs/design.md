@@ -246,6 +246,204 @@ tick-count-derived index (`% N`-style) rather than continuing to
 adjust the tick interval, which testing now shows isn't the relevant
 variable.
 
+## Stub expansion and first full self-test pass, 2026-09-16
+
+Prompted directly: "update the emulator with what you know now and see
+if it gets further." A lot of new hardware knowledge had accumulated
+since the emulator was built (the service manual's Table 3-1 clean
+re-scan, the RS-232 option board's schematic-traced chip identities and
+bit maps, live-hardware-captured register values from the exerciser
+screen photos) that had never been fed back into `io_stubs.py` - only
+`CommPresenceProbe` existed, and design.md's own original stub-strategy
+table (display chip int-reset/frame-trigger, comm status/parameter
+latches, front-panel registers) had been *planned* but never actually
+built.
+
+**Built**: `io_stubs.FixedByteRead`, a generic "force every read of
+this address to a fixed value" hook (confirmed with a standalone test
+first: writing inside a `UC_HOOK_MEM_READ` callback does override the
+value the *current* instruction sees, not just future ones - necessary
+since plain RAM's "read back whatever was last written" is wrong for a
+register real hardware clears/drives independently of the CPU). Applied
+it to 8 registers, 6 of them backed by a **real captured value** rather
+than a guess: `comm_stat`=`0x7D`, `comm_param`=`0xF8`, `fp_ad_data`
+=`0x62`, `fp_intstat`=`0x9B`, `SWB2`=`0x08`, `SWB1`=`0x44` (all from the
+`/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` photos or `VARIABLES.md`'s
+live-hardware baseline captures - see `MEMORY_MAP.md`), plus the 2
+display-chip registers forced to `0` per the original design-doc plan.
+Also made `io_stubs.DiagnosticTextCapture` (hooking `write_readout_
+port_byte`'s actual byte-move instruction, physical `0xE0B63`) a
+permanent, reusable module instead of the one-off scratch code used for
+the earlier stroke-font investigation - this is what makes it possible
+to actually *see* self-test progress during a long run instead of just
+an instruction count.
+
+**Result: real, new forward progress.** With `--comm-installed
+--stub-registers --show-diag-text`, the emulator now runs the **entire
+power-up self-test sequence to completion** for the first time -
+`'2230/2220 Power up tests complete.'` actually prints, instead of the
+run just continuing silently past whatever static analysis had already
+confirmed reachable. Full captured sequence:
+
+```
+2230/2220 boot : 160-3633-14
+POWER UP FAILURES
+PRESS MENU KEYS TO CONTINUE
+PU : ROM/RAM/NMI :  0003
+MI : Display controller : TIMEOUT
+ACQ_AB : read-back     0 <>     2
+ACQ_AB : read-back     0 <>     6
+ACQ_AB : read-back     0 <>     E
+ACQ_AB : read-back     0 <>    1E
+ACQ_AB : read-back     0 <>    3E
+ACQ_AB : read-back     0 <>    7E
+ACQ_AB : read-back     0 <>    FE
+ACQ_AB : read-back     0 <>   1FE
+ACQ_AB : read-back     0 <>   3FE
+ACQ_AB : read-back     0 <>   7FE
+ACQ_AB : read-back     0 <>   FFE
+2230/2220 Power up tests complete.
+```
+
+**Two remaining failure classes, both newly diagnosed (not fixed)**:
+
+1. **`Display controller : TIMEOUT`** (`selftest_display_irq_idle`,
+   `0xE3F2C` - see `FUNCTIONS.md`): traced to a literal `sti`/`cli`
+   pair (`enable_interrupts`/`disable_interrupts`, `0xE5D2D`/`0xE5D2F`)
+   with nothing in between - a "briefly enable interrupts, see if a
+   level-triggered line is already stuck asserted" hardware test.
+   Fails if `[0x1AEE]` is nonzero afterward. **Tested and confirmed
+   deterministic, not a synthetic-ticker timing artifact**: reran at 4
+   very different tick intervals (500/2000/3000/7777 instructions) and
+   got byte-identical output every time - if the emulator's own
+   INT2/NMI ticker were coincidentally landing inside that 1-2
+   instruction window, changing the interval this much should have
+   shifted the result. It didn't, so something real is asserting an
+   interrupt-pending condition at this exact point in boot that this
+   emulator doesn't yet model. Next step: trace what actually sets
+   `[0x1AEE]` (which interrupt vector, and why it's pending here) -
+   this needs real investigation, not another stub guess.
+2. **`ACQ_AB` read-back failures**: the sequence `2, 6, E, 1E, 3E, 7E,
+   FE, 1FE, 3FE, 7FE, FFE` is a textbook **address-line walking test**
+   (one more bit shifted in on each failure) - almost certainly
+   exercising the Acquisition Memory Address Buffer (`0x4377E`/
+   `0x4377F`, `U3427`/`U3428`) and/or the acquisition RAM's real
+   address decode. See `MEMORY_MAP.md`'s updated entry for this
+   register. Would need a real write-then-readback coupling stub (like
+   `CommPresenceProbe`'s, but wired to the actual `0x48000-0x4BFFF`
+   acquisition RAM or a dedicated readback path) to pass - not built
+   yet, since the real coupling mechanism isn't traced.
+
+Both are genuine "not simulatable with a flat value" cases, exactly the
+kind design.md's own stub philosophy anticipates ("only add real
+behavior when a specific hang is observed and diagnosed") - correctly
+distinguishing "needs a fixed value" from "needs real modeled coupling"
+is itself useful progress, not a dead end.
+
+## Interactive REPL debugger, 2026-09-16
+
+User request: "coudl I get an option to run it with an interactive
+interface? somethign that shows the registers and current processing
+and allows simulation of pushing buttons or sending a serial message?"
+This directly reopens 2 things design.md's original scope explicitly
+called out of scope ("Real front-panel input... stubbed with fixed or
+scripted values, not live interaction" and no UART protocol fidelity) -
+noted, but the user's call to make, not a mistake to correct.
+
+Built `interactive.py`: a plain REPL (not a curses/rich TUI - user
+confirmed "a repl would be good enough" when asked, avoiding a new
+dependency and Windows-terminal-compatibility risk) on the same
+`memory_map.py`/`io_stubs.py` setup as `emu.py`. Shows CS:IP (with the
+physical address), all general registers, decoded flags, the current
+instruction (via capstone), and the front-panel/UART mock status after
+every stop. Commands: `step`/`run`/`continue`/`break`/`delete`/`mem`/
+`regs`, plus the 2 new interactive pieces:
+
+- **`press`/`release` + `io_stubs.InteractiveFrontPanel`**: a live,
+  mutable version of the `SWB1`/`SWB2` registers (`FixedByteRead`'s
+  constant stubs are for the headless tracer only now - split into
+  `FRONT_PANEL_BUTTON_STUBS` vs. the always-fixed `FRONT_PANEL_STUBS`).
+  Bit maps and polarity straight from `VARIABLES.md`'s live-hardware-
+  confirmed `[0x758]`/`[0x759]` entries, starting at the same real
+  captured idle baselines so an interactive run with nothing pressed
+  behaves identically to the headless default.
+- **`serial` + `io_stubs.InteractiveUartMock`**: explicitly labeled
+  experimental in its own docstring - this project has never confirmed
+  which of the 8 "Option UART/GPIB chips" registers is genuinely the
+  receive-data register, nor exercised the comm ROM's real byte-
+  reception path in any emulator run. Picked `0x406F0` (the same
+  address `write_readout_port_byte` already writes diagnostic text to)
+  as a plausible scaffold and Option Status Latch bit1 ("UART INTR+DR")
+  as the ready flag - good enough to experiment with, not a validated
+  register map. Installed *after* `COMM_OPTION_STUBS`'s fixed
+  `comm_stat` hook so it only touches bit1 on top of that baseline
+  (Unicorn calls same-address read hooks in installation order).
+
+**Verified working**: stepping, breakpoints (hit exactly at the
+already-known `0xE0161` RAM-clear loop on the first try), button
+press/release correctly toggling `SWB2`/`SWB1`, serial injection
+queuing bytes, and a full `run` reproducing the exact same power-up
+self-test sequence `emu.py --stub-registers` already gets - same
+underlying stubs, same result, just interactively inspectable now.
+
+**Follow-up same day, 3 more real fixes from direct user testing**:
+
+1. **Confirmed empirically, not assumed**: after the fixed power-up
+   sequence completes and execution settles into the early scheduler-
+   tick loop, injected `serial` bytes sit in the queue completely
+   untouched even after 30M further instructions - nothing in the
+   currently-reached code path reads the mock RX register at all. This
+   matches the mock's own documented uncertainty (the comm ROM's real
+   receive path has never been confirmed reached) - a genuine, useful
+   negative result, not a bug.
+2. **Added `trace on`/`trace off`** (user: "could I have a debug view
+   that scrolls all the registers as well as the current data value?")
+   - streams one compact line per executed instruction (all registers,
+   flags, the decoded instruction, and - genuinely useful for anything
+   touching a table via `[bp+N]`/`[si]`/`es:[di]` - the live value at
+   the instruction's memory operand, resolved via capstone's detail
+   mode). Caught and fixed a real bug immediately: capstone exposes an
+   x86 memory operand's segment-override register as `op.mem.segment`,
+   not `insn.segment` (`AttributeError: segment` on first real test -
+   the difference matters because a segment override belongs to a
+   specific *operand*, not the instruction as a whole, when more than
+   one operand could theoretically have one).
+3. **Fixed a real escape-handling bug** (user: "how do I append \n to
+   the request so it receives a newline?"): the `serial` command was
+   running every line through `shlex.split()` first, which treats
+   backslash as its own escape character outside quotes - a literal
+   `serial hello\n` typed at the prompt had its backslash silently
+   eaten by `shlex` before `decode_escapes` ever saw it (confirmed via
+   a real test: `serial hello\n` queued only 5 bytes, not 6). Fixed by
+   special-casing `serial` to bypass `shlex` entirely and take the raw
+   line remainder, then applying `decode_escapes` (`\n`/`\r`/`\t`/`\0`/
+   `\\`, `printf -e`-style) directly. Also caught a second bug in the
+   same area during testing: the raw-text extraction originally called
+   `.strip()`, which silently eats a genuine trailing `\r`/whitespace
+   the user actually wanted sent - fixed to rely only on `str.split`'s
+   own leading-whitespace skip.
+4. **Added `outgoing`/`uart` visibility** (user: "I would like to see
+   the incoming messages and outgoing messages"): `InteractiveUartMock`
+   now also hooks `UC_HOOK_MEM_WRITE` on the same data address (not
+   just the existing read hook), independent of which specific calling
+   instruction writes there - broader coverage than `DiagnosticText
+   Capture`'s single-instruction hook, in case the comm ROM ever writes
+   the same address through a different code path. Also prints
+   `[SERIAL RX] ...` live whenever a queued byte is actually consumed,
+   so a real RX event (once one ever happens) is immediately visible,
+   not just inferable from the queue count changing.
+5. **Flipped `--comm-installed`'s default to on** in both `emu.py` and
+   `interactive.py` (user: "is it configured to assume the comm module
+   is installed or do I always have to send in --comm-installed?") -
+   both of this project's real physical test units genuinely are
+   Option 12/RS-232 equipped, and the "not installed" stub is already
+   confirmed to eventually crash, so defaulting to the *wrong* config
+   was pure friction. `--stub-registers` flipped to on-by-default too,
+   for the same reason (it's evidence-based, not speculative). Both
+   still support an explicit opt-out (`--no-comm-installed`, `--no-
+   stub-registers`, via `argparse.BooleanOptionalAction`) for
+   comparison runs against the "worse" baseline.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

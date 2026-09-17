@@ -18,7 +18,7 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import CommPresenceProbe
+from io_stubs import CommPresenceProbe, DiagnosticTextCapture, install_all_fixed_reads
 
 # A genuine 8086 (20 address lines, unlike 286+) wraps any computed
 # physical address above 1MB back into the bottom of the address space
@@ -79,13 +79,32 @@ def main():
                      help="instructions between synthetic INT2 ticks, "
                           "0 disables the scheduler timer entirely "
                           "(default 2000)")
-    ap.add_argument("--comm-installed", action="store_true",
+    ap.add_argument("--comm-installed", action=argparse.BooleanOptionalAction,
+                     default=True,
                      help="stub detect_comm_option_hw's hardware probe "
                           "to read back as 'comm option installed', "
                           "matching this project's real physical test "
-                          "units (both confirmed Option 12/RS-232) "
-                          "instead of the default 'not installed' plain-"
-                          "RAM behavior - see io_stubs.CommPresenceProbe")
+                          "units (both confirmed Option 12/RS-232) - "
+                          "on by default since that's what the real "
+                          "hardware this project has access to actually "
+                          "is; pass --no-comm-installed for the "
+                          "'not installed' plain-RAM behavior instead - "
+                          "see io_stubs.CommPresenceProbe")
+    ap.add_argument("--stub-registers", action=argparse.BooleanOptionalAction,
+                     default=True,
+                     help="force-fix reads of the display-chip busy "
+                          "bits and the comm/front-panel status "
+                          "registers this project now has a real or "
+                          "documented captured value for (Table 3-1 + "
+                          "the RS-232 schematic trace + the exerciser-"
+                          "screen photos), instead of plain RAM's "
+                          "default 'reads back whatever was last "
+                          "written' - see io_stubs.install_all_fixed_reads")
+    ap.add_argument("--show-diag-text", action="store_true",
+                     help="print every byte write_readout_port_byte "
+                          "sends, grouped into lines - the self-test/"
+                          "POST diagnostic text channel confirmed "
+                          "2026-09-16 (see io_stubs.DiagnosticTextCapture)")
     args = ap.parse_args()
 
     emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
@@ -118,6 +137,16 @@ def main():
         print("stubbed detect_comm_option_hw's presence probe as "
               "'installed' (--comm-installed)")
 
+    if args.stub_registers:
+        install_all_fixed_reads(emu, uc)
+
+    diag = None
+    if args.show_diag_text:
+        diag = DiagnosticTextCapture()
+        diag.install(emu, uc)
+        print("watching write_readout_port_byte for diagnostic text "
+              "(--show-diag-text)")
+
     emu.hook_add(uc.UC_HOOK_MEM_INVALID, hook_mem_invalid, user_data)
     emu.hook_add(uc.UC_HOOK_INSN, lambda e, port, size, ud=user_data:
                  hook_io(e, port, size, 0, ud, is_write=False),
@@ -145,6 +174,10 @@ def main():
         emu.emu_start(0xFFFF0, 0x100000, count=args.max_instructions)
     except uc.UcError as e:
         print(f"\n[STOPPED] Unicorn error: {e}")
+
+    if diag is not None:
+        diag.flush()
+        print(f"\n{len(diag.lines)} diagnostic-text lines captured.")
 
     print(f"\nExecuted {user_data['count']} instructions, "
           f"{user_data['io_hits']} I/O accesses, "

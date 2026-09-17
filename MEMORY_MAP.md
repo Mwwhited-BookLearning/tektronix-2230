@@ -5,11 +5,14 @@ seen in the disassembled code, **now cross-checked against the real
 service manual** (`hardware/2230 .pdf`, provided 2026-09-13 - see its
 "Theory of Operation" Section 3, Table 3-1 "Memory Space Allocation"
 for the master address map, and Section 6 "Maintenance" Tables 6-16
-through 6-23 for the front-panel/exerciser register tables). Most of
-the previously-"candidate, not confirmed" entries below are now backed
-by the manual's own register names and U-numbers, not just inference
-from code. See `docs/` (start at `docs/README.md`) for the underlying
-disassembly-side evidence and cross-references.
+through 6-23 for the front-panel/exerciser register tables; a cleaner,
+higher-resolution 2-page scan of Table 3-1 itself is also available at
+`docs/Memory Map.pdf`, provided 2026-09-16, used to re-verify every row
+below against a crisp source rather than the earlier partial OCR).
+Most of the previously-"candidate, not confirmed" entries below are now
+backed by the manual's own register names and U-numbers, not just
+inference from code. See `docs/` (start at `docs/README.md`) for the
+underlying disassembly-side evidence and cross-references.
 
 ```plantuml
 @startuml
@@ -59,7 +62,7 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x437F6` | **CONFIRMED: "Front Panel A/D control U6104"** (Table 3-1) | The front-panel A/D converter's control latch - see the new "Two separate ADCs" note below |
 | `0x437FA` | **CONFIRMED: "Front Panel A/D data U6102"** (Table 3-1) | Matches `FP-VALUES`/`FP-A2D` exerciser descriptions in the manual's Maintenance section exactly |
 | `0x437FB` | **CONFIRMED: "Main Front Panel Input U6103"** (Table 3-1) | Resolves `fp_intstat`'s address, seen live on the `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` exerciser screen (see below) - immediately adjacent to `U6102`'s `0x437FA` as guessed at the time |
-| `0x4377E`/`0x4377F` | **CONFIRMED: "Acquisition Memory Address Buffer" low/high bits, U3427/U3428** (Table 3-1) | |
+| `0x4377E`/`0x4377F` | **CONFIRMED: "Acquisition Memory Address Buffer" low/high bits, U3427/U3428** (Table 3-1) | **Self-test shape found live 2026-09-16** via `emulator/`: the `ACQ_AB` self-test (`"ACQ_AB : read-back %d <> %d"`) walks a single bit progressively through a wider field on every failure - observed sequence `2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE, 7FE, FFE` (each value = previous with one more `1` bit shifted in below the top) - the textbook shape of an **address-line walking test**, checking that each individual address bit of this buffer independently toggles and is read back correctly, not a simple fixed-value check. Currently fails at every step in the emulator (plain RAM read-back, no real acquisition-hardware coupling modeled) - would need a write-then-readback stub coupling this buffer to the actual `0x48000-0x4BFFF` acquisition RAM (or a dedicated readback register) the way `io_stubs.CommPresenceProbe` already couples `0x407DE`'s write to `0x4377E`'s read, to pass |
 | `0x437BE` | **CONFIRMED: "Acquisition Mode Register U3310"** (Table 3-1) | |
 | `0x437DE`/`0x437DF` | **CONFIRMED: "B Delay Timer" U4123/U4124** (Table 3-1) | |
 | `0x437EE`/`0x437EF` | **CONFIRMED: "Record Counter" U4115/U4116/U4117** (Table 3-1) | |
@@ -74,6 +77,82 @@ ALIAS .up.> COMMROM : same bytes,\nsecond address
 | `0x90000-0x97FFF` | `160-2998` file offset `0x8000-0xFFFF` (comm/GPIB-RS232 option ROM, **upper 32KB half**) | **CORRECTED 2026-09-13, from the same Table 3-1 page image**: `"90000-97FFF: Half of Communication Options ROMs U1243 or U1343"` - this is the ROM's own genuine, deliberately-separate upper half, **not an "address-decode alias" of `0x88000-0x8FFFF`** as this project previously guessed (that range is real RAM, a completely different device - see above). The lower/upper 32KB ROM halves are split across the address space with the option's 2 RAM regions sitting *between* them, not through incomplete address-line decoding. This project's own empirical formula (`file_offset = (phys-0x90000)+0x8000`) was already numerically correct and remains so - only the *explanation* for why it works was wrong. Still wired into the tooling as `"2998_alias_90000"` in `gen_disasm_x86.CHIPS` (naming now known to be a misnomer, kept for now to avoid an unnecessary rename churn) |
 | `0xE0000-0xEFFFF` | `160-3633` (main ROM, low half) | Confirmed via TekWiki + validated disassembly |
 | `0xF0000-0xFFFFF` | `160-3532` (main ROM, high half) | Confirmed via TekWiki; holds the real CPU reset vector at `0xFFFF0` |
+
+**Checked and confirmed correct, 2026-09-16** (prompted by a clean re-scan
+of the service manual's Table 3-1, `docs/Memory Map.pdf`): read literally,
+the table's "ROM Main Image" rows say `E0000-E7FFF`/`F0000-F7FFF` are
+"System ROM 0 - low/high half of **U9109**" and `E8000-EFFFF`/`F8000-FFFFF`
+are "System ROM 1 - low/high half of **U9110**" - i.e. each chip's two
+32KB halves sit in *non-adjacent* windows, which would mean `160-3633`
+and `160-3532` are actually interleaved rather than each one flat and
+contiguous as this project has always treated them. **Tested directly
+against real instruction bytes and disproven** - the current flat-per-
+file model is correct:
+- `merge_record_flags_if_changed` (`0xE9472`, an established named
+  function): under the current model (`160-3633` offset `0x9472`) this
+  is clean, meaningful compare/branch code matching its documented
+  behavior; under the table-implied alternate model (`160-3532` offset
+  `0x1472`) the same physical address lands mid-table inside an
+  unrelated small lookup table, not a function at all.
+- The `SUB_EAC86`-pattern far-call target `0xEA13B` (see
+  `docs/acquisition-and-plotting/ram-far-pointer-table.md`): under the
+  current model (`160-3633` offset `0xA13B`) this is the literal,
+  already-catalogued string `"or POST\0Display formatting\0delta time or
+  1/delta_time\0..."`; under the alternate model (`160-3532` offset
+  `0x213B`) it's unstructured garbage.
+- `reset_plot_home_or_acq` (`0xF0C81`) contains a literal immediate
+  far-call `9a 0d 00 d7 e7` = `lcall 0xE7D7:0x000D` = physical
+  `0xE7D7D` - the exact, independently-confirmed address of
+  `update_plot_position` - hard-coded in the ROM bytes themselves, not
+  an inference either way.
+
+All three tests land squarely on the side of the model already in use.
+**No change needed** to `disasm/gen_disasm_x86.py`'s `CHIPS` table, the
+Ghidra project's addressing, or any function name/jump target - a full
+pass specifically looking for anything to correct found nothing.
+
+**Pushed further, same day, at the user's request**: rather than take
+the above as final, built the user's literal reading of the table as an
+actual competing Ghidra project (`Tek2230_remap_test`, throwaway, in
+scratch space - the real `decompile/` project was never touched) -
+`160-3633`'s and `160-3532`'s bytes recombined into two new 64KB images
+matching the table's interleave (`E0000-E7FFF`+`F0000-F7FFF` from
+`160-3633`, `E8000-EFFFF`+`F8000-FFFFF` from `160-3532`), imported at
+the same segments, default-analyzed, and compared head-to-head:
+- **Function count**: current model finds 344+225=**569** functions;
+  the table-interleaved model finds only 283+238=**521** - a net loss
+  of 48 recognizable functions under the alternate mapping.
+- **Forced decompilation at the exact same literal, Tektronix-hard-
+  coded pointer-table addresses** (`0xE9472`, `0xF0A4A` - read directly
+  as raw segment:offset bytes from `init_far_pointer_table_sysrom`'s
+  own embedded table, not chosen by this project): under the table-
+  interleaved model, Ghidra's decompiler produces textbook garbage at
+  both - 20+ near-identical `*(int *)(in_BX + unaff_DI) = ... + iVar3`
+  lines with every register showing as an untracked `unaff_*`/`in_*`
+  placeholder (no real calling convention could be established), and
+  one decompiles a software-interrupt byte as an indirect function-
+  pointer call (`pcVar1 = (code *)swi(3); (*pcVar1)();`). Under the
+  current model, real instructions already sit immediately adjacent to
+  both addresses (`cmp byte ptr es:[bx],0` one byte before `0xE9472`,
+  `mov bx,word ptr es:[di]` ending exactly at `0xF0A4A`) - a real, minor
+  landing-offset nuance (not a clean bullseye), but coherent code, not
+  decompiler noise.
+
+Given the literal table reading is now demonstrably contradicted by
+Ghidra's own independent decompiler on Tektronix's own hard-coded call
+targets - not just this project's manual analysis - **the most likely
+explanation is a mistake or ambiguity in how the service manual's Table
+3-1 describes the ROM chip layout**, not an error in this project's
+addressing model. Possibly a genuine typo/transcription error in the
+manual itself, or "low half/high half of U9109/U9110" describing a
+physical pin-level board fact (unrelated to how these two already-
+dumped `.bin` files' content maps onto CPU address space) worded in a
+way that reads misleadingly on a literal pass. Either way: **the
+addressing model, function names, and jump targets in this project
+remain unchanged** after two independent rounds of adversarial testing
+(manual capstone spot-checks, then a full competing Ghidra project) -
+this is now considered settled unless a new, different piece of
+primary-source evidence surfaces.
 | `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `docs/acquisition-and-plotting/ram-far-pointer-table.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
 
 ## Option 12 (RS-232) hardware confirmed from the service manual's own Theory of Operation section
