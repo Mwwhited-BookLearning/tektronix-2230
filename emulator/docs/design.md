@@ -829,6 +829,57 @@ it doesn't by itself make the emulator reach it. Finding what code
 path would call `set_comm_queue_busy`/`update_comm_tx_ready_flag` (a
 comm-menu action? a later self-test phase?) is the next real target.
 
+## Interactive front-panel controls: checkboxes, a dropdown, headers, an incoming panel
+
+User requests, in sequence: "for the buttons could I get toggle
+buttons or checkboxes on the display? as well as dropdowns for any
+other front panel display values" - then "I would like headers on
+each of the boxes. and I would like a box right above the outgoing
+serial that shows the incoming button... it only needs to be 2 lines."
+
+**Checkboxes for the 14 genuine independent toggle buttons**
+(`textual.widgets.Checkbox`, one per `InteractiveFrontPanel.BUTTONS`
+entry except the 2 handled specially below), wired via `on_checkbox_
+changed` straight to `dbg.front_panel.set_button()`. **A dropdown for
+the one real mutually-exclusive group**: `A_ONLY`/`B_ONLY` are both
+active-low bits in the same register, and on real hardware pressing
+one physically releases the other - representing them as 2 independent
+checkboxes would allow an impossible "both pressed" state a real front
+panel can't produce. A single 3-option `Select` (`A ONLY`/`BOTH`/
+`B ONLY`) makes the real hardware constraint structural instead of
+just documented.
+
+**Startup sync, not continuous**: `_sync_front_panel_widgets()` reads
+`dbg.front_panel`'s actual idle-baseline state (the real captured
+values already used elsewhere - `SWB2=0x08`, `SWB1=0x44`) and sets
+every checkbox/the dropdown to match, so e.g. `1K_4K`'s checkbox starts
+*checked* (matching the real baseline having that bit set) rather than
+defaulting every control to unchecked and silently misrepresenting the
+panel. Verified via a headless test: `1K_4K` starts `True`, others
+`False`, dropdown starts `A_ONLY` - all matching the documented
+baseline exactly. Checking `MENU` correctly flipped `SWB2` (`0x08` ->
+`0x18`); selecting `B_ONLY` in the dropdown correctly flipped both
+relevant bits at once (`SWB1` `0x44` -> `0x05` - `A_ONLY`'s bit set
+back to inactive, `B_ONLY`'s cleared to active). One acknowledged
+limitation: this sync is startup-only - a button pressed/released via
+a typed `press`/`release` command won't retroactively move its
+checkbox, since the checkboxes are the intended way to drive the panel
+interactively, not a live mirror of every other input path.
+
+**Headers**: every panel (`registers`, the new `incoming`, `front
+panel`, `outgoing`, `log`) now sets `border_title`, so the dashboard is
+self-labeling instead of relying on position/context to tell panels
+apart.
+
+**The incoming panel**: a small `Static` (fixed `height: 4` - a
+border top/bottom plus the requested 2 content lines), showing `dbg.
+uart.incoming_text()` - the RX queue's actual byte contents, the same
+thing the REPL's `incoming` command already showed on request, now
+visible continuously without asking. Folded its refresh into
+`refresh_registers()` itself (called from the same places already:
+after every command, and periodically via `on_progress` during a long
+run) rather than adding a second, easy-to-forget call site.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

@@ -76,6 +76,19 @@ headless via Textual's own test harness (`App.run_test()`) before ever
 touching a real terminal - stepping, the `serial` interrupt-masking
 diagnostic, and `incoming` all behaved identically to the REPL.
 
+**Front-panel controls, live updates, 2026-09-17**: the registers panel
+now updates continuously during any run (not just once it stops), and
+shows a dedicated interrupts section (the CPU's `IF` flag, the Option
+Interrupt Mask Latch's 4 outputs, the UART's enable bits/RxRDY/TxRDY/
+status bits, the INT2 ticker's counts). Front-panel buttons are real
+`Checkbox` widgets now, plus a `Select` dropdown for `HORIZONTAL MODE`
+(the one genuinely mutually-exclusive control, `A ONLY`/`BOTH`/
+`B ONLY`) - both wired straight to `dbg.front_panel`, initialized to
+the real captured idle baseline rather than defaulting to unchecked.
+Every panel has a header (`registers`/`incoming`/`front panel`/
+`outgoing`/`log`), and a new small `incoming` panel shows the RX
+queue's live contents next to the outgoing one.
+
 **Both `interactive.bat` and `tui.bat` now set up their own venv** in
 `emulator\.venv` (created on first run) and install `requirements.txt`
 into it automatically - no manual `pip install` step needed on a fresh

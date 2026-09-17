@@ -24,10 +24,20 @@ import argparse
 
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.widgets import Header, Footer, Static, RichLog, Input
+from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.widgets import Header, Footer, Static, RichLog, Input, Checkbox, Select
 
 from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
+from io_stubs import InteractiveFrontPanel
+
+# The 2 active-low buttons form one mutually-exclusive 3-state group
+# (real hardware: pressing one physically releases the other) - shown
+# as a single dropdown instead of 2 independent checkboxes that could
+# otherwise represent an impossible state (both pressed at once).
+HORIZONTAL_MODE_BUTTONS = ("A_ONLY", "B_ONLY")
+# Every other button is a genuine independent momentary toggle.
+CHECKBOX_BUTTONS = [name for name in InteractiveFrontPanel.BUTTONS
+                    if name not in HORIZONTAL_MODE_BUTTONS]
 
 
 class Tek2230App(App):
@@ -40,7 +50,19 @@ class Tek2230App(App):
         border: solid $accent;
         padding: 1 2;
         height: auto;
-        max-height: 60%;
+        max-height: 40%;
+    }
+    #incoming {
+        border: solid $accent;
+        border-title-align: center;
+        height: 4;
+        padding: 0 1;
+    }
+    #front-panel {
+        border: solid $accent;
+        border-title-align: center;
+        height: auto;
+        max-height: 30%;
     }
     #outgoing {
         border: solid $accent;
@@ -48,6 +70,7 @@ class Tek2230App(App):
     }
     #log {
         border: solid $accent;
+        border-title-align: center;
     }
     Input {
         dock: bottom;
@@ -69,12 +92,20 @@ class Tek2230App(App):
         self.dbg = None
         self._busy = False
         self._outgoing_buffer = []
+        self._suppress_panel_events = False  # see _sync_front_panel_widgets
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Horizontal(id="main"):
             with Vertical(id="side"):
                 yield Static(id="registers")
+                yield Static(id="incoming")
+                with VerticalScroll(id="front-panel"):
+                    yield Select(
+                        [("A ONLY", "A_ONLY"), ("BOTH", "BOTH"), ("B ONLY", "B_ONLY")],
+                        id="horizontal-mode", allow_blank=False, value="A_ONLY")
+                    for name in CHECKBOX_BUTTONS:
+                        yield Checkbox(name, id=f"btn-{name}")
                 yield RichLog(id="outgoing", wrap=True, highlight=False, markup=False, max_lines=5000)
             yield RichLog(id="log", wrap=True, highlight=False, markup=False, max_lines=5000)
         yield Input(placeholder="command (F1 for help) - e.g. step 10, run, "
@@ -84,14 +115,70 @@ class Tek2230App(App):
 
     def on_mount(self):
         self.title = "Tek 2230 Emulator"
+        self.query_one("#registers", Static).border_title = "registers"
+        self.query_one("#incoming", Static).border_title = "incoming serial (UART RX)"
+        self.query_one("#front-panel", VerticalScroll).border_title = "front panel"
         self.query_one("#outgoing", RichLog).border_title = "outgoing serial (UART TX)"
+        self.query_one("#log", RichLog).border_title = "log"
         self.dbg = Debugger(self.args, output=self._sink_from_worker,
                              on_tx=self._on_tx_from_worker,
                              on_progress=self._on_progress_from_worker)
         self._append_log("Tek 2230 TUI debugger. Type a command below "
                           "or press F1 for the full list.")
+        self._sync_front_panel_widgets()
         self.refresh_registers()
         self.query_one(Input).focus()
+
+    # ---- front-panel checkbox/dropdown controls ----------------------
+
+    def _sync_front_panel_widgets(self):
+        """Sets each checkbox/the dropdown to match `dbg.front_panel`'s
+        actual current state - called once at startup so the controls
+        reflect the real idle baseline (`VARIABLES.md`'s live-hardware-
+        confirmed values) instead of defaulting to all-unchecked, which
+        would misrepresent buttons that are genuinely active at idle.
+        Only a startup sync, not continuous - a button pressed/released
+        via a typed `press`/`release` command won't retroactively move
+        its checkbox; the checkboxes are the intended way to drive the
+        panel interactively."""
+        self._suppress_panel_events = True
+        try:
+            fp = self.dbg.front_panel
+            for name in CHECKBOX_BUTTONS:
+                reg, bit, active_low = InteractiveFrontPanel.BUTTONS[name]
+                value = fp.swb2 if reg == "SWB2" else fp.swb1
+                bit_set = bool(value & (1 << bit))
+                pressed = (not bit_set) if active_low else bit_set
+                self.query_one(f"#btn-{name}", Checkbox).value = pressed
+            a_bit = bool(fp.swb1 & 1)       # A_ONLY, active-low
+            b_bit = bool(fp.swb1 & (1 << 6))  # B_ONLY, active-low
+            a_pressed, b_pressed = not a_bit, not b_bit
+            mode = "A_ONLY" if a_pressed else "B_ONLY" if b_pressed else "BOTH"
+            self.query_one("#horizontal-mode", Select).value = mode
+        finally:
+            self._suppress_panel_events = False
+
+    def on_checkbox_changed(self, event: Checkbox.Changed):
+        if self._suppress_panel_events or self.dbg is None:
+            return
+        name = event.checkbox.id.removeprefix("btn-")
+        self.dbg.front_panel.set_button(name, event.value)
+        self._append_log(f"{'pressed' if event.value else 'released'} {name} - "
+                          f"{self.dbg.front_panel.status()}")
+        self.refresh_registers()
+
+    def on_select_changed(self, event: Select.Changed):
+        if self._suppress_panel_events or self.dbg is None or event.select.id != "horizontal-mode":
+            return
+        mode = event.value
+        self.dbg.front_panel.set_button("A_ONLY", mode == "A_ONLY")
+        self.dbg.front_panel.set_button("B_ONLY", mode == "B_ONLY")
+        self._append_log(f"HORIZONTAL MODE -> {mode} - {self.dbg.front_panel.status()}")
+        self.refresh_registers()
+
+    def refresh_incoming(self):
+        text = self.dbg.uart.incoming_text()
+        self.query_one("#incoming", Static).update(text if text else "(RX queue empty)")
 
     # ---- log/registers rendering -----------------------------------
 
@@ -192,6 +279,7 @@ class Tek2230App(App):
         if iv["int2_fired"] is not None:
             text.append(f"  INT2: {iv['int2_fired']} fired, {iv['int2_skipped']} skipped\n")
         self.query_one("#registers", Static).update(text)
+        self.refresh_incoming()
         if s["stop_reason"]:
             self._append_log(f"[stopped: {s['stop_reason']}]")
 
