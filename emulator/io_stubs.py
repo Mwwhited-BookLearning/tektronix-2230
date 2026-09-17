@@ -561,3 +561,68 @@ def seed_comm_nvram_defaults(emu):
                  + MASK_LATCH_SEGMENT.to_bytes(2, "little"))
     for addr in MASK_LATCH_FAR_PTR_ADDRS:
         emu.mem_write(addr, ptr_bytes)
+
+
+class InteractiveDipSwitches:
+    """Live, console/UI-controllable comm-option PARAMETERS DIP
+    switches (1-10) - see `MEMORY_MAP.md`'s RS-232 option board section
+    for the confirmed bit map: switches 1-7 are Parameter Buffer
+    (`0x406BC`) bits 0-6, switches 8-10 are State Buffer (`0x4067C`)
+    bits 3-5. **The exact semantic meaning of most individual switches
+    beyond the confirmed baud-rate nibble is still open** (see
+    `STILL_PENDING_DECODE.md`) - this lets the raw switch pattern be
+    changed and observed without yet knowing what each one does.
+
+    Installed *after* `COMM_OPTION_STUBS`'s fixed baseline values
+    (`comm_param`=`0xF8`, `comm_stat`=`0x7D` - real captured values,
+    see `MEMORY_MAP.md`'s exerciser-screen section) so it only
+    overrides the specific switch bit positions, leaving every other
+    bit (Parameter Buffer's UART SDO bit, State Buffer's PWR INT/
+    INTR+DR/TBRE/diagnostic/DCD bits) at its real captured baseline.
+    Defaults to the switch pattern those same 2 baseline bytes already
+    encode, so installing this changes nothing until a switch is
+    actually toggled."""
+
+    PARAM_ADDR = 0x406BC
+    STATUS_ADDR = 0x4067C
+
+    def __init__(self):
+        # User-specified default, 2026-09-17: "0011000000" (switch 1
+        # through switch 10, left to right) - only switches 3 and 4 on.
+        # This *replaces* COMM_OPTION_STUBS's own baseline-byte-derived
+        # pattern (which was [F,F,F,T,T,T,T,T,T,T]) as the switch-bit
+        # default; the non-switch bits in comm_param/comm_stat (UART
+        # SDO, PWR INT, INTR+DR, TBRE, diagnostic, DCD) are untouched
+        # either way, since this class only ever overrides the switch
+        # bit positions on top of that fixed baseline.
+        self.switches = [False, False, True, True, False, False, False, False, False, False]
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_param_read,
+                     None, self.PARAM_ADDR, self.PARAM_ADDR)
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_status_read,
+                     None, self.STATUS_ADDR, self.STATUS_ADDR)
+
+    def _on_param_read(self, uc_eng, access, address, size, value, user_data):
+        current = uc_eng.mem_read(address, 1)[0] & 0x80  # keep bit7 (UART SDO)
+        for i in range(7):
+            if self.switches[i]:
+                current |= (1 << i)
+        uc_eng.mem_write(address, bytes([current]) * size)
+        return True
+
+    def _on_status_read(self, uc_eng, access, address, size, value, user_data):
+        current = uc_eng.mem_read(address, 1)[0] & ~0x38  # clear bits 3-5
+        for i in range(3):
+            if self.switches[7 + i]:
+                current |= (1 << (3 + i))
+        uc_eng.mem_write(address, bytes([current]) * size)
+        return True
+
+    def set_switch(self, number, on):
+        """`number` is 1-indexed (switch 1 through switch 10)."""
+        self.switches[number - 1] = bool(on)
+
+    def status(self):
+        bits = "".join("1" if s else "0" for s in self.switches)
+        return f"DIP switches 1-10: {bits}"

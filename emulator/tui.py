@@ -45,13 +45,14 @@ class Tek2230App(App):
     #root { height: 1fr; }
     #main { height: 1fr; }
     #side {
-        width: 44;
+        width: 88;
     }
     #registers {
         border: solid $accent;
         padding: 1 2;
         height: auto;
         max-height: 60%;
+        overflow-y: auto;
     }
     #incoming {
         border: solid $accent;
@@ -79,6 +80,16 @@ class Tek2230App(App):
     #horizontal-mode {
         column-span: 8;
         margin-bottom: 1;
+    }
+    #dip-switches {
+        border: solid $accent;
+        border-title-align: center;
+        height: auto;
+        max-height: 20%;
+        overflow-y: auto;
+        grid-size: 10;
+        grid-gutter: 0 1;
+        padding: 1 1;
     }
     Input {
         dock: bottom;
@@ -128,6 +139,9 @@ class Tek2230App(App):
                     id="horizontal-mode", allow_blank=False, value="A_ONLY")
                 for name in CHECKBOX_BUTTONS:
                     yield Checkbox(name, id=f"btn-{name}")
+            with Grid(id="dip-switches"):
+                for n in range(1, 11):
+                    yield Checkbox(f"SW{n}", id=f"dip-{n}")
         yield Input(placeholder="command (F1 for help) - e.g. step 10, run, "
                                  "continue, press MENU, serial ID?\\n ...",
                     id="cmdline")
@@ -138,6 +152,7 @@ class Tek2230App(App):
         self.query_one("#registers", Static).border_title = "registers"
         self.query_one("#incoming", Static).border_title = "incoming serial (UART RX)"
         self.query_one("#front-panel", Grid).border_title = "front panel"
+        self.query_one("#dip-switches", Grid).border_title = "comm option DIP switches (1-10)"
         self.query_one("#outgoing", RichLog).border_title = "outgoing serial (UART TX)"
         self.query_one("#log", RichLog).border_title = "log"
         self.dbg = Debugger(self.args, output=self._sink_from_worker,
@@ -175,13 +190,23 @@ class Tek2230App(App):
             a_pressed, b_pressed = not a_bit, not b_bit
             mode = "A_ONLY" if a_pressed else "B_ONLY" if b_pressed else "BOTH"
             self.query_one("#horizontal-mode", Select).value = mode
+            for n in range(1, 11):
+                self.query_one(f"#dip-{n}", Checkbox).value = self.dbg.dip_switches.switches[n - 1]
         finally:
             self._suppress_panel_events = False
 
     def on_checkbox_changed(self, event: Checkbox.Changed):
         if self._suppress_panel_events or self.dbg is None:
             return
-        name = event.checkbox.id.removeprefix("btn-")
+        widget_id = event.checkbox.id
+        if widget_id.startswith("dip-"):
+            number = int(widget_id.removeprefix("dip-"))
+            self.dbg.dip_switches.set_switch(number, event.value)
+            self._append_log(f"DIP switch {number} -> {'ON' if event.value else 'OFF'} - "
+                              f"{self.dbg.dip_switches.status()}")
+            self.refresh_registers()
+            return
+        name = widget_id.removeprefix("btn-")
         self.dbg.front_panel.set_button(name, event.value)
         self._append_log(f"{'pressed' if event.value else 'released'} {name} - "
                           f"{self.dbg.front_panel.status()}")
@@ -275,24 +300,24 @@ class Tek2230App(App):
         text.append(f"CS:IP:  {s['cs']:04X}:{s['ip']:04X}\n")
         text.append(f"phys:   0x{s['phys']:06X}\n")
         text.append(f"FLAGS:  {s['flags']}\n\n")
-        text.append(f"AX={r['AX']:04X}   BX={r['BX']:04X}\n")
-        text.append(f"CX={r['CX']:04X}   DX={r['DX']:04X}\n")
-        text.append(f"SI={r['SI']:04X}   DI={r['DI']:04X}\n")
-        text.append(f"BP={r['BP']:04X}   SP={r['SP']:04X}\n")
+        text.append(f"AX={r['AX']:04X}   BX={r['BX']:04X}   CX={r['CX']:04X}   DX={r['DX']:04X}\n")
+        text.append(f"SI={r['SI']:04X}   DI={r['DI']:04X}   BP={r['BP']:04X}   SP={r['SP']:04X}\n")
         text.append(f"DS={r['DS']:04X}   ES={r['ES']:04X}   SS={r['SS']:04X}\n\n")
         text.append("next:\n", style="bold")
         text.append(f"  {s['instruction']}\n\n")
         text.append("front panel:\n", style="bold")
         text.append(f"  {s['front_panel']}\n\n")
+        text.append("comm option:\n", style="bold")
+        text.append(f"  {self.dbg.dip_switches.status()}\n\n")
         text.append("uart:\n", style="bold")
         text.append(f"  {s['uart']}\n\n")
         text.append("interrupts:\n", style="bold")
         iv = s["interrupts"]
-        text.append(f"  IF={int(iv['if_flag'])}\n")
-        text.append(f"  mask latch: 0D={iv['mask_0D_dr']:02X} 1D={iv['mask_1D_tbre']:02X} "
+        text.append(f"  IF={int(iv['if_flag'])}   "
+                     f"mask latch: 0D={iv['mask_0D_dr']:02X} 1D={iv['mask_1D_tbre']:02X} "
                      f"2D={iv['mask_2D']:02X} 3D={iv['mask_3D_diag']:02X}\n")
-        text.append(f"  UART enable: RxEN={int(iv['uart_rxen'])} TxEN={int(iv['uart_txen'])}\n")
-        text.append(f"  UART pins:   RxRDY={int(iv['uart_rxrdy'])} TxRDY={int(iv['uart_txrdy'])}\n")
+        text.append(f"  UART enable: RxEN={int(iv['uart_rxen'])} TxEN={int(iv['uart_txen'])}   "
+                     f"pins: RxRDY={int(iv['uart_rxrdy'])} TxRDY={int(iv['uart_txrdy'])}\n")
         text.append(f"  UART status: RX_READY={int(iv['uart_rx_ready_bit'])} "
                      f"TX_READY={int(iv['uart_tx_ready_bit'])} "
                      f"TX_EMPTY={int(iv['uart_tx_empty_bit'])}\n")

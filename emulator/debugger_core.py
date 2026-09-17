@@ -22,6 +22,7 @@ from timer import TickScheduler
 from io_stubs import (CommPresenceProbe, DiagnosticTextCapture,
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
                        FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
+                       InteractiveDipSwitches,
                        ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
@@ -79,6 +80,7 @@ class Debugger:
         self.ticker = TickScheduler(args.tick_interval) if args.tick_interval else None
         self.diag = DiagnosticTextCapture(sink=output)
         self.front_panel = InteractiveFrontPanel()
+        self.dip_switches = InteractiveDipSwitches()
         # `on_tx`: optional live per-byte callback for a front end that
         # wants to display outgoing serial data as it happens (e.g.
         # tui.py's dedicated outgoing panel) rather than only on demand
@@ -127,6 +129,10 @@ class Debugger:
         self.front_panel.install(self.emu, uc)
         if self.args.comm_installed:
             CommPresenceProbe().install(self.emu, uc)
+        # Installed after COMM_OPTION_STUBS's fixed comm_stat/comm_param
+        # values so it only adjusts the switch bit positions on top of
+        # that baseline - see InteractiveDipSwitches's docstring.
+        self.dip_switches.install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat value so
         # it only adjusts bit1 on top of that baseline - see
         # InteractiveUartMock's docstring.
@@ -330,10 +336,22 @@ Commands:
   delete <hex addr>  remove a breakpoint
   breakpoints        list current breakpoints
   regs               reprint the register/status block
-  mem <hex addr> [n] hex-dump n bytes (default 16) at a physical address
+  mem <hex addr> [n] hex-dump n bytes (default 16) at a physical address.
+                     NOTE: this is a raw peek and does not go through
+                     any FixedByteRead/InteractiveUartMock/DipSwitches
+                     read-hook - those only fire for reads the emulated
+                     CPU itself performs during step/run/continue, so a
+                     stubbed register will read back its unmodified
+                     underlying RAM value here (often 0), not the
+                     stubbed value real firmware execution would see
   press <BUTTON>     press a front-panel button (see `buttons`)
   release <BUTTON>   release a front-panel button
   buttons            list button names and current SWB1/SWB2 values
+  dip [n] [on|off]   show all 10 comm-option PARAMETERS DIP switches,
+                     or set switch n (1-10) on/off (default on). Most
+                     switches' individual meaning beyond the confirmed
+                     baud-rate nibble is still open - see
+                     io_stubs.InteractiveDipSwitches's docstring
   serial <text>      queue <text> as incoming bytes, delivered one at a
                      time (paced by instruction count, see `serial-
                      rate`) into the (experimental) mock UART receive
@@ -481,6 +499,18 @@ def dispatch_command(dbg, line):
             return [f"unknown button {rest[0]!r} - see `buttons`"]
     if cmd == "buttons":
         return [dbg.front_panel.status()] + [f"  {name}" for name in InteractiveFrontPanel.BUTTONS]
+    if cmd == "dip":
+        if not rest:
+            return [dbg.dip_switches.status()]
+        try:
+            number = int(rest[0])
+            on = rest[1].lower() in ("on", "1", "true") if len(rest) > 1 else True
+        except (ValueError, IndexError):
+            return ["usage: dip <1-10> [on|off]  (or `dip` alone to show all 10)"]
+        if not 1 <= number <= 10:
+            return ["switch number must be 1-10"]
+        dbg.dip_switches.set_switch(number, on)
+        return [f"switch {number} -> {'ON' if on else 'OFF'} - {dbg.dip_switches.status()}"]
     if cmd == "serial":
         if not rest:
             return ["usage: serial <text>  (\\n \\r \\t \\0 \\\\ escapes supported)"]

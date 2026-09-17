@@ -931,6 +931,79 @@ correctly returns them newest-first and stops at the oldest, walking
 back down 3x returns to each newer entry in turn and finally restores
 an unsent draft that was being typed before navigation started.
 
+## Interactive comm-option DIP switches, and a real testing gotcha found along the way
+
+User request: "add the dip switches for the comm panel so I can see
+their settings." `io_stubs.InteractiveDipSwitches` models the 10
+PARAMETERS DIP switches confirmed in `MEMORY_MAP.md`'s RS-232 option
+board section - switches 1-7 are Parameter Buffer (`0x406BC`) bits
+0-6, switches 8-10 are State Buffer (`0x4067C`) bits 3-5. Installed
+*after* `COMM_OPTION_STUBS`'s fixed baseline bytes (`0xF8`/`0x7D`, real
+captured values) so it only overrides the switch bit positions,
+leaving every other bit (UART SDO, PWR INT, INTR+DR, TBRE, diagnostic,
+DCD) at its real captured value. Defaults decoded directly from those
+same 2 baseline bytes, so installing it changes nothing until a switch
+is actually toggled - confirmed by re-reading `comm_param` with a
+forced CPU-executed instruction and getting the unchanged `0xF8`
+before any switch is flipped. TUI: 10 `Checkbox` widgets in a new
+`#dip-switches` grid below the front-panel one; REPL: `dip [n] [on|
+off]`.
+
+**Real testing gotcha, found while verifying this**: my first
+verification attempt used the REPL's own `mem 406bc 1` command and got
+back `00` - looked like the fix wasn't working at all. It was a test
+methodology bug, not a real one: **Unicorn's `UC_HOOK_MEM_READ` hooks
+only fire for reads the *emulated CPU* performs during step/run/
+continue - `mem`'s own `emu.mem_read()` is a direct host-side peek at
+the underlying RAM byte and never goes through any read-hook at all**,
+so a `FixedByteRead`/`InteractiveUartMock`/`InteractiveDipSwitches`-
+stubbed address always reads back as its raw, usually-zero RAM value
+through `mem`, never the stubbed value real firmware execution would
+see. Confirmed the real fix works by writing a tiny 9-byte test program
+(`mov ax,0x4000; mov es,ax; mov al,es:[0x6BC]`) into RAM and single-
+stepping the CPU through it for real - got the correct `0xF8` (default)
+and `0xF9` (switch 1 ON) exactly as expected. **Added a clear note to
+`mem`'s own help text** so this doesn't cost the same debugging detour
+again - `mem` is a raw peek, not a way to observe stub behavior.
+
+**Default changed same day**: user requested `0011000000` (switches 1-
+10, left to right - only switches 3 and 4 on) as the starting pattern,
+replacing the baseline-byte-derived default above. Only the switch bit
+positions changed; the non-switch bits in `comm_param`/`comm_stat`
+stay at their real captured values either way, since this class only
+ever overrides the switch positions on top of that fixed baseline.
+
+## The interrupts section was always there - it just wasn't reachable
+
+User report: "I still don't see the interrupts and internal flags
+anywhere" - the `interrupts:` section had been in `refresh_registers()`
+since earlier the same day and was confirmed present in headless
+tests, so this needed tracing rather than re-adding. Root cause:
+`#registers` had `height: auto; max-height: 60%` but no `overflow-y`
+set at all, unlike `#front-panel`/`#dip-switches` which already got
+this fix - a plain `Static` with capped height and no `overflow-y`
+just **silently clips** content beyond that cap; there's no scrollbar,
+no error, nothing to indicate more content exists. Confirmed directly
+via a headless test at realistic terminal sizes (`80x24`, `100x25`,
+`120x30`, not just the large sizes earlier tests happened to use):
+`max_scroll_y=4` at every one of them, meaning 4+ lines - including
+the entire `interrupts:` section - were being cut off with no way to
+reach them. Fixed by adding `overflow-y: auto` to `#registers`, the
+same fix already applied to the other 2 grid panels.
+
+## Doubled the sidebar width, more columns per line
+
+User request: "double the with of those boxes and show the values are
+more columns." Changed `#side` from `width: 44` to `width: 88`.
+Reflowed the register dump from 2 registers per line (`AX`/`BX` then
+`CX`/`DX` then `SI`/`DI` then `BP`/`SP`) to 4 per line (`AX BX CX DX`
+on one line, `SI DI BP SP` on the next), and combined 2 pairs of
+previously-separate `interrupts:` lines (`IF`+mask latch, `UART
+enable`+pins) onto shared lines - both changes put the extra width to
+use instead of just leaving it as blank space, and the more compact
+interrupts section helps with the just-fixed clipping/scrolling
+concern too (fewer lines needed for the same information).
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the
