@@ -11,6 +11,7 @@ its display corrupted by a stray direct print.
 """
 import ctypes
 import re
+import time
 
 import capstone
 import unicorn as uc
@@ -56,7 +57,16 @@ def flags_str(fl):
 
 
 class Debugger:
-    def __init__(self, args, output=print, on_tx=None):
+    # How often (wall-clock) a long run offers `on_progress` a chance to
+    # refresh a live display - checked only every PROGRESS_CHECK_EVERY
+    # instructions (a cheap modulo test), not every single one, so this
+    # doesn't add a per-instruction `time.monotonic()` call to the hot
+    # path. 100ms is plenty smooth for a register readout a human is
+    # watching, without flooding a terminal repaint faster than that.
+    PROGRESS_CHECK_EVERY = 1000
+    PROGRESS_INTERVAL_SECONDS = 0.1
+
+    def __init__(self, args, output=print, on_tx=None, on_progress=None):
         self.args = args
         self.output = output
         self.emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
@@ -74,6 +84,13 @@ class Debugger:
         # tui.py's dedicated outgoing panel) rather than only on demand
         # via `uart.outgoing_text()`.
         self.uart = InteractiveUartMock(sink=output, on_tx=on_tx)
+        # `on_progress`: optional callback fired periodically (wall-
+        # clock throttled, see PROGRESS_INTERVAL_SECONDS) during any
+        # step/run/continue, for a front end that wants to show live
+        # register values while a long run is still in flight (e.g.
+        # tui.py refreshing its panel) rather than only once it stops.
+        self.on_progress = on_progress
+        self._last_progress_time = time.monotonic()
         self._low_ram_buffer = None
         self._stop_reason = None
         self._setup_memory()
@@ -117,6 +134,11 @@ class Debugger:
         if self.ticker is not None:
             self.ticker.step(uc_eng)
         self.uart.pump_paced(self.count)
+        if self.on_progress and self.count % self.PROGRESS_CHECK_EVERY == 0:
+            now = time.monotonic()
+            if now - self._last_progress_time >= self.PROGRESS_INTERVAL_SECONDS:
+                self._last_progress_time = now
+                self.on_progress()
         if address in self.breakpoints:
             self._stop_reason = f"breakpoint hit at 0x{address:06X}"
             uc_eng.emu_stop()
@@ -194,6 +216,35 @@ class Debugger:
         insn, _ = self._decode_current()
         return f"{insn.mnemonic} {insn.op_str}".strip() if insn else "<undecodable>"
 
+    def interrupts_status(self):
+        """Interrupt-related state worth watching live: the CPU's own
+        IF flag, the Option Interrupt Mask Latch's 4 outputs (`0D`-`3D`
+        at `0x406F8`-`0x406FB` - `0D`=DR/RX mask, `1D`=TBRE/TX mask,
+        per `docs/comm-rom/rs232-early-investigation.md`), the i8251
+        chip's own Receive/Transmit-Enable command bits and resulting
+        RxRDY/TxRDY pin signals, and the synthetic INT2/NMI ticker's
+        fired/skipped counts."""
+        fl = self.emu.reg_read(x86.UC_X86_REG_EFLAGS)
+        try:
+            mask_bytes = self.emu.mem_read(0x406F8, 4)
+        except uc.UcError:
+            mask_bytes = b"\xFF\xFF\xFF\xFF"  # unmapped - shouldn't happen, flagged visibly
+        chip = self.uart.chip
+        return {
+            "if_flag": bool(fl & 0x200),
+            "mask_0D_dr": mask_bytes[0], "mask_1D_tbre": mask_bytes[1],
+            "mask_2D": mask_bytes[2], "mask_3D_diag": mask_bytes[3],
+            "uart_rxen": bool(chip.command & 0x04),
+            "uart_txen": bool(chip.command & 0x01),
+            "uart_rxrdy": bool(chip.rxrdy_r()),
+            "uart_txrdy": bool(chip.txrdy_r()),
+            "uart_rx_ready_bit": bool(chip.status & 0x02),   # STATUS_RX_READY
+            "uart_tx_ready_bit": bool(chip.status & 0x01),   # STATUS_TX_READY
+            "uart_tx_empty_bit": bool(chip.status & 0x04),   # STATUS_TX_EMPTY
+            "int2_fired": self.ticker.fired if self.ticker else None,
+            "int2_skipped": self.ticker.skipped if self.ticker else None,
+        }
+
     def snapshot(self):
         """Everything needed to render a status block/panel, as plain
         data rather than pre-formatted text - the REPL and the TUI each
@@ -207,9 +258,20 @@ class Debugger:
             "regs": regs, "flags": flags_str(fl),
             "front_panel": self.front_panel.status(),
             "uart": self.uart.status(),
+            "interrupts": self.interrupts_status(),
             "instruction": self.current_instruction_text(),
             "stop_reason": stop_reason,
         }
+
+    @staticmethod
+    def _interrupts_line(iv):
+        int2 = f"INT2 {iv['int2_fired']}/{iv['int2_skipped']}" if iv["int2_fired"] is not None else "INT2 off"
+        return (f"  IF={int(iv['if_flag'])}  mask 0D={iv['mask_0D_dr']:02X} 1D={iv['mask_1D_tbre']:02X} "
+                f"2D={iv['mask_2D']:02X} 3D={iv['mask_3D_diag']:02X}  "
+                f"UART RxEN={int(iv['uart_rxen'])} TxEN={int(iv['uart_txen'])} "
+                f"RxRDY={int(iv['uart_rxrdy'])} TxRDY={int(iv['uart_txrdy'])}  "
+                f"[RX_READY={int(iv['uart_rx_ready_bit'])} TX_READY={int(iv['uart_tx_ready_bit'])} "
+                f"TX_EMPTY={int(iv['uart_tx_empty_bit'])}]  {int2}")
 
     def status_lines(self):
         """REPL-style multi-line text block - see `snapshot()` for the
@@ -223,6 +285,7 @@ class Debugger:
             f"  SI={r['SI']:04X} DI={r['DI']:04X} BP={r['BP']:04X} SP={r['SP']:04X}",
             f"  DS={r['DS']:04X} ES={r['ES']:04X} SS={r['SS']:04X}"
             f"  |  {s['front_panel']}  |  {s['uart']}",
+            self._interrupts_line(s["interrupts"]),
             f"  -> {s['instruction']}",
         ]
         if s["stop_reason"]:
@@ -280,6 +343,11 @@ Commands:
   uart               show the mock UART's pending RX queue and captured
                      TX bytes (writes to the same register - see
                      `incoming`/`outgoing`)
+  interrupts         show the CPU's IF flag, the Option Interrupt Mask
+                     Latch's 4 outputs, the UART's Rx/TxEN command bits
+                     and resulting RxRDY/TxRDY signals, and the
+                     synthetic INT2 ticker's fired/skipped counts -
+                     also shown continuously in `regs`/the TUI panel
   incoming           show the actual byte contents still queued for RX
                      (not yet consumed by a real read)
   outgoing           show every byte captured on the (write) side of
@@ -422,6 +490,8 @@ def dispatch_command(dbg, line):
         return [f"pacing set to {dbg.uart.instructions_per_byte} instructions/byte"]
     if cmd == "uart":
         return [dbg.uart.status()]
+    if cmd == "interrupts":
+        return [dbg._interrupts_line(dbg.interrupts_status())]
     if cmd == "incoming":
         text = dbg.uart.incoming_text()
         return [text if text else "(RX queue empty)"]

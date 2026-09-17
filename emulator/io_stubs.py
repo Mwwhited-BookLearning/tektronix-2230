@@ -482,7 +482,13 @@ class InteractiveUartMock:
 
     def status(self):
         rx = f"RX queue: {len(self.queue)} byte(s) pending, next={chr(self.queue[0])!r}" if self.queue else "RX queue empty"
-        return (f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen, "
+        # No real backlog concept on the TX side - data_w() completes
+        # "instantly" (see i8251.py's docstring on why), so there's
+        # never more than the single byte in the chip's own TX holding
+        # register at once. "TX queue" here means the same thing
+        # `outgoing_text()` shows: everything ever transmitted.
+        tx = f"TX queue: {len(self.tx_log)} byte(s) sent"
+        return (f"{rx}, {len(self.rx_log)} consumed | {tx} | "
                 f"chip status=0x{self.chip.status:02X}, "
                 f"pacing={self.instructions_per_byte} instrs/byte")
 

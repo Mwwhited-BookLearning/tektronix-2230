@@ -86,7 +86,8 @@ class Tek2230App(App):
         self.title = "Tek 2230 Emulator"
         self.query_one("#outgoing", RichLog).border_title = "outgoing serial (UART TX)"
         self.dbg = Debugger(self.args, output=self._sink_from_worker,
-                             on_tx=self._on_tx_from_worker)
+                             on_tx=self._on_tx_from_worker,
+                             on_progress=self._on_progress_from_worker)
         self._append_log("Tek 2230 TUI debugger. Type a command below "
                           "or press F1 for the full list.")
         self.refresh_registers()
@@ -103,6 +104,13 @@ class Tek2230App(App):
         thread (see `_run_command`) every time the UART transmits a
         byte, live, not just retrievable on request via `outgoing`."""
         self.call_from_thread(self._append_outgoing_byte, byte)
+
+    def _on_progress_from_worker(self):
+        """`Debugger`'s `on_progress` callback - fires periodically
+        (wall-clock throttled inside `Debugger`, not here) during any
+        step/run/continue, so the registers panel updates live while a
+        long run is still in flight instead of only once it stops."""
+        self.call_from_thread(self.refresh_registers)
 
     def _append_outgoing_byte(self, byte):
         """Buffers into complete lines before writing, the same way
@@ -170,7 +178,19 @@ class Tek2230App(App):
         text.append("front panel:\n", style="bold")
         text.append(f"  {s['front_panel']}\n\n")
         text.append("uart:\n", style="bold")
-        text.append(f"  {s['uart']}\n")
+        text.append(f"  {s['uart']}\n\n")
+        text.append("interrupts:\n", style="bold")
+        iv = s["interrupts"]
+        text.append(f"  IF={int(iv['if_flag'])}\n")
+        text.append(f"  mask latch: 0D={iv['mask_0D_dr']:02X} 1D={iv['mask_1D_tbre']:02X} "
+                     f"2D={iv['mask_2D']:02X} 3D={iv['mask_3D_diag']:02X}\n")
+        text.append(f"  UART enable: RxEN={int(iv['uart_rxen'])} TxEN={int(iv['uart_txen'])}\n")
+        text.append(f"  UART pins:   RxRDY={int(iv['uart_rxrdy'])} TxRDY={int(iv['uart_txrdy'])}\n")
+        text.append(f"  UART status: RX_READY={int(iv['uart_rx_ready_bit'])} "
+                     f"TX_READY={int(iv['uart_tx_ready_bit'])} "
+                     f"TX_EMPTY={int(iv['uart_tx_empty_bit'])}\n")
+        if iv["int2_fired"] is not None:
+            text.append(f"  INT2: {iv['int2_fired']} fired, {iv['int2_skipped']} skipped\n")
         self.query_one("#registers", Static).update(text)
         if s["stop_reason"]:
             self._append_log(f"[stopped: {s['stop_reason']}]")

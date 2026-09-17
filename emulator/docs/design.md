@@ -737,6 +737,49 @@ against. Fixed with one line (`inp.focus()` inside `_set_busy(False)`);
 verified with a 5-command sequential session (`step`, `serial`,
 `incoming`, `uart`, `regs`) all producing correct output in order.
 
+## Live-updating registers, an interrupts/mask panel, and real hardware ground truth, 2026-09-17
+
+User request: "I would like the registers and so on updated as the
+system runs in the emulator so you can see the running values." Added
+`Debugger.on_progress` - a callback fired periodically (wall-clock
+throttled to 100ms, checked only every 1000 instructions so the check
+itself doesn't add per-instruction overhead) during any step/run/
+continue. `tui.py` wires this to `refresh_registers()`, so the panel
+now updates live during a long `continue` instead of only once it
+stops - verified via a headless test confirming the rendered widget
+text (not just the internal counter) changes over time during a run.
+
+**Then**: "add the interrupts and their masks to that area." Added
+`Debugger.interrupts_status()`/`_interrupts_line()` - the CPU's IF
+flag, the Option Interrupt Mask Latch's 4 outputs (`0D`-`3D`, read
+live from `0x406F8`-`0x406FB`), the UART's own Rx/TxEN command bits
+and resulting RxRDY/TxRDY pin signals, and the synthetic INT2 ticker's
+fired/skipped counts - shown in both the REPL's `regs`/`interrupts`
+commands and the TUI panel continuously. **Then**: "the TX queue
+should be shows as well" - relabeled the UART status line for RX/TX
+symmetry (`RX queue: N pending` / `TX queue: N sent`, the TX side
+having no real backlog concept since `data_w()` completes "instantly"
+- see `i8251.py`) and added explicit `RX_READY`/`TX_READY`/`TX_EMPTY`
+status-bit display alongside the pin-level RxRDY/TxRDY signals.
+
+**Real hardware ground truth, same day**: user connected a real scope
+to COM3 and asked to see what the real device does. Probed with
+`pyserial` across several baud rates to find the current DIP-switch
+setting; user confirmed **4800 baud, 8N1, DTR+RTS**. Got a completely
+clean, live-reconfirmed response set matching `docs/comm-rom/rs232-
+breakthrough.md`'s protocol exactly: `ID?` -> `ID TEK/2230,V81.1,
+VERS:14;`, `EVEnt?` -> `EVENT 0;`, `SET?` -> the full settings dump -
+also newly confirming 4800 baud (not just the previously-documented
+1200) works reliably with hardware flow control asserted. This is now
+the live, freshly-verified target the emulator work is aiming to
+reproduce, once the RS-232 interrupt path is actually reachable.
+
+**User confirmed the plan going forward**: "yes, I want you to fix the
+emulator... if you step the code and see an address or io that isn't
+functioning that you can't figure out, let me know and I will check
+the hardware from the service manual" - establishing the collaborative
+loop for the NVRAM pre-seeding fix and whatever else surfaces next.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the
