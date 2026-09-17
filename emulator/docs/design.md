@@ -1004,6 +1004,52 @@ use instead of just leaving it as blank space, and the more compact
 interrupts section helps with the just-fixed clipping/scrolling
 concern too (fewer lines needed for the same information).
 
+## The `overflow-y` fix on a bare `Static` didn't actually work - a real regression caught from a screenshot
+
+User sent a screenshot of a live session running the just-committed
+fix - the registers box's own border had shrunk to end right after
+`next:`, with `front panel:`/`comm option:`/`uart:`/`interrupts:` not
+merely scrolled-away but genuinely absent from the visible box, no
+scrollbar in sight. The log panel alongside it showed real, current
+DIP-switch activity, confirming this was the latest code, not a stale
+window - so the previous "fix" (`overflow-y: auto` added directly to
+`#registers`, a bare `Static`) needed to be re-diagnosed, not trusted
+from the earlier numeric-only headless check.
+
+**Root cause, found by testing more carefully this time**: `Static`
+with `height: auto`/`max-height` and `overflow-y: auto` together is an
+inherently circular sizing problem - a `Static`'s virtual size for its
+own scrolling isn't a robust, independently-computed value the way a
+container's (like `Grid`, holding real laid-out child widgets) is. A
+follow-up headless check exposed the same bug numerically too:
+`virtual_size.height` came back *exactly equal* to `region.height` at
+every tested terminal size (`13`, `7`, `6`, `6`) even though
+`max_scroll_y` claimed `4` more lines existed - an internally
+inconsistent result that should have been the tell the first time,
+not just the nonzero `max_scroll_y` alone.
+
+**Real fix**: wrapped the `Static` in a `VerticalScroll` container
+(`#registers-scroll`, holding the actual border/height/`overflow-y`
+this time) - the standard, well-tested Textual idiom for "fixed
+viewport, scrollable arbitrary content," rather than trying to make a
+bare content widget scroll itself via CSS alone. Re-verified with the
+same 4 terminal sizes: `virtual_size.height` is now a *consistent 29*
+at every size (the genuine, correctly-measured full content height,
+independent of viewport), and `scroll_end()` reaches the true maximum
+scroll position with all 4 sections confirmed present - a materially
+different and actually-trustworthy result compared to the earlier
+check. The box's own visible height stays a real, sometimes-small
+value at smaller terminals (many panels now compete for limited rows),
+but everything is reachable by scrolling rather than a shrinking
+border silently discarding content.
+
+## Doubled the register columns again
+
+User request: "you can double the columns for the register again."
+All 8 general-purpose registers (`AX`-`SP`) now share a single line
+instead of 2 lines of 4 - the doubled sidebar width from earlier the
+same day has room for it.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

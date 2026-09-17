@@ -24,7 +24,7 @@ import argparse
 
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical, Grid
+from textual.containers import Horizontal, Vertical, VerticalScroll, Grid
 from textual.widgets import Header, Footer, Static, RichLog, Input, Checkbox, Select
 
 from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
@@ -47,12 +47,15 @@ class Tek2230App(App):
     #side {
         width: 88;
     }
-    #registers {
+    #registers-scroll {
         border: solid $accent;
+        border-title-align: center;
+        height: 60%;
+    }
+    #registers {
         padding: 1 2;
+        width: 1fr;
         height: auto;
-        max-height: 60%;
-        overflow-y: auto;
     }
     #incoming {
         border: solid $accent;
@@ -129,7 +132,8 @@ class Tek2230App(App):
         with Vertical(id="root"):
             with Horizontal(id="main"):
                 with Vertical(id="side"):
-                    yield Static(id="registers")
+                    with VerticalScroll(id="registers-scroll"):
+                        yield Static(id="registers")
                     yield Static(id="incoming")
                     yield RichLog(id="outgoing", wrap=True, highlight=False, markup=False, max_lines=5000)
                 yield RichLog(id="log", wrap=True, highlight=False, markup=False, max_lines=5000)
@@ -149,7 +153,7 @@ class Tek2230App(App):
 
     def on_mount(self):
         self.title = "Tek 2230 Emulator"
-        self.query_one("#registers", Static).border_title = "registers"
+        self.query_one("#registers-scroll", VerticalScroll).border_title = "registers"
         self.query_one("#incoming", Static).border_title = "incoming serial (UART RX)"
         self.query_one("#front-panel", Grid).border_title = "front panel"
         self.query_one("#dip-switches", Grid).border_title = "comm option DIP switches (1-10)"
@@ -300,8 +304,8 @@ class Tek2230App(App):
         text.append(f"CS:IP:  {s['cs']:04X}:{s['ip']:04X}\n")
         text.append(f"phys:   0x{s['phys']:06X}\n")
         text.append(f"FLAGS:  {s['flags']}\n\n")
-        text.append(f"AX={r['AX']:04X}   BX={r['BX']:04X}   CX={r['CX']:04X}   DX={r['DX']:04X}\n")
-        text.append(f"SI={r['SI']:04X}   DI={r['DI']:04X}   BP={r['BP']:04X}   SP={r['SP']:04X}\n")
+        text.append(f"AX={r['AX']:04X}   BX={r['BX']:04X}   CX={r['CX']:04X}   DX={r['DX']:04X}   "
+                     f"SI={r['SI']:04X}   DI={r['DI']:04X}   BP={r['BP']:04X}   SP={r['SP']:04X}\n")
         text.append(f"DS={r['DS']:04X}   ES={r['ES']:04X}   SS={r['SS']:04X}\n\n")
         text.append("next:\n", style="bold")
         text.append(f"  {s['instruction']}\n\n")
