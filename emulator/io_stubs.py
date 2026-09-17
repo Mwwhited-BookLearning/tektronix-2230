@@ -514,3 +514,50 @@ class InteractiveUartMock:
             else:
                 out.append(f"\\x{b:02x}")
         return "".join(out)
+
+
+# Physical addresses of 2 RAM-resident far-pointer variables in the
+# comm ROM's own flat variable space (`[0x6D6]`, `[0x6E2]` - ES=0x8F80
+# convention, confirmed via `[0x712]` already living at physical
+# 0x8FF12) that `set_comm_flow_hold`/`set_comm_queue_busy`/`update_
+# comm_tx_ready_flag` all dereference to reach the Option Interrupt
+# Mask Latch (`0x406F8`-`0x406FB`) at offsets +0/+1/+3 - matching all
+# 3 of that latch's software-driven outputs (`0D`/`1D`/`3D`; `2D` is a
+# hardware-driven modem-control line, never toggled by code, per the
+# schematic trace). **No write to either variable exists anywhere in
+# this project's currently-decoded comm ROM** - confirmed by grepping
+# the full disassembly, only the 2 far-pointer *reads* (`les di, [...]`)
+# are ever found. This project's own account of why: `0x88000-0x8FFFF`
+# is genuine battery-backed nonvolatile RAM (Table 3-1) - a real,
+# already-in-service unit almost certainly has this pointer written
+# once at manufacturing/first power-up and never again, relying on the
+# battery to hold it forever. This emulator has no NVRAM-persistence
+# model, so a fresh run starts both addresses at zero - confirmed
+# directly 2026-09-16 (`mem 8fed6 4` / `mem 8fee2 4` both read `00 00
+# 00 00`) - meaning any comm-ROM code that dereferences these pointers
+# would silently corrupt the Interrupt Vector Table (physical
+# `0x00000`) instead of reaching the Interrupt Mask Latch at all.
+MASK_LATCH_FAR_PTR_ADDRS = (0x8FED6, 0x8FEE2)
+MASK_LATCH_SEGMENT = 0x4000
+MASK_LATCH_OFFSET = 0x06F8
+
+
+def seed_comm_nvram_defaults(emu):
+    """Writes the plausible factory-calibrated far-pointer value real,
+    already-in-service hardware would have persisted in nonvolatile
+    RAM - see `MASK_LATCH_FAR_PTR_ADDRS`'s comment for why this is
+    needed at all. **This is the single most load-bearing, least-
+    confirmed assumption in this fix** - the segment:offset value
+    itself (`0x4000:0x06F8`) is inferred from this project's own
+    established `ES=0x4000` I/O-window convention (used 31+ times
+    elsewhere per `MEMORY_MAP.md`) plus the already-confirmed `0x406F8`
+    physical address, not read from a real captured NVRAM dump. If
+    comm-ROM execution reaches these functions and still behaves
+    wrong, this exact value is the first thing to question - flag it
+    for a live-hardware NVRAM read if a way to capture one ever comes
+    up (e.g. an EPROM/RAM reader on the physical `U1242`/Option Memory
+    board chips)."""
+    ptr_bytes = (MASK_LATCH_OFFSET.to_bytes(2, "little")
+                 + MASK_LATCH_SEGMENT.to_bytes(2, "little"))
+    for addr in MASK_LATCH_FAR_PTR_ADDRS:
+        emu.mem_write(addr, ptr_bytes)

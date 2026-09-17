@@ -18,7 +18,8 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import CommPresenceProbe, DiagnosticTextCapture, install_all_fixed_reads
+from io_stubs import (CommPresenceProbe, DiagnosticTextCapture,
+                      install_all_fixed_reads, seed_comm_nvram_defaults)
 
 # A genuine 8086 (20 address lines, unlike 286+) wraps any computed
 # physical address above 1MB back into the bottom of the address space
@@ -131,6 +132,11 @@ def main():
         print(f"mapped {region.name:28s} 0x{region.start:06X}-"
               f"0x{region.start + region.size - 1:06X} "
               f"{'RW' if region.writable else 'RO'}")
+
+    # See io_stubs.seed_comm_nvram_defaults's docstring - without this,
+    # comm-ROM code that dereferences [0x6D6]/[0x6E2] would corrupt the
+    # IVT instead of reaching the Interrupt Mask Latch.
+    seed_comm_nvram_defaults(emu)
 
     if args.comm_installed:
         CommPresenceProbe().install(emu, uc)

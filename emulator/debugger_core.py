@@ -22,7 +22,7 @@ from timer import TickScheduler
 from io_stubs import (CommPresenceProbe, DiagnosticTextCapture,
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
                        FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
-                       ANSI_GRAY, ANSI_RESET)
+                       ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
 HMA_ALIAS_SIZE = 0x10000
@@ -114,6 +114,12 @@ class Debugger:
             self.emu.mem_map(region.start, region.size, perms)
             if region.data is not None:
                 self.emu.mem_write(region.start, region.data)
+        # See io_stubs.seed_comm_nvram_defaults's docstring - without
+        # this, comm-ROM code that dereferences [0x6D6]/[0x6E2] would
+        # corrupt the IVT instead of reaching the Interrupt Mask Latch,
+        # since this emulator has no NVRAM-persistence model and a
+        # fresh run starts that RAM at zero.
+        seed_comm_nvram_defaults(self.emu)
 
     def _setup_stubs(self):
         for address, value, label in DISPLAY_CHIP_STUBS + COMM_OPTION_STUBS + FRONT_PANEL_STUBS:

@@ -780,6 +780,55 @@ functioning that you can't figure out, let me know and I will check
 the hardware from the service manual" - establishing the collaborative
 loop for the NVRAM pre-seeding fix and whatever else surfaces next.
 
+## The NVRAM pre-seeding fix, and verifying it the right way
+
+Implemented the fix proposed above: `io_stubs.seed_comm_nvram_defaults()`
+writes the plausible factory-calibrated far pointer (`0x4000:0x06F8`,
+matching this project's own established `ES=0x4000` I/O-window
+convention plus the already-confirmed `0x406F8` Interrupt Mask Latch
+address) into both `[0x6D6]`/`[0x6E2]` (physical `0x8FED6`/`0x8FEE2`)
+at startup, in both `Debugger._setup_memory()` and `emu.py`'s own
+setup. **Flagged clearly in the function's own docstring as the single
+least-confirmed assumption in this fix** - the value is inferred, not
+read from a real captured NVRAM dump - per the user's own instruction
+to flag anything uncertain rather than guess silently.
+
+**Verifying this needed a real forced-call test, not just re-running
+the boot trace** - the natural cold-boot path still doesn't reach
+`set_comm_queue_busy` (confirmed separately, unrelated to this fix), so
+proving the fix actually works meant manually constructing a far-call
+stack frame and jumping straight to it. **Got the calling convention
+wrong on the first attempt** - pushed the return CS/IP and the
+parameter in the wrong order relative to what `[bp+6]` needs (the
+parameter must be pushed *first*, ending up at the *highest* stack
+offset, with the CALL FAR-pushed CS/IP landing at bp+4/bp+2 in that
+order) - caught immediately because execution landed at a nonsense
+`BEEF:0000` instead of the expected dummy return address, a clear
+signal the stack frame was wrong rather than the fix. **Also forgot to
+set `DS`** to the comm ROM's own flat-variable segment (`0x8F80`) on
+the first pass, which would have made `[0x6E2]` resolve against the
+wrong base entirely - fixed before drawing any conclusion from a
+result that would have been meaningless otherwise.
+
+**With both test-setup bugs fixed, the real result is clean and
+decisive**: calling `set_comm_queue_busy(0)` (the disengage/unmask
+path) writes `01` to *both* `0D` and `1D` (unmasking `DR` and `TBRE`)
+at the real Interrupt Mask Latch address, executes cleanly through to
+the expected far return, and the Interrupt Vector Table is
+byte-for-byte unchanged before and after (`00000000` both times) -
+exactly the behavior real hardware would show, and definitively not
+the IVT-corrupting behavior the zero-initialized pointer would have
+caused before this fix. The full self-test sequence was also re-
+verified to still complete identically (590 TX bytes) with the fix in
+place, confirming it doesn't disturb anything already working.
+
+**Still open**: the natural boot trace itself still doesn't call this
+function (or anything else that would unmask the RS-232 interrupt) -
+this fix makes the *mechanism* correct once something does reach it,
+it doesn't by itself make the emulator reach it. Finding what code
+path would call `set_comm_queue_busy`/`update_comm_tx_ready_flag` (a
+comm-menu action? a later self-test phase?) is the next real target.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the
