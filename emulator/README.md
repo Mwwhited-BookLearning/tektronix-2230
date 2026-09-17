@@ -82,6 +82,20 @@ into it automatically - no manual `pip install` step needed on a fresh
 machine. `emu.py`/`interactive.py`/`tui.py` can still be run directly
 with `python` if you're managing your own environment.
 
+**Real i8251 UART core, 2026-09-16**: `i8251.py` is a byte-oriented
+port of MAME's actual `i8251.cpp`/`.h` (fetched from source, BSD-3-
+Clause) - the Mode/Command register state machine and RxRDY/TxRDY/
+status-bit semantics are faithful to the real chip, not approximated.
+`InteractiveUartMock` now drives this core: `0x406F0`=Data,
+`0x406F1`=Control/Status (matching the confirmed `BA0`->`A0` UART
+wiring), with RxRDY/TxRDY mirrored into the Option Status Latch and
+`INT255` firing on RxRDY going high (gated on the Interrupt Mask
+Latch). Unit-tested standalone before integration; re-verified the
+full self-test sequence still completes identically through the new
+TX path. See `docs/design.md`'s 2026-09-16 section for what's ported
+faithfully vs. deliberately simplified (no bit-level serial-line
+clocking, since this emulator only ever injects/observes whole bytes).
+
 Not to be confused with `decompile/`, the Ghidra static-analysis
 project (see `docs/architecture/ghidra-project.md`) - that's a second
 disassembler/cross-check tool; this is dynamic execution.

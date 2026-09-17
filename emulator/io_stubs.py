@@ -279,86 +279,107 @@ class InteractiveFrontPanel:
 
 
 class InteractiveUartMock:
-    """EXPERIMENTAL, best-effort mock of the comm-option UART's receive
-    path for interactive serial-message injection (`serial <text>` in
-    interactive.py). **Not a validated hardware model** - this project
-    hasn't confirmed which of the 8 "Option UART/GPIB chips" registers
-    (`0x406F0`-`0x406F7`, Table 3-1) is genuinely the receive-data
-    register, nor exercised the comm ROM's real byte-reception code
-    path in any emulator run to date (see `docs/comm-rom/rs232-early-
-    investigation.md`'s still-open questions). This is a plausible
-    scaffold for experimentation, not a confirmed register map.
+    """A real 8251-family register model (`i8251.I8251`, ported from
+    MAME's `i8251.cpp` - see that module's docstring) standing in for
+    the comm option's UART, for interactive serial-message injection
+    (`serial <text>` in interactive.py/tui.py).
 
-    Treats `0x406F0` as the RX data register (the same address `write_
-    readout_port_byte` uses for diagnostic-text *output* - see
-    `MEMORY_MAP.md`'s still-open puzzle about that overlap, which this
-    mock does not resolve either way) and Option Status Latch bit1
-    (`0x4067C`, documented as "UART INTR+DR") as the byte-ready flag,
-    clearing it once the injected queue drains. Installed *after*
-    `COMM_OPTION_STUBS`' fixed `comm_stat` value so it can adjust just
-    bit1 on top of that baseline rather than replacing the whole byte -
-    Unicorn calls same-address read hooks in installation order, so
-    this only works correctly if installed second.
+    **Register mapping** (best-justified, not independently confirmed
+    against a live capture): `0x406F0` = Data register, `0x406F1` =
+    Control/Status register - the standard 8251-family convention
+    (`BA0` selects data vs. control), matching this project's own
+    confirmed `BA0`->`A0` UART wiring (`MEMORY_MAP.md`'s RS-232 option
+    board section). This makes `write_readout_port_byte`'s already-
+    confirmed diagnostic-text writes to `0x406F0` a genuine, literal
+    UART TX data write under this model - consistent with, not
+    contradicting, that earlier finding. The other 6 addresses in the
+    `0x406F0`-`0x406F7` block are left unmodeled (plausibly the GPIB
+    controller's own registers on a GPIB-optioned unit, per this
+    project's own still-open notes on that address range).
 
-    **2026-09-16 addition**: real hardware doesn't just leave a status
-    bit lying around for software to notice whenever it happens to
-    poll - the UART actively asserts its interrupt line (`INTR`+`DR`,
-    routed through `INT255` per `docs/interrupts/ivt-and-int255.md`)
-    the moment a byte arrives. A passive status-bit stub can never
-    trigger a code path that's genuinely interrupt-driven rather than
-    polled - confirmed empirically 2026-09-16: injecting bytes and
-    running 40M further instructions left the queue completely
-    untouched, exactly the outcome you'd predict from a purely-passive
-    stub regardless of whether the real firmware is interrupt-driven.
-    So `inject()` now also tries to fire `INT255` (via `timer.
-    fire_interrupt`, the same mechanism `TickScheduler` already uses
-    for `INT2`), gated on the Option Interrupt Mask Latch's `0D`
-    output (`0x406F8`, documented as the `DR`/RX-ready mask - see
-    `docs/comm-rom/rs232-early-investigation.md`) being nonzero
-    (unmasked). **The exact bit-level write convention for that mask
-    output hasn't been re-traced in this pass** - `set_comm_queue_busy`
-    (`0x8009B`) writes it through a RAM-resident far pointer
-    (`[0x6E2]`) whose own initialization wasn't tracked down here, so
-    this checks "is the byte nonzero" as a reasonable approximation of
-    "has firmware unmasked it," not a fully re-confirmed bit convention."""
+    **RxRDY/TxRDY are also mirrored into the Option Status Latch**
+    (`0x4067C`, `BD1`="UART INTR+DR", `BD2`="UART TBRE" per the
+    schematic-traced bit map) on top of `COMM_OPTION_STUBS`' fixed
+    baseline - real firmware may poll status this way instead of (or
+    in addition to) reading the UART's own status register directly.
+
+    **INT255 on RxRDY**, same mechanism as before: real hardware
+    doesn't just leave a status bit lying around for software to poll
+    - the UART actively asserts its interrupt line the moment a byte
+    arrives. Firing is gated on the Option Interrupt Mask Latch's `0D`
+    output (`0x406F8`) being nonzero - confirmed empirically 2026-09-16
+    that a purely passive stub (the pre-i8251-core version of this
+    class) never gets consumed even 40M+ instructions after injection,
+    exactly what you'd expect if the real path is interrupt-driven.
+    **The exact bit-level write convention for that mask output hasn't
+    been re-traced** - `set_comm_queue_busy` (`0x8009B`) writes it
+    through a RAM-resident far pointer (`[0x6E2]`) whose own
+    initialization wasn't tracked down here, so this checks "is the
+    byte nonzero," a reasonable approximation rather than a
+    re-confirmed bit convention."""
 
     DATA_ADDR = 0x406F0
-    STATUS_ADDR = 0x4067C
-    DR_BIT = 0x02
+    CONTROL_ADDR = 0x406F1
+    STATE_BUFFER_ADDR = 0x4067C
+    RX_MIRROR_BIT = 0x02  # BD1 = "UART INTR+DR"
+    TX_MIRROR_BIT = 0x04  # BD2 = "UART TBRE"
     MASK_LATCH_ADDR = 0x406F8
 
     def __init__(self, sink=print):
+        from i8251 import I8251
+        self.chip = I8251()
+        self.chip.rxrdy_handler = self._on_rxrdy
+        self.chip.tx_byte_handler = self._on_tx_byte
         self.queue = bytearray()
         self.rx_log = []   # bytes actually popped by a real read (confirms consumption)
-        self.tx_log = []   # bytes written to the same address, from ANY code path
+        self.tx_log = []   # bytes the chip has transmitted
         self._emu = None
         self.sink = sink
 
     def install(self, emu, uc_module):
         self._emu = emu
-        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_status_read,
-                     None, self.STATUS_ADDR, self.STATUS_ADDR)
         emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_data_read,
                      None, self.DATA_ADDR, self.DATA_ADDR)
-        # A genuine MEM_WRITE hook on the address itself, not tied to
-        # one specific calling instruction the way DiagnosticTextCapture
-        # is (it only watches write_readout_port_byte's own instruction)
-        # - this catches a write from *any* code path that touches this
-        # address, which today is still just that one confirmed writer,
-        # but wouldn't be blind to a second one if the comm ROM's own
-        # code ever also writes here.
         emu.hook_add(uc_module.UC_HOOK_MEM_WRITE, self._on_data_write,
                      None, self.DATA_ADDR, self.DATA_ADDR)
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_control_read,
+                     None, self.CONTROL_ADDR, self.CONTROL_ADDR)
+        emu.hook_add(uc_module.UC_HOOK_MEM_WRITE, self._on_control_write,
+                     None, self.CONTROL_ADDR, self.CONTROL_ADDR)
+        # Mirror RxRDY/TxRDY into the State Buffer on top of whatever
+        # COMM_OPTION_STUBS's fixed comm_stat value already set -
+        # Unicorn calls same-address read hooks in installation order,
+        # so this only adjusts bits, it doesn't need to be installed
+        # in any particular order relative to that stub (it re-reads
+        # the current byte each time rather than assuming a baseline).
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_state_buffer_read,
+                     None, self.STATE_BUFFER_ADDR, self.STATE_BUFFER_ADDR)
 
     def inject(self, text):
-        was_empty = not self.queue
         self.queue.extend(text.encode("ascii", errors="replace"))
-        if was_empty and self.queue:
+        self._pump_queue()
+
+    def _pump_queue(self):
+        """Hand the next queued byte to the chip once its 1-byte RX
+        holding register is free - real 8251-family hardware has no
+        FIFO, so a second byte arriving before the first is read is a
+        genuine overrun (`self.chip.receive_byte` already models
+        this), not something to queue past."""
+        from i8251 import STATUS_RX_READY
+        if self.queue and not (self.chip.status & STATUS_RX_READY):
+            byte = self.queue.pop(0)
+            self.chip.receive_byte(byte)
+
+    def _on_rxrdy(self, level):
+        if level:
             self._try_fire_interrupt()
+
+    def _on_tx_byte(self, byte):
+        self.tx_log.append(byte)
 
     def _try_fire_interrupt(self):
         """Simulate the real UART asserting its interrupt line the
-        moment new data arrives, gated on the DR-mask output being
+        moment RxRDY goes high, gated on the DR-mask output being
         unmasked - see the class docstring for what's approximated
         here vs. fully re-confirmed."""
         if self._emu is None:
@@ -382,24 +403,34 @@ class InteractiveUartMock:
             self.sink(f"{ANSI_WHITE}[SERIAL] INT255 not delivered (IF clear "
                       f"or vector not installed){ANSI_RESET}")
 
-    def _on_status_read(self, uc_eng, access, address, size, value, user_data):
-        current = uc_eng.mem_read(address, 1)[0]
-        current = (current | self.DR_BIT) if self.queue else (current & ~self.DR_BIT)
-        uc_eng.mem_write(address, bytes([current]) * size)
-        return True
-
     def _on_data_read(self, uc_eng, access, address, size, value, user_data):
-        byte = self.queue.pop(0) if self.queue else 0
+        byte = self.chip.data_r()
         uc_eng.mem_write(address, bytes([byte]) * size)
-        if self.queue or byte:
-            self.rx_log.append(byte)
-            ch = chr(byte) if 32 <= byte < 127 else f"\\x{byte:02x}"
-            self.sink(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
-                      f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
+        self.rx_log.append(byte)
+        ch = chr(byte) if 32 <= byte < 127 else f"\\x{byte:02x}"
+        self.sink(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
+                  f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
+        self._pump_queue()
         return True
 
     def _on_data_write(self, uc_eng, access, address, size, value, user_data):
-        self.tx_log.append(value & 0xFF)
+        self.chip.data_w(value & 0xFF)
+        return True
+
+    def _on_control_read(self, uc_eng, access, address, size, value, user_data):
+        status = self.chip.status_r()
+        uc_eng.mem_write(address, bytes([status]) * size)
+        return True
+
+    def _on_control_write(self, uc_eng, access, address, size, value, user_data):
+        self.chip.control_w(value & 0xFF)
+        return True
+
+    def _on_state_buffer_read(self, uc_eng, access, address, size, value, user_data):
+        current = uc_eng.mem_read(address, 1)[0]
+        current = (current | self.RX_MIRROR_BIT) if self.chip.rxrdy_r() else (current & ~self.RX_MIRROR_BIT)
+        current = (current | self.TX_MIRROR_BIT) if self.chip.txrdy_r() else (current & ~self.TX_MIRROR_BIT)
+        uc_eng.mem_write(address, bytes([current]) * size)
         return True
 
     def clear_outgoing(self):
@@ -409,7 +440,8 @@ class InteractiveUartMock:
 
     def status(self):
         rx = f"RX queue: {len(self.queue)} byte(s) pending, next={chr(self.queue[0])!r}" if self.queue else "RX queue empty"
-        return f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen"
+        return (f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen, "
+                f"chip status=0x{self.chip.status:02X}")
 
     def incoming_text(self):
         """Everything still sitting in the RX queue, not yet consumed

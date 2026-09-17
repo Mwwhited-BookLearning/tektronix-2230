@@ -566,6 +566,69 @@ behavior for the same command sequence.
 `.gitignore`. Both scripts share the same venv and requirements file,
 so either one being run first sets it up for both.
 
+## Ported a real i8251 USART core from MAME, 2026-09-16
+
+User request: "port MAME's i8251.cpp so you can interface it with
+unicorn and get this serial working correctly" - prompted directly by
+`InteractiveUartMock`'s hand-approximated status-bit model being
+exactly the kind of register-level detail worth getting from a real,
+tested reference instead of reconstructing from memory.
+
+**Fetched the actual source rather than recalling it**:
+`raw.githubusercontent.com/mamedev/mame/master/src/devices/machine/
+i8251.{h,cpp}` (BSD-3-Clause, copyright-holders smf/Robbbert). New
+`emulator/i8251.py` ports the register-level state machine faithfully
+- the Mode/Sync1/Sync2/Command write-sequencing (`control_w`'s
+dispatch on `m_flags`), the exact status bits and what sets/clears
+each one (`TX_READY`/`RX_READY`/`TX_EMPTY`/`OVERRUN_ERROR`/etc.), and
+RxRDY/TxRDY's masking by the chip's own Receive/Transmit-Enable
+command bits (`rxrdy_r()`/`txrdy_r()`) - verified line-by-line against
+the fetched source, not reconstructed from general USART knowledge.
+
+**Deliberately left out**: MAME's bit-by-bit `receive_clock`/
+`transmit_clock`/`sync1_rxc`/`sync2_rxc` machinery, which simulates a
+real serial line one bit at a time against TxC/RxC clock signals -
+irrelevant here since this emulator only ever injects/observes whole
+bytes (`serial <text>`), never individual RS-232 bits. `receive_byte()`
+goes straight to what MAME's `receive_character()` does (a complete
+byte has arrived); `data_w()` (TX) completes "instantly" rather than
+being paced by a transmit clock, matching how `write_readout_port_
+byte`'s diagnostic-text writes already pace themselves via the
+firmware's own generic tick busy-wait, not chip timing.
+
+**Unit-tested the port standalone before any Unicorn integration**:
+mode/command programming, RxRDY going high on `receive_byte()` and
+clearing on `data_r()`, overrun detection (second byte before the
+first is read), and TX byte capture - all verified against expected
+values matching the MAME source's documented behavior.
+
+**Rewired `InteractiveUartMock` around the real chip**, with a more
+precise register map than the old approximation: `0x406F0`=Data,
+`0x406F1`=Control/Status (the standard 8251-family `BA0` convention,
+matching this project's confirmed `BA0`->`A0` UART wiring) - making
+`write_readout_port_byte`'s already-confirmed `0x406F0` diagnostic-text
+writes a genuine, literal UART TX data write under this model, not a
+coincidental address overlap. RxRDY/TxRDY are also mirrored into the
+Option Status Latch's `BD1`/`BD2` bits (`"UART INTR+DR"`/`"UART TBRE"`
+per the schematic-traced bit map), on top of the existing fixed
+baseline. `INT255` still fires on RxRDY going high, still gated on the
+Interrupt Mask Latch's `0D` output - same mechanism as before, now
+driven by a real chip model instead of a hand-rolled approximation.
+
+**Result, tested end to end**: the full power-up self-test sequence
+still completes identically through the new TX path (590 bytes,
+byte-for-byte the same diagnostic text). Re-injecting `ID?\n` after 40M
+instructions past self-test now gives a *more complete* diagnosis than
+before: not only is the board-level Interrupt Mask Latch still `0`
+(masked), the chip's own Receive-Enable command bit has never been set
+either - `rxrdy_r()` correctly stays `0` regardless of mask-latch
+state, so no interrupt is even attempted. Two independent, real
+hardware-level confirmations (chip-level and board-level) that
+firmware genuinely hasn't reached RS-232 initialization in this trace,
+rather than one approximate signal. Verified via both the REPL and a
+headless Textual `App.run_test()` run of the TUI - identical behavior
+in both front ends, as expected from the shared `debugger_core.py`.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the
