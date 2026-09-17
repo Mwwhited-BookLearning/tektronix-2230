@@ -77,16 +77,17 @@ regions. Diffing `160-2998-13.bin` against `-14.bin` to see exactly
 what changed is a good next step if the comm-detection puzzle is
 picked up again - see `TODO.md`.
 
-**Scope 1's `CH1`/`CH2` DAC connections are currently swapped, noted
-2026-09-16**: after repairing Scope 1's power supply, the user
-reconnected `CH1`/`CH2` to the acquisition DACs (see `TODO.md`'s
-page-415 reminder - the acquisition memory logic these DACs feed)
-swapped relative to each other. **The analog front-end stages
-themselves are confirmed correct** - this is specifically a DAC-
-connection swap, not a front-end/attenuator miswiring. Needs Scope 1
-reopened to fix. Until then, treat any `CH1`-vs-`CH2`-specific
-live-test result gathered from Scope 1 during this window with that
-in mind - Scope 2 is unaffected.
+**Scope 1's `CH1`/`CH2` swap, noted 2026-09-16, fixed same day**: after
+repairing Scope 1's power supply, `CH1`/`CH2` came back reading
+swapped relative to each other. **Root cause confirmed: the connections
+were swapped on the logic board** (not, as first guessed while the
+symptom was still being triaged, a straight DAC-wiring swap on the
+acquisition side - the earlier note's "DAC connections" description
+was closer to which subsystem shows the symptom than to the actual
+fault location). Fixed - re-seated correctly. Scope 2 was never
+affected. Any `CH1`-vs-`CH2`-specific live-test result gathered from
+Scope 1 *before* this fix should be treated with that history in mind;
+anything gathered after is unaffected.
 
 ## Comm option module rear panel (`hardware/photos/comm_option_rear_panel.jpg`)
 

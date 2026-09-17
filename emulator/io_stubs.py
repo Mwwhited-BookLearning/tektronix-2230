@@ -7,6 +7,16 @@ which real register(s) each one is standing in for and why.
 """
 from unicorn import x86_const as x86
 
+# Shared ANSI colors so interactive.py's trace scroll (gray - meant to
+# fade into the background) stays visually distinct from diagnostic/
+# serial traffic (white - meant to stand out) when both are streaming
+# at once. Plain terminal escapes, no color library dependency; if a
+# terminal doesn't support them the raw codes are relatively harmless
+# noise rather than a crash.
+ANSI_GRAY = "\033[90m"
+ANSI_WHITE = "\033[97m"
+ANSI_RESET = "\033[0m"
+
 
 class FixedByteRead:
     """Forces every read of a single byte address to return a fixed
@@ -184,7 +194,7 @@ class DiagnosticTextCapture:
         if bl in (0, 13, 10) or ch is None:
             if self.buffer:
                 self.lines.append("".join(self.buffer))
-                print(f"[DIAG TEXT] {''.join(self.buffer)!r}")
+                print(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r}{ANSI_RESET}")
                 self.buffer = []
         else:
             self.buffer.append(ch)
@@ -192,7 +202,7 @@ class DiagnosticTextCapture:
     def flush(self):
         if self.buffer:
             self.lines.append("".join(self.buffer))
-            print(f"[DIAG TEXT] {''.join(self.buffer)!r} (unterminated)")
+            print(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r} (unterminated){ANSI_RESET}")
             self.buffer = []
 
 
@@ -328,17 +338,31 @@ class InteractiveUartMock:
         if self.queue or byte:
             self.rx_log.append(byte)
             ch = chr(byte) if 32 <= byte < 127 else f"\\x{byte:02x}"
-            print(f"[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
-                  f"{len(self.queue)} byte(s) still queued")
+            print(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
+                  f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
         return True
 
     def _on_data_write(self, uc_eng, access, address, size, value, user_data):
         self.tx_log.append(value & 0xFF)
         return True
 
+    def clear_outgoing(self):
+        n = len(self.tx_log)
+        self.tx_log = []
+        return n
+
     def status(self):
         rx = f"RX queue: {len(self.queue)} byte(s) pending, next={chr(self.queue[0])!r}" if self.queue else "RX queue empty"
         return f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen"
 
     def outgoing_text(self):
-        return "".join(chr(b) if 32 <= b < 127 else f"\\x{b:02x}" for b in self.tx_log)
+        """Real `\\r`/`\\n`/tab pass through as actual control bytes (so
+        they render as real line breaks/tabs when printed) - only
+        genuinely unprintable bytes get the `\\xNN` escape form."""
+        out = []
+        for b in self.tx_log:
+            if b in (13, 10, 9) or 32 <= b < 127:
+                out.append(chr(b))
+            else:
+                out.append(f"\\x{b:02x}")
+        return "".join(out)

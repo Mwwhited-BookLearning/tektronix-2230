@@ -29,7 +29,8 @@ import memory_map as mm
 from timer import TickScheduler
 from io_stubs import (CommPresenceProbe, DiagnosticTextCapture,
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
-                       FixedByteRead, InteractiveFrontPanel, InteractiveUartMock)
+                       FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
+                       ANSI_GRAY, ANSI_RESET)
 
 HMA_ALIAS_BASE = 0x100000
 HMA_ALIAS_SIZE = 0x10000
@@ -116,7 +117,7 @@ class Debugger:
     def _on_code(self, uc_eng, address, size, user_data):
         self.count += 1
         if self.trace:
-            print(self.trace_line())
+            print(f"{ANSI_GRAY}{self.trace_line()}{ANSI_RESET}")
         if self.ticker is not None:
             self.ticker.step(uc_eng)
         if address in self.breakpoints:
@@ -264,7 +265,10 @@ Commands:
   outgoing           show every byte captured on the (write) side of
                      the same mock UART data register - this overlaps
                      with `diag` today since write_readout_port_byte is
-                     the only confirmed writer of that address so far
+                     the only confirmed writer of that address so far.
+                     Real \r/\n/tab bytes print as real line breaks/
+                     tabs, not escaped text
+  outgoing clear     discard everything captured so far on that side
   diag               show all captured diagnostic-text lines so far
   help, ?            show this text
   quit, exit, q      leave the debugger
@@ -412,6 +416,10 @@ def main():
         elif cmd == "uart":
             print(dbg.uart.status())
         elif cmd == "outgoing":
+            if rest and rest[0].lower() == "clear":
+                n = dbg.uart.clear_outgoing()
+                print(f"cleared {n} outgoing byte(s)")
+                continue
             text = dbg.uart.outgoing_text()
             print(text if text else "(nothing written yet)")
         elif cmd == "diag":

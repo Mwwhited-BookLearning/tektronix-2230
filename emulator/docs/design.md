@@ -449,6 +449,16 @@ underlying stubs, same result, just interactively inspectable now.
    `25000000`, half the previous hardcoded `50000000`); `continue <n>`
    at the prompt also updates the stored length for the rest of the
    session, not just that one call.
+7. **Trace coloring, outgoing-buffer clear, real CRLF rendering**
+   (left directly in `TODO.md` as "From the Architect" notes): added
+   `io_stubs.ANSI_GRAY`/`ANSI_WHITE`/`ANSI_RESET`, applied gray to
+   `trace`'s scrolling lines and white to `[DIAG TEXT]`/`[SERIAL RX]`
+   so the two visually separate when both stream at once; added
+   `outgoing clear`; fixed `InteractiveUartMock.outgoing_text()` to
+   pass real `\r`/`\n`/tab bytes through as actual control characters
+   instead of the `\xNN` escape form (only genuinely unprintable bytes
+   still get escaped) - confirmed with `cat -v` that both the color
+   codes and the real line breaks render as intended.
 
 ## Non-goals reminder
 
