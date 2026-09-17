@@ -325,7 +325,7 @@ class InteractiveUartMock:
     TX_MIRROR_BIT = 0x04  # BD2 = "UART TBRE"
     MASK_LATCH_ADDR = 0x406F8
 
-    def __init__(self, sink=print):
+    def __init__(self, sink=print, on_tx=None):
         from i8251 import I8251
         self.chip = I8251()
         self.chip.rxrdy_handler = self._on_rxrdy
@@ -335,6 +335,10 @@ class InteractiveUartMock:
         self.tx_log = []   # bytes the chip has transmitted
         self._emu = None
         self.sink = sink
+        self.on_tx = on_tx  # optional live callback, one call per TX byte -
+                             # for a front end that wants to display outgoing
+                             # serial data as it happens, not just on demand
+                             # via outgoing_text()
 
     def install(self, emu, uc_module):
         self._emu = emu
@@ -376,6 +380,8 @@ class InteractiveUartMock:
 
     def _on_tx_byte(self, byte):
         self.tx_log.append(byte)
+        if self.on_tx:
+            self.on_tx(byte)
 
     def _try_fire_interrupt(self):
         """Simulate the real UART asserting its interrupt line the

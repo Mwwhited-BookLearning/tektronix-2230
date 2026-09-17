@@ -629,6 +629,66 @@ rather than one approximate signal. Verified via both the REPL and a
 headless Textual `App.run_test()` run of the TUI - identical behavior
 in both front ends, as expected from the shared `debugger_core.py`.
 
+## Fixed a real TUI crash, added a live outgoing-serial panel, 2026-09-16
+
+User report: pressing F4 (`continue`) broke out of the TUI entirely,
+leaving the terminal printing raw escape codes to the screen (a
+screenshot showed `^[[<35;NN;NNM`-style sequences - SGR mouse-tracking
+reports being echoed as literal text). **Root cause found, not
+guessed**: every `run_worker(...)` call used `exclusive=True`, which
+tells Textual to *cancel* the in-flight worker when a new one starts.
+`dbg.run(25_000_000)` is a long synchronous Unicorn C call with no safe
+way to be interrupted from another thread - forcibly cancelling a
+thread stuck inside it can corrupt the interpreter badly enough to
+skip Textual's own terminal-restoration cleanup (mouse tracking/
+alternate-screen mode never get turned back off), exactly matching the
+reported symptom. Almost certainly triggered by pressing F4 again (or
+any other worker-launching key/Enter) before the first `continue`
+finished.
+
+**Fix**: replaced `exclusive=True` everywhere with a `_busy` flag and
+a single `_launch()` choke point - a second command is refused (with a
+visible message) rather than cancelling the first, since cancelling
+isn't actually safe here. Also disables the input and shows a "running
+..." indicator while busy, so a long `continue` looks like it's working
+rather than looking frozen (which is likely what prompted the repeated
+key presses in the first place). `quit` is refused the same way while
+busy, since Python's thread-pool executor would otherwise just block
+process exit waiting for the same uncancellable thread.
+
+**Verified the exact crash scenario is now safe**: a headless test
+pressed F4, then F4 five more times in rapid succession while the
+first run was still active - confirmed refused every time (`_busy`
+stayed `True`, no crash), then confirmed a new `continue` was correctly
+allowed to start once the first one actually finished.
+
+**Also added a dedicated live outgoing-serial panel** (user: "I'd also
+like a dedicated section added to the TUI that will automatically
+display the outbound serial data") - `io_stubs.InteractiveUartMock`
+gained an `on_tx` callback (parallel to the existing `sink`, but for
+raw per-byte TX events rather than log lines), threaded through
+`Debugger`'s constructor. The TUI's new `#outgoing` panel buffers bytes
+into complete lines before writing (the same convention `Diagnostic
+TextCapture` already uses for the main log - writing per-byte would
+put one character per line instead of readable text) and updates live
+during any run, not just on request via the `outgoing` command.
+Verified via a headless test: the panel populated with the real POST
+banner text (`'2230/2220 boot : 160-3633-14'`, etc.) during a live run.
+
+**Also clarified, from a user question**: "does that UART have a FIFO
+built in?" - no. The 8251/82C52 family has exactly two 1-byte holding
+registers (RX and TX), no FIFO (later chips like the 16550 added one
+specifically to fix this) - confirmed directly from the ported MAME
+source. What looked like "only one character got read" after
+injecting `ID?\n` is exactly this: the mock's own software staging
+queue (`InteractiveUartMock.queue`) feeds the chip's single RX holding
+register one byte at a time as each prior byte is read out - the first
+byte (`'I'`) was genuinely loaded into the chip (confirmed via direct
+inspection: `chip.rx_data`, `RX_READY` set), the rest waits safely in
+the queue, not lost. It stays there because nothing in the current
+boot trace ever reads it (same masked-interrupt/unset-RxEN finding as
+before) - accurate modeling of real hardware, not a bug.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

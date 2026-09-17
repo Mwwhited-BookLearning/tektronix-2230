@@ -24,7 +24,7 @@ import argparse
 
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, RichLog, Input
 
 from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
@@ -33,10 +33,18 @@ from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
 class Tek2230App(App):
     CSS = """
     #main { height: 1fr; }
-    #registers {
+    #side {
         width: 44;
+    }
+    #registers {
         border: solid $accent;
         padding: 1 2;
+        height: auto;
+        max-height: 60%;
+    }
+    #outgoing {
+        border: solid $accent;
+        border-title-align: center;
     }
     #log {
         border: solid $accent;
@@ -59,11 +67,15 @@ class Tek2230App(App):
         super().__init__()
         self.args = args
         self.dbg = None
+        self._busy = False
+        self._outgoing_buffer = []
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Horizontal(id="main"):
-            yield Static(id="registers")
+            with Vertical(id="side"):
+                yield Static(id="registers")
+                yield RichLog(id="outgoing", wrap=True, highlight=False, markup=False, max_lines=5000)
             yield RichLog(id="log", wrap=True, highlight=False, markup=False, max_lines=5000)
         yield Input(placeholder="command (F1 for help) - e.g. step 10, run, "
                                  "continue, press MENU, serial ID?\\n ...",
@@ -72,7 +84,9 @@ class Tek2230App(App):
 
     def on_mount(self):
         self.title = "Tek 2230 Emulator"
-        self.dbg = Debugger(self.args, output=self._sink_from_worker)
+        self.query_one("#outgoing", RichLog).border_title = "outgoing serial (UART TX)"
+        self.dbg = Debugger(self.args, output=self._sink_from_worker,
+                             on_tx=self._on_tx_from_worker)
         self._append_log("Tek 2230 TUI debugger. Type a command below "
                           "or press F1 for the full list.")
         self.refresh_registers()
@@ -83,6 +97,39 @@ class Tek2230App(App):
     def _append_log(self, text):
         """Only ever called on the app's own thread/event loop."""
         self.query_one("#log", RichLog).write(Text.from_ansi(text))
+
+    def _on_tx_from_worker(self, byte):
+        """`Debugger`'s `on_tx` callback - invoked from inside a worker
+        thread (see `_run_command`) every time the UART transmits a
+        byte, live, not just retrievable on request via `outgoing`."""
+        self.call_from_thread(self._append_outgoing_byte, byte)
+
+    def _append_outgoing_byte(self, byte):
+        """Buffers into complete lines before writing, the same way
+        `io_stubs.DiagnosticTextCapture` does for the main log - a
+        write per byte would put one character per line in the panel
+        instead of readable text."""
+        ch = chr(byte) if 32 <= byte < 127 else None
+        if byte in (0, 13, 10) or ch is None:
+            if self._outgoing_buffer:
+                self.query_one("#outgoing", RichLog).write("".join(self._outgoing_buffer))
+                self._outgoing_buffer = []
+        else:
+            self._outgoing_buffer.append(ch)
+
+    def _set_busy(self, busy):
+        """Only ever called on the app's own thread/event loop (either
+        directly, or via `call_from_thread` from a worker's `finally`).
+        Disables the input and shows a clear "running" indicator instead
+        of the app just appearing frozen during a long `run`/`continue` -
+        Unicorn's `emu_start` is a long synchronous C call with no safe
+        way to be interrupted from another thread, so a second command
+        must never be allowed to start (and try to cancel the first)
+        while one is already in flight. See `_launch` for the launch
+        side of this guard."""
+        self._busy = busy
+        self.query_one(Input).disabled = busy
+        self.sub_title = "running... (input disabled until it stops)" if busy else ""
 
     def _sink_from_worker(self, text):
         """`Debugger`'s `output` callable - always invoked from inside
@@ -122,7 +169,10 @@ class Tek2230App(App):
         """Runs in a worker thread so a long `run`/`continue` never
         freezes the UI. Every command goes through this same path
         (not just step/run) for one uniform threading model - trivial
-        commands just finish almost instantly inside the worker."""
+        commands just finish almost instantly inside the worker. The
+        `finally` always clears the busy flag, however the command
+        ended, so a crash mid-command can't leave the input
+        permanently disabled."""
         try:
             for out_line in dispatch_command(self.dbg, line):
                 self.call_from_thread(self._append_log, out_line)
@@ -131,7 +181,27 @@ class Tek2230App(App):
             return
         except ValueError as e:
             self.call_from_thread(self._append_log, str(e))
+        finally:
+            self.call_from_thread(self._set_busy, False)
         self.call_from_thread(self.refresh_registers)
+
+    def _launch(self, line):
+        """The only place that starts a command worker - refuses to
+        start a second one while one is already running instead of
+        Textual's `exclusive=True` (which *cancels* the in-flight
+        worker to make room for the new one). That's unsafe here:
+        `dbg.run()` is a long synchronous Unicorn C call with no clean
+        way to be interrupted from another thread, so canceling it
+        mid-flight can crash the interpreter hard enough to skip
+        Textual's own terminal cleanup (confirmed 2026-09-16 - pressing
+        F4 while a previous `continue` was still running left the
+        terminal stuck in raw SGR mouse-tracking mode, printing mouse-
+        move escape codes as literal text after the app died)."""
+        if self._busy:
+            self._append_log("(still running the previous command - wait for it to finish)")
+            return
+        self._set_busy(True)
+        self.run_worker(lambda: self._run_command(line), thread=True)
 
     def on_input_submitted(self, event: Input.Submitted):
         line = event.value.strip()
@@ -139,28 +209,38 @@ class Tek2230App(App):
         if not line:
             return
         self._append_log(f"(tek2230) {line}")
-        self.run_worker(lambda: self._run_command(line), thread=True, exclusive=True)
+        self._launch(line)
 
     # ---- key-bound shortcuts for the most common actions ------------
 
     def action_do_step(self):
-        self.run_worker(lambda: self._run_command("step"), thread=True, exclusive=True)
+        self._launch("step")
 
     def action_do_run(self):
-        self.run_worker(lambda: self._run_command("run"), thread=True, exclusive=True)
+        self._launch("run")
 
     def action_do_continue(self):
-        self.run_worker(lambda: self._run_command("continue"), thread=True, exclusive=True)
+        self._launch("continue")
 
     def action_toggle_trace(self):
         cmd = "trace off" if self.dbg and self.dbg.trace else "trace on"
-        self.run_worker(lambda: self._run_command(cmd), thread=True, exclusive=True)
+        self._launch(cmd)
 
     def action_show_help(self):
         for line in HELP.splitlines():
             self._append_log(line)
 
     def action_quit_app(self):
+        if self._busy:
+            # A worker thread stuck inside a long emu_start() call can't
+            # be safely killed either (same reason `_launch` refuses a
+            # second command) - Python's default thread-pool executor
+            # would just block process exit waiting for it instead.
+            # Clearer to say so than to hang with no explanation.
+            self._append_log("(still running - can't quit mid-run; wait "
+                              "for it to finish, or close the terminal "
+                              "window if you need to force it)")
+            return
         self.exit()
 
 

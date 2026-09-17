@@ -56,7 +56,7 @@ def flags_str(fl):
 
 
 class Debugger:
-    def __init__(self, args, output=print):
+    def __init__(self, args, output=print, on_tx=None):
         self.args = args
         self.output = output
         self.emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
@@ -69,7 +69,11 @@ class Debugger:
         self.ticker = TickScheduler(args.tick_interval) if args.tick_interval else None
         self.diag = DiagnosticTextCapture(sink=output)
         self.front_panel = InteractiveFrontPanel()
-        self.uart = InteractiveUartMock(sink=output)
+        # `on_tx`: optional live per-byte callback for a front end that
+        # wants to display outgoing serial data as it happens (e.g.
+        # tui.py's dedicated outgoing panel) rather than only on demand
+        # via `uart.outgoing_text()`.
+        self.uart = InteractiveUartMock(sink=output, on_tx=on_tx)
         self._low_ram_buffer = None
         self._stop_reason = None
         self._setup_memory()
