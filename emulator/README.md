@@ -96,6 +96,18 @@ TX path. See `docs/design.md`'s 2026-09-16 section for what's ported
 faithfully vs. deliberately simplified (no bit-level serial-line
 clocking, since this emulator only ever injects/observes whole bytes).
 
+**Paced serial delivery**: `serial <text>` no longer dumps bytes into
+the UART instantly - `serial-rate <n>` controls how many instructions
+elapse between queued-byte deliveries, and overrun now happens for
+real if a byte isn't serviced in time (matching real no-FIFO 8251-
+family hardware) - built specifically to explore whether a too-fast
+delivery rate explains this project's own live-hardware finding that
+9600 baud was unreliable while 1200 baud worked perfectly (`docs/
+comm-rom/rs232-breakthrough.md`). Also fixed a serious TUI bug found
+while testing this: disabling the input during a run stripped its
+focus and nothing restored it, so **every command after the first one
+silently did nothing** - now fixed, see `docs/design.md`.
+
 Not to be confused with `decompile/`, the Ghidra static-analysis
 project (see `docs/architecture/ghidra-project.md`) - that's a second
 disassembler/cross-check tool; this is dynamic execution.

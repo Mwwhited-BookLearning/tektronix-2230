@@ -689,6 +689,54 @@ the queue, not lost. It stays there because nothing in the current
 boot trace ever reads it (same masked-interrupt/unset-RxEN finding as
 before) - accurate modeling of real hardware, not a bug.
 
+## Paced serial delivery, and a serious TUI focus bug found while testing it
+
+User hypothesis, directly following the FIFO explanation above: "this
+is probably read in by interrupts which is what could cause the 9600
+to not operate correctly... to make this work you need to take the
+serial input and send it one character at a time into the interrupt
+through the 8251/82C52." Exactly right, and it exposed a real gap:
+before this, a freed RX holding register was refilled **instantly**
+the moment the CPU read it - no time/instruction delay stood in for
+the real per-byte serial arrival interval, so overrun could never
+actually happen here regardless of how slowly firmware serviced bytes,
+making the 9600-vs-1200-baud reliability difference this project's own
+live-hardware testing found (`docs/comm-rom/rs232-breakthrough.md`)
+impossible to explore.
+
+**Fix**: `InteractiveUartMock.pump_paced(current_count)`, called once
+per emulated instruction from `Debugger._on_code` (the same pattern
+already used for `TickScheduler`/`trace`), delivers the next queued
+byte once enough instructions have elapsed since the last delivery -
+and does so **unconditionally**, not gated on the RX register being
+free, since real hardware doesn't wait for the CPU's convenience
+either. `self.chip.receive_byte` already implements the resulting
+overrun exactly right (ported from MAME) if the previous byte wasn't
+read in time. The pacing interval (`instructions_per_byte`, default
+50000, deliberately not claimed to be baud-rate-calibrated since this
+project hasn't confirmed the real CPU clock precisely enough for that)
+is adjustable live via `serial-rate <n>` for exploring the hypothesis.
+**Verified both directions standalone**: tight pacing with no read in
+between correctly produces overrun (second byte overwrites the first,
+`OVERRUN_ERROR` set); realistic pacing with a read between deliveries
+produces none.
+
+**While testing this through the TUI, found and fixed a much more
+serious, unrelated bug**: after literally any single command
+completed, every subsequent command silently did nothing at all - no
+error, no log output, `_busy` never even flipped back to `True` for
+the second command. Traced it (not guessed at it) via a headless test
+printing `app.focused` after the first command: **`None`**. Disabling
+the `Input` widget for the busy-guard (added earlier this session)
+also strips its focus in Textual, and nothing was restoring it once
+the widget was re-enabled - so the terminal's Enter key was reaching
+no focused widget at all. **This affected every TUI session beyond its
+very first command**, not just a `continue`-specific edge case - a far
+more serious regression than the crash it was originally protecting
+against. Fixed with one line (`inp.focus()` inside `_set_busy(False)`);
+verified with a 5-command sequential session (`step`, `serial`,
+`incoming`, `uart`, `regs`) all producing correct output in order.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

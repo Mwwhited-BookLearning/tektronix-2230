@@ -339,6 +339,8 @@ class InteractiveUartMock:
                              # for a front end that wants to display outgoing
                              # serial data as it happens, not just on demand
                              # via outgoing_text()
+        self.instructions_per_byte = self.DEFAULT_INSTRUCTIONS_PER_BYTE
+        self._next_delivery_count = 0  # eligible immediately on first inject
 
     def install(self, emu, uc_module):
         self._emu = emu
@@ -359,20 +361,52 @@ class InteractiveUartMock:
         emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_state_buffer_read,
                      None, self.STATE_BUFFER_ADDR, self.STATE_BUFFER_ADDR)
 
-    def inject(self, text):
-        self.queue.extend(text.encode("ascii", errors="replace"))
-        self._pump_queue()
+    # Instructions between successive queued-byte deliveries - a crude
+    # proxy for real elapsed time, since this project hasn't confirmed
+    # this CPU's real clock rate precisely enough to derive a genuine
+    # baud-accurate instruction count. Deliberately tunable (`serial-
+    # rate <n>` at the REPL/TUI) rather than hardcoded to one "correct"
+    # value - the point is to be able to explore whether a *faster*
+    # delivery rate causes overrun once the interrupt path is reachable
+    # (see the 2026-09-16 user hypothesis below), not to claim this
+    # default is calibrated to a specific real baud rate.
+    DEFAULT_INSTRUCTIONS_PER_BYTE = 50000
 
-    def _pump_queue(self):
-        """Hand the next queued byte to the chip once its 1-byte RX
-        holding register is free - real 8251-family hardware has no
-        FIFO, so a second byte arriving before the first is read is a
-        genuine overrun (`self.chip.receive_byte` already models
-        this), not something to queue past."""
-        from i8251 import STATUS_RX_READY
-        if self.queue and not (self.chip.status & STATUS_RX_READY):
-            byte = self.queue.pop(0)
-            self.chip.receive_byte(byte)
+    def inject(self, text):
+        """Queues bytes for **paced** delivery (see `pump_paced`) -
+        deliberately does *not* dump the whole string into the chip's
+        holding register at once. User's own diagnosis, 2026-09-16:
+        "this is probably read in by interrupts which is what could
+        cause the 9600 to not operate correctly... to make this work
+        you need to take the serial input and send it one character at
+        a time into the interrupt through the 8251/82C52" - exactly
+        right, and it exposed a real gap this mock had: before this,
+        a freed RX register was refilled *instantly* the moment the
+        CPU read it, with no time delay standing in for the real
+        per-byte serial arrival interval - meaning overrun could never
+        actually occur here regardless of how slowly firmware serviced
+        bytes, which made it impossible to explore the 9600-vs-1200-
+        baud reliability difference this project's own live-hardware
+        testing already found (`docs/comm-rom/rs232-breakthrough.md`)."""
+        self.queue.extend(text.encode("ascii", errors="replace"))
+
+    def pump_paced(self, current_count):
+        """Call once per emulated instruction (see `Debugger._on_code`)
+        - delivers the next queued byte once `current_count` reaches
+        the scheduled delivery time, **unconditionally** (not gated on
+        the RX holding register being free). Real hardware doesn't wait
+        for the CPU's convenience either - a byte arrives at the fixed
+        baud-derived cadence regardless of whether the previous one was
+        read, and `self.chip.receive_byte` already implements the
+        resulting overrun correctly (matches MAME's own model) if it
+        wasn't."""
+        if not self.queue:
+            return
+        if current_count < self._next_delivery_count:
+            return
+        byte = self.queue.pop(0)
+        self.chip.receive_byte(byte)
+        self._next_delivery_count = current_count + self.instructions_per_byte
 
     def _on_rxrdy(self, level):
         if level:
@@ -416,7 +450,9 @@ class InteractiveUartMock:
         ch = chr(byte) if 32 <= byte < 127 else f"\\x{byte:02x}"
         self.sink(f"{ANSI_WHITE}[SERIAL RX] firmware read {ch!r} (0x{byte:02X}) - "
                   f"{len(self.queue)} byte(s) still queued{ANSI_RESET}")
-        self._pump_queue()
+        # No immediate refill here - the next queued byte arrives on its
+        # own paced schedule (see `pump_paced`), not the instant this
+        # one is read out.
         return True
 
     def _on_data_write(self, uc_eng, access, address, size, value, user_data):
@@ -447,7 +483,8 @@ class InteractiveUartMock:
     def status(self):
         rx = f"RX queue: {len(self.queue)} byte(s) pending, next={chr(self.queue[0])!r}" if self.queue else "RX queue empty"
         return (f"{rx}, {len(self.rx_log)} consumed, {len(self.tx_log)} TX byte(s) seen, "
-                f"chip status=0x{self.chip.status:02X}")
+                f"chip status=0x{self.chip.status:02X}, "
+                f"pacing={self.instructions_per_byte} instrs/byte")
 
     def incoming_text(self):
         """Everything still sitting in the RX queue, not yet consumed

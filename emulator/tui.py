@@ -126,10 +126,22 @@ class Tek2230App(App):
         way to be interrupted from another thread, so a second command
         must never be allowed to start (and try to cancel the first)
         while one is already in flight. See `_launch` for the launch
-        side of this guard."""
+        side of this guard.
+
+        **Real bug, found and fixed 2026-09-16**: disabling a focused
+        widget in Textual also strips its focus, and it doesn't
+        automatically come back when re-enabled - so every command
+        after the first one silently went nowhere (Enter was reaching
+        no focused widget at all, not the `Input`), confirmed via a
+        headless test showing `app.focused` was `None` after the first
+        command completed. Fixed by explicitly refocusing the input
+        each time it's re-enabled."""
         self._busy = busy
-        self.query_one(Input).disabled = busy
+        inp = self.query_one(Input)
+        inp.disabled = busy
         self.sub_title = "running... (input disabled until it stops)" if busy else ""
+        if not busy:
+            inp.focus()
 
     def _sink_from_worker(self, text):
         """`Debugger`'s `output` callable - always invoked from inside

@@ -116,6 +116,7 @@ class Debugger:
             self.output(f"{ANSI_GRAY}{self.trace_line()}{ANSI_RESET}")
         if self.ticker is not None:
             self.ticker.step(uc_eng)
+        self.uart.pump_paced(self.count)
         if address in self.breakpoints:
             self._stop_reason = f"breakpoint hit at 0x{address:06X}"
             uc_eng.emu_stop()
@@ -264,12 +265,18 @@ Commands:
   press <BUTTON>     press a front-panel button (see `buttons`)
   release <BUTTON>   release a front-panel button
   buttons            list button names and current SWB1/SWB2 values
-  serial <text>      queue <text> as incoming bytes on the (experimental)
-                     mock UART receive path - see InteractiveUartMock's
-                     docstring for what this does and doesn't model.
-                     Supports \\n \\r \\t \\0 \\\\ escapes (e.g.
-                     `serial AT\\r\\n`) since there's no way to type a
-                     real newline into a single input() line
+  serial <text>      queue <text> as incoming bytes, delivered one at a
+                     time (paced by instruction count, see `serial-
+                     rate`) into the (experimental) mock UART receive
+                     path - see InteractiveUartMock's docstring for
+                     what this does and doesn't model. Supports \\n \\r
+                     \\t \\0 \\\\ escapes (e.g. `serial AT\\r\\n`) since
+                     there's no way to type a real newline into a
+                     single input() line
+  serial-rate [n]    show or change how many instructions elapse
+                     between queued-byte deliveries - lower = faster
+                     (more overrun-prone if firmware can't keep up),
+                     higher = slower/more forgiving
   uart               show the mock UART's pending RX queue and captured
                      TX bytes (writes to the same register - see
                      `incoming`/`outgoing`)
@@ -406,6 +413,13 @@ def dispatch_command(dbg, line):
         text = decode_escapes(rest[0])
         dbg.uart.inject(text)
         return [f"queued {text!r} ({len(text)} bytes) - {dbg.uart.status()}"]
+    if cmd == "serial-rate":
+        if not rest:
+            return [f"current pacing: {dbg.uart.instructions_per_byte} instructions/byte "
+                    f"(usage: serial-rate <n> to change - lower = faster/less realistic "
+                    f"servicing time, higher = slower/more overrun-prone)"]
+        dbg.uart.instructions_per_byte = int(rest[0])
+        return [f"pacing set to {dbg.uart.instructions_per_byte} instructions/byte"]
     if cmd == "uart":
         return [dbg.uart.status()]
     if cmd == "incoming":
