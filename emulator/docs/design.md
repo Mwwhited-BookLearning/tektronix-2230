@@ -443,6 +443,12 @@ underlying stubs, same result, just interactively inspectable now.
    still support an explicit opt-out (`--no-comm-installed`, `--no-
    stub-registers`, via `argparse.BooleanOptionalAction`) for
    comparison runs against the "worse" baseline.
+6. **Made `continue`'s run length configurable** (user: "I would like
+   to be able to set the continue length... and I'd like to start by
+   cutting the default in half") - added `--continue-length` (default
+   `25000000`, half the previous hardcoded `50000000`); `continue <n>`
+   at the prompt also updates the stored length for the rest of the
+   session, not just that one call.
 
 ## Non-goals reminder
 

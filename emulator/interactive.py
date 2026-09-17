@@ -70,6 +70,7 @@ class Debugger:
         self.count = 0
         self.breakpoints = set()
         self.trace = False
+        self.continue_length = args.continue_length
         self.md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_16)
         self.md.detail = True  # needed to inspect memory operands for `trace`
         self.ticker = TickScheduler(args.tick_interval) if args.tick_interval else None
@@ -235,7 +236,9 @@ Commands:
   step [n]          execute n instructions (default 1)
   run [n]           execute up to n instructions (default 100000),
                      stopping early on a breakpoint or fault
-  continue, c        alias for `run 50000000`
+  continue [n], c    run for the configured continue-length (default
+                     25000000, see --continue-length); `continue <n>`
+                     also updates that stored length for next time
   trace on|off       stream one line per executed instruction (all
                      registers + the current instruction + the live
                      value of its memory operand, if any) instead of
@@ -282,6 +285,11 @@ def main():
                           "project's real physical test units; pass "
                           "--no-comm-installed for the 'not installed' "
                           "behavior - see io_stubs.CommPresenceProbe")
+    ap.add_argument("--continue-length", type=int, default=25000000,
+                     help="instruction count `continue`/`c` runs for "
+                          "when called with no explicit argument "
+                          "(default 25000000); `continue <n>` also "
+                          "updates this for the rest of the session")
     args = ap.parse_args()
 
     dbg = Debugger(args)
@@ -329,7 +337,10 @@ def main():
             dbg.run(n)
             dbg.print_status()
         elif cmd in ("continue", "c"):
-            dbg.run(50000000)
+            if rest:
+                dbg.continue_length = int(rest[0])
+                print(f"continue length set to {dbg.continue_length}")
+            dbg.run(dbg.continue_length)
             dbg.print_status()
         elif cmd == "trace":
             if not rest or rest[0].lower() not in ("on", "off"):
