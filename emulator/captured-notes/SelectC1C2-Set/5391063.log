@@ -1,0 +1,17 @@
+# diagnostic-text log at 5391063 instructions (16 line(s))
+2230/2220 boot : 160-3633-14
+POWER UP FAILURES
+PRESS MENU KEYS TO CONTINUE
+PU : ROM/RAM/NMI :  0003
+MI : Display controller : TIMEOUT
+ACQ_AB : read-back     0 <>     2
+ACQ_AB : read-back     0 <>     6
+ACQ_AB : read-back     0 <>     E
+ACQ_AB : read-back     0 <>    1E
+ACQ_AB : read-back     0 <>    3E
+ACQ_AB : read-back     0 <>    7E
+ACQ_AB : read-back     0 <>    FE
+ACQ_AB : read-back     0 <>   1FE
+ACQ_AB : read-back     0 <>   3FE
+ACQ_AB : read-back     0 <>   7FE
+ACQ_AB : read-back     0 <>   FFE
