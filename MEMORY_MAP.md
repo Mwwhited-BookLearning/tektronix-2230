@@ -155,6 +155,120 @@ this is now considered settled unless a new, different piece of
 primary-source evidence surfaces.
 | `0x02090-0x021F0` | RAM: a separate 82-entry far-pointer table (`ES=0x209` base), distinct from the "flat" `DS=0` variable space most tracked variables live in - **do not confuse an offset number here with the same-looking offset in the flat space** | Initialized once at boot by `init_far_pointer_table_sysrom`'s embedded data table (decoded in full - see `docs/acquisition-and-plotting/ram-far-pointer-table.md` "Found: a whole family of never-reached functions..."). 15 of its 82 targets were never reached by proven or heuristic disassembly before being found this way; all 15 decode as coherent code, mostly extending the plot-position (`[0x6BE]`/`[0x6BC]`/`[0x6C0]`/`[0x6C1]`) and scale-factor (`[0x712]`-`[0x724]`) variable families already documented below. No code anywhere loads `ES`/`DS`=`0x209` via a literal immediate, so how these get read back in practice is still open |
 
+## Acquisition Memory: the real sample pipeline (from the service manual)
+
+User question 2026-09-18: "do you see the sample acq memory? That
+should be two interlaced memory locations that sample ch1 and ch2 and
+put the current value on those adc into those locations while the
+addresses increment in lock step... offset based on the configured
+time delay so when in store mode the samples can be synchronized based
+on that delay." Confirmed - `docs/theory-of-operation.md`'s
+"ACQUISITION MEMORY" and "STATUS ADC AND BUS INTERFACE" sections (pages
+3-... of Service Manual Section 3) describe exactly this, in more
+detail than this project had previously pulled out of the register-
+level table alone (the `0x4377E`/`0x48000` entries above only cover
+*where the CPU can see this from*, not the acquisition hardware's own
+internal pipeline that fills it).
+
+**Physical memory**: two 2K×8-bit static RAMs, `U3418` (Odd) and
+`U3419` (Even) - 4K bytes total, at `0x48000-0x4BFFF` (4 mirror
+images). Single-channel acquisitions store odd/even sample pairs
+across the two halves; dual-channel acquisitions store Channel 1 in
+one half and Channel 2 in the other, 2K bytes (one full record) each.
+In Min-Max mode, the min and max of each comparison window go in
+opposite halves; with both channels chopped in Min-Max mode, min/max
+points for *both* channels alternate across the two halves.
+
+**The pipeline, one sample at a time** (confirms the user's "current
+value on the ADC into those locations" description almost exactly):
+
+1. Analog Channel Switch (`U2101`) selects CH1, CH2, or sums both
+   (ADD mode), gated by `/CHAN1`/`ADD` signals derived from the
+   *delayed* `SAVECLK` - channel switching is deliberately timed to
+   land between `/ADCLK` sample edges, not on them.
+2. Sample-and-Hold (`CR2203` diode bridge, `C2235` hold cap) freezes
+   one instant's voltage.
+3. ADC `U2204` converts continuously at 20 Megasamples/second
+   (`/ADCLK`, 0 V → `0xFF`, -2 V → `0x00`) *regardless* of the actual
+   `SAVECLK` rate - conversion never stops, only which conversions get
+   kept downstream varies.
+4. A/D Buffer `U3229` latches each converted byte on the `CONV` clock.
+5. Min/Max Registers compare each new byte against the running
+   min/max for the current sample window (window width set by
+   `SEC/DIV`); `NEWMIN`/`NEWMAX` signals reclock the appropriate
+   register.
+6. Swap Registers (4 of them, 2 pairs) reorder the min/max pair back
+   into correct time order before the memory write, controlled by
+   `SWAP`/`/SWAP`.
+7. On `ACQWRITE` (fired by the Acquisition Clock Decoder, timed off
+   `SAVECLK`), both 8-bit values (min+max, or CH1+CH2) are written to
+   the two RAM halves **in parallel** - this is the "two interlaced
+   locations, addresses incrementing in lock step" the user described:
+   one write-enable/address-clock pulse advances both halves' Address
+   Counters (`U3423-U3425`) together, every sample.
+
+**The pretrigger delay/offset** the user asked about is real and
+already described exactly: "A programmable address counter is loaded
+with the number that is the amount of pretrigger data bytes needed to
+fill the pretrigger portion of the waveform acquisition. The `PREFULL`
+signal is sent to the Trigger Mux circuitry when the pretrigger count
+is full" - i.e. the Address Counter is pre-loaded with an offset (not
+started at 0) so the trigger event lands at the correct point inside
+an already-partially-filled circular record, which is what lets STORE
+mode display pretrigger data at all. `SAVECLK`'s phase at the moment
+of trigger also determines *which* memory half the trigger-associated
+sample landed in (tracked via a status bit, `BTRIGD`/`TRIGD`, buffered
+alongside the address count by `U3428`).
+
+**CPU access is time-shared, not concurrent**: the acquisition
+hardware owns the memory bus continuously while acquiring (`ACQSEL`
+low); a Microprocessor read parks the Address Counter (freezing
+`ADDRCLK`), reads out data by sequencing addresses itself, then
+restores the counter to its saved position so acquisition resumes
+without dropping samples - explaining why ROLL/SCAN modes don't require
+the CPU and the acquisition system to run in lockstep at all times.
+
+```plantuml
+@startuml
+title Acquisition sample pipeline (one CONV clock tick)
+
+rectangle "Channel Switch\n(U2101)" as CHSW
+rectangle "Sample & Hold\n(CR2203/C2235)" as SH
+rectangle "ADC U2204\n20 MSa/s, 8-bit" as ADC
+rectangle "A/D Buffer\n(U3229)" as ADBUF
+rectangle "Min/Max Registers" as MINMAX
+rectangle "Swap Registers\n(reorder for time order)" as SWAP
+database "Acquisition Memory\nOdd half (U3418)" as ODD
+database "Acquisition Memory\nEven half (U3419)" as EVEN
+rectangle "Address Counter\n(U3423-U3425)" as ADDR
+
+CHSW --> SH : CH1 / CH2 / ADD
+SH --> ADC : held analog sample
+ADC --> ADBUF : 8-bit code, on CONV clock
+ADBUF --> MINMAX : compare vs running min/max
+MINMAX --> SWAP : NEWMIN/NEWMAX reclock
+SWAP --> ODD : parallel write, on ACQWRITE
+SWAP --> EVEN : parallel write, on ACQWRITE
+ADDR --> ODD : same address, same clock edge
+ADDR --> EVEN : same address, same clock edge
+ADDR -[#blue]-> ADDR : pre-loaded with\npretrigger offset\n(PREFULL signal)
+
+note right of ADDR
+  Both memory halves' address
+  counters increment together -
+  the "two interlaced locations
+  in lock step" the CPU-side
+  register map alone doesn't show.
+end note
+@enduml
+```
+
+See `docs/theory-of-operation.md`'s "ACQUISITION MEMORY" section for
+the full prose (Swap Register enable logic, the Acquisition Clock
+Decoder's delay chain, dual-channel switching timing) - not
+reproduced here in full since this section is meant to stay a map,
+not a transcription.
+
 ## Option 12 (RS-232) hardware confirmed from the service manual's own Theory of Operation section
 
 Found 2026-09-13 while looking for anything resembling "the serial

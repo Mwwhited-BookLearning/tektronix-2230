@@ -185,6 +185,108 @@ main boot sequence handing off to the comm ROM's own initialization
 `poll_dip_switch_change`, reading the rear-panel DIP switch bank - see
 `HARDWARE.md`) once its presence is confirmed.
 
+## Level 1 detail: boot-time diagnostics gating and the final idle halt
+
+Composed 2026-09-18 from this session's emulator trace work (fixing
+the "MI : Display controller : TIMEOUT" misattribution and
+investigating a SELECT C1/C2 report) plus the existing self-test
+dispatcher diagram above - shows the *whole* power-up path from the
+early bootstrap sanity check through to the CPU's own final idle halt,
+which no earlier diagram in this file reached.
+
+```plantuml
+@startuml
+start
+
+partition "COMM_ROM_BOOTSTUB_TARGET (0xE64C0)" {
+  :Disable interrupts, run low-level\nhardware init calls (0xF007, 0xFDB3,\n0xF156, ...);
+  :Zero a 12-entry array;
+  :Call assert_and_halt (0xE9255)\nwith fixed args - a bootstrap sanity\ncheck, not a SELECT C1/C2 branch;
+  note right
+    assert_and_halt computes a bound
+    via convert_sample_value (0xF1001)
+    and calls halt_cpu (0xF1611, a bare
+    `hlt`) if a bound is exceeded - see
+    docs/hardware-io/shift-register-
+    and-assert.md. Normally passes
+    silently and returns.
+  end note
+}
+
+partition "Early boot-time flag setup (0xE3B6A)" {
+  if ([0x758] & 0x63 != 0?) then (MEM1/2/3 or MENU ADV held)
+    :[0x1B48] = 3;
+  else (no)
+    if ([0x758] & 0x80 != 0?) then (SELECT C1/C2 held)
+      :[0x1B48] = 0;
+    else (no)
+      :[0x1B48] = 3;
+    endif
+  endif
+  if ([0x758] & 0x63 != 0?) then (yes, overrides above)
+    :[0x1B48] = 1;
+    note right: MEM1/2/3/MENU ADV\nheld takes priority over\nSELECT C1/C2 entirely
+  endif
+}
+
+partition "print_boot_rom_id_banner (0xE40CE)" {
+  if ([0x1B48] == 0?) then (yes - SELECT C1/C2 held alone)
+    :skip - no "2230/2220 boot : ..."\nbanner text printed;
+  else (no)
+    :print ROM-ID banner text;
+  endif
+}
+
+:self_test_dispatcher (0xE4244)\n(see the detailed diagram above -\nits own [0x1B7A] gate is separate\nfrom [0x1B48]);
+
+partition "Per-test error-report loop (0xE07E7)" {
+  if ([0x1B18]==1 or [0x1B48]==3?) then (yes)
+    :inc [0x1B10]\n(advance to next test's error slot);
+  else (no)
+    :stay on the same [0x1B10]\n(SELECT C1/C2 or MEM-button held);
+  endif
+  :print_string_far -> write_readout_port_byte\n(the confirmed sole channel for this\ntext, CRT + comm option alike);
+  if ([0x1B10] > 0xF?) then (yes)
+  else (loop while more tests remain)
+  endif
+}
+
+:eventually falls through to the\nCPU's own idle halt\n(halt_cpu, physical 0xF1611);
+note right
+  "PRESS MENU KEYS TO CONTINUE" -
+  every successful boot ends here,
+  waiting for front-panel input.
+  Unicorn gives no error/stop-
+  reason on a bare hlt by default;
+  the emulator's debugger now
+  detects this explicitly (see
+  emulator/docs/design.md's
+  2026-09-18 hlt-detection section)
+  instead of silently corrupting
+  state if a caller resumes past it.
+end note
+
+stop
+@enduml
+```
+
+**Open, not yet resolved** (see `TODO.md`): with SELECT C1/C2 held from
+power-on, `self_test_dispatcher` still runs (confirmed) but the traced
+run produces **zero** `write_readout_port_byte` output and reaches the
+final halt after measurably *less* total work (~984K vs ~2.07M
+instructions from dispatcher-entry) than the normal, unheld path - the
+opposite of the service manual's documented "held = extended
+diagnostics, more output including an RS-232 ASCII error dump."
+`[0x1B7A]` (self_test_dispatcher's own gate, shown in the diagram
+above) is never written by any code this project has disassembled in
+any of the 3 ROMs, so it isn't obviously the mechanism either. Leading
+hypothesis, from the user: a real front-panel button press may fire a
+hardware interrupt this emulator doesn't model, which real firmware
+needs to correctly recognize the held condition and switch into the
+actual extended-diagnostics path (as opposed to this project's current
+button model, which just pokes the `SWB2` register directly with no
+accompanying interrupt).
+
 ## Level 1 detail: (more as identified)
 
 As the remaining subsystem-test subroutines above get identified, add
