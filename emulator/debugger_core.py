@@ -308,6 +308,30 @@ class Debugger:
         # instruction executes - stopping *before* the real `hlt` runs
         # means IP is left pointing *at* it, not past it.
         if uc_eng.mem_read(address, 1) == b"\xf4":
+            # Tried making this auto-resume via a genuine interrupt
+            # injection (real 8086 semantics: any unmasked interrupt -
+            # NMI always qualifies - wakes a halted CPU and resumes at
+            # the *following* instruction) using the exact same
+            # register/stack manipulation `timer.fire_interrupt` already
+            # uses for the periodic tick. Verified it does correctly
+            # wake the CPU (confirmed via the periodic NMI tick firing
+            # and redirecting execution) - but the very next instruction
+            # after this specific `hlt` (`halt_cpu`, physical 0xF1611)
+            # promptly crashes with an unmapped write, every time,
+            # regardless of *how* execution reaches it. That's not a
+            # bug in the wake mechanism - it confirms `halt_cpu` really
+            # is a genuine, intentional one-way trap in this compiled
+            # ROM (matching `docs/hardware-io/shift-register-and-
+            # assert.md`'s existing finding for its other caller,
+            # `assert_and_halt`: "unreachable stack-cleanup code...
+            # because hlt never returns"), not a "wait for an event,
+            # then continue" idle loop - so auto-waking it only trades
+            # a clean, informative stop for a confusing crash. Kept the
+            # simpler behavior: report it clearly and stop, letting a
+            # caller that has a real reason to believe a *specific*
+            # halt should be woken (a different one, elsewhere) do that
+            # deliberately via `timer.fire_interrupt` rather than this
+            # hook silently guessing for every halt in the ROM.
             self._stop_reason = f"halted (hlt) at 0x{address:06X}"
             uc_eng.emu_stop()
             return

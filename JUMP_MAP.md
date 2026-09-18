@@ -245,7 +245,11 @@ partition "Per-test error-report loop (0xE07E7)" {
   else (no)
     :stay on the same [0x1B10]\n(SELECT C1/C2 or MEM-button held);
   endif
-  :print_string_far -> write_readout_port_byte\n(the confirmed sole channel for this\ntext, CRT + comm option alike);
+  if ([0x1B48]==0?) then (yes - SELECT C1/C2 held alone)
+    :print_string_far returns immediately\n- prints nothing at all;
+  else (no)
+    :print_string_far -> write_readout_port_byte\n(the confirmed sole channel for this\ntext, CRT + comm option alike);
+  endif
   if ([0x1B10] > 0xF?) then (yes)
   else (loop while more tests remain)
   endif
@@ -254,38 +258,70 @@ partition "Per-test error-report loop (0xE07E7)" {
 :eventually falls through to the\nCPU's own idle halt\n(halt_cpu, physical 0xF1611);
 note right
   "PRESS MENU KEYS TO CONTINUE" -
-  every successful boot ends here,
-  waiting for front-panel input.
-  Unicorn gives no error/stop-
-  reason on a bare hlt by default;
-  the emulator's debugger now
-  detects this explicitly (see
-  emulator/docs/design.md's
-  2026-09-18 hlt-detection section)
-  instead of silently corrupting
-  state if a caller resumes past it.
+  every successful boot ends here.
+  **Tested 2026-09-18**: this hlt is
+  a genuine one-way trap, not a
+  resumable wait state - manually
+  waking it via a real interrupt
+  injection (the same mechanism
+  the periodic NMI tick already
+  uses) does successfully resume
+  execution, but the very next
+  instruction always crashes with
+  an unmapped write, regardless of
+  how execution reaches it. So
+  pressing a menu key here most
+  likely triggers a genuine
+  hardware reset of the
+  microprocessor (compare TODO.md's
+  P9104 reset-jumper finding),
+  not a resumption of this halted
+  code - not yet confirmed against
+  the schematics. Unicorn gives no
+  error/stop-reason on a bare hlt
+  by default; the emulator's
+  debugger now detects this
+  explicitly (see emulator/docs/
+  design.md's 2026-09-18 hlt-
+  detection section) instead of
+  silently corrupting state if a
+  caller resumes past it.
 end note
 
 stop
 @enduml
 ```
 
-**Open, not yet resolved** (see `TODO.md`): with SELECT C1/C2 held from
-power-on, `self_test_dispatcher` still runs (confirmed) but the traced
-run produces **zero** `write_readout_port_byte` output and reaches the
-final halt after measurably *less* total work (~984K vs ~2.07M
-instructions from dispatcher-entry) than the normal, unheld path - the
-opposite of the service manual's documented "held = extended
-diagnostics, more output including an RS-232 ASCII error dump."
-`[0x1B7A]` (self_test_dispatcher's own gate, shown in the diagram
-above) is never written by any code this project has disassembled in
-any of the 3 ROMs, so it isn't obviously the mechanism either. Leading
-hypothesis, from the user: a real front-panel button press may fire a
-hardware interrupt this emulator doesn't model, which real firmware
-needs to correctly recognize the held condition and switch into the
-actual extended-diagnostics path (as opposed to this project's current
-button model, which just pokes the `SWB2` register directly with no
-accompanying interrupt).
+**Root cause found, 2026-09-18**: the "zero output when SELECT C1/C2 is
+held" behavior isn't a bug or a missing stub - it's exactly what the
+disassembled ROM does. `print_string_far` (`0xE0AF5`) itself checks
+`[0x1B48]==0` on entry and returns immediately, printing nothing, not
+just a shorter message - confirmed by tracing every self-test call
+site in both the held and unheld runs and finding an *identical* call
+sequence (same tests, same order, same count) that only differs in
+whether each `print_string_far` call actually does anything. This also
+fully explains the earlier "held does measurably less total work"
+observation: each suppressed call also skips the character-by-character
+`wait_readout_tick` pacing loop that dominates a normal call's
+instruction count.
+
+**Still genuinely open** (see `TODO.md` and `MEMORY_MAP.md`'s updated
+"Puzzle" section): this directly contradicts the service manual's own
+description of SELECT C1/C2 ("invoking extended DIAGNOSTICS... an
+ASCII version of all errors... sent to the [RS-232-C] option," i.e.
+*more* output, not none). Two live hypotheses, neither confirmed:
+(1) this channel (`write_readout_port_byte`, physical `0x40000+0x6F0`)
+is genuinely just a CRT-adjacent mirror, not the real UART, and the
+manual's promised extended ASCII dump goes out through the genuine
+UART registers via some other, not-yet-found code path entirely; or
+(2) the user's own hypothesis - a real front-panel button press fires
+a hardware interrupt this emulator doesn't model, which real firmware
+needs to switch into a still-undiscovered extended-diagnostics path
+that this project's current button model (a static `SWB2` register
+poke, no accompanying interrupt) never reaches. `[0x1B7A]`
+(`self_test_dispatcher`'s own gate, shown in the diagram above) is
+never written by any code this project has disassembled in any of the
+3 ROMs, so it isn't the mechanism for either hypothesis.
 
 ## Level 1 detail: (more as identified)
 

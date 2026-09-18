@@ -397,29 +397,62 @@ rather than silent corruption. (Unicorn's `UC_HOOK_INSN` can't hook
 `CPUID` are supported, confirmed by a `UC_ERR_ARG` trying it - hence
 checking the opcode byte in the existing per-instruction hook instead.)
 
-**With that fixed, the SELECT C1/C2 question itself is still open**,
-but now cleanly traceable instead of looking like a crash: `self_test_
-dispatcher` (`0xE4244`) genuinely still runs when the button is held
-(confirmed - its breakpoint is hit), and a flag `[0x1B7A]` (never
-written by any code this project has disassembled in any of the 3
-ROMs - always its RAM-zero default in every trace so far) gates
-whether the dispatcher prints its banner/display-test/report loop at
-all. The already-documented `[0x1B48]` (set from `[0x758]&0x80`,
-SELECT C1/C2's own bit - see `FUNCTIONS.md`) additionally disables the
-per-test "advance to the next error" increment in the report loop when
-held. Held-vs-not-held instruction counts from dispatcher-entry to the
-final halt differ by roughly 2x (about 984K vs 2.07M instructions),
-meaning held mode is doing measurably *less* work, not just suppressing
-prints on the same work - consistent with an early exit or a
-genuinely different, shorter path through the sibling self-tests, not
-yet located. User's own hypothesis, not yet checked: a real front-
-panel button press may fire a hardware interrupt this emulator doesn't
-model at all (distinct from the tick-driven `INT2`/`INT255` sources
-already documented in `docs/interrupts/ivt-and-int255.md`, whose own
-"lead exhausted" note only covers code already reached - the SELECT-
-C1/C2-held path reaches genuinely new ROM territory an interrupt-
-installing site could still be hiding in). Not resolved this session -
-see `TODO.md`.
+**With that fixed, the SELECT C1/C2 root cause (from the emulator's
+side) is now fully found.** `print_string_far` (`0xE0AF5`, the sole
+routine that actually writes self-test text to `write_readout_port_
+byte`'s port) checks `[0x1B48]==0` on entry and returns immediately,
+printing nothing at all - and `[0x1B48]==0` occurs exactly when SELECT
+C1/C2 is held alone at the moment `[0x758]` gets sampled early in boot.
+Confirmed by tracing every self-test call site in both a held and
+unheld run: the call sequence is byte-for-byte identical (same tests,
+same order, same count) in both cases - the only difference is whether
+each `print_string_far` call does its work or returns instantly, which
+also explains the earlier "held does ~2x less total work" observation
+(each suppressed call also skips its character-pacing `wait_readout_
+tick` loop, the most expensive part of a normal call). See `FUNCTIONS.
+md`'s `print_string_far` entry and `JUMP_MAP.md`'s boot-sequence
+diagram for the full mechanism.
+
+This is real, disassembled ROM logic - not a missing emulator stub -
+and it directly **contradicts** the service manual's own description
+of SELECT C1/C2 ("invoking extended DIAGNOSTICS... an ASCII version of
+all errors... sent to the [RS-232-C] option," i.e. *more* output, not
+none). Checked and ruled out: `write_readout_port_byte`'s target
+(physical `0x40000+0x6F0`) is the exact same address already confirmed
+as the real UART's own data register (`InteractiveUartMock`'s mapping)
+- so this isn't "just a CRT mirror, a different real UART path
+carries the extended dump" as first hoped; the suppressed channel
+really is the genuine UART. Also checked and ruled out: simulating
+"the operator then presses a MENU key" to continue past the boot's
+final idle halt, hoping that would reveal a real extended-diagnostics
+continuation. Built a genuine interrupt-injection wake for a halted
+CPU (reusing `timer.fire_interrupt`'s exact register/stack
+manipulation) to test this properly instead of naively skipping the
+`hlt` byte (which just reproduces the old "garbage register state"
+symptom) - it does correctly wake the CPU, but the instruction
+immediately following this `hlt` (`halt_cpu`, `0xF1611`) crashes with
+an unmapped write regardless of how execution reaches it. That
+confirms `halt_cpu` is a genuine, intentional one-way trap in this
+compiled ROM (matching its other caller, `assert_and_halt`'s, already-
+documented "hlt never returns" shape - see `docs/hardware-io/shift-
+register-and-assert.md`), not a resumable "wait for keypress" idle
+loop - so "PRESS MENU KEYS TO CONTINUE" most likely means a genuine
+hardware reset of the microprocessor (compare `TODO.md`'s `P9104`
+reset-jumper finding), not a resumption of this halted code. Reverted
+the auto-wake experiment (kept as a plain, clean "halted (hlt)" stop
+instead) since auto-waking every halt trades a clean, informative stop
+for a confusing crash on this specific one, with no upside found.
+
+**Still genuinely open**: why the disassembly's plain behavior
+contradicts the manual's plain description. User's own hypothesis,
+not yet checked: a real front-panel button *press* (the physical
+event, not just the resulting static register bit) may fire a hardware
+interrupt this emulator's button model doesn't - `docs/interrupts/ivt-
+and-int255.md`'s "lead exhausted" conclusion about IVT-installing
+sites only covers code already reached, and since the held/unheld call
+sequences are now confirmed identical, this hypothesis would need an
+interrupt-install site somewhere *other* than the code path already
+traced. Not resolved this session - see `TODO.md`.
 
 ## Interactive REPL debugger, 2026-09-16
 

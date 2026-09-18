@@ -14,29 +14,57 @@ instead of assuming bare `nasm` resolves.
       the emulator, when real hardware and the service manual
       (`docs/maintenance.md`) both say holding it should invoke
       *extended* diagnostics with *more* output (an RS-232 ASCII error
-      dump). Investigated at length - see `emulator/docs/design.md`'s
-      "Found and fixed a real bug: no hlt detection, 2026-09-18"
-      section for the full trace. Along the way, found and fixed a
-      genuine, separate emulator bug (missing `hlt`-instruction
-      detection, which had been misdiagnosing this as a "crash" into
-      unmapped memory - it's actually just the ordinary end-of-boot
-      idle halt, `physical 0xF1611`/`halt_cpu`, reached by a shorter
-      path). With that fixed: `self_test_dispatcher` does still run
-      when held, gated in part by `[0x1B7A]` (a flag never written by
-      any code this project has disassembled in any of the 3 ROMs) and
-      `[0x1B48]` (already documented, derived from `[0x758]&0x80`).
-      Held mode does measurably less total work before halting (~984K
-      vs ~2.07M instructions from dispatcher-entry), not just silently
-      suppressed prints - a real behavioral divergence, not found yet.
-      **User's own hypothesis, not yet checked**: a real front-panel
-      button press may fire a hardware interrupt this emulator doesn't
-      model - `docs/interrupts/ivt-and-int255.md`'s "lead exhausted"
-      conclusion about IVT-installing sites only covers code already
-      reached; the SELECT-C1/C2-held path runs through genuinely new,
-      previously-unexecuted ROM territory that could still hide one.
-      Next step: disassemble that new territory looking for a `mov
-      word [es:bx], <handler>` IVT-install pattern the way the existing
-      5 vectors were originally found.
+      dump). Root cause of the *emulator's* zero-output behavior fully
+      found and confirmed 2026-09-18 - see `JUMP_MAP.md`'s "boot-time
+      diagnostics gating" section and `FUNCTIONS.md`'s `print_string_
+      far` entry: that function itself checks `[0x1B48]==0` (set
+      exactly when SELECT C1/C2 is held alone) and returns immediately,
+      printing nothing - confirmed via an identical self-test call
+      sequence in both held/unheld runs, differing only in whether each
+      print call does anything. This is real, disassembled ROM logic,
+      not an emulator stub gap or a bug in the emulator's button model.
+      Along the way, also found and fixed a genuine, separate emulator
+      bug (missing `hlt`-instruction detection, which had briefly
+      misdiagnosed this as a crash into unmapped memory before the real
+      mechanism was found) - see `emulator/docs/design.md`'s "Found and
+      fixed a real bug: no hlt detection" section.
+      **Hypothesis (1) checked and disproved**: searched every
+      reference to `0x6F0`-`0x6F7` across the main ROM's disassembly -
+      `write_readout_port_byte`'s target *is* the exact same physical
+      address (`0x406F0`) already confirmed as the real UART's own data
+      register (`io_stubs.InteractiveUartMock`'s mapping), not a
+      separate CRT-only mirror with a different real channel elsewhere.
+      So the suppressed channel really is the genuine UART - this
+      doesn't resolve `MEMORY_MAP.md`'s "Puzzle" section in favor of
+      "mirror" after all.
+      **Also tried**: simulating "the operator presses a MENU key" to
+      continue past the final idle halt, hoping that would reveal a
+      real extended-diagnostics continuation. Built a genuine interrupt
+      -injection wake for a halted CPU (reusing `timer.fire_interrupt`)
+      to test this properly - it does wake the CPU correctly, but the
+      instruction immediately after this specific halt (`halt_cpu`,
+      `0xF1611`) crashes with an unmapped write every time, regardless
+      of how execution reaches it. This confirms `halt_cpu` is a
+      genuine one-way trap in this compiled ROM (matching its other
+      caller `assert_and_halt`'s already-documented "hlt never returns"
+      shape), not a resumable wait state - "PRESS MENU KEYS TO
+      CONTINUE" most likely means a genuine hardware reset of the
+      microprocessor (compare the `P9104` reset-jumper finding below),
+      not a resumption of the halted code. See `emulator/docs/design.md`'s
+      "Found and fixed a real bug: no hlt detection" section for the
+      full writeup of both dead ends.
+      **Still open**: why the plain disassembled behavior contradicts
+      the manual. Remaining hypothesis, the user's own, not yet
+      checked: a real front-panel button *press* (the physical event,
+      not just the resulting static register bit) may fire a hardware
+      interrupt this emulator's button model doesn't. `docs/interrupts/
+      ivt-and-int255.md`'s "lead exhausted" conclusion about IVT-
+      installing sites only covers code already reached, and the held/
+      unheld self-test call sequences are confirmed identical - so this
+      would need an interrupt-install site somewhere *other* than the
+      code path already traced (perhaps in the front-panel-controller-
+      side hardware described in the Theory of Operation manual, not
+      yet cross-referenced against this specific question).
 - [ ] **User request 2026-09-17: hunt down every hardware jumper** on
       the main boards - they may explain debugging/configuration
       behavior (comm detection, reset) the firmware/emulator can't

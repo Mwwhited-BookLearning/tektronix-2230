@@ -496,6 +496,30 @@ doesn't discriminate between them. See `docs/display/readout-memory.md`'s expand
 as a genuinely open, well-documented question rather than guessed at
 either way.
 
+**Correction, 2026-09-18: `print_string_far` is not actually
+unconditional.** The "fires unconditionally" claim above was true only
+because every prior test happened to run with the front-panel SELECT
+C1/C2 button unheld - nobody had tried holding it. Tracing a user
+report that holding it (a momentary button, held before power-on)
+suppresses all diagnostic text found the real mechanism: `print_
+string_far` (`0xE0AF5`) checks `[0x1B48]==0` on entry and returns
+immediately, printing nothing, and `[0x1B48]==0` happens exactly when
+SELECT C1/C2 is held alone at the moment `[0x758]` is sampled early in
+boot (see `FUNCTIONS.md`'s `print_string_far` entry, `JUMP_MAP.md`'s
+boot-sequence diagram). This directly **contradicts** the service
+manual's own description of that button ("invoking extended
+DIAGNOSTICS... an ASCII version of all errors... sent to the
+[RS-232-C] option" - i.e. *more* output, not none) - open question,
+not yet resolved: either this specific channel really is just a
+CRT-adjacent mirror after all (and the manual's promised extended
+ASCII dump goes out through the genuine UART registers, `0x406F0-
+0x406F7`, via some other, not-yet-found code path entirely - this
+would finally settle the open "is it the UART or a CRT mirror"
+question above, in favor of "mirror"), or the emulator's static
+front-panel button model is missing something a real button press
+would provide (the user's own hypothesis: a hardware interrupt fired
+on the press itself, not just a static register bit - see `TODO.md`).
+
 ## Two separate A/D converters, both now named
 
 The service manual confirms this scope has **two distinct ADCs**,
