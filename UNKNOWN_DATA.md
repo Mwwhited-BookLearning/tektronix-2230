@@ -88,6 +88,10 @@ matches the tables below):
   address table.
 - `2998 0x80EC-0x8211` (block 5) - grouped incrementing-ID table,
   tentatively comm-status-related.
+- `2998 0x8824C-0x88A57` (blocks 6-7 below) - a second pointer/
+  dispatch table immediately adjacent to the confirmed command-
+  keyword-table cluster; likely id-to-handler-address, not fully
+  decoded - see "6." in the deep-dive doc.
 
 ## Summary
 

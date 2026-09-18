@@ -91,22 +91,31 @@ instead of assuming bare `nasm` resolves.
       either - not conclusive (a different addressing form or an
       entirely different comm-ROM-local variable could still reference
       the same hardware register) but one more lead closed off.
-      **Two remaining possibilities**: (1) the mechanism lives in that
-      small remaining unreached comm-ROM span, referenced some way this
-      byte-pattern check wouldn't catch - manually reading that ~2KB
-      (`UNKNOWN_DATA.md` "Chip 2998" blocks 6/7) would be the concrete
-      next step, not building new tooling. (2) it's a pure hardware-
-      level effect - the switch wired directly to something like the
-      UART's chip-select or baud-rate-clock enable, which would never
-      appear in any disassembly at all no matter how much more code
-      gets covered; the Diagrams survey (`docs/diagrams-index.md`) or a
-      fresh schematic trace of the front-panel-to-comm-board wiring
-      would be the only way to check that. The user's own interrupt
-      hypothesis was narrowed but not confirmed: the held/unheld self-
-      test call sequences are identical, so if a missing interrupt is
-      the real cause, its install site must be in code outside the
-      path already traced - most likely inside whichever of the two
-      possibilities above turns out to be true.
+      **Read that remaining span by hand, same day**: the ~2KB block
+      (`UNKNOWN_DATA.md` "Chip 2998" blocks 6/7, phys `0x08824C-
+      0x088A57`) is a second far-pointer/dispatch table, structurally
+      distinct from the confirmed command-keyword dispatch table it
+      sits immediately adjacent to (ends exactly one byte before that
+      table starts) - see "6." in `docs/decode-anomalies/unknown-data-
+      deep-dive-2026-09-15.md` for the full evidence (record-fitting
+      stats, 41% of plausible entries landing exactly on already-known
+      function starts). Working hypothesis: a command-ID-to-handler-
+      address table complementary to the confirmed command-ID-to-
+      display-string one. Every target it resolves to is comm-ROM/
+      main-ROM *code*, none of it front-panel-switch-related - this
+      lead is now closed, not just deferred.
+      **One remaining possibility**: a pure hardware-level effect - the
+      switch wired directly to something like the UART's chip-select or
+      baud-rate-clock enable, which would never appear in any
+      disassembly at all no matter how much more code gets covered; the
+      Diagrams survey (`docs/diagrams-index.md`) or a fresh schematic
+      trace of the front-panel-to-comm-board wiring would be the only
+      way to check that. The user's own interrupt hypothesis was
+      narrowed but not confirmed: the held/unheld self-test call
+      sequences are identical, so if a missing interrupt is the real
+      cause, its install site must be in code outside the path already
+      traced - most likely wired to the same hardware effect above,
+      since every code-based lead is now exhausted.
 - [ ] **User request 2026-09-17: hunt down every hardware jumper** on
       the main boards - they may explain debugging/configuration
       behavior (comm detection, reset) the firmware/emulator can't

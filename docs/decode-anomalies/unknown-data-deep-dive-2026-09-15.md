@@ -395,6 +395,56 @@ from the same table), not a confirmed identification.
 string table offset? an internal error-code list? something else
 entirely), or what reads this table.
 
+## 6. `160-2998` file `0x0824C-0x08A57`: a second, structurally-different pointer table immediately adjacent to the confirmed command-keyword-table cluster (well-supported, not fully decoded)
+
+Found this while chasing the SELECT C1/C2 investigation (see
+`TODO.md`), checking whether this span - the largest contiguous
+unreached comm-ROM byte range - held the missing output-suppression
+mechanism. It doesn't (no `[0x758]`/`[0x1B48]` byte pattern anywhere in
+it, and see below for what it actually is), but the span itself is a
+real finding worth recording on its own.
+
+This 2060-byte block ends at file offset `0x8A57` - **exactly one byte
+before** the already-confirmed command-keyword-table cluster begins at
+`0x8A58` (`docs/comm-rom/command-keyword-table.md`,
+`disasm/decode_comm_keyword_table.py`). That boundary is unlikely to be
+coincidental.
+
+It is NOT the same structure as the confirmed dispatch table there
+(6-byte records, marker byte `0xFF`, a fixed segment `0xDE90`). Fitting
+different fixed-width record models against every 2-byte field at every
+stride/phase, the best fit is 4 bytes per record, phase 0 - `[offset
+u16][segment u16]`, little-endian - where **77% of records** decode to
+a segment plausible for this ROM's own address space (`0x8000-0x97FF`,
+the comm ROM's confirmed range and its `0x90000` alias, or `0xE000-
+0xFFFF`, the main ROM's), well above what 515 random 4-byte windows
+would produce by chance. Stronger: of those plausible-segment records,
+**41% resolve (segment*16 + offset) to the exact physical address of
+an already-identified function entry point** (mostly the comm ROM's
+own heuristic push-bp-prologue matches, `disasm/gen_disasm_2998.py`) -
+hitting a sparse set of known label starts that often, by pure chance,
+would not happen anywhere near this rate.
+
+**Working hypothesis, not confirmed**: a second table in the same
+command-table cluster, this one resolving a command ID (or similar) to
+an executable *handler* address, complementary to the confirmed
+table's id-to-*display-string* mapping. Not proven: the record
+boundaries aren't perfectly clean (77%, not 100%, hence not a fully
+solved fixed-width model), so the true record width/stride and any
+interleaved non-pointer fields (small integers, flag bytes - the
+visual byte dump shows short runs that don't fit the 4-byte pointer
+pattern) remain unresolved. No caller referencing this table's base
+address was found in already-reached code, so what indexes it (and
+whether it's even live vs. an orphaned/superseded table) is also open.
+
+**Relevance to SELECT C1/C2**: none found. Every plausible target this
+table's entries resolve to is comm-ROM/GPIB-RS232 command-handling
+code (or main-ROM code reachable via a normal far call) - nothing
+resembling front-panel switch state, which the comm ROM board has no
+reason to read directly (that's `[0x758]`, read and gated entirely in
+the main ROM). This closes off the "unread comm-ROM span" lead from
+`TODO.md`'s SELECT C1/C2 entry.
+
 ## Summary table
 
 | # | Chip | File offset | Confidence | What |
@@ -404,6 +454,7 @@ entirely), or what reads this table.
 | 3 | 3633 | `0xAE64-0xB061` | **Encoding confirmed**, purpose genuinely unresolved | Vector shape table using the same pen-bit convention as `draw_readout_char`, rendered with the new `disasm/decode_vector_icons.py`; contains a 40-pt circle duplicated as a cyclic point-list rotation, a small circle sharing its center, a needle-length line, and 3 medium shapes that look letter-like at one scale but don't confirm as a clean alphabet - could be UI icons or a rough font, rendering didn't settle which |
 | 4 | 3532 | `0xBEE6-0xC263` | Partially resolved | Only the first 44 bytes are near an already-known self-test string cluster (not an exact match); the other ~850 bytes are a different, still-unknown structure - the original "one table" framing was wrong |
 | 5 | 2998 | `0x80EC-0x8211` | Plausible | Grouped incrementing-ID record table; tentatively status/error-category-related, not a clean match yet |
+| 6 | 2998 | `0x0824C-0x08A57` | Well-supported, not fully decoded | Second pointer/dispatch table immediately adjacent to the confirmed command-keyword-table cluster; likely id-to-handler-address, complementary to the confirmed id-to-display-string table; not the SELECT C1/C2 mechanism |
 
 None of the addresses discussed here were renamed in
 `gen_disasm_x86.FUNCTIONAL_NAMES`/`FUNCTIONS.md` - none reached this
