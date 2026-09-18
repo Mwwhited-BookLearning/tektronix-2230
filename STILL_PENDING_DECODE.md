@@ -157,7 +157,11 @@ The single biggest cluster of open items - see
   Buffer (`0x4067C`, `BD3`-`BD5`) - but the still-open part is
   unchanged: which *specific* switch number (within each group)
   controls which *specific* decoded firmware setting (parity, stop
-  bits, etc. beyond the already-confirmed baud-rate nibble).
+  bits, etc. beyond the already-confirmed baud-rate nibble). **Polarity
+  resolved 2026-09-17** (see `MEMORY_MAP.md`'s update to this section):
+  the switches are active-LOW (ON pulls the bit to `0`), confirmed
+  against a live exerciser-screen photo - only the switch-to-setting
+  mapping beyond baud rate remains open, not the bit-level polarity.
 - **`COMM/DATA/STOP_BITS`/`FLOW` (runtime menu) vs. the rear-panel DIP
   switch** - both configure overlapping RS-232 parameters; not clear
   which wins or whether the DIP switch only sets power-on defaults.

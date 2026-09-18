@@ -209,6 +209,23 @@ latch self-test (Table 7-38's Status Buffer bit 6 is literally
 was last latched into output `3D`, exactly matching this code's
 read-after-toggle shape).
 
+**Exact bit position pinned down 2026-09-17** by fully decoding the
+self-test's own pass/fail arithmetic (not just its shape) while
+building an emulator stub for it: it reads `comm_stat` *twice* (once
+before, once after writing `3D`), masks each read to bits `0xC0`,
+shifts the *first* read right by 2, and ORs the two together -
+`(read1&0xC0)>>2 | (read2&0xC0)` - requiring the result to be exactly
+`0xD0` to pass. Solving that backwards shows bit `0x40` (the manual's
+"bit 6") must be fixed at 1, matching the real captured `0x7D`
+baseline, while bit `0x80` is the one that actually has to move,
+`0`→`1`, exactly when `3D` goes `0`→`1` - so the loopback lives at bit
+`0x80`, one position higher than "Status Buffer bit 6" reads at face
+value (an off-by-one in either the manual's own bit numbering or this
+project's prior reading of it, not resolved further - the emulator
+stub, `io_stubs.DiagCommLatchLoopback`, models the disassembly-derived
+`0x80` behavior directly and is now confirmed to make this specific
+self-test pass end-to-end).
+
 **All 4 outputs fully resolved as of 2026-09-16** (this section's own
 "not yet found" note below is stale, kept for the historical trail -
 see `docs/comm-rom/rs232-early-investigation.md`'s "Traced the
@@ -447,6 +464,19 @@ sharper photo to confirm exactly.
   8-bit snapshot as a real, physically-grounded reading rather than a
   fully-interpreted one - the bit *map* is solid, individual bit
   *polarity* isn't independently verified yet.
+
+  **DIP-switch polarity resolved 2026-09-17**: the 10 PARAMETERS DIP
+  switches are **active-LOW** - a switch physically in the ON position
+  pulls its bit to `0`; OFF leaves it (pulled up) at `1`. Confirmed
+  against a fresh exerciser-screen photo: `comm_param` read `11110011`
+  with switches 3 and 4 the only ones ON, and `11110011`'s cleared
+  bits (`BD2`, `BD3` - switches 3, 4 in the `BD0`-`BD6` = switches 1-7
+  map above) are exactly the 2 switches that were on, everything else
+  reading `1` (off). `emulator/io_stubs.InteractiveDipSwitches` was
+  emulating this backwards (active-high) until this fix. This settles
+  DIP-switch polarity specifically - the *other* status bits (`PWR
+  INT`, `INTR+DR`, `TBRE`, diagnostic, `DCD`) are a separate open
+  question, not addressed by this finding.
 
 ## Resolved this session (2026-09-13, from the service manual)
 
