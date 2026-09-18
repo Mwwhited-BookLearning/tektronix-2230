@@ -187,19 +187,36 @@ class DiagCommLatchLoopback:
     pair, found here 2026-09-17 while investigating `selftest_comm_
     readback` (physical `0xE20B0`).
 
-    **Derived from the actual disassembly, not the manual's own English
-    description** (which just says Status Buffer bit 6 is "Interrupt
-    mask latch D3" - close, but the exact bit position matters and
-    this derivation pins it precisely): the self-test writes `0` then
-    `1` to `0x406FB`, reading `comm_stat` once after each write, and
-    combines the two reads as `(read1 & 0xC0) >> 2 | (read2 & 0xC0)`,
-    requiring the result to be exactly `0xD0` to fully pass. Solving
-    that equation backwards (see `COMM_OPTION_STUBS`'s own comment on
-    why a *static* `comm_stat` value can never satisfy it - confirmed
-    by first trying exactly that) shows it needs bit `0x40` fixed at 1
-    (matching the real captured `0x7D` baseline's own "BD6=diagnostic"
-    bit) and bit `0x80` to go `0`->`1` exactly when `3D` goes `0`->`1` -
-    i.e. bit `0x80`, not `0x40`, is the one that must actually move.
+    **Derived from the actual disassembly**: the self-test writes `0`
+    then `1` to `0x406FB`, reading `comm_stat` once after each write,
+    and combines the two reads as `(read1 & 0xC0) >> 2 | (read2 &
+    0xC0)`, requiring the result to be exactly `0xD0` to fully pass.
+    Solving that equation backwards (see `COMM_OPTION_STUBS`'s own
+    comment on why a *static* `comm_stat` value can never satisfy it -
+    confirmed by first trying exactly that) shows it needs bit `0x40`
+    fixed at 1 and bit `0x80` to go `0`->`1` exactly when `3D` goes
+    `0`->`1`.
+
+    **Known conflict with the real Options manual, found 2026-09-17/18
+    - NOT resolved, flagged rather than silently trusted**: the
+    Options manual's own Table 7-36 ("RS-232-C Status Buffer
+    Functions," see `docs/options.md`/`MEMORY_MAP.md`) names bit
+    `0x40` as `DIAG` (Interrupt mask latch `3D` - i.e. the bit this
+    class should be toggling, per the manual) and bit `0x80` as
+    `/DCD2` (data carrier detect - an unrelated modem-status signal
+    with no documented connection to `3D` at all). That's the *opposite*
+    of what the disassembly-derived equation above requires. Toggling
+    bit `0x40` instead (matching the manual) produces `0x40` for the
+    combined result, not `0xD0` - genuinely fails the self-test, not
+    just a different passing value. Since bit `0x80` is what actually
+    makes the firmware's own self-test pass (confirmed end-to-end: `
+    [0x1BF9]`/`[0x1BFA]` both end up set, and the self-test genuinely
+    progresses further instead of stopping at "not installed"), this
+    class keeps that behavior - but it means either the manual's bit
+    assignment doesn't apply exactly as read, or there's a real hardware
+    coupling between `3D` and `/DCD2` this project hasn't found yet.
+    Worth resolving with a real schematic trace (see `TODO.md`'s
+    jumper-hunt item) rather than guessed away.
 
     **Real bug found and fixed while verifying this**: the first
     version tried to persist the loopback bit by writing it straight

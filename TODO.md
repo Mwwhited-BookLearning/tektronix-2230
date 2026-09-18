@@ -42,10 +42,66 @@ instead of assuming bare `nasm` resolves.
         mentions generic "service jumper connections" (Diagrams 10,
         11, 21) used to isolate power-supply loading during
         troubleshooting - lower priority, not memory/config-related.
-      - Section 7 (Options) OCR is in progress as of this writing and
-        may directly explain `P9107`'s function since it's the
-        connector-level option-installation manual; check there first
-        before digging into raw schematics.
+      - **Checked 2026-09-18**: `docs/options.md` (Service Manual
+        Section 7, now OCR'd in full, including its own "OPTION 10/12
+        THEORY OF OPERATION") **does not mention `P9107` at all** -
+        ruled out as the source, still unresolved. That same document
+        did resolve a different, related open question though: **Table
+        7-36 ("RS-232-C Status Buffer Functions")** gives `comm_stat`'s
+        full authoritative bit map (see `MEMORY_MAP.md`'s updated
+        Interrupt Mask Latch section) - and in doing so, exposed a
+        genuine **conflict** with this session's own disassembly-
+        derived model: the table says bit `0x40` is `DIAG`/Interrupt-
+        Mask-Latch-output-`3D` and bit `0x80` is the unrelated `/DCD2`
+        (modem carrier-detect), but `selftest_comm_readback`'s own
+        instructions require bit `0x80` (not `0x40`) to be the one that
+        toggles with `3D` for its check to reach the required `0xD0`
+        result - confirmed by testing bit `0x40` instead, which
+        produces `0x40` and genuinely fails. `io_stubs.
+        DiagCommLatchLoopback`'s docstring documents this conflict in
+        full rather than silently picking a side. A real schematic
+        trace of `3D`'s actual wiring (Section 9, Diagrams) would
+        settle it - a survey of specific pages from that section is in
+        progress as of this writing (see below); check there next.
+      - **Found, not yet electrically understood, 2026-09-18**: the
+        34-page Diagrams survey (`docs/diagrams-index.md`) found
+        `P9107` on **page 65** (Diagram 14, "Microprocessor and Store
+        Panel Controls," board A10), printed with **ON/OFF labels**, right
+        next to the `U9104` reset/clock RC network (`R9107`/`C9107`) -
+        consistent with `docs/theory-of-operation.md`'s reset-timing
+        description, but still doesn't say what ON vs OFF *does*
+        beyond "move it when installing a comm option." Also found a
+        **second, previously-unknown jumper `P9105`** right next to it,
+        printed with **TEST/NORM labels** - very plausibly a genuine
+        firmware self-test/diagnostic-mode strap, not yet connected to
+        anything in this project's own findings. **`P9104` is NOT a
+        jumper** - it's the clock/oscillator IC itself; every reference
+        to "jumper P9104" (including this project's own, sourced from
+        the Theory of Operation text) most likely means the nearby
+        `P9107`/`P9105` jumpers, not a literal `P9104` jumper - worth
+        re-reading `docs/theory-of-operation.md`'s exact wording again
+        with this in mind. No jumpers found anywhere else across the 34
+        pages, including the comm-option boards (22-25) - only fixed
+        connectors there. **Next step**: get page 65 read again
+        specifically for the ON/OFF and TEST/NORM position labels'
+        actual meaning (what circuit each position connects to), since
+        the survey only confirmed the jumpers exist and their labels,
+        not their electrical effect.
+      - **Same survey, on the bit-6-vs-bit-7 conflict above**: page 114
+        (Diagram 23, RS-232 Option Board) confirms `DIAG` and `RLSD`
+        (the real schematic name for what `/DCD2` refers to) are two
+        distinct, separately-labeled signal nets - supporting that
+        they're genuinely different signals, not the same one under two
+        names. Does **not** resolve which one actually toggles during
+        `selftest_comm_readback`'s sequence - that needs real wire-
+        level netlist tracing, out of scope for an index survey. Also
+        surfaced a possible chip-designator slip worth double-checking:
+        the schematic prints "U1235" for what `docs/options.md`'s own
+        prose calls "U1236" (Interrupt Mask Latch) in 6+ separate
+        places with matching pin/behavior detail - the text is strong
+        enough evidence that `U1236` stays the confirmed designator in
+        `MEMORY_MAP.md`, but flag if a sharper look at the original
+        page 114 scan ever contradicts that.
 - [ ] **Reminder (user, 2026-09-16)**: review service manual **page
       415** - the acquisition memory logic (RAM chips + decode logic).
       User's own preview while noting this down: 2x 2048x8 static RAM,

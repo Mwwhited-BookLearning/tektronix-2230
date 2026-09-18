@@ -553,20 +553,20 @@ A list of the instrument diagnostic tests is shown in Table 6-8. The diagnostics
 
 | MESSAGE (a) | POWER-UP | MENU |
 |---|---|---|
-| PU : \<message\> | X | |
-| MI : \<message\> | X | |
-| SYS_ROM_n : \<message\> | | X |
-| SYS_RAM : \<message\> | | X |
-| NIB_RAM : \<message\> | | X |
-| ACQ_AB : \<message\> | X | X |
-| ACQ_MEM : \<message\> | X | X |
-| PRC : \<message\> | X | X |
-| HS_ACQ : \<message\> | X | X |
-| TBD \<rng\> : \<message\> | X | X |
-| MM_ACQ : \<message\> | X | X |
-| XY_ACQ : \<message\> | X | X |
-| CDT : \<message\> | X | X |
-| FP_A2D : \<message\> | X | X |
+| PU : {message} | X | |
+| MI : {message} | X | |
+| SYS_ROM_n : {message} | | X |
+| SYS_RAM : {message} | | X |
+| NIB_RAM : {message} | | X |
+| ACQ_AB : {message} | X | X |
+| ACQ_MEM : {message} | X | X |
+| PRC : {message} | X | X |
+| HS_ACQ : {message} | X | X |
+| TBD {rng} : {message} | X | X |
+| MM_ACQ : {message} | X | X |
+| XY_ACQ : {message} | X | X |
+| CDT : {message} | X | X |
+| FP_A2D : {message} | X | X |
 
 (a) Each n, message, and rng depend upon the detected failure.
 
@@ -634,20 +634,20 @@ U4119 Signal and Pin Number: AD7(12), AD6(13), AD5(14), AD4(15), AD0(16), AD1(17
 
 | Access Group: Power-up | Access Group: Menu | Message |
 |---|---|---|
-| Power-up | | `PU : ROM/RAM/NMI : <hex_value>` |
-| Power-up | | `MI : line stuck high`<br>`MI : Display controller : TIMEOUT`<br>`MI : Display controller : unable to reset mi` |
-| | Menu | `SYS_ROM_0 : <actual_check_sum> <> <expected_check_sum>`<br>`SYS_ROM_1 : <actual_check_sum> <> <expected_check_sum>` |
-| | Menu | `SYS_RAM : @ <address>` |
-| | Menu | `NIB_RAM : @ <address>` |
-| Power-up | Menu | `ACQ_AB : read-back <actual> <> <expected>` (this message may appear more than once) |
-| Power-up | Menu | `ACQ_MEM : @ <address>` |
-| Power-up | Menu | `PRC : read-back <actual> <> <expected>` (this message may appear more than once) |
-| Power-up | Menu | `HS_ACQ : latent END_OF_RECORD`<br>`HS_ACQ : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`HS_ACQ : prc <prc_actual> <> <prc_expected>`<br>`HS_ACQ : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD hs/2 : latent END_OF_RECORD`<br>`TBD hs/2 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD hs/2 : prc <prc_actual> <> <prc_expected>`<br>`TBD hs/2 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD ps/2 : latent END_OF_RECORD`<br>`TBD ps/2 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD ps/2 : prc <prc_actual> <> <prc_expected>`<br>`TBD ps/2 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD ps/5 : latent END_OF_RECORD`<br>`TBD ps/5 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD ps/5 : prc <prc_actual> <> <prc_expected>`<br>`TBD ps/5 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD ps/10 : latent END_OF_RECORD`<br>`TBD ps/10 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD ps/10 : prc <prc_actual> <> <prc_expected>`<br>`TBD ps/10 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD /10 : latent END_OF_RECORD`<br>`TBD /10 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD /10 : prc <prc_actual> <> <prc_expected>`<br>`TBD /10 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
+| Power-up | | `PU : ROM/RAM/NMI : {hex_value}` |
+| Power-up | | `MI : line stuck high`<br />`MI : Display controller : TIMEOUT`<br />`MI : Display controller : unable to reset mi` |
+| | Menu | `SYS_ROM_0 : {actual_check_sum} {} {expected_check_sum}`<br />`SYS_ROM_1 : {actual_check_sum} {} {expected_check_sum}` |
+| | Menu | `SYS_RAM : @ {address}` |
+| | Menu | `NIB_RAM : @ {address}` |
+| Power-up | Menu | `ACQ_AB : read-back {actual} {} {expected}` (this message may appear more than once) |
+| Power-up | Menu | `ACQ_MEM : @ {address}` |
+| Power-up | Menu | `PRC : read-back {actual} {} {expected}` (this message may appear more than once) |
+| Power-up | Menu | `HS_ACQ : latent END_OF_RECORD`<br />`HS_ACQ : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`HS_ACQ : prc {prc_actual} {} {prc_expected}`<br />`HS_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD hs/2 : latent END_OF_RECORD`<br />`TBD hs/2 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD hs/2 : prc {prc_actual} {} {prc_expected}`<br />`TBD hs/2 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD ps/2 : latent END_OF_RECORD`<br />`TBD ps/2 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD ps/2 : prc {prc_actual} {} {prc_expected}`<br />`TBD ps/2 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD ps/5 : latent END_OF_RECORD`<br />`TBD ps/5 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD ps/5 : prc {prc_actual} {} {prc_expected}`<br />`TBD ps/5 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD ps/10 : latent END_OF_RECORD`<br />`TBD ps/10 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD ps/10 : prc {prc_actual} {} {prc_expected}`<br />`TBD ps/10 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD /10 : latent END_OF_RECORD`<br />`TBD /10 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD /10 : prc {prc_actual} {} {prc_expected}`<br />`TBD /10 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
 
 <!-- page 6-18 -->
 
@@ -655,18 +655,18 @@ U4119 Signal and Pin Number: AD7(12), AD6(13), AD5(14), AD4(15), AD0(16), AD1(17
 
 | Access Group: Power-up | Access Group: Menu | Message |
 |---|---|---|
-| Power-up | Menu | `TBD /100 : latent END_OF_RECORD`<br>`TBD /100 : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD /100 : prc <prc_actual> <> <prc_expected>`<br>`TBD /100 : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD /1k : latent END_OF_RECORD`<br>`TBD /1k : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD /1k : prc <prc_actual> <> <prc_expected>`<br>`TBD /1k : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD /10k : latent END_OF_RECORD`<br>`TBD /10k : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD /10k : prc <prc_actual> <> <prc_expected>`<br>`TBD /10k : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `TBD /100k : latent END_OF_RECORD`<br>`TBD /100k : acq_mem cntr <mem_actual> <> <mem_expected>`<br>`TBD /100k : prc <prc_actual> <> <prc_expected>`<br>`TBD /100k : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `MM_ACQ : latent END_OF_RECORD`<br>`MM_ACQ : prc <prc_actual> <> <prc_expected>`<br>`MM_ACQ : acq_mem cntr <acq_mem_actual> <> <acq_mem_expected>`<br>`MM_ACQ : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `XY_ACQ : latent END_OF_RECORD`<br>`XY_ACQ : prc <prc_actual> <> <prc_expected>`<br>`XY_ACQ : acq_mem cntr <acq_mem_actual> <> <acq_mem_expected>`<br>`XY_ACQ : fill @ <fill_address> : <fill_actual> <> <fill_expected>` |
-| Power-up | Menu | `CDT : TIMED-OUT <tb_mode_reg_pattern>`<br>`CDT : PRE_DETRIG <tb_mode_reg_pattern>`<br>`CDT : uncaled : min = <min_actual>`<br>`CDT : uncaled : delta = <delta_actual>` |
-| Power-up | Menu | `FP_A2D : cursor :a= <actual> b= <actual>`<br>`FP_A2D : gnd = <actual> <> 5`<br>`FP_A2D : TIME OUT` |
+| Power-up | Menu | `TBD /100 : latent END_OF_RECORD`<br />`TBD /100 : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD /100 : prc {prc_actual} {} {prc_expected}`<br />`TBD /100 : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD /1k : latent END_OF_RECORD`<br />`TBD /1k : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD /1k : prc {prc_actual} {} {prc_expected}`<br />`TBD /1k : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD /10k : latent END_OF_RECORD`<br />`TBD /10k : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD /10k : prc {prc_actual} {} {prc_expected}`<br />`TBD /10k : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `TBD /100k : latent END_OF_RECORD`<br />`TBD /100k : acq_mem cntr {mem_actual} {} {mem_expected}`<br />`TBD /100k : prc {prc_actual} {} {prc_expected}`<br />`TBD /100k : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `MM_ACQ : latent END_OF_RECORD`<br />`MM_ACQ : prc {prc_actual} {} {prc_expected}`<br />`MM_ACQ : acq_mem cntr {acq_mem_actual} {} {acq_mem_expected}`<br />`MM_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `XY_ACQ : latent END_OF_RECORD`<br />`XY_ACQ : prc {prc_actual} {} {prc_expected}`<br />`XY_ACQ : acq_mem cntr {acq_mem_actual} {} {acq_mem_expected}`<br />`XY_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}` |
+| Power-up | Menu | `CDT : TIMED-OUT {tb_mode_reg_pattern}`<br />`CDT : PRE_DETRIG {tb_mode_reg_pattern}`<br />`CDT : uncaled : min = {min_actual}`<br />`CDT : uncaled : delta = {delta_actual}` |
+| Power-up | Menu | `FP_A2D : cursor :a= {actual} b= {actual}`<br />`FP_A2D : gnd = {actual} {} 5`<br />`FP_A2D : TIME OUT` |
 
 <!-- page 6-19 -->
 
-**[Figure 6-4. Diagnostic Menu — menu tree diagram: SPECIAL FUNCTIONS > DIAGNOSTICS > TESTS, branching into ROM (SYS_ROM_0, SYS_ROM_1), RAM (SYSTEM/SYS_RAM, NIBBLE/NIB_RAM, ACQ_AB, ACQ_MEM), SYSTEM (ACQ_AB, PRC, HS_ACQ, TBD \<range\>, MM_ACQ, XY_ACQ, CDT, FP_A2D), and OPTION (ROM, RAM, IO) - each leaf shows its own `<message>` output format. Drawing number 4999-13.]**
+**[Figure 6-4. Diagnostic Menu — menu tree diagram: SPECIAL FUNCTIONS > DIAGNOSTICS > TESTS, branching into ROM (SYS_ROM_0, SYS_ROM_1), RAM (SYSTEM/SYS_RAM, NIBBLE/NIB_RAM, ACQ_AB, ACQ_MEM), SYSTEM (ACQ_AB, PRC, HS_ACQ, TBD {range}, MM_ACQ, XY_ACQ, CDT, FP_A2D), and OPTION (ROM, RAM, IO) - each leaf shows its own `{message}` output format. Drawing number 4999-13.]**
 
 The following sequence of events occurs during power-up:
 
@@ -757,7 +757,7 @@ PU TEST. At power-up, this kernel test does a quick check of the instruments dyn
 
 If errors are found, their code is displayed (at power-up before NMI or MI go HI and before other tests are run) repeatedly, for approximately 2 sec, on U4113 and U4119 (see Table 6-13). The instrument also tries to display the errors on the crt as a four digit hexadecimal number:
 
-`PU : ROM/RAM/NMI : <hex_value>`
+`PU : ROM/RAM/NMI : {hex_value}`
 
 For example: if ROM U9110, RAM U9232 and RAM U9231 fail, the instrument will:
 
@@ -778,6 +778,7 @@ PIN 12 ... PIN 19
 
 MI. The maskable interrupt (MI) diagnostic creates and displays a single dark vector display (low resolution). Then a /INT-RST (U9105 pin 11) is issued followed by a /FRAME (U9105 pin 10). The MI (INTR at U9111 pin 18) should then go TRUE until another /INT-RST is generated. All other MI sources are tested inherently by normal operation. The test sequence is:
 
+```
 Microprocessor (CPU) : pulse /INT-RST LO (U9105 pin 11, U9208 pin 10)
 
 DSP : set INTR (U9208 pin 6) FALSE
@@ -815,10 +816,11 @@ MI : Display controller : TIMEOUT
 MI : Display controller : unable to reset mi
 
 SYS_ROM_n. SYS_ROM_n checks each ROM by calculating and then comparing its checksum to what is stored in the ROM.
+```
 
 If an error is found, the calculated value and the value expected are displayed on the crt:
 
-`SYS_ROM_n : calculated_value <> expected_value`
+`SYS_ROM_n : calculated_value {} expected_value`
 
 **[Figure 6-6. PU error display — oscilloscope readout screen showing "POWER-UP FAILURES", "PRESS MENU KEYS TO CONTINUE", and "PU : ROM/RAM/NMI @ 00A2 (and any other error detected)" overlaid on a graticule. Drawing number 4999-16.]**
 
@@ -842,7 +844,7 @@ If an error is found, the calculated value and the value expected are displayed 
 
 For example, if the calculated value is A4D2 and the value stored in the ROM is 23DA the following error message is displayed on the crt:
 
-`SYS_ROM_1 : A4D2 <> 23DA`
+`SYS_ROM_1 : A4D2 {} 23DA`
 
 SYS_RAM. This test checks the system RAM. The test writes a 0xAA55 into 100 bytes of display memory. It then checks the data to make sure that the data has not changed. The test is then repeated using 0x55AA.
 
@@ -852,11 +854,11 @@ SYS_RAM. This test checks the system RAM. The test writes a 0xAA55 into 100 byte
 
 If an error is found, the address (greater than 0 but less than 8000) of the error, the actual data found at the address, and the data that was expected at that address are displayed on the crt:
 
-`SYS_RAM : @ <address> <actual data> <> <expected data>`
+`SYS_RAM : @ {address} {actual data} {} {expected data}`
 
 For example, if the address of the bad cell is 0x4000, the data found at that address is 0x0F, and the expected data for that address is 0x4F the following error message is displayed on the crt:
 
-`SYS_RAM : @ 4000 0F <> 4F`
+`SYS_RAM : @ 4000 0F {} 4F`
 
 NIB_RAM. This test checks the nibble RAM. The test procedure and the error message format are the same as for SYS_RAM.
 
@@ -870,7 +872,7 @@ Push the SELECT C1/C2 switch to stop pattern changes. The test loops using the p
 
 If an error is found, the value read back and the value expected are displayed on the crt:
 
-`ACQ_AB : read-back <actual> <> <expected>`
+`ACQ_AB : read-back {actual} {} {expected}`
 
 **NOTE**
 
@@ -898,9 +900,9 @@ The microprocessor can not reliably write to acquisition memory without clobberi
 
 If an error is found the address of the error, the actual data found at the address, and the data expected at the address are displayed on the crt:
 
-`ACQ_MEM : odd @ <address> <actual data> <> <expected data>`
+`ACQ_MEM : odd @ {address} {actual data} {} {expected data}`
 
-`ACQ_MEM : even @ <address> <actual data> <> <expected data>`
+`ACQ_MEM : even @ {address} {actual data} {} {expected data}`
 
 **NOTE**
 
@@ -912,7 +914,7 @@ For example, if the address of an error is 48008, the actual data found at the a
 
 data at that address is F4, the following error message is displayed on the crt:
 
-`ACQ_MEM : even @ 4008 F0 <> F4`
+`ACQ_MEM : even @ 4008 F0 {} F4`
 
 PRC. This test checks the Post Record Counter write and the B-TRIG read circuitry. Twenty four unique patterns are written into the Post Record Counter (U4115 U4116 and U4117) and read through the B Delay Timer (U4123 U4124).
 
@@ -926,11 +928,11 @@ Push the SELECT C1/C2 switch to stop pattern changes. The test loops using the p
 
 If an error is found, the value read back and the value expected are displayed on the crt:
 
-`PRC : read-back <actual> <> <expected>`
+`PRC : read-back {actual} {} {expected}`
 
 For example, if the value read back is 008 and the value expected is 00F the following error message is displayed on the crt:
 
-`PRC : read-back 008 <> 00f`
+`PRC : read-back 008 {} 00f`
 
 If the oscilloscope is operating in extended diagnostics mode, the error display is expanded to include all errors, not just the first error. Also, in extended diagnostics mode the RS-232-C Option can be used to send the error reports to a terminal or computer. This enables analysis of the data for pattern recognition. For example, if bit 5 (U4116 pin 15) is shorted to ground all patterns where bit 5 should be a one will have a zero in bit position 5 and therefore fail.
 
@@ -964,13 +966,13 @@ One RECCLK after the Post Record Counter reaches a hexadecimal count of FF0, U41
 
 If an error is found, one of the following messages is displayed on the crt:
 
-HS_ACQ : latent END_OF_RECORD
+`HS_ACQ : latent END_OF_RECORD`
 
-HS_ACQ : acq_mem cntr \<mem_actual\> \<\> \<mem_expected\>
+`HS_ACQ : acq_mem cntr {mem_actual} {} {mem_expected}`
 
-HS_ACQ : prc \<prc_actual\> \<\> \<prc_expected\>
+`HS_ACQ : prc {prc_actual} {} {prc_expected}`
 
-HS_ACQ : fill @ \<fill_address\> : \<fill_actual\> \<\> \<fill_expected\>
+`HS_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}`
 
 Where:
 
@@ -1001,12 +1003,13 @@ An acquisition is run as in HS_ACQ except that U4103B selects an input that make
 
 If the SELECT C1/C2 button is held in while the test is running, the test loops on the first error. If an error is detected, one of the following messages is displayed on the crt:
 
-TBD \<rng\> : \<error\>
+`TBD {rng} : {error}`
 
 Where:
 
 Rng is one of the following:
 
+```
 hs/2
 ps/2
 ps/5
@@ -1016,16 +1019,17 @@ ps/10
 /1k
 /10k
 /100k
+```
 
 Error is one of the following:
 
 latent END_OF_RECORD
 
-prc \<prc_actual\> \<\> \<prc_expected\>
+prc {prc_actual} {} {prc_expected}
 
-acq_mem cntr \<mem_actual\> \<\> \<mem_expected\>
+acq_mem cntr {mem_actual} {} {mem_expected}
 
-fill @ \<address\> : \<fill_actual\> \<\> \<fill_expected\>
+fill @ {address} : {fill_actual} {} {fill_expected}
 
 MM_ACQ. This test checks the acquisition circuitry as it relates to MIN/MAX.
 
@@ -1045,11 +1049,11 @@ If an error is found, one of the following messages is displayed on the crt:
 
 MM_ACQ : latent END_OF_RECORD
 
-MM_ACQ : prc \<prc_actual\> \<\> \<prc_expected\>
+MM_ACQ : prc {prc_actual} {} {prc_expected}
 
-MM_ACQ : acq_mem cntr \<acq_mem_actual\> \<\> \<acq_mem_expected\>
+MM_ACQ : acq_mem cntr {acq_mem_actual} {} {acq_mem_expected}
 
-MM_ACQ : fill @ \<fill_address\> : \<fill_actual\> \<\> \<fill_expected\>
+MM_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}
 
 XY_ACQ. This test checks the acquisition circuitry as it relates to X-Y.
 
@@ -1065,13 +1069,13 @@ As in HS_ACQ, an acquisition is performed, /ENDREC is polled, and the Post Recor
 
 If an error is found, one of the following messages is displayed on the crt:
 
-XY_ACQ : latent END_OF_RECORD
+`XY_ACQ : latent END_OF_RECORD`
 
-XY_ACQ : prc \<prc_actual\> \<\> \<prc_expected\>
+`XY_ACQ : prc {prc_actual} {} {prc_expected}`
 
-XY_ACQ : acq_mem cntr \<acq_mem_actual\> \<\> \<acq_mem_expected\>
+`XY_ACQ : acq_mem cntr {acq_mem_actual} {} {acq_mem_expected}`
 
-XY_ACQ : fill @ \<fill_address\> : \<fill_actual\> \<\> \<fill_expected\>
+`XY_ACQ : fill @ {fill_address} : {fill_actual} {} {fill_expected}`
 
 CDT. This test checks the Clock Delay Timer. The CDT (clock delay timer) is a dual-slope integrator used to
 
@@ -1085,13 +1089,13 @@ The time that the voltage on C4201 is above the voltage at U4229 pin 2 (set by R
 
 If an error is found, one of the following messages is displayed on the crt:
 
-CDT : TIME-OUT \<tb_mode_reg_pattern\>
+`CDT : TIME-OUT {tb_mode_reg_pattern}`
 
-CDT : PRE-DETRIG \<tb_mode_reg_pattern\>
+`CDT : PRE-DETRIG {tb_mode_reg_pattern}`
 
-CDT : uncaled : min = \<min_actual\>
+`CDT : uncaled : min = {min_actual}`
 
-CDT : uncaled : delta = \<delta_actual\>
+`CDT : uncaled : delta = {delta_actual}`
 
 Where:
 
@@ -1115,13 +1119,13 @@ If an error is found one of the following messages is displayed on the crt:
 
 **NOTE**
 
-*In firmware version 02, the Gnd message should be FP_A2D : gnd = \<actual\> \> 5 (greater than only)*
+*In firmware version 02, the Gnd message should be FP_A2D : gnd = {actual} } 5 (greater than only)*
 
-FP_A2D : cursor :a= \<actual\> & b= \<actual\>
+`FP_A2D : cursor :a= {actual} & b= {actual}`
 
-FP_A2D : gnd = \<actual\> \<\> 5
+`FP_A2D : gnd = {actual} {} 5`
 
-FP_A2D : TIME-OUT
+`FP_A2D : TIME-OUT`
 
 Where:
 

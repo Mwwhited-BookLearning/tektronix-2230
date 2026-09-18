@@ -200,6 +200,19 @@ So **the RS-232 interrupt starts masked at every power-on**, and stays
 masked until firmware explicitly writes the correct output HI to
 unmask it.
 
+**Designator double-checked 2026-09-18**: a schematic-page survey
+(`docs/diagrams-index.md`, page 114/Diagram 23) read this chip's
+silkscreen as `U1235` (74HCT259), one digit off from `U1236`. Kept
+`U1236` here anyway - `docs/options.md`'s own prose names "Interrupt
+Mask Latch U1236" explicitly, repeatedly (6+ separate places, with
+matching pin numbers and behavior, e.g. "the RLSD signal is generated
+by Interrupt Mask Latch U1236," "rb is the data written to the Option
+(U1236 pin 7...)") and separately describes a *different* chip, U1235,
+as the ROM/RAM address-enable decoder - too internally consistent to
+be a simple typo. Treating the schematic read as the more likely slip
+(a scanned "5"/"6" misread) unless a sharper look at the original page
+114 scan says otherwise.
+
 **Cross-referenced against the disassembly**: `selftest_comm_readback`
 (`0xE20B0`) does write/toggle one of these 4 outputs - specifically
 `3D` (`es:[0x6F8+3]` = physical `0x406FB`), toggling it `0`→`1` while
@@ -477,6 +490,45 @@ sharper photo to confirm exactly.
   DIP-switch polarity specifically - the *other* status bits (`PWR
   INT`, `INTR+DR`, `TBRE`, diagnostic, `DCD`) are a separate open
   question, not addressed by this finding.
+
+  **`comm_stat`'s full bit map now authoritatively confirmed, 2026-09-
+  17/18** - `docs/options.md`'s OCR transcription of the Options
+  manual's own "OPTION 10/12 THEORY OF OPERATION" includes **Table
+  7-36, "RS-232-C Status Buffer Functions"**, naming every bit
+  directly rather than requiring inference from one hex snapshot:
+
+  | Bit | Signal | Function |
+  |---|---|---|
+  | 0 | `/PWR INT` | Power-going-down interrupt |
+  | 1 | `/DR+INTR` | UART interrupt request |
+  | 2 | `TBRE` | UART interrupt request |
+  | 3 | - | PARAMETERS switch **8** |
+  | 4 | - | PARAMETERS switch **10** |
+  | 5 | - | PARAMETERS switch **9** |
+  | 6 | `DIAG` | Interrupt mask latch `3D` (see the Interrupt Mask Latch section above) |
+  | 7 | `/DCD2` | Data carrier detect |
+
+  This matches the earlier bit-*position* decode of the `01111101`
+  snapshot exactly (bit0/2 read `1`, bit1/7 read `0`), and additionally
+  confirms switches 9/10 are **not** in sequential bit order (bit 4 is
+  switch 10, bit 5 is switch 9) - `emulator/io_stubs.InteractiveDip
+  Switches` had these two swapped until this fix (a latent bug,
+  invisible with the default all-off pattern for those 2 switches).
+
+  **Open discrepancy, not yet resolved**: `selftest_comm_readback`'s
+  own disassembly (see the Interrupt Mask Latch section's `3D` entry
+  above) requires bit `0x80` - not bit `0x40` - to toggle `0`→`1`
+  between its two reads for the check to reach its required `0xD0`
+  result; bit `0x40` needs to stay fixed at `1` across both reads. That
+  contradicts this table taken at face value (`DIAG`/`3D` = bit 6 =
+  `0x40`, `/DCD2` = bit 7 = `0x80`, and `/DCD2` should be unrelated to
+  `3D` entirely). `emulator/io_stubs.DiagCommLatchLoopback` currently
+  implements the empirically-necessary version (toggles bit `0x80`) so
+  the self-test genuinely passes end-to-end in the emulator, but this
+  is flagged as **electrically unconfirmed** pending a real schematic
+  trace of how Interrupt Mask Latch output `3D` is actually wired -
+  see `TODO.md`'s jumper-hunt item, which is chasing the same
+  Diagrams-section schematics that might resolve this.
 
 ## Resolved this session (2026-09-13, from the service manual)
 
