@@ -18,6 +18,10 @@ root: `CONTEXT.md`, `HARDWARE.md`, `MEMORY_MAP.md`, `JUMP_MAP.md`,
 those documents - the "how we found out," not the current-best-answer
 itself.
 
+## Primary source transcriptions
+
+- [Service manual Section 3: Theory of Operation](theory-of-operation.md) - full OCR transcription (52 pages) of the analog/digital circuit descriptions, including Table 3-1's Memory Space Allocation map and the Time Base/Trigger Logic tables - a raw primary source, not yet cross-checked against or integrated into MEMORY_MAP.md/FUNCTIONS.md/VARIABLES.md
+
 ## Architecture and methodology
 
 - [CPU identity and source language](architecture/cpu-and-language.md) - confirming the 8088/8086 CPU and that the firmware is compiled C, not hand-assembled
