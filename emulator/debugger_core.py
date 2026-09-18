@@ -283,6 +283,34 @@ class Debugger:
         self.diag.install(self.emu, uc)
 
     def _on_code(self, uc_eng, address, size, user_data):
+        # Found 2026-09-18 investigating a user report that SELECT C1/C2
+        # inverts UART debug output: without this check, Unicorn just
+        # silently returns from `emu_start` when it reaches a real
+        # `hlt` opcode (0xF4) - no error, no stop reason, and (worse)
+        # IP already advanced *past* it, as if it had executed like any
+        # other instruction. Both the ordinary "PRESS MENU KEYS TO
+        # CONTINUE" end-of-boot idle halt *and* the firmware's own
+        # `assert_and_halt` panic trap (`halt_cpu`, physical 0xF1611 -
+        # see `docs/hardware-io/shift-register-and-assert.md`) hit this.
+        # Nothing told the caller a halt had happened, so a subsequent
+        # `run`/`step` call (this project's own trace scripts did
+        # exactly this, repeatedly) resumed from a CPU that real
+        # hardware considers permanently stopped - Unicorn does not
+        # cleanly support "restart after hlt" without re-seeding a
+        # valid instruction stream, so continuing produced nonsense
+        # register state (garbage CS/DS/ES) that looked exactly like a
+        # wild jump into unmapped memory. That's what caused an entire
+        # investigation into a nonexistent "crash." Unicorn's
+        # UC_HOOK_INSN doesn't support hooking HLT directly on this
+        # version (only IN/OUT/SYSCALL/SYSENTER/CPUID - confirmed by a
+        # UC_ERR_ARG trying it), so this checks the raw opcode byte
+        # here instead, in the one hook that already fires before every
+        # instruction executes - stopping *before* the real `hlt` runs
+        # means IP is left pointing *at* it, not past it.
+        if uc_eng.mem_read(address, 1) == b"\xf4":
+            self._stop_reason = f"halted (hlt) at 0x{address:06X}"
+            uc_eng.emu_stop()
+            return
         self.count += 1
         if self.trace:
             self.output(f"{ANSI_GRAY}{self.trace_line()}{ANSI_RESET}")

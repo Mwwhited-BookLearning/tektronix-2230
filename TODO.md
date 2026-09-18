@@ -9,6 +9,34 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **User report 2026-09-18: SELECT C1/C2 (momentary front-panel
+      button) held at power-on produces zero diagnostic/UART output in
+      the emulator, when real hardware and the service manual
+      (`docs/maintenance.md`) both say holding it should invoke
+      *extended* diagnostics with *more* output (an RS-232 ASCII error
+      dump). Investigated at length - see `emulator/docs/design.md`'s
+      "Found and fixed a real bug: no hlt detection, 2026-09-18"
+      section for the full trace. Along the way, found and fixed a
+      genuine, separate emulator bug (missing `hlt`-instruction
+      detection, which had been misdiagnosing this as a "crash" into
+      unmapped memory - it's actually just the ordinary end-of-boot
+      idle halt, `physical 0xF1611`/`halt_cpu`, reached by a shorter
+      path). With that fixed: `self_test_dispatcher` does still run
+      when held, gated in part by `[0x1B7A]` (a flag never written by
+      any code this project has disassembled in any of the 3 ROMs) and
+      `[0x1B48]` (already documented, derived from `[0x758]&0x80`).
+      Held mode does measurably less total work before halting (~984K
+      vs ~2.07M instructions from dispatcher-entry), not just silently
+      suppressed prints - a real behavioral divergence, not found yet.
+      **User's own hypothesis, not yet checked**: a real front-panel
+      button press may fire a hardware interrupt this emulator doesn't
+      model - `docs/interrupts/ivt-and-int255.md`'s "lead exhausted"
+      conclusion about IVT-installing sites only covers code already
+      reached; the SELECT-C1/C2-held path runs through genuinely new,
+      previously-unexecuted ROM territory that could still hide one.
+      Next step: disassemble that new territory looking for a `mov
+      word [es:bx], <handler>` IVT-install pattern the way the existing
+      5 vectors were originally found.
 - [ ] **User request 2026-09-17: hunt down every hardware jumper** on
       the main boards - they may explain debugging/configuration
       behavior (comm detection, reset) the firmware/emulator can't

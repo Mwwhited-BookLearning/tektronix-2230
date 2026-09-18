@@ -353,6 +353,74 @@ behavior when a specific hang is observed and diagnosed") - correctly
 distinguishing "needs a fixed value" from "needs real modeled coupling"
 is itself useful progress, not a dead end.
 
+## Found and fixed a real bug: no `hlt` detection, 2026-09-18
+
+User report: with the SELECT C1/C2 button (a momentary front-panel
+button, held before power-on to invoke the real instrument's extended
+diagnostics per `docs/maintenance.md`) held via `front_panel.set_
+button("SELECT_C1_C2", True)` before `reset`, a captured run showed
+**zero** diagnostic-text lines and a slightly lower final instruction
+count than the same run unheld - the opposite of the manual's
+documented behavior (held should mean *more* diagnostic output, an
+RS-232 ASCII error dump, not none).
+
+Chasing that led first to a dead end: tracing where execution ended up
+looked exactly like a wild jump into unmapped memory (nonsense `DS`/
+`ES`, an eventual unmapped write). That turned out to be a
+**misdiagnosis** - the real cause is that this emulator never detected
+`hlt` at all. Unicorn's `emu_start` just silently returns when the CPU
+executes a real `hlt` (`0xF4`) - no error, no stop reason - with `IP`
+already advanced *past* it as if it had executed normally. Nothing
+told any caller a halt had happened, so calling `run`/`step` again
+(exactly what every one of this session's trace scripts did) resumed
+execution from a CPU real hardware considers permanently stopped.
+Unicorn doesn't cleanly support "resume after `hlt`," so continuing
+produced garbage register state that looked exactly like a crash.
+
+This is not hypothetical or rare: it happens on **every single
+successful boot**, at the very end, once the self-test report finishes
+and the firmware halts waiting for "PRESS MENU KEYS TO CONTINUE" -
+and it happens to land at the exact same physical address (`0xF1611`,
+`halt_cpu` - see `docs/hardware-io/shift-register-and-assert.md`) as
+the firmware's own `assert_and_halt` panic trap, which is what made
+the SELECT-C1/C2-held case look like a distinct crash rather than the
+same ordinary idle halt hit by a different path.
+
+**Fixed** in `Debugger._on_code` (`debugger_core.py`): checks the raw
+opcode byte at each instruction address for `0xF4` before running the
+normal per-instruction bookkeeping, and if found, sets a clear `_stop_
+reason` ("halted (hlt) at 0x...") and stops *before* the `hlt`
+executes - `IP` is left pointing at it, not past it, so a deliberate
+future `run`/`step` past a halt is at least a known, visible choice
+rather than silent corruption. (Unicorn's `UC_HOOK_INSN` can't hook
+`HLT` directly on this version - only `IN`/`OUT`/`SYSCALL`/`SYSENTER`/
+`CPUID` are supported, confirmed by a `UC_ERR_ARG` trying it - hence
+checking the opcode byte in the existing per-instruction hook instead.)
+
+**With that fixed, the SELECT C1/C2 question itself is still open**,
+but now cleanly traceable instead of looking like a crash: `self_test_
+dispatcher` (`0xE4244`) genuinely still runs when the button is held
+(confirmed - its breakpoint is hit), and a flag `[0x1B7A]` (never
+written by any code this project has disassembled in any of the 3
+ROMs - always its RAM-zero default in every trace so far) gates
+whether the dispatcher prints its banner/display-test/report loop at
+all. The already-documented `[0x1B48]` (set from `[0x758]&0x80`,
+SELECT C1/C2's own bit - see `FUNCTIONS.md`) additionally disables the
+per-test "advance to the next error" increment in the report loop when
+held. Held-vs-not-held instruction counts from dispatcher-entry to the
+final halt differ by roughly 2x (about 984K vs 2.07M instructions),
+meaning held mode is doing measurably *less* work, not just suppressing
+prints on the same work - consistent with an early exit or a
+genuinely different, shorter path through the sibling self-tests, not
+yet located. User's own hypothesis, not yet checked: a real front-
+panel button press may fire a hardware interrupt this emulator doesn't
+model at all (distinct from the tick-driven `INT2`/`INT255` sources
+already documented in `docs/interrupts/ivt-and-int255.md`, whose own
+"lead exhausted" note only covers code already reached - the SELECT-
+C1/C2-held path reaches genuinely new ROM territory an interrupt-
+installing site could still be hiding in). Not resolved this session -
+see `TODO.md`.
+
 ## Interactive REPL debugger, 2026-09-16
 
 User request: "coudl I get an option to run it with an interactive
