@@ -33,6 +33,7 @@ itself.
 - [Disassembly tooling](architecture/tooling.md) - the recursive-descent disassembler, the loop/function-boundary separator tool
 - [Validation and coverage](architecture/validation-and-coverage.md) - how the disassembly is checked for correctness, the heuristic layer, current code coverage, the NOP-aligned reconstruction
 - [The decompile/ Ghidra project](architecture/ghidra-project.md) - a second, independent cross-check tool; the non-obvious segment-addressing convention and two real mistakes to avoid when scripting against it
+- [Proposal: schematic-to-netlist extraction via SINA + Ollama](architecture/schematic-netlist-extraction-proposal.md) - not started - a phased plan for locally running SINA on the Section 9 schematics, converting its hardcoded OpenAI (`gpt-4o`) netlist-assembly call to a local Ollama model, with page 65 (P9107/P9105 jumpers) and page 114 (the DIAG-vs-bit-7 conflict) as the concrete success criteria
 - [The emulator/ project (design phase)](../emulator/docs/design.md) - a headless Unicorn-Engine tracer for observing runtime behavior directly, motivated by the stroke-font hunt hitting static analysis's limits; see `emulator/README.md`
 
 ## Comm ROM (RS-232/GPIB option board)
