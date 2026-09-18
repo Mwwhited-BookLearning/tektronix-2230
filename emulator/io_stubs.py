@@ -58,11 +58,12 @@ DISPLAY_CHIP_STUBS = [
     # to 0, but only until the firmware itself writes a nonzero
     # trigger/busy bit and then polls waiting for it to clear again;
     # nothing in this emulator models real display-chip hardware
-    # clearing it back down, so a poll loop hangs/times out without an
-    # active force-to-0 hook (this is the leading suspect for the
-    # already-observed "Display controller : TIMEOUT" self-test
-    # failure - plain RAM alone can't reproduce "hardware clears this
-    # bit after the operation completes").
+    # clearing it back down without an active force-to-0 hook. This
+    # register's read value itself was never the actual "Display
+    # controller : TIMEOUT" cause, though - see DisplayChipIrqStub
+    # below (installed after this) for the real fix: the read's *side
+    # effect* (arming an interrupt that selftest_display_irq_active
+    # busy-polls for), not this fixed return value.
     (0x41000, 0x00, "display chip interrupt reset"),
     (0x42000, 0x00, "display chip next frame"),
 ]
@@ -256,6 +257,65 @@ class DiagCommLatchLoopback:
         new_value = (current | self.LOOPBACK_BIT) if self.bit_set else (current & ~self.LOOPBACK_BIT)
         uc_eng.mem_write(address, bytes([new_value]) * size)
         return True
+
+
+class DisplayChipIrqStub:
+    """Couples a read of the Display Chip Interrupt Reset register
+    (physical `0x41000`, Table 3-1 - see `MEMORY_MAP.md`) into the
+    pending-work flag `[0x1AF2]` (`DS=0x41` -> physical `0x1F02`) that
+    `INT2_HANDLER_EARLY` (`0xE5D67`) ORs into `[0x1AEE]` (physical
+    `0x1EFE`) on every NMI tick - the missing hardware coupling behind
+    the "MI : Display controller : TIMEOUT" self-test failure.
+
+    **Traced 2026-09-18, correcting a wrong prior attribution.** The
+    project's own `FUNCTIONS.md`/`design.md` previously blamed
+    `selftest_display_irq_idle` (`0xE3F2C`) for this message. A fresh
+    instruction trace proved that function actually PASSES (`[0x1AEE]`
+    is `0` both before and after its own `sti`/`cli` window) and falls
+    straight through into a second, separate function, `selftest_
+    display_irq_active` (`0xE3F99`) - decoding the two literal
+    string-table print calls in its disassembly against `160-3532`'s
+    string table (`0xFF7B0` base, offsets `0x4d1`/`0x4d4`/`0x4e9`)
+    confirms its FIRST failure block is exactly "MI : Display
+    controller : TIMEOUT" (its second, offsets `0x4f2`/`0x4f5`/`0x50a`,
+    is a different, not-yet-observed message: "MI : Display
+    controller : unable to reset mi[splay controller]").
+
+    That function's real logic: after committing a test vector draw, it
+    reads `0x41000` once (a helper at physical `0xE3B1:0x8FA`), then
+    busy-polls `[0x1AEE]` for up to 100 iterations with interrupts
+    enabled, printing the TIMEOUT message and failing if it never goes
+    nonzero. `[0x1AEE]` only ever becomes nonzero via `INT2_HANDLER_
+    EARLY` ORing `[0x1AF2]` into it - and nothing before this stub ever
+    set `[0x1AF2]`, so the loop always exhausted its 100 tries.
+
+    Sets *both* flags directly on the read (not just `[0x1AF2]`,
+    waiting for the next NMI) since this emulator's INT2/NMI ticker
+    fires on a synthetic, configurable instruction-count interval (see
+    `timer.py`) with no reliable relationship to this test's
+    ~100-iteration/~400-instruction polling window - on real hardware
+    the interrupt is architecturally guaranteed to arrive well within
+    that budget (that's the entire point of a TIMEOUT self-test), so
+    waiting on the emulator's own arbitrary tick cadence would make the
+    result depend on `--tick-interval` instead of on real firmware
+    logic.
+
+    Installed after `DISPLAY_CHIP_STUBS`'s own `FixedByteRead(0x41000,
+    0x00, ...)` so the register itself still reads back a plain `0`
+    (that part was already correct) - this only adds the side effect
+    real hardware would have that a fixed-value stub alone can't."""
+
+    REGISTER_ADDR = 0x41000
+    PENDING_FLAG_ADDR = 0x1F02   # [0x1AF2], DS=0x41 -> physical 0x410+0x1AF2
+    LATCHED_FLAG_ADDR = 0x1EFE   # [0x1AEE], DS=0x41 -> physical 0x410+0x1AEE
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_read,
+                     None, self.REGISTER_ADDR, self.REGISTER_ADDR)
+
+    def _on_read(self, uc_eng, access, address, size, value, user_data):
+        uc_eng.mem_write(self.PENDING_FLAG_ADDR, (1).to_bytes(2, "little"))
+        uc_eng.mem_write(self.LATCHED_FLAG_ADDR, (1).to_bytes(2, "little"))
 
 
 class DiagnosticTextCapture:

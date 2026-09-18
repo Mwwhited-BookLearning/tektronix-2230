@@ -305,26 +305,39 @@ ACQ_AB : read-back     0 <>   FFE
 2230/2220 Power up tests complete.
 ```
 
-**Two remaining failure classes, both newly diagnosed (not fixed)**:
+**Update, 2026-09-18: item 1 below fixed; item 2 remains open.**
 
-1. **`Display controller : TIMEOUT`** (`selftest_display_irq_idle`,
-   `0xE3F2C` - see `FUNCTIONS.md`): traced to a literal `sti`/`cli`
-   pair (`enable_interrupts`/`disable_interrupts`, `0xE5D2D`/`0xE5D2F`)
-   with nothing in between - a "briefly enable interrupts, see if a
-   level-triggered line is already stuck asserted" hardware test.
-   Fails if `[0x1AEE]` is nonzero afterward. **Tested and confirmed
-   deterministic, not a synthetic-ticker timing artifact**: reran at 4
-   very different tick intervals (500/2000/3000/7777 instructions) and
-   got byte-identical output every time - if the emulator's own
-   INT2/NMI ticker were coincidentally landing inside that 1-2
-   instruction window, changing the interval this much should have
-   shifted the result. It didn't, so something real is asserting an
-   interrupt-pending condition at this exact point in boot that this
-   emulator doesn't yet model. Next step: trace what actually sets
-   `[0x1AEE]` (which interrupt vector, and why it's pending here) -
-   this needs real investigation, not another stub guess.
-2. **`ACQ_AB` read-back failures**: the sequence `2, 6, E, 1E, 3E, 7E,
-   FE, 1FE, 3FE, 7FE, FFE` is a textbook **address-line walking test**
+1. **~~`Display controller : TIMEOUT`~~ - FIXED 2026-09-18.** The
+   attribution above (`selftest_display_irq_idle`, `0xE3F2C`) was
+   **wrong** - a fresh instruction trace proved that function actually
+   passes (`[0x1AEE]` is `0` both before and after its `sti`/`cli`
+   window; its own idle-check branch is taken). It falls straight
+   through into a second function, `selftest_display_irq_active`
+   (`0xE3F99`), which is the real source of the message (confirmed by
+   decoding the literal string-table print calls in its disassembly
+   against the ROM's string table - see `FUNCTIONS.md`'s corrected
+   entries for both functions). That function reads the Display Chip
+   Interrupt Reset register (physical `0x41000`, already flagged as
+   "the leading suspect" in `io_stubs.DISPLAY_CHIP_STUBS`'s own
+   comment) and then busy-polls `[0x1AEE]` for up to 100 iterations,
+   waiting for `INT2_HANDLER_EARLY` to OR `[0x1AF2]` into it on an NMI
+   tick - a hardware interrupt-pending coupling nothing in this
+   emulator modeled, so the poll always exhausted. Fixed with
+   `io_stubs.DisplayChipIrqStub`: on a read of `0x41000`, sets both
+   `[0x1AF2]` and `[0x1AEE]` directly (physical `0x1F02`/`0x1EFE`,
+   `DS=0x41`) rather than waiting for the emulator's own synthetic,
+   configurable NMI-tick cadence to coincidentally land inside the
+   ~400-instruction polling window - real hardware's interrupt is
+   architecturally guaranteed to arrive within that budget (that's the
+   entire point of a TIMEOUT self-test), so making the result depend on
+   `--tick-interval` instead would be modeling the emulator's own
+   arbitrariness, not the real firmware. Verified end-to-end: a full
+   boot trace no longer prints either of `selftest_display_irq_active`'s
+   two failure messages, and the self-test sequence progresses one step
+   further into the (separate, still-open) `ACQ_AB` failures below.
+2. **`ACQ_AB` read-back failures** (still open): the sequence
+   `2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE, 7FE, FFE` is a textbook
+   **address-line walking test**
    (one more bit shifted in on each failure) - almost certainly
    exercising the Acquisition Memory Address Buffer (`0x4377E`/
    `0x4377F`, `U3427`/`U3428`) and/or the acquisition RAM's real

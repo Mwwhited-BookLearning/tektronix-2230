@@ -139,15 +139,21 @@ instead of assuming bare `nasm` resolves.
       open threads: (1) the still-unsolved HPGL native-coordinate
       transform puzzle (`docs/display/vector-display-and-stroke-
       font.md`'s "Follow-up, 2026-09-14/15" sections) could potentially
-      be chased dynamically the same way; (2) trace what actually sets
-      `[0x1AEE]` during `selftest_display_irq_idle`'s momentary
-      `sti`/`cli` window (confirmed genuinely deterministic, not a
-      synthetic-ticker artifact - see `FUNCTIONS.md`'s entry) - needs
-      real interrupt-vector tracing, not another stub guess; (3) build
-      a write-then-readback coupling stub for the `ACQ_AB` address-line
+      be chased dynamically the same way; (2) ~~trace what actually
+      sets `[0x1AEE]`~~ **done 2026-09-18** - it wasn't
+      `selftest_display_irq_idle` at all (that function was proven to
+      pass); the real TIMEOUT source is the separate `selftest_display_
+      irq_active` (`0xE3F99`) busy-polling `[0x1AEE]` after reading the
+      Display Chip Interrupt Reset register (`0x41000`) - see
+      `FUNCTIONS.md`'s corrected entries for both functions and
+      `io_stubs.DisplayChipIrqStub`, which now couples that read into
+      `[0x1AF2]`/`[0x1AEE]` so the self-test passes; (3) build a
+      write-then-readback coupling stub for the `ACQ_AB` address-line
       walking test against the Acquisition Memory Address Buffer (see
       `MEMORY_MAP.md`'s `0x4377E`/`0x4377F` entry) the way
-      `CommPresenceProbe` already couples a different register pair.
+      `CommPresenceProbe` already couples a different register pair -
+      **still open**, this is the next self-test failure blocking a
+      fully-clean power-up sequence.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Found 5
       things worth following up, ranked by confidence in `docs/decode-

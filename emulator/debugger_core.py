@@ -24,7 +24,7 @@ from timer import TickScheduler
 from io_stubs import (CommPresenceProbe, DiagCommLatchLoopback, DiagnosticTextCapture,
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
                        FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
-                       InteractiveDipSwitches, AccessCounter,
+                       InteractiveDipSwitches, AccessCounter, DisplayChipIrqStub,
                        ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
@@ -266,6 +266,12 @@ class Debugger:
         # so it only adjusts bit 0x80 on top - see its own docstring
         # for the disassembly-derived reasoning (selftest_comm_readback).
         DiagCommLatchLoopback().install(self.emu, uc)
+        # Installed after DISPLAY_CHIP_STUBS's fixed 0x41000 baseline so
+        # it only adds the pending-flag side effect on top - see its
+        # own docstring for the disassembly-derived reasoning
+        # (selftest_display_irq_active / "MI : Display controller :
+        # TIMEOUT").
+        DisplayChipIrqStub().install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat/comm_param
         # values so it only adjusts the switch bit positions on top of
         # that baseline - see InteractiveDipSwitches's docstring.
