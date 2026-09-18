@@ -73,6 +73,24 @@ COMM_OPTION_STUBS = [
     # MEMORY_MAP.md's RS-232 option board section: BD0=PWR INT(1),
     # BD1=INTR+DR(0), BD2=TBRE(1), BD3-5=PARAMETERS DIP 8-10(111),
     # BD6=diagnostic(1), BD7=DCD(0).
+    #
+    # **Tried a static override to 0xD0 first, 2026-09-17** (user: "can
+    # you just hardcode that value for a test pass?") to get past
+    # `selftest_comm_readback`'s (0xE20B0) exact-match check - traced
+    # through the actual disassembly and found that's mathematically
+    # impossible: the check reads this byte *twice* (before and after
+    # toggling Interrupt Mask Latch output 3D at 0x406FB 0->1), masks
+    # each read to bits 0xC0, shifts the *first* read's mask right by
+    # 2, and ORs the two together - `(read1&0xC0)>>2 | (read2&0xC0)`.
+    # For a byte that never changes between the two reads, this can
+    # only ever produce 0x00/0x50/0xA0/0xF0, never the required 0xD0,
+    # for any fixed value at all. Solving backwards from what *would*
+    # produce 0xD0 shows it needs bit7 to be 0 on the first read and 1
+    # on the second - i.e. this genuinely requires a write-then-
+    # readback coupling between 0x406FB and this byte's bit7 (see
+    # DiagCommLatchLoopback below), not a static value. Kept at the
+    # real captured 0x7D baseline; DiagCommLatchLoopback overlays bit7
+    # dynamically on top of it.
     (0x4067C, 0x7D, "comm_stat / Option Status Latch (U1223)"),
     # comm_param (Option Parameter Latch, U1222) - real captured value
     # (one of the two scopes' readings; BD7=UART SDO, a live transmit
@@ -158,6 +176,69 @@ class CommPresenceProbe:
         current = int.from_bytes(uc_eng.mem_read(self.READBACK_ADDR, 2), "little")
         new_value = (current & ~self.PRESENCE_BIT) | bit
         uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
+
+
+class DiagCommLatchLoopback:
+    """Couples writes to the Interrupt Mask Latch's diagnostic output
+    3D (physical `0x406FB`) into bit `0x80` of the Option Status
+    Latch's own readback (`0x4067C`, `comm_stat`) - the same "no
+    coupling at all -> deterministically reads back the wrong thing"
+    gap `CommPresenceProbe` already fixed for a different register
+    pair, found here 2026-09-17 while investigating `selftest_comm_
+    readback` (physical `0xE20B0`).
+
+    **Derived from the actual disassembly, not the manual's own English
+    description** (which just says Status Buffer bit 6 is "Interrupt
+    mask latch D3" - close, but the exact bit position matters and
+    this derivation pins it precisely): the self-test writes `0` then
+    `1` to `0x406FB`, reading `comm_stat` once after each write, and
+    combines the two reads as `(read1 & 0xC0) >> 2 | (read2 & 0xC0)`,
+    requiring the result to be exactly `0xD0` to fully pass. Solving
+    that equation backwards (see `COMM_OPTION_STUBS`'s own comment on
+    why a *static* `comm_stat` value can never satisfy it - confirmed
+    by first trying exactly that) shows it needs bit `0x40` fixed at 1
+    (matching the real captured `0x7D` baseline's own "BD6=diagnostic"
+    bit) and bit `0x80` to go `0`->`1` exactly when `3D` goes `0`->`1` -
+    i.e. bit `0x80`, not `0x40`, is the one that must actually move.
+
+    **Real bug found and fixed while verifying this**: the first
+    version tried to persist the loopback bit by writing it straight
+    into `READBACK_ADDR`'s underlying RAM from the `0x406FB` write
+    hook - didn't work, confirmed with an isolated unit test (the bit
+    never showed up on the next read, at all). Root cause: `FixedByte
+    Read`'s own read hook for `comm_stat` unconditionally *overwrites*
+    that same underlying byte back to its fixed baseline on every
+    single read, before this class's write-side change could ever be
+    observed - the same "any stub's own write-back inside a read hook
+    can stomp a change no matter when it was made" hazard already
+    documented elsewhere in this file, just hit from the opposite
+    direction. Fixed by keeping the loopback bit as this instance's
+    own plain attribute (`self.bit_set`, exactly like `Interactive
+    DipSwitches.switches`) and overlaying it via a *read* hook on
+    `READBACK_ADDR` too, installed after `FixedByteRead`'s so it runs
+    on top of the baseline instead of getting overwritten by it."""
+
+    WRITE_ADDR = 0x406FB
+    READBACK_ADDR = 0x4067C
+    LOOPBACK_BIT = 0x80
+
+    def __init__(self):
+        self.bit_set = False
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_MEM_WRITE, self._on_write,
+                     None, self.WRITE_ADDR, self.WRITE_ADDR)
+        emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_read,
+                     None, self.READBACK_ADDR, self.READBACK_ADDR)
+
+    def _on_write(self, uc_eng, access, address, size, value, user_data):
+        self.bit_set = bool(value & 1)
+
+    def _on_read(self, uc_eng, access, address, size, value, user_data):
+        current = uc_eng.mem_read(address, 1)[0]
+        new_value = (current | self.LOOPBACK_BIT) if self.bit_set else (current & ~self.LOOPBACK_BIT)
+        uc_eng.mem_write(address, bytes([new_value]) * size)
+        return True
 
 
 class DiagnosticTextCapture:
@@ -492,12 +573,36 @@ class InteractiveUartMock:
                 f"chip status=0x{self.chip.status:02X}, "
                 f"pacing={self.instructions_per_byte} instrs/byte")
 
+    def chip_detail(self):
+        """The i8251 core's own programmed configuration and internal
+        state (mode/command register decode, rx/tx holding registers,
+        which control byte it's expecting next) - see `i8251.I8251.
+        describe()`. Distinct from `status()` above, which is about
+        this mock's own queue/pacing bookkeeping, not the chip itself."""
+        d = self.chip.describe()
+        return (f"mode=0x{d['mode_byte']:02X} ({d['mode_desc']}) | "
+                f"command=0x{d['command']:02X} "
+                f"(TxEN={int(d['tx_enable'])} RxEN={int(d['rx_enable'])} "
+                f"DTR={int(d['dtr'])} RTS={int(d['rts'])} "
+                f"BRK={int(d['send_break'])} HUNT={int(d['hunt_mode'])}) | "
+                f"rx_data=0x{d['rx_data']:02X} tx_data=0x{d['tx_data']:02X} | "
+                f"next control byte: {d['next_control_byte']}")
+
     def incoming_text(self):
         """Everything still sitting in the RX queue, not yet consumed
-        by a real read - same rendering convention as `outgoing_text`."""
+        by a real read. Unlike `outgoing_text` (a scrolling log, where
+        a real line break/tab is fine to render as one), this is shown
+        in a small fixed-height status box (`tui.py`'s `#incoming`
+        panel) - a literal control byte here (even `\\r`/`\\n`/`\\0`)
+        would silently eat one of its few visible lines instead of
+        showing up as content, exactly the kind of invisible-content
+        bug already hit once with the registers panel. So every
+        non-printable byte gets the same `\\xNN` hex form - the whole
+        point being that you can always see everything actually
+        queued, in full, on one line."""
         out = []
         for b in self.queue:
-            if b in (13, 10, 9) or 32 <= b < 127:
+            if 32 <= b < 127:
                 out.append(chr(b))
             else:
                 out.append(f"\\x{b:02x}")
@@ -573,15 +678,22 @@ class InteractiveDipSwitches:
     `STILL_PENDING_DECODE.md`) - this lets the raw switch pattern be
     changed and observed without yet knowing what each one does.
 
+    **Polarity is active-LOW, confirmed 2026-09-17** against a real
+    exerciser-screen photo showing `comm_param` reading `0xF3` with a
+    different physical switch pattern than the earlier `0xF8`/`0xF9`
+    baseline capture - user: "when the comm parameter dip switches are
+    1 they show as 0 on these numbers." A switch physically ON pulls
+    its bit to 0; OFF leaves it (pulled up) at 1. `self.switches[i] =
+    True` still means "switch i is ON" - only the bit-level read hooks
+    translate that to 0 now, the opposite of this class's original,
+    wrong active-high version.
+
     Installed *after* `COMM_OPTION_STUBS`'s fixed baseline values
     (`comm_param`=`0xF8`, `comm_stat`=`0x7D` - real captured values,
     see `MEMORY_MAP.md`'s exerciser-screen section) so it only
     overrides the specific switch bit positions, leaving every other
     bit (Parameter Buffer's UART SDO bit, State Buffer's PWR INT/
-    INTR+DR/TBRE/diagnostic/DCD bits) at its real captured baseline.
-    Defaults to the switch pattern those same 2 baseline bytes already
-    encode, so installing this changes nothing until a switch is
-    actually toggled."""
+    INTR+DR/TBRE/diagnostic/DCD bits) at its real captured baseline."""
 
     PARAM_ADDR = 0x406BC
     STATUS_ADDR = 0x4067C
@@ -604,18 +716,26 @@ class InteractiveDipSwitches:
                      None, self.STATUS_ADDR, self.STATUS_ADDR)
 
     def _on_param_read(self, uc_eng, access, address, size, value, user_data):
-        current = uc_eng.mem_read(address, 1)[0] & 0x80  # keep bit7 (UART SDO)
+        # Switches are active-LOW (confirmed 2026-09-17 against a real
+        # exerciser-screen photo: "when the comm parameter dip switches
+        # are 1 they show as 0 on these numbers") - a switch physically
+        # ON pulls its bit to 0; OFF floats/pulls the bit to 1. Start
+        # with bits 0-6 all set (every switch "off") and clear one bit
+        # per switch that's actually on - the opposite of the original,
+        # wrong active-high version this replaced.
+        current = (uc_eng.mem_read(address, 1)[0] & 0x80) | 0x7F  # keep bit7 (UART SDO)
         for i in range(7):
             if self.switches[i]:
-                current |= (1 << i)
+                current &= ~(1 << i)
         uc_eng.mem_write(address, bytes([current]) * size)
         return True
 
     def _on_status_read(self, uc_eng, access, address, size, value, user_data):
-        current = uc_eng.mem_read(address, 1)[0] & ~0x38  # clear bits 3-5
+        # Same active-LOW polarity as _on_param_read above.
+        current = uc_eng.mem_read(address, 1)[0] | 0x38  # bits 3-5 all "off" (1) by default
         for i in range(3):
             if self.switches[7 + i]:
-                current |= (1 << (3 + i))
+                current &= ~(1 << (3 + i))
         uc_eng.mem_write(address, bytes([current]) * size)
         return True
 
@@ -626,3 +746,159 @@ class InteractiveDipSwitches:
     def status(self):
         bits = "".join("1" if s else "0" for s in self.switches)
         return f"DIP switches 1-10: {bits}"
+
+
+class AccessCounter:
+    """Per-address memory read/write counts and per-port I/O in/out
+    counts, for empirically answering "does a real run actually touch
+    this address/port" instead of guessing from static disassembly
+    alone. User request 2026-09-17, prompted by real doubt about this
+    project's own assumed 'outgoing serial' address: the self-test
+    diagnostic text written via `write_readout_port_byte` (physical
+    `0x406F0`) never appears on a real hardware serial capture at
+    boot, so that address is suspected wrong despite living in the
+    same block as the confirmed UART wiring - see `TODO.md`'s
+    `write_readout_port_byte` entry.
+
+    Plain dicts, keyed by address/port - nothing is pre-allocated for
+    the full address space, an entry only exists once that exact
+    address/port is actually touched (per a later user request:
+    "just create a dictionary structure so you only track addresses
+    as they are touched instead of every address").
+
+    **Real, serious Unicorn bug confirmed 2026-09-17 - memory read
+    tracking is opt-in and OFF by default because of it**: installing
+    a plain `UC_HOOK_MEM_READ` hook that overlaps the stack corrupts
+    real CPU execution in this Unicorn version (2.1.4) - not just a
+    performance cost, an actual correctness bug. Isolated with a
+    minimal repro: a real boot trace that runs 5M+ instructions clean
+    with no hook, or with only the write/IO hooks installed, crashes
+    at the *exact same* instruction count every time a MEM_READ hook
+    is added, even one covering nothing but a 256-byte slice of the
+    stack and nothing else. Traced via `trace on` to the exact failure:
+    a `retf` pops `CS=0x0000` instead of the real return segment,
+    right after a completely ordinary table-walk loop and an ordinary
+    nested `retf`; the CPU then runs off into low RAM misinterpreted
+    as code and crashes writing to ROM a few instructions later.
+    Confirmed the hook's own logic isn't the cause (tried a no-op
+    `return True` version - identical crash, identical instruction
+    count) and confirmed it's specifically about *which addresses* are
+    hooked, not global-vs-bounded-range syntax (an explicit `0-
+    0xFFFFF` range crashes identically to the `begin=1,end=0` "whole
+    space" convention; a range covering only `0x40000+`, nowhere near
+    where the stack actually was at the time, never crashes at all).
+    **Conclusion: never install `install_watch_range` (or any
+    MEM_READ hook) over a range that might include wherever SS:SP
+    happens to point during the run** - since that can move around
+    over a boot sequence (this trace's stack was in low RAM early on,
+    not the `0x40000` I/O window), there is no address range that's
+    provably safe for the whole run without also verified against
+    where the stack lives at every point in time. Until this is
+    understood well enough to work around, treat any `install_watch_
+    range` call as diagnostic-only, for a short/targeted run, never
+    for a run whose actual completion you need to trust.
+
+    Memory *write* tracking and I/O port tracking do not exhibit this
+    - verified over a full 25M-instruction run with no MEM_READ hook
+    present.
+
+    **Real gotcha confirmed while testing this (independent of the
+    above bug)**: any register backed by a read-override stub in this
+    file (`FixedByteRead`, `InteractiveFrontPanel`, `InteractiveDip
+    Switches`, the UART's control/data/state-buffer reads - all of
+    which call `uc_eng.mem_write()` from *inside* their own `UC_HOOK_
+    MEM_READ` callback, to make the CPU's read see the stubbed value)
+    makes that stub's own write-back count as a "write" here too -
+    confirmed directly: watching SWB2 (`0x43FFA`) over a 2M-instruction
+    run showed `read=120027 write=120027`, an exact match that's the
+    stub reflecting its value on every read, not firmware ever writing
+    to what's a hardware *input* register. Only trust a nonzero write
+    count as "firmware actually wrote here" for an address that has no
+    such stub installed."""
+
+    def __init__(self):
+        self.mem_reads = {}
+        self.mem_writes = {}
+        self.io_in = {}
+        self.io_out = {}
+        self._watch_hook_ids = []
+        self._emu = None
+
+    def install_io(self, emu, uc_module):
+        """Safe to leave on for every run - I/O port in/out hooks and
+        memory *write* hooks don't exhibit the stack-corruption bug
+        documented in this class's own docstring."""
+        emu.hook_add(uc_module.UC_HOOK_MEM_WRITE, self._on_mem_write, None)
+        emu.hook_add(uc_module.UC_HOOK_INSN, self._on_in, None, 1, 0, x86.UC_X86_INS_IN)
+        emu.hook_add(uc_module.UC_HOOK_INSN, self._on_out, None, 1, 0, x86.UC_X86_INS_OUT)
+
+    def install_watch_range(self, emu, uc_module, start, end):
+        """Opt-in, and only ever call this for a short/targeted
+        diagnostic run - see this class's docstring for the confirmed
+        stack-corruption bug a MEM_READ hook triggers if the range
+        happens to overlap wherever the stack is at the time. Adds one
+        more watched range each call; `unwatch` clears all of them."""
+        self._emu = emu
+        hook_id = emu.hook_add(uc_module.UC_HOOK_MEM_READ, self._on_mem_read, None, start, end)
+        self._watch_hook_ids.append(hook_id)
+
+    def unwatch(self):
+        if self._emu is not None:
+            for hook_id in self._watch_hook_ids:
+                self._emu.hook_del(hook_id)
+        self._watch_hook_ids = []
+
+    def clear(self):
+        self.mem_reads.clear()
+        self.mem_writes.clear()
+        self.io_in.clear()
+        self.io_out.clear()
+
+    def _on_mem_read(self, uc_eng, access, address, size, value, user_data):
+        self.mem_reads[address] = self.mem_reads.get(address, 0) + 1
+
+    def _on_mem_write(self, uc_eng, access, address, size, value, user_data):
+        self.mem_writes[address] = self.mem_writes.get(address, 0) + 1
+
+    def _on_in(self, uc_eng, port, size, user_data):
+        self.io_in[port] = self.io_in.get(port, 0) + 1
+        return 0  # matches Unicorn's own default for an unhooked `in` -
+                  # confirmed directly (AL comes back 0 with no hook at
+                  # all installed) so adding this hook can't itself
+                  # change what any firmware `in` instruction observes
+
+    def _on_out(self, uc_eng, port, size, value, user_data):
+        self.io_out[port] = self.io_out.get(port, 0) + 1
+
+    def status(self):
+        return (f"distinct addresses touched: "
+                f"{len(set(self.mem_reads) | set(self.mem_writes))} | "
+                f"distinct I/O ports touched: {len(set(self.io_in) | set(self.io_out))}")
+
+    def summary(self, top=40):
+        """`top=None` returns every touched address instead of just the
+        busiest ones - used when saving a full access-log file
+        (`dump`'s companion `.mem` file) rather than a quick on-screen
+        glance."""
+        lines = []
+        if self.io_in or self.io_out:
+            ports = sorted(set(self.io_in) | set(self.io_out))
+            lines.append(f"I/O ports touched ({len(ports)}):")
+            for p in ports:
+                lines.append(f"  port 0x{p:X}: in={self.io_in.get(p, 0)} "
+                              f"out={self.io_out.get(p, 0)}")
+        else:
+            lines.append("I/O ports touched: none")
+        addrs = sorted(set(self.mem_reads) | set(self.mem_writes))
+        if addrs:
+            ranked = sorted(addrs, key=lambda a: -(self.mem_reads.get(a, 0) +
+                                                     self.mem_writes.get(a, 0)))
+            shown = len(ranked) if top is None else min(top, len(ranked))
+            lines.append(f"Memory addresses touched: {len(addrs)} distinct "
+                         f"(showing top {shown} by access count)")
+            for a in ranked[:top]:
+                lines.append(f"  0x{a:06X}: read={self.mem_reads.get(a, 0)} "
+                              f"write={self.mem_writes.get(a, 0)}")
+        else:
+            lines.append("Memory addresses touched: none")
+        return lines

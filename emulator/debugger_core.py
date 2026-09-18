@@ -10,6 +10,8 @@ somewhere, so a Textual app (which fully owns the terminal) never gets
 its display corrupted by a stray direct print.
 """
 import ctypes
+import os
+import queue
 import re
 import time
 
@@ -19,10 +21,10 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import (CommPresenceProbe, DiagnosticTextCapture,
+from io_stubs import (CommPresenceProbe, DiagCommLatchLoopback, DiagnosticTextCapture,
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
                        FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
-                       InteractiveDipSwitches,
+                       InteractiveDipSwitches, AccessCounter,
                        ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
@@ -67,25 +69,32 @@ class Debugger:
     PROGRESS_CHECK_EVERY = 1000
     PROGRESS_INTERVAL_SECONDS = 0.1
 
+    # How often (instruction count) the speed throttle re-checks wall-
+    # clock time against the target rate - same reasoning as the
+    # progress check above: a `time.monotonic()` call on every single
+    # instruction would itself meaningfully slow the hot path down.
+    SPEED_CHECK_EVERY = 1000
+
     def __init__(self, args, output=print, on_tx=None, on_progress=None):
         self.args = args
         self.output = output
-        self.emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
         self.count = 0
         self.breakpoints = set()
         self.trace = False
+        self.speed_limit = None  # instructions/second cap, None = unthrottled (as fast as possible)
+        self._speed_start_time = None
+        self._speed_start_count = None
         self.continue_length = args.continue_length
         self.md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_16)
         self.md.detail = True  # needed to inspect memory operands for `trace`
-        self.ticker = TickScheduler(args.tick_interval) if args.tick_interval else None
-        self.diag = DiagnosticTextCapture(sink=output)
-        self.front_panel = InteractiveFrontPanel()
-        self.dip_switches = InteractiveDipSwitches()
         # `on_tx`: optional live per-byte callback for a front end that
         # wants to display outgoing serial data as it happens (e.g.
         # tui.py's dedicated outgoing panel) rather than only on demand
-        # via `uart.outgoing_text()`.
-        self.uart = InteractiveUartMock(sink=output, on_tx=on_tx)
+        # via `uart.outgoing_text()`. Kept as an instance attribute (not
+        # just a local passed into InteractiveUartMock's constructor)
+        # so `reset()` can wire it into the freshly-recreated uart mock
+        # too.
+        self._on_tx = on_tx
         # `on_progress`: optional callback fired periodically (wall-
         # clock throttled, see PROGRESS_INTERVAL_SECONDS) during any
         # step/run/continue, for a front end that wants to show live
@@ -93,14 +102,138 @@ class Debugger:
         # tui.py refreshing its panel) rather than only once it stops.
         self.on_progress = on_progress
         self._last_progress_time = time.monotonic()
-        self._low_ram_buffer = None
+        # `live` mode (see `run_live`): the CPU ticks continuously in
+        # short bursts instead of one long emu_start(), so a front end
+        # can keep taking input (button presses, serial injection,
+        # arbitrary typed commands) while it runs - each queued action
+        # is applied between bursts, the only point where nothing is
+        # concurrently touching the Unicorn engine.
+        self.live = False
+        self._live_running = False  # true for as long as run_live's own thread is inside its loop
+        self.pending_actions = queue.Queue()
         self._stop_reason = None
+        self._boot()
+
+    def _boot(self):
+        """(Re)creates the CPU/memory/stubs from scratch and leaves the
+        CPU sitting at the reset vector - everything a real power-on
+        does, factored out of `__init__` so `reset()` (user request:
+        "and you never added my reset button" - a way to restart a run
+        from scratch without relaunching the app) can redo it in place.
+        Deliberately leaves alone anything that's a debugger/session
+        setting rather than emulated-machine state - `args`, `output`,
+        breakpoints, `trace`, the speed cap, `continue_length`, and
+        `live`/`pending_actions` (the caller is expected to have already
+        called `stop_live()` before a reset, same as it would before
+        tearing down for any other reason)."""
+        self.emu = uc.Uc(uc.UC_ARCH_X86, uc.UC_MODE_16)
+        self.count = 0
+        self._stop_reason = None
+        self.ticker = TickScheduler(self.args.tick_interval) if self.args.tick_interval else None
+        self.diag = DiagnosticTextCapture(sink=self.output)
+        self.front_panel = InteractiveFrontPanel()
+        self.dip_switches = InteractiveDipSwitches()
+        self.uart = InteractiveUartMock(sink=self.output, on_tx=self._on_tx)
+        self.access_counter = AccessCounter()
+        self._low_ram_buffer = None
         self._setup_memory()
         self._setup_stubs()
+        # Only I/O port in/out counting installs unconditionally here -
+        # see AccessCounter's docstring for why memory read/write
+        # tracking is opt-in via `access mem on` instead: a MEM_READ
+        # hook that overlaps the stack corrupts real CPU execution in
+        # this Unicorn version (confirmed with a minimal repro), so it
+        # must never be silently active on every run.
+        self.access_counter.install_io(self.emu, uc)
         self.emu.hook_add(uc.UC_HOOK_CODE, self._on_code, None)
         self.emu.hook_add(uc.UC_HOOK_MEM_INVALID, self._on_invalid, None)
         self.emu.reg_write(x86.UC_X86_REG_CS, 0xF000)
         self.emu.reg_write(x86.UC_X86_REG_IP, 0xFFF0)
+
+    def reset(self):
+        """The actual reset - rebuilds the CPU/memory/stubs from
+        scratch via `_boot()`. Refuses while `live` mode's own thread
+        is still inside `run_live`'s loop (`_live_running`, distinct
+        from `live` itself - `stop_live()` only requests the loop exit
+        on its *next* check, it doesn't wait for it): rebuilding `self.
+        emu` while another thread might still be mid-`emu_start` on the
+        old one is exactly the kind of cross-thread engine access
+        that's unsafe elsewhere in this codebase too. Raises ValueError
+        (already handled uniformly by both front ends) rather than
+        silently blocking or racing."""
+        if self._live_running:
+            raise ValueError("live mode is still running - 'live off' "
+                              "first, wait for it to actually stop, then reset")
+        self._boot()
+
+    def dump_memory(self, path=None):
+        """Writes a flat binary snapshot of the entire mapped address
+        space - every ROM and RAM region from `memory_map.all_regions()`
+        - to `path`, plus two companion text files (same path, different
+        extensions): `.mem` with the full memory/IO access log
+        (`AccessCounter.summary()`, every touched address/port, not
+        just the top few), and `.log` with every diagnostic-text line
+        captured so far (`self.diag.lines` - see `DiagnosticTextCapture`'s
+        docstring for exactly which writes this is, and its own real
+        caveats). User requests 2026-09-17: "there is a reason I want a
+        log of 'hot' memory addresses... I would like dump updated to
+        put dumps in ..\\scratchpad\\dump\\{instrs}.bin with an access
+        log at ..\\scratchpad\\dump\\{instrs}.mem"; then, asking what
+        writes the outgoing UART data register: "it would be nice to
+        have those messages logged somewhere" - answered by the same
+        `.log` file, since `write_readout_port_byte` (the confirmed
+        sole writer of that register) is exactly what `diag.lines`
+        already captures.
+
+        `path=None` (the default) uses the same convention, named after
+        the current instruction count - `../scratchpad/dump/<count>.
+        bin`, relative to wherever the tool is run from (this project's
+        own emulator/ directory, matching every dump the user has taken
+        by hand so far). Each region's live bytes are placed at its own
+        absolute physical address within the `.bin` (gaps between
+        regions zero-filled), so file offset N is exactly what the CPU
+        currently sees at physical address N - the same absolute-
+        addressing convention every other artifact in this project
+        already uses, rather than a compacted concatenation that would
+        need a separate offset table to make sense of. ROM is included
+        even though it's static (identical to the source `.bin` files
+        unless code has self-modified it, which shouldn't happen) -
+        user request 2026-09-17, correcting an earlier ROM-excluded
+        version of this feature: "i would expect this memory dump to
+        include the roms." Originally from `TODO.md`'s "Notes from the
+        architect": "I would like a memory dump option... it should
+        output the entire ram representation to a binary file."
+        Returns (bytes_written, region_count, bin_path, mem_path,
+        log_path) for the caller to report."""
+        if path is None:
+            path = f"../scratchpad/dump/{self.count}.bin"
+        regions = mm.all_regions(self.args.revision)
+        end = max(r.start + r.size for r in regions)
+        buf = bytearray(end)
+        for region in regions:
+            buf[region.start:region.start + region.size] = self.emu.mem_read(region.start, region.size)
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(path, "wb") as f:
+            f.write(buf)
+
+        base = os.path.splitext(path)[0]
+        mem_path = base + ".mem"
+        with open(mem_path, "w") as f:
+            f.write(f"# access log at {self.count} instructions\n")
+            f.write(self.access_counter.status() + "\n")
+            for line in self.access_counter.summary(top=None):
+                f.write(line + "\n")
+
+        log_path = base + ".log"
+        with open(log_path, "w") as f:
+            f.write(f"# diagnostic-text log at {self.count} instructions "
+                     f"({len(self.diag.lines)} line(s))\n")
+            for line in self.diag.lines:
+                f.write(line + "\n")
+
+        return len(buf), len(regions), path, mem_path, log_path
 
     def _setup_memory(self):
         for region in mm.all_regions(self.args.revision):
@@ -129,6 +262,10 @@ class Debugger:
         self.front_panel.install(self.emu, uc)
         if self.args.comm_installed:
             CommPresenceProbe().install(self.emu, uc)
+        # Installed after COMM_OPTION_STUBS's fixed comm_stat baseline
+        # so it only adjusts bit 0x80 on top - see its own docstring
+        # for the disassembly-derived reasoning (selftest_comm_readback).
+        DiagCommLatchLoopback().install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat/comm_param
         # values so it only adjusts the switch bit positions on top of
         # that baseline - see InteractiveDipSwitches's docstring.
@@ -151,9 +288,38 @@ class Debugger:
             if now - self._last_progress_time >= self.PROGRESS_INTERVAL_SECONDS:
                 self._last_progress_time = now
                 self.on_progress()
+        if self.speed_limit and self.count % self.SPEED_CHECK_EVERY == 0:
+            self._throttle_speed()
         if address in self.breakpoints:
             self._stop_reason = f"breakpoint hit at 0x{address:06X}"
             uc_eng.emu_stop()
+
+    def _throttle_speed(self):
+        """Sleeps just enough to bring the average rate since `speed_
+        limit` was last set back down to the target - checked only
+        every SPEED_CHECK_EVERY instructions, not every one, so this
+        doesn't add per-instruction overhead. Never speeds anything up
+        (a run that's behind schedule, e.g. because the host was briefly
+        busy elsewhere, just proceeds at full speed until it catches up
+        rather than trying to "make up time")."""
+        now = time.monotonic()
+        elapsed = now - self._speed_start_time
+        expected_min_elapsed = (self.count - self._speed_start_count) / self.speed_limit
+        if elapsed < expected_min_elapsed:
+            time.sleep(expected_min_elapsed - elapsed)
+
+    def set_speed(self, instructions_per_second):
+        """`None` (or 0) means unthrottled - as fast as the host can
+        run it, the default and previously the only mode. Any positive
+        number caps the average rate, useful for watching `trace`
+        output or live register updates at a human-readable pace
+        instead of them flashing past. Resets the throttle's own
+        reference point (`_speed_start_time`/`_count`) each time it's
+        called, so changing speed mid-run doesn't try to "catch up" or
+        "slow down" based on time elapsed under a *different* limit."""
+        self.speed_limit = instructions_per_second or None
+        self._speed_start_time = time.monotonic()
+        self._speed_start_count = self.count
 
     def _decode_current(self):
         phys, _, _ = self.physical_ip()
@@ -318,6 +484,50 @@ class Debugger:
         except uc.UcError as e:
             self._stop_reason = self._stop_reason or f"Unicorn error: {e}"
 
+    def queue_action(self, fn):
+        """Thread-safe: enqueue a zero-arg callable to run on
+        `run_live`'s own thread, between bursts - the only safe point
+        to touch debugger/engine state from another thread while the
+        CPU is ticking in the background, since nothing may call into
+        Unicorn concurrently with an active `emu_start`."""
+        self.pending_actions.put(fn)
+
+    def run_live(self, burst=2000):
+        """Runs continuously in short bursts (instead of one long
+        emu_start call) so a front end can keep accepting front-panel/
+        serial/console input while the CPU ticks in the background -
+        user request 2026-09-17: "can we have a live mode where I can
+        still push buttons and send serial commands but the system
+        ticks away in the background." Anything queued via
+        `queue_action` from another thread is drained and run here, in
+        the gap between one burst finishing and the next starting -
+        the only point at which nothing is running, so it's always
+        safe regardless of what the action touches. `live` is a plain
+        bool, safe to clear from another thread (see `stop_live`)
+        without a lock since a single attribute read/write is already
+        atomic under the GIL. Stops on `stop_live()` or as soon as a
+        burst sets a stop reason (breakpoint hit, fault, etc.) - same
+        as `run`."""
+        self.live = True
+        self._live_running = True
+        self._stop_reason = None
+        try:
+            while self.live:
+                while True:
+                    try:
+                        action = self.pending_actions.get_nowait()
+                    except queue.Empty:
+                        break
+                    action()
+                self.run(burst)
+                if self._stop_reason:
+                    self.live = False
+        finally:
+            self._live_running = False
+
+    def stop_live(self):
+        self.live = False
+
 
 HELP = """\
 Commands:
@@ -332,6 +542,52 @@ Commands:
                      value of its memory operand, if any) instead of
                      only printing a status block when you stop -
                      scrolls continuously during any step/run/continue
+  speed [n|max]      show or set the execution rate cap, in
+                     instructions/second - `speed max` (the default)
+                     runs as fast as the host can go; a lower number
+                     slows any step/run/continue down to a human-
+                     watchable pace (e.g. for reading `trace` output
+                     or live register updates as they happen)
+  reset              reboot the CPU/memory/stubs back to power-up state
+                     in place (the reset vector, count=0, front panel/
+                     DIP switches/UART back to their idle defaults) -
+                     breakpoints, trace mode, and the speed cap are
+                     left alone. Refused while `live` mode is running -
+                     stop it first (see `live`)
+  dump [path]        write the entire mapped address space (every ROM
+                     and RAM region) to a flat binary file - default
+                     path is `../scratchpad/dump/<instruction count>.
+                     bin` - each region at its own real physical
+                     address (gaps zero-filled) so file offset N is
+                     what's at physical address N. Also writes 2
+                     companion text files (same path, different
+                     extensions): `.mem` has the full memory/IO access
+                     log (every touched address/port, not just the top
+                     few shown by `access`); `.log` has every
+                     diagnostic-text line captured so far (see `diag`)
+  access             show every memory address and I/O port touched so
+                     far (write/in/out counts always run automatically;
+                     read counts only appear for a range added via
+                     `watch` - see below). NOTE: a stubbed register's
+                     own read-override write-back (see io_stubs.
+                     AccessCounter's docstring) shows up as a "write"
+                     here too - a nonzero write count only means real
+                     firmware wrote there if the address isn't one of
+                     this project's own read-stubs. Reset by `reset`/
+                     a fresh run
+  access clear       zero every access counter without touching which
+                     range(s) `watch` is covering
+  watch <start> <end> track *reads* to this hex physical-address range
+                     too (writes/IO always run) - opt-in and NOT safe
+                     to leave on for a run you need to trust: a real,
+                     confirmed Unicorn bug corrupts CPU execution if
+                     the watched range ever overlaps wherever the
+                     stack happens to be (see io_stubs.AccessCounter's
+                     docstring for the full repro) - use only for a
+                     short, targeted diagnostic run
+  unwatch            stop tracking reads on every `watch`ed range
+  access clear       zero out every access counter without changing
+                     which range(s) are being watched
   break <hex addr>   add a breakpoint (physical address, e.g. E0AE9)
   delete <hex addr>  remove a breakpoint
   breakpoints        list current breakpoints
@@ -364,9 +620,20 @@ Commands:
                      between queued-byte deliveries - lower = faster
                      (more overrun-prone if firmware can't keep up),
                      higher = slower/more forgiving
-  uart               show the mock UART's pending RX queue and captured
-                     TX bytes (writes to the same register - see
-                     `incoming`/`outgoing`)
+  uart               show the mock UART's pending RX queue/captured TX
+                     bytes (see `incoming`/`outgoing`) plus the i8251
+                     core's own decoded mode/command configuration and
+                     rx/tx holding registers (see i8251.I8251.describe)
+  live [off]         run continuously in short bursts, staying
+                     responsive to input the whole time - unlike
+                     step/run/continue, which occupy the debugger
+                     until they stop, `live` lets you press front-
+                     panel buttons/checkboxes, send `serial <text>`,
+                     or type any other command while it's ticking;
+                     each is queued and applied between bursts, the
+                     only point where nothing else is touching the
+                     CPU. `live off` (or the TUI's F6) stops it -
+                     step/run/continue are refused while it's active
   interrupts         show the CPU's IF flag, the Option Interrupt Mask
                      Latch's 4 outputs, the UART's Rx/TxEN command bits
                      and resulting RxRDY/TxRDY signals, and the
@@ -399,13 +666,20 @@ def parse_command_line(line):
     silently eat a literal backslash outside quotes before
     `decode_escapes` ever saw it. No `.strip()` on the payload itself -
     only `split()`'s own leading-whitespace skip, so a genuine trailing
-    `\\r` the user typed isn't silently eaten either."""
+    `\\r` the user typed isn't silently eaten either.
+
+    `dump` is special-cased the same way and for the same underlying
+    reason - its argument is a Windows file path (this project's only
+    supported platform), and `shlex.split` treats a bare backslash as
+    an escape character outside quotes, silently mangling `dump
+    C:\\Users\\...\\out.bin` into `C:UsersFoo...out.bin` (caught while
+    testing the `dump` command itself, not hypothetically)."""
     import shlex
     first_split = line.split(None, 1)
     if not first_split:
         return None, []
-    if first_split[0].lower() == "serial":
-        return "serial", ([first_split[1]] if len(first_split) > 1 else [])
+    if first_split[0].lower() in ("serial", "dump"):
+        return first_split[0].lower(), ([first_split[1]] if len(first_split) > 1 else [])
     try:
         parts = shlex.split(line)
     except ValueError as e:
@@ -448,11 +722,60 @@ def dispatch_command(dbg, line):
             lines.append(f"continue length set to {dbg.continue_length}")
         dbg.run(dbg.continue_length)
         return lines + dbg.status_lines()
+    if cmd == "reset":
+        dbg.reset()
+        return ["(reset - CPU back at the reset vector)"] + dbg.status_lines()
+    if cmd == "dump":
+        path = rest[0] if rest else None
+        size, n, bin_path, mem_path, log_path = dbg.dump_memory(path)
+        return [f"wrote {size} bytes ({n} region(s): ROM+RAM, gaps zero-filled) to {bin_path}",
+                f"wrote the access log ({dbg.access_counter.status()}) to {mem_path}",
+                f"wrote {len(dbg.diag.lines)} diagnostic-text line(s) to {log_path}"]
+    if cmd == "access":
+        if rest and rest[0].lower() == "clear":
+            dbg.access_counter.clear()
+            return ["access counters cleared"]
+        return [dbg.access_counter.status()] + dbg.access_counter.summary()
+    if cmd == "watch":
+        if len(rest) != 2:
+            return ["usage: watch <start hex addr> <end hex addr>  "
+                     "- see 'help' for why this is opt-in, not automatic"]
+        start, end = int(rest[0], 16), int(rest[1], 16)
+        dbg.access_counter.install_watch_range(dbg.emu, uc, start, end)
+        return [f"watching 0x{start:06X}-0x{end:06X} for reads (see 'access') - "
+                 "diagnostic only, don't trust a run's own completion while this is on"]
+    if cmd == "unwatch":
+        dbg.access_counter.unwatch()
+        return ["stopped watching all memory-read ranges "
+                 "(write/IO port counts keep running)"]
+    if cmd == "live":
+        if rest and rest[0].lower() == "off":
+            dbg.stop_live()
+            return ["stopping live mode..."]
+        if dbg.live:
+            return ["already in live mode"]
+        dbg.run_live()
+        return ["(live mode ended)"] + dbg.status_lines()
     if cmd == "trace":
         if not rest or rest[0].lower() not in ("on", "off"):
             return ["usage: trace on|off"]
         dbg.trace = rest[0].lower() == "on"
         return [f"trace {'enabled' if dbg.trace else 'disabled'}"]
+    if cmd == "speed":
+        if not rest:
+            current = f"{dbg.speed_limit} instructions/sec" if dbg.speed_limit else "unlimited (max)"
+            return [f"current speed: {current}  (usage: speed <n>|max)"]
+        if rest[0].lower() == "max":
+            dbg.set_speed(None)
+            return ["speed set to unlimited (max)"]
+        try:
+            n = int(rest[0])
+        except ValueError:
+            return ["usage: speed <n>|max  (n = instructions/second)"]
+        if n <= 0:
+            return ["speed must be a positive instruction/second count, or `max`"]
+        dbg.set_speed(n)
+        return [f"speed set to {n} instructions/sec"]
     if cmd == "break":
         if not rest:
             return ["usage: break <hex addr>"]
@@ -525,7 +848,7 @@ def dispatch_command(dbg, line):
         dbg.uart.instructions_per_byte = int(rest[0])
         return [f"pacing set to {dbg.uart.instructions_per_byte} instructions/byte"]
     if cmd == "uart":
-        return [dbg.uart.status()]
+        return [dbg.uart.status(), dbg.uart.chip_detail()]
     if cmd == "interrupts":
         return [dbg._interrupts_line(dbg.interrupts_status())]
     if cmd == "incoming":

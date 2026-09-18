@@ -121,6 +121,56 @@ while testing this: disabling the input during a run stripped its
 focus and nothing restored it, so **every command after the first one
 silently did nothing** - now fixed, see `docs/design.md`.
 
+**Speed control, decoded UART state, and live mode, 2026-09-17**:
+`speed [n|max]` caps execution to a chosen instructions/second rate
+(REPL and TUI), for watching `trace` output or live register updates
+at a human pace instead of full speed. `uart` now also shows the
+i8251 core's own decoded configuration (`I8251.describe()`/
+`InteractiveUartMock.chip_detail()` - mode/command register meaning,
+rx/tx holding registers, next expected control byte), not just this
+mock's queue/pacing bookkeeping.
+
+**`live`/F6 (TUI only)** runs the CPU continuously in short bursts
+while keeping the input, front-panel checkboxes, and DIP switches
+fully interactive the whole time - unlike `step`/`run`/`continue`,
+which occupy the app until they finish. Button presses, DIP-switch
+toggles, and typed commands (including `serial <text>`) are queued
+and applied between bursts, the only point nothing else is touching
+the emulator; `step`/`run`/`continue` are refused while it's active
+since those would call into Unicorn concurrently with the live loop's
+own thread. `live off` (or F6 again) stops it. See `docs/design.md`'s
+2026-09-17 section for the threading design and what makes deferring
+button/switch actions (but not register reads) safe without a lock.
+
+**Reset and memory dump, 2026-09-17**: `reset` (REPL/TUI - also F7 or a
+`RESET` button in the TUI's front-panel grid) reboots the CPU/memory/
+stubs back to power-up state in place, without relaunching the app -
+breakpoints/trace/speed cap survive, everything else (registers,
+front-panel/DIP-switch state, the UART) goes back to its real idle
+baseline. Refused while `live` mode is actually running. `dump [path]`
+writes the entire mapped address space (every ROM and RAM region,
+1MB total) to a flat binary file - default path is `../scratchpad/
+dump/<instruction count>.bin` - each region at its own real physical
+address (gaps zero-filled) - useful for inspecting live variable/
+buffer state (or diffing against the source ROMs) with an external
+hex editor. Always writes 2 companion text files too: `<same path>.mem`
+with the full memory/IO access log (every touched address/port, not
+just the summary's top few), and `<same path>.log` with every
+diagnostic-text line captured so far (the self-test/POST banner text -
+see `io_stubs.DiagnosticTextCapture`) - both for later analysis
+alongside the binary, without needing a live debugger session.
+
+**Memory/IO access counter, 2026-09-17**: `access` shows every memory
+address and I/O port actually touched (write/in/out counts always run;
+`watch <start> <end>`/`unwatch` add/remove real read counts for a
+specific range too). **Read tracking is opt-in and diagnostic-only on
+purpose** - a real, confirmed Unicorn 2.1.4 bug corrupts CPU execution
+if a `MEM_READ` hook ever overlaps wherever the stack happens to be
+during the run (found the hard way: a previously rock-solid boot trace
+started crashing the moment this was made automatic). Never leave
+`watch` running for a run whose completion needs to be trusted - see
+`docs/design.md`'s 2026-09-17 section for the full repro.
+
 Not to be confused with `decompile/`, the Ghidra static-analysis
 project (see `docs/architecture/ghidra-project.md`) - that's a second
 disassembler/cross-check tool; this is dynamic execution.

@@ -209,3 +209,42 @@ class I8251:
         self.rx_data = byte
         self.status |= STATUS_RX_READY
         self._update_rx_ready()
+
+    # ---- human-readable decode of the chip's own configuration -----
+
+    _FLAG_NAMES = {NEXT_COMMAND: "command", NEXT_MODE: "mode",
+                   NEXT_SYNC1: "sync1", NEXT_SYNC2: "sync2"}
+    _CHAR_LEN_NAMES = {0: "5", 1: "6", 2: "7", 3: "8"}
+    _PARITY_NAMES = {0b00: "none", 0b10: "odd", 0b11: "even"}  # bit4=enable, bit5=type
+    _STOP_BIT_NAMES = {0: "inhibit", 1: "1", 2: "1.5", 3: "2"}
+
+    def describe(self):
+        """A human-readable summary of the chip's current programmed
+        configuration and internal state - see `mode_w`'s own comment
+        block for the raw bit layout this decodes."""
+        char_len = self._CHAR_LEN_NAMES[(self.mode_byte >> 2) & 0x03]
+        parity_key = (self.mode_byte >> 4) & 0x03
+        parity = self._PARITY_NAMES.get(parity_key, "?") if (self.mode_byte & 0x10) else "none"
+        is_async = bool(self.mode_byte & 0x03)
+        if is_async:
+            baud_factor = {1: 1, 2: 16, 3: 64}.get(self.mode_byte & 0x03, "?")
+            stop_bits = self._STOP_BIT_NAMES[(self.mode_byte >> 6) & 0x03]
+            mode_desc = (f"async, {char_len}N1, stop={stop_bits}, "
+                         f"parity={parity}, baud_factor=x{baud_factor}")
+        else:
+            mode_desc = (f"sync, {char_len} data bits, parity={parity}, "
+                         f"{self.sync_byte_count} sync char(s)")
+        next_byte = self._FLAG_NAMES.get(self.flags, "?")
+        return {
+            "mode_byte": self.mode_byte, "mode_desc": mode_desc,
+            "command": self.command,
+            "tx_enable": bool(self.command & 0x01),
+            "dtr": not bool(self.command & 0x02),
+            "rx_enable": bool(self.command & 0x04),
+            "send_break": bool(self.command & 0x08),
+            "rts": not bool(self.command & 0x20),
+            "hunt_mode": bool(self.command & 0x80),
+            "rx_data": self.rx_data, "tx_data": self.tx_data,
+            "next_control_byte": next_byte,
+            "status": self.status,
+        }

@@ -17,15 +17,18 @@ Usage:
 
 Commands typed into the input bar are identical to interactive.py's -
 see debugger_core.HELP (bound to F1) for the full list. A few common
-actions also have direct key bindings (step/run/continue/trace/quit)
-so you don't have to type them.
+actions also have direct key bindings (step/run/continue/trace/live/
+quit) so you don't have to type them. F6/`live` starts a mode where
+the CPU ticks continuously in the background while the input, front-
+panel checkboxes, and DIP switches all stay live - unlike step/run/
+continue, which occupy the whole app until they finish.
 """
 import argparse
 
 from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll, Grid
-from textual.widgets import Header, Footer, Static, RichLog, Input, Checkbox, Select
+from textual.widgets import Header, Footer, Static, RichLog, Input, Checkbox, Select, Button
 
 from debugger_core import Debugger, HELP, QuitRequested, dispatch_command
 from io_stubs import InteractiveFrontPanel
@@ -105,6 +108,8 @@ class Tek2230App(App):
         ("f3", "do_run", "Run"),
         ("f4", "do_continue", "Continue"),
         ("f5", "toggle_trace", "Trace on/off"),
+        ("f6", "toggle_live", "Live on/off"),
+        ("f7", "do_reset", "Reset"),
         ("ctrl+q", "quit_app", "Quit"),
         # `Input` has no built-in binding for these (checked directly:
         # its own BINDINGS list has left/right/home/end/delete/etc. but
@@ -124,6 +129,7 @@ class Tek2230App(App):
         self._history_draft = ""    # unsent text saved when history nav starts
         self.dbg = None
         self._busy = False
+        self._live = False
         self._outgoing_buffer = []
         self._suppress_panel_events = False  # see _sync_front_panel_widgets
 
@@ -143,6 +149,7 @@ class Tek2230App(App):
                     id="horizontal-mode", allow_blank=False, value="A_ONLY")
                 for name in CHECKBOX_BUTTONS:
                     yield Checkbox(name, id=f"btn-{name}")
+                yield Button("RESET", id="btn-reset", variant="error")
             with Grid(id="dip-switches"):
                 for n in range(1, 11):
                     yield Checkbox(f"SW{n}", id=f"dip-{n}")
@@ -205,14 +212,30 @@ class Tek2230App(App):
         widget_id = event.checkbox.id
         if widget_id.startswith("dip-"):
             number = int(widget_id.removeprefix("dip-"))
-            self.dbg.dip_switches.set_switch(number, event.value)
-            self._append_log(f"DIP switch {number} -> {'ON' if event.value else 'OFF'} - "
+            value = event.value
+            if self._live:
+                # Deferred to `run_live`'s own thread, between bursts -
+                # see `queue_action`'s docstring for why nothing may
+                # touch dbg/engine state directly from this thread
+                # while the CPU is actively ticking. The panel will
+                # reflect it on the next live progress tick rather
+                # than instantly.
+                self.dbg.queue_action(lambda: self.dbg.dip_switches.set_switch(number, value))
+                self._append_log(f"DIP switch {number} -> {'ON' if value else 'OFF'} (queued)")
+                return
+            self.dbg.dip_switches.set_switch(number, value)
+            self._append_log(f"DIP switch {number} -> {'ON' if value else 'OFF'} - "
                               f"{self.dbg.dip_switches.status()}")
             self.refresh_registers()
             return
         name = widget_id.removeprefix("btn-")
-        self.dbg.front_panel.set_button(name, event.value)
-        self._append_log(f"{'pressed' if event.value else 'released'} {name} - "
+        value = event.value
+        if self._live:
+            self.dbg.queue_action(lambda: self.dbg.front_panel.set_button(name, value))
+            self._append_log(f"{'pressed' if value else 'released'} {name} (queued)")
+            return
+        self.dbg.front_panel.set_button(name, value)
+        self._append_log(f"{'pressed' if value else 'released'} {name} - "
                           f"{self.dbg.front_panel.status()}")
         self.refresh_registers()
 
@@ -220,6 +243,12 @@ class Tek2230App(App):
         if self._suppress_panel_events or self.dbg is None or event.select.id != "horizontal-mode":
             return
         mode = event.value
+        if self._live:
+            self.dbg.queue_action(lambda: (
+                self.dbg.front_panel.set_button("A_ONLY", mode == "A_ONLY"),
+                self.dbg.front_panel.set_button("B_ONLY", mode == "B_ONLY")))
+            self._append_log(f"HORIZONTAL MODE -> {mode} (queued)")
+            return
         self.dbg.front_panel.set_button("A_ONLY", mode == "A_ONLY")
         self.dbg.front_panel.set_button("B_ONLY", mode == "B_ONLY")
         self._append_log(f"HORIZONTAL MODE -> {mode} - {self.dbg.front_panel.status()}")
@@ -314,7 +343,8 @@ class Tek2230App(App):
         text.append("comm option:\n", style="bold")
         text.append(f"  {self.dbg.dip_switches.status()}\n\n")
         text.append("uart:\n", style="bold")
-        text.append(f"  {s['uart']}\n\n")
+        text.append(f"  {s['uart']}\n")
+        text.append(f"  {self.dbg.uart.chip_detail()}\n\n")
         text.append("interrupts:\n", style="bold")
         iv = s["interrupts"]
         text.append(f"  IF={int(iv['if_flag'])}   "
@@ -334,43 +364,156 @@ class Tek2230App(App):
 
     # ---- command dispatch, always off the main thread ---------------
 
-    def _run_command(self, line):
-        """Runs in a worker thread so a long `run`/`continue` never
-        freezes the UI. Every command goes through this same path
-        (not just step/run) for one uniform threading model - trivial
-        commands just finish almost instantly inside the worker. The
-        `finally` always clears the busy flag, however the command
-        ended, so a crash mid-command can't leave the input
-        permanently disabled."""
+    def _dispatch_and_log(self, line):
+        """The actual dispatch+output loop, factored out of
+        `_run_command` so `_run_queued` (live mode's per-action path,
+        see below) can share it without also going through the busy
+        flag - both call sites already run on a worker thread, never
+        the app's own, so `call_from_thread` is always correct here."""
         try:
             for out_line in dispatch_command(self.dbg, line):
                 self.call_from_thread(self._append_log, out_line)
         except QuitRequested:
             self.call_from_thread(self.exit)
-            return
+            return False
         except ValueError as e:
             self.call_from_thread(self._append_log, str(e))
+        return True
+
+    def _run_command(self, line):
+        """Runs in a worker thread so a long `run`/`continue` never
+        freezes the UI. Every non-live command goes through this same
+        path for one uniform threading model - trivial commands just
+        finish almost instantly inside the worker. The `finally`
+        always clears the busy flag, however the command ended, so a
+        crash mid-command can't leave the input permanently disabled."""
+        try:
+            self._dispatch_and_log(line)
         finally:
             self.call_from_thread(self._set_busy, False)
         self.call_from_thread(self.refresh_registers)
 
+    def _run_queued(self, line):
+        """A command typed (or a button/checkbox toggled) while `live`
+        mode is running - see `_launch`. Runs on `run_live`'s own
+        worker thread, dequeued and invoked between bursts by
+        `Debugger.run_live` itself, so it never needs the busy flag:
+        live mode's own `self._live` guard already keeps a second
+        step/run/continue from starting concurrently (see `_launch`),
+        and this is the one place it's actually safe to touch dbg/
+        engine state from outside the live loop's own thread."""
+        self._dispatch_and_log(line)
+
     def _launch(self, line):
-        """The only place that starts a command worker - refuses to
-        start a second one while one is already running instead of
-        Textual's `exclusive=True` (which *cancels* the in-flight
-        worker to make room for the new one). That's unsafe here:
-        `dbg.run()` is a long synchronous Unicorn C call with no clean
-        way to be interrupted from another thread, so canceling it
-        mid-flight can crash the interpreter hard enough to skip
-        Textual's own terminal cleanup (confirmed 2026-09-16 - pressing
-        F4 while a previous `continue` was still running left the
-        terminal stuck in raw SGR mouse-tracking mode, printing mouse-
-        move escape codes as literal text after the app died)."""
+        """The only place that starts a command worker for a normal
+        (non-live) command - refuses to start a second one while one
+        is already running instead of Textual's `exclusive=True`
+        (which *cancels* the in-flight worker to make room for the new
+        one). That's unsafe here: `dbg.run()` is a long synchronous
+        Unicorn C call with no clean way to be interrupted from
+        another thread, so canceling it mid-flight can crash the
+        interpreter hard enough to skip Textual's own terminal cleanup
+        (confirmed 2026-09-16 - pressing F4 while a previous `continue`
+        was still running left the terminal stuck in raw SGR mouse-
+        tracking mode, printing mouse-move escape codes as literal text
+        after the app died).
+
+        While `live` mode is running (see `_start_live`), step/run/
+        continue are refused outright (they'd try to call `dbg.run()`
+        concurrently with `run_live`'s own loop on another thread) and
+        every other command is deferred onto `run_live`'s own thread
+        via `queue_action` instead of started as a fresh worker here -
+        user request 2026-09-17: "can we have a live mode where I can
+        still push buttons and send serial commands but the system
+        ticks away in the background.\""""
         if self._busy:
             self._append_log("(still running the previous command - wait for it to finish)")
             return
+        if self._live:
+            cmd0 = line.strip().split(None, 1)[0].lower() if line.strip() else ""
+            if cmd0 in ("step", "run", "continue", "c", "reset"):
+                self._append_log("(live mode is running - 'live off' or F6 stops it first)")
+                return
+            self.dbg.queue_action(lambda: self._run_queued(line))
+            return
         self._set_busy(True)
         self.run_worker(lambda: self._run_command(line), thread=True)
+
+    def _start_live(self):
+        if self._busy or self._live:
+            self._append_log("(already running)")
+            return
+        self._live = True
+        self.sub_title = "LIVE - ticking in background (buttons/serial stay active)"
+        self.run_worker(lambda: self._run_live_loop(), thread=True)
+
+    def _run_live_loop(self):
+        """Runs on its own worker thread for as long as `dbg.live` is
+        set - see `Debugger.run_live`. Only this thread (and
+        `Debugger.run_live` itself, between bursts) may touch dbg/
+        engine state directly while live mode is active; everything
+        else defers through `queue_action` (see `_launch`,
+        `on_checkbox_changed`, `on_select_changed`)."""
+        try:
+            self.dbg.run_live()
+        finally:
+            self.call_from_thread(self._live_ended)
+
+    def _live_ended(self):
+        self._live = False
+        self.sub_title = ""
+        self.refresh_registers()  # already logs the stop reason, if any
+        self._append_log("(live mode stopped)")
+
+    def _stop_live(self):
+        if not self._live:
+            self._append_log("(live mode isn't running)")
+            return
+        self.dbg.stop_live()
+        self._append_log("(stopping live mode - finishing the current tick burst...)")
+
+    def action_toggle_live(self):
+        if self._live:
+            self._stop_live()
+        else:
+            self._start_live()
+
+    def _do_reset(self):
+        """Reboots the emulated CPU/memory/stubs back to power-up
+        state - user request: "and you never added my reset button."
+        Shares the same busy/live guards as `_launch` (a full engine
+        rebuild is exactly as unsafe to run concurrently with a step/
+        run/continue or a live burst as starting a second one of those
+        would be - see `Debugger.reset`'s own docstring), but is a
+        separate path (not routed through `_launch`/`dispatch_command`)
+        so it can also resync the front-panel checkboxes/DIP switches
+        to the freshly-recreated `front_panel`/`dip_switches` objects
+        afterward - those are plain instance replacements on reset, so
+        without this the checkboxes would keep showing whatever was
+        toggled before the reset instead of the real idle baseline.
+        Reachable 3 ways: typing `reset`, the F7 key, or the front-
+        panel's own RESET button - all three call this."""
+        if self._busy:
+            self._append_log("(still running the previous command - wait for it to finish)")
+            return
+        if self._live:
+            self._append_log("(live mode is running - 'live off' or F6 stops it first)")
+            return
+        try:
+            self.dbg.reset()
+        except ValueError as e:
+            self._append_log(str(e))
+            return
+        self._append_log("(reset - CPU back at the reset vector)")
+        self._sync_front_panel_widgets()
+        self.refresh_registers()
+
+    def action_do_reset(self):
+        self._do_reset()
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "btn-reset":
+            self._do_reset()
 
     def on_input_submitted(self, event: Input.Submitted):
         line = event.value.strip()
@@ -385,6 +528,20 @@ class Tek2230App(App):
         self._history_index = None
         self._history_draft = ""
         self._append_log(f"(tek2230) {line}")
+        lower = line.lower()
+        if lower in ("live", "live on"):
+            # Handled here, not by `_launch`/`_run_command` - those
+            # would call `dbg.run_live()` inside a normal busy-guarded
+            # worker, which blocks with input disabled for as long as
+            # live mode runs, defeating the entire point of it.
+            self._start_live()
+            return
+        if lower == "live off":
+            self._stop_live()
+            return
+        if lower == "reset":
+            self._do_reset()
+            return
         self._launch(line)
 
     def action_history_prev(self):
@@ -447,6 +604,10 @@ class Tek2230App(App):
             self._append_log("(still running - can't quit mid-run; wait "
                               "for it to finish, or close the terminal "
                               "window if you need to force it)")
+            return
+        if self._live:
+            self._append_log("(live mode is running - press F6 or type "
+                              "'live off' to stop it, then quit again)")
             return
         self.exit()
 

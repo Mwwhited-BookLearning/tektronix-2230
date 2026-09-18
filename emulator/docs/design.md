@@ -1050,6 +1050,235 @@ All 8 general-purpose registers (`AX`-`SP`) now share a single line
 instead of 2 lines of 4 - the doubled sidebar width from earlier the
 same day has room for it.
 
+## Execution speed control
+
+User request: "I would like to be able to set the speed so I can run
+it slower or as fast as they system can process." `Debugger.
+speed_limit`/`set_speed()`/`_throttle_speed()`: checked only every
+`SPEED_CHECK_EVERY` (1000) instructions from `_on_code`, not every
+one, so the check itself doesn't add per-instruction overhead; when
+checked, it sleeps only enough to bring the *average* rate since
+`set_speed()` was called back down to the target - it never tries to
+speed up to make up for a slow patch (e.g. one that did a lot of
+`trace` output). `speed [n|max]` in the shared command set; `max` (the
+default) leaves `speed_limit` as `None`, meaning unthrottled.
+
+## Decoded UART chip state (`I8251.describe()` / `chip_detail()`)
+
+User request: "i would like to see the uart state and parameter values
+as well." `InteractiveUartMock.status()` (pre-existing) only reports
+this mock's own queue/pacing bookkeeping - the RX queue and TX log -
+not the i8251 core's own programmed configuration. Added `I8251.
+describe()`, decoding `mode_byte` (character length, parity, stop
+bits, sync-vs-async, baud-rate factor) and `command` (TxEN/RxEN/DTR/
+RTS/send-break/hunt-mode) into human-readable form, alongside the raw
+rx/tx holding-register bytes and which control byte (`mode`/`sync1`/
+`sync2`/`command`) a `control_w()` write would currently be interpreted
+as. `InteractiveUartMock.chip_detail()` formats this into one line;
+the `uart` command (REPL/TUI) now prints it alongside the existing
+`status()` line, and the TUI's live registers panel shows both.
+Verified against `I8251` directly: programming mode byte `0x4E`
+decodes to `async, 8N1, stop=1, parity=none, baud_factor=x16`, and a
+follow-up command-byte write correctly reports `TxEN=1 RxEN=1 DTR=1
+RTS=1`.
+
+## Live mode: staying responsive to input while the CPU keeps ticking
+
+User request, 2026-09-17: "can we have a live mode where I can still
+push buttons and send serial commands but the system ticks away in the
+background." Until this point every one of `step`/`run`/`continue`
+called Unicorn's `emu_start` as a single long synchronous C call and
+disabled the whole input for its duration (`_set_busy(True)`, see the
+crash-fix notes above on exactly why that call can't be safely
+interrupted or preempted from another thread) - there was fundamentally
+no way to interact with a running emulator, only to run it and wait.
+
+**Design**: `Debugger.run_live(burst=2000)` runs in a loop of short
+`emu_start` bursts instead of one long call. Between bursts - the only
+point at which nothing is executing and it's genuinely safe to touch
+`dbg`/engine state from any thread - it drains `pending_actions`, a
+plain thread-safe `queue.Queue` that any other thread hands work to
+via `queue_action(fn)`. `stop_live()` just clears the plain `live`
+bool; safe without a lock, since a single attribute write/read is
+already atomic under the GIL, and the loop only ever checks it between
+bursts. `dispatch_command` exposes `live [off]`.
+
+**TUI wiring** (`tui.py`): `live`/F6 starts `run_live` on its own
+worker thread *without* going through `_set_busy`/disabling the input
+- that's the entire point of this mode. While it's active:
+- Every checkbox/dropdown toggle (`on_checkbox_changed`/
+  `on_select_changed`) calls `queue_action` instead of touching
+  `dbg.front_panel`/`dbg.dip_switches` directly from the input thread.
+- `_launch` (the typed-command path) also routes through
+  `queue_action` for anything except `step`/`run`/`continue`, which it
+  refuses outright with a message - those would call `dbg.run()`
+  concurrently with `run_live`'s own loop on a different thread, which
+  is exactly the unsafe pattern the busy-guard exists to prevent.
+- The registers panel keeps refreshing live for free, through the
+  pre-existing `on_progress` callback (fires from inside `_on_code`,
+  i.e. from the live loop's own thread, marshaled onto the UI thread
+  via `call_from_thread` - already a safe, serialized round trip
+  before this feature existed, so bursts don't need any new plumbing
+  for it).
+
+Confirmed by inspection that the front-panel/DIP-switch mutator
+methods (`set_button`, `set_switch`, `uart.inject`) never call into
+the Unicorn engine themselves (only the *read-hook* callbacks that
+fire during `emu_start` do, e.g. `_on_read`/`_on_param_read`) - they
+only flip plain Python attributes, which is what makes deferring them
+onto the live loop's own thread (rather than needing a lock or
+mutex) sufficient for safety; the thing that's genuinely unsafe to
+call concurrently with an active `emu_start` is anything touching the
+engine object itself (`reg_read`/`mem_read`/`mem_write`), which is why
+`step`/`run`/`continue` (and, transitively, anything that would call
+`dbg.status_lines()`/`snapshot()` from the wrong thread) are the ones
+that must be refused or deferred, not the button/switch mutators
+themselves.
+
+Verified headless via Textual's `run_test()`: typing `live` leaves
+`_busy=False` and the `Input` still enabled (confirmed via
+`inp.disabled`); toggling a front-panel checkbox while live actually
+flips the correct register bit (`front_panel.status()` before/after);
+typing `step` while live is refused with a message, not silently
+ignored or crashed; typing `serial ID?\n` while live is accepted,
+queued, and correctly injects into the UART mock's RX queue; `live
+off` stops it and restores normal step/run/continue. Also verified
+`Debugger.run_live`/`queue_action`/`stop_live` directly with no TUI at
+all: started on a thread, queued a button press, confirmed it was
+applied between bursts, then stopped cleanly with no exception and no
+leftover live thread.
+
+## Escaped unprintable bytes in the incoming panel
+
+User request: "if there are any unprintable characters in the incoming
+[buffer] they should be escaped so i can see them," then "the
+unprintable characters should be shown in the hex form." `Interactive
+UartMock.incoming_text()` used to pass CR/LF/tab through as real
+control bytes (matching `outgoing_text()`'s convention, fine there
+since that's a scrolling `RichLog`). `incoming_text()` renders into
+`tui.py`'s tiny fixed-height `#incoming` `Static` box instead, where a
+real control byte silently eats one of its few visible lines instead
+of showing up as content - the same invisible-content failure mode as
+the registers-panel clipping bug earlier the same day. Changed it to
+escape every byte outside printable ASCII (32-126) uniformly as
+`\xNN`, including CR/LF/tab/NUL, rather than mixing mnemonic escapes
+with hex ones.
+
+## Reset button and RAM dump command
+
+**Reset**: user: "and you never added my reset button." Refactored
+`Debugger.__init__` so everything past one-time session config now
+lives in `_boot()`; `reset()` re-runs it, rebuilding the Unicorn
+engine/memory map/every stub from scratch (front panel/DIP switches/
+UART back to real idle baselines, `count` back to 0, CPU back at the
+reset vector) while leaving breakpoints/trace/speed alone. Guarded by
+a new `_live_running` flag - deliberately distinct from `live` itself,
+since `stop_live()` only requests the loop exit on its next check and
+doesn't wait for it, so `live` alone can't tell you whether it's still
+genuinely unsafe to tear down `self.emu` out from under a running
+burst. `reset` raises `ValueError` (the existing uniform error path)
+when refused, rather than blocking or silently racing the live loop's
+own thread. TUI: reachable via typing `reset`, F7, or a new `Button
+("RESET", variant="error")` in the front-panel grid - all 3 share one
+`_do_reset()`, which also resyncs the checkboxes/DIP switches to the
+fresh idle baseline afterward (plain instance replacements on reset,
+so without an explicit resync they'd keep showing stale pre-reset
+toggle state).
+
+**Memory dump**: from `TODO.md`'s "Notes from the architect" - "I
+would like a memory dump option... it should output the entire ram
+representation to a binary file." `Debugger.dump_memory(path)` writes
+every mapped region into one flat file, each region's bytes placed at
+its own real physical address (gaps zero-filled) - file offset N is
+physical address N, matching this project's absolute-addressing
+convention everywhere else, rather than a compacted concatenation
+needing a separate offset table. Initially scoped to RAM only
+(`memory_map.ram_regions()`, reasoning ROM is static and already the
+source `.bin` files) - **corrected same day** per the user: "i would
+expect this memory dump to include the roms." Now uses `all_regions()`
+(every ROM and RAM region), producing the full `0x100000`-byte (1MB)
+address space instead of `0x90000` bytes; verified the ROM portions of
+the dump match the source `.bin` files byte-for-byte.
+
+**Real bug found while testing `dump`**: `parse_command_line`'s
+general-purpose `shlex.split` treats a bare backslash as an escape
+character outside quotes - `dump C:\Users\...\out.bin` silently
+mangled into `C:UsersFoo...out.bin`. Fixed by special-casing `dump`
+exactly the way `serial` already is (take the rest of the line as one
+raw argument, no shell-style parsing) - both commands take a payload
+(a path, or literal text with its own `\n`/`\r` escapes) rather than a
+shell-quoted argument list, so both need the same treatment. Verified:
+correct file size (`0x90000`), a live front-panel byte round-trips
+correctly between the dump and `front_panel.status()`, a ROM-only
+address reads back zero, a real `C:\Users\...` path works post-fix,
+and `dump` executes correctly when queued from inside an active `live`
+session.
+
+## Per-address memory/IO access counter
+
+User request, prompted by doubt about this project's assumed
+"outgoing serial" address: "could you add a memory address log that
+counts the reads/writes per memory address and io address?"
+`io_stubs.AccessCounter` - plain dicts keyed by address/port
+(`mem_reads`/`mem_writes`/`io_in`/`io_out`), installed automatically
+every run; `access`/`access clear` in the shared command set. First
+version required an explicit `watch <start> <end>` range to avoid
+slowing down a long `continue`; simplified per a follow-up request
+("just create a dictionary structure so you only track addresses as
+they are touched instead of every address") to hook the whole address
+space unconditionally, since a dict never allocates for untouched
+addresses anyway - the range was only ever protecting against the
+hook's own per-access Python-call overhead, not memory use, and isn't
+needed for that. Verified against a known-hot register (`0x43FFA`)
+that any of this file's own read-override stubs (calling `uc_eng.
+mem_write()` from inside their own `UC_HOOK_MEM_READ` callback) make
+their own write-back count as a "write" here too - documented clearly
+so a nonzero write count isn't mistaken for real firmware activity.
+
+Used it immediately: reading `enqueue_comm_char`'s real disassembly
+(the actual per-character comm-ROM TX path) showed it writes
+unconditionally through a dereferenced far pointer at `[0x6D6]`, no
+status-bit polling anywhere in it - consistent with TX_READY being
+interrupt/mask-latch-driven, not polled. Also surfaced that `[0x6D6]`'s
+seeded NVRAM seeded pointer target (`0x406F8`) is the same address
+this project's own UART mock treats purely as the Interrupt Mask
+Latch, with no data-register connection - independent evidence the
+seeded pointer value (already flagged as this project's least-
+confirmed NVRAM assumption) may be wrong, flagged for the user to
+check against the service manual rather than guessed further.
+
+**Found a real Unicorn bug and reverted the "always-on" simplification
+above because of it**: a full boot trace that had run clean to 60M+
+instructions for months crashed at instruction 3,318,839 writing to
+ROM, immediately after installing the whole-space `MEM_READ` hook the
+simplification above added. Isolated with a minimal repro: the same
+trace is clean with no `MEM_READ` hook, or with only write/IO hooks;
+adding *any* `MEM_READ` hook overlapping the stack - even a 256-byte
+range containing nothing else - reproduces the identical crash at the
+identical instruction count every time. `trace on` pinpointed it
+exactly: an ordinary `retf`, right after an ordinary table-walk loop
+and its own nested `retf`, pops `CS=0x0000` instead of the real return
+segment - the CPU then runs off into low RAM as garbage "code" and
+crashes writing to ROM a few instructions later. Ruled out the hook's
+own logic (a no-op `return True` version crashes identically) and the
+"whole space" `begin=1,end=0` convention specifically (an explicit
+`0-0xFFFFF` range crashes the same; a range confined to `0x40000+`,
+away from where the stack actually was, never crashes) - this is a
+genuine Unicorn 2.1.4 defect that corrupts real CPU state, not a bug
+in this project's own hook code, and a dangerous one since it's
+silent corruption rather than a loud error.
+
+**Fix**: `AccessCounter.install_io` (write + IO hooks only) is the only
+thing installed automatically now - confirmed safe over a full 25M-
+instruction run, byte-for-byte matching the known 590-TX-byte
+baseline. Memory *read* tracking (`install_watch_range`, `watch`/
+`unwatch`) is opt-in again, documented as diagnostic-only and never
+safe to leave on for a run whose completion needs to be trusted -
+there's no address range provably safe from ever overlapping wherever
+the stack happens to be at some point during a long run, since (as
+this exact trace showed) it isn't fixed at one place for the whole
+boot sequence.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the
