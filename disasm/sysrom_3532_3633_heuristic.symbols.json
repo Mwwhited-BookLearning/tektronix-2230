@@ -24808,10 +24808,10 @@
     "notes": null
   },
   "F7BA5": {
-    "name": "FUNC_3532_7BA5",
+    "name": "selftest_sequence_enter",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "selftest_sequence_enter",
     "notes": null
   },
   "F7BD9": {
@@ -24997,10 +24997,10 @@
     "notes": null
   },
   "F7D99": {
-    "name": "FUNC_3532_7D99",
+    "name": "selftest_sequence_exit",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "selftest_sequence_exit",
     "notes": null
   },
   "F7DC2": {

@@ -305,23 +305,40 @@ observation: each suppressed call also skips the character-by-character
 `wait_readout_tick` pacing loop that dominates a normal call's
 instruction count.
 
-**Still genuinely open** (see `TODO.md` and `MEMORY_MAP.md`'s updated
-"Puzzle" section): this directly contradicts the service manual's own
-description of SELECT C1/C2 ("invoking extended DIAGNOSTICS... an
-ASCII version of all errors... sent to the [RS-232-C] option," i.e.
-*more* output, not none). Two live hypotheses, neither confirmed:
-(1) this channel (`write_readout_port_byte`, physical `0x40000+0x6F0`)
-is genuinely just a CRT-adjacent mirror, not the real UART, and the
-manual's promised extended ASCII dump goes out through the genuine
-UART registers via some other, not-yet-found code path entirely; or
-(2) the user's own hypothesis - a real front-panel button press fires
-a hardware interrupt this emulator doesn't model, which real firmware
-needs to switch into a still-undiscovered extended-diagnostics path
-that this project's current button model (a static `SWB2` register
-poke, no accompanying interrupt) never reaches. `[0x1B7A]`
-(`self_test_dispatcher`'s own gate, shown in the diagram above) is
-never written by any code this project has disassembled in any of the
-3 ROMs, so it isn't the mechanism for either hypothesis.
+**Still genuinely open, and now confirmed real on actual hardware**
+(see `TODO.md` and `MEMORY_MAP.md`'s updated "Puzzle" section): the
+user directly confirmed on real hardware (both `-13` and `-14` ROM
+revisions) that holding SELECT C1/C2 through power-on produces genuine
+9600-baud diagnostic text over the RS-232 port - this is not a
+documentation quirk, it's real, reproducible behavior this emulator
+doesn't match (the emulator currently shows the *opposite*: output
+when unheld, none when held). Two hypotheses chased to ground truth
+and ruled out:
+(1) ~~this channel (`write_readout_port_byte`, physical
+`0x40000+0x6F0`) is genuinely just a CRT-adjacent mirror, and the real
+dump goes out through the genuine UART registers via a different
+path~~ - disproved: `0x40000+0x6F0` *is* the exact same physical
+address already confirmed as the real UART's own data register, not a
+separate mirror; (2) ~~a menu keypress afterward resumes the halted
+CPU into an extended-diagnostics continuation~~ - disproved: tested
+with a genuine interrupt-injection wake, confirmed the CPU wakes
+correctly but the following instruction crashes into unmapped memory
+every time - `halt_cpu` (`0xF1611`) is a genuine one-way trap, not a
+resumable wait state. Exhaustively searched every reference to
+`[0x758]` (the front-panel byte) and `[0x1B48]` across both the
+proven and heuristic main-ROM listings and the comm ROM's proven
+listing - found nothing beyond what's already documented here and in
+`FUNCTIONS.md`. `[0x1B7A]` (`self_test_dispatcher`'s own gate) *is*
+written, by `selftest_sequence_enter`/`selftest_sequence_exit`
+(`0xF7BA5`/`0xF7D99`, heuristic-reachability only, no proven caller
+found) - correcting an earlier same-day claim that it was never
+written at all - but neither of those addresses has any connection to
+`[0x758]` or SELECT C1/C2, so this isn't the missing mechanism either.
+Remaining leads: not-yet-disassembled comm-ROM code (which has no
+heuristic pass built for it yet, unlike the main ROM), or a pure
+hardware-level effect (the switch wired directly to something like the
+UART's chip-select or baud-rate-clock enable) that would never appear
+in any disassembly at all.
 
 ## Level 1 detail: (more as identified)
 

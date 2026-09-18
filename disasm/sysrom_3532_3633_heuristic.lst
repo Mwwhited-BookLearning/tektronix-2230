@@ -36229,7 +36229,7 @@ L_F7BA1:
     3532:7BA1  [F7BA1]  8be5            mov     sp, bp
     3532:7BA3  [F7BA3]  5d              pop     bp
     3532:7BA4  [F7BA4]  cb              retf    
-FUNC_3532_7BA5:
+selftest_sequence_enter:
     3532:7BA5  [F7BA5]  55              push    bp
     3532:7BA6  [F7BA6]  8bec            mov     bp, sp
     3532:7BA8  [F7BA8]  83ec06          sub     sp, 6
@@ -36416,7 +36416,7 @@ L_F7D95:
     3532:7D95  [F7D95]  8be5            mov     sp, bp
     3532:7D97  [F7D97]  5d              pop     bp
     3532:7D98  [F7D98]  cb              retf    
-FUNC_3532_7D99:
+selftest_sequence_exit:
     3532:7D99  [F7D99]  55              push    bp
     3532:7D9A  [F7D9A]  8bec            mov     bp, sp
     3532:7D9C  [F7D9C]  83ec06          sub     sp, 6

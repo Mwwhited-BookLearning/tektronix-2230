@@ -509,16 +509,29 @@ boot (see `FUNCTIONS.md`'s `print_string_far` entry, `JUMP_MAP.md`'s
 boot-sequence diagram). This directly **contradicts** the service
 manual's own description of that button ("invoking extended
 DIAGNOSTICS... an ASCII version of all errors... sent to the
-[RS-232-C] option" - i.e. *more* output, not none) - open question,
-not yet resolved: either this specific channel really is just a
-CRT-adjacent mirror after all (and the manual's promised extended
-ASCII dump goes out through the genuine UART registers, `0x406F0-
-0x406F7`, via some other, not-yet-found code path entirely - this
-would finally settle the open "is it the UART or a CRT mirror"
-question above, in favor of "mirror"), or the emulator's static
-front-panel button model is missing something a real button press
-would provide (the user's own hypothesis: a hardware interrupt fired
-on the press itself, not just a static register bit - see `TODO.md`).
+[RS-232-C] option" - i.e. *more* output, not none) - **and the user
+has now directly confirmed on real hardware (both `-13` and `-14` ROM
+revisions) that holding it does produce genuine 9600-baud diagnostic
+text over the RS-232 port**, settling that this is real, reproducible
+behavior this emulator gets backwards, not a documentation quirk.
+
+The "just a CRT mirror" half of the open question above is now
+**disproved**: `0x40000+0x6F0` is the exact same physical address
+already confirmed as the real UART's own data register
+(`io_stubs.InteractiveUartMock`'s mapping), not a separate mirror with
+the real dump going out elsewhere. A menu-keypress-resumes-the-halt
+theory was also tested and disproved (a genuine interrupt-injection
+wake does wake the CPU, but the following instruction crashes into
+unmapped memory regardless - `halt_cpu` is a one-way trap, not a
+resumable wait state - see `emulator/docs/design.md`). An exhaustive
+search of every `[0x758]`/`[0x1B48]` reference in the main ROM (proven
+and heuristic) and the comm ROM (proven) found nothing beyond what's
+already documented here and in `FUNCTIONS.md`. **Still open, see
+`TODO.md`**: the mechanism is either in not-yet-disassembled comm-ROM
+code (which has no heuristic pass built for it at all, unlike the main
+ROM), or a pure hardware-level effect (the switch wired directly to
+something like the UART's chip-select or baud-rate-clock enable) that
+would never show up in any disassembly regardless of coverage.
 
 ## Two separate A/D converters, both now named
 

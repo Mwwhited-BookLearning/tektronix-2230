@@ -3586,6 +3586,44 @@ FUNCTIONAL_NAMES = {
                                                # pen-lift relay/X-Y
                                                # candidate per
                                                # HARDWARE.md)
+    0xF7BA5: "selftest_sequence_enter",        # sets [0x1B7A]=1 as its
+                                               # first act (VARIABLES.md,
+                                               # traced 2026-09-13: "the
+                                               # full automated self-test
+                                               # sequence is actively
+                                               # running" flag, read at a
+                                               # large number of self-
+                                               # test-adjacent sites
+                                               # throughout the main ROM -
+                                               # e.g. print_string_far's
+                                               # own [0x1B48] gate is a
+                                               # separate flag, but
+                                               # self_test_dispatcher's
+                                               # own [0x1B7A]==1 check
+                                               # skips selftest_display_
+                                               # irq_idle/_active
+                                               # entirely). Heuristic-
+                                               # reachability only - no
+                                               # proven caller found yet
+                                               # (2026-09-18: confirmed
+                                               # zero call sites in
+                                               # either the proven or
+                                               # heuristic listing), so
+                                               # this is likely reached
+                                               # only via an indirect/
+                                               # function-pointer call
+                                               # this project hasn't
+                                               # traced, not from the
+                                               # power-up boot path
+                                               # already walked in
+                                               # JUMP_MAP.md
+    0xF7D99: "selftest_sequence_exit",         # the counterpart:
+                                               # clears [0x1B7A]=0 right
+                                               # before calling
+                                               # reset_display_and_notify_
+                                               # comm - same heuristic-
+                                               # reachability caveat as
+                                               # selftest_sequence_enter
     0xFB8E8: "clear_readout_attrs_and_flag_dirty", # (skip_clear) -
                                                # unless `skip_clear!=0`,
                                                # picks a mode (0/1/2)
