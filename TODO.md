@@ -9,6 +9,43 @@ instead of assuming bare `nasm` resolves.
 
 ## Next up
 
+- [ ] **User request 2026-09-17: hunt down every hardware jumper** on
+      the main boards - they may explain debugging/configuration
+      behavior (comm detection, reset) the firmware/emulator can't
+      account for from register state alone. Found so far, both from
+      OCR'd service-manual sections:
+      - **`P9104`** (Storage/Clock-Generator board area, near `U9104`):
+        a manual-reset jumper - moving it to the RESET position forces
+        a reset of the Microprocessor and Display Controller (`docs/
+        theory-of-operation.md`'s Microprocessor/Clock Generator
+        section). Straightforward, already understood.
+      - **`P9107`** (Storage circuit board, near the ROM sockets):
+        moved "one pin over toward the center" specifically when
+        installing the F10 (GPIB)/F12 (RS-232) comm option (`docs/
+        f10-f12-option-installation.md`, step 22, Figure 3) - **not
+        yet understood electrically**. Already flagged in `HARDWARE.md`
+        as "a strong candidate for why live firmware comm-detection
+        might fail on a unit where this wasn't done correctly," but
+        that lead was never resolved (the real RS-232 blocker turned
+        out to be baud-rate reliability, not this - see `docs/comm-rom/
+        rs232-breakthrough.md`). Given today's session found a real,
+        previously-unexplained comm self-test failure mode
+        (`selftest_comm_readback` requiring a hardware loopback this
+        project just modeled with `io_stubs.DiagCommLatchLoopback` -
+        see `changes/2026-09-17.md`), this jumper is worth a fresh
+        look: does it gate memory decoding for the 2230's Option
+        Memory circuit board, or something closer to the comm-detect/
+        self-test logic? Next step: check Section 9 (Diagrams) once
+        OCR'd for the actual schematic, or ask the user to check which
+        position their own physical unit(s) currently have it in.
+      - Also noted: `docs/maintenance.md`'s Power Distribution section
+        mentions generic "service jumper connections" (Diagrams 10,
+        11, 21) used to isolate power-supply loading during
+        troubleshooting - lower priority, not memory/config-related.
+      - Section 7 (Options) OCR is in progress as of this writing and
+        may directly explain `P9107`'s function since it's the
+        connector-level option-installation manual; check there first
+        before digging into raw schematics.
 - [ ] **Reminder (user, 2026-09-16)**: review service manual **page
       415** - the acquisition memory logic (RAM chips + decode logic).
       User's own preview while noting this down: 2x 2048x8 static RAM,

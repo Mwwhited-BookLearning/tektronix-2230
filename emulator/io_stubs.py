@@ -673,10 +673,18 @@ class InteractiveDipSwitches:
     switches (1-10) - see `MEMORY_MAP.md`'s RS-232 option board section
     for the confirmed bit map: switches 1-7 are Parameter Buffer
     (`0x406BC`) bits 0-6, switches 8-10 are State Buffer (`0x4067C`)
-    bits 3-5. **The exact semantic meaning of most individual switches
-    beyond the confirmed baud-rate nibble is still open** (see
-    `STILL_PENDING_DECODE.md`) - this lets the raw switch pattern be
-    changed and observed without yet knowing what each one does.
+    bits 3-5 - **but NOT in sequential order**, confirmed 2026-09-17
+    against the Options manual's Table 7-36 ("RS-232-C Status Buffer
+    Functions"): bit 3 = switch 8, bit 4 = **switch 10**, bit 5 =
+    **switch 9** (switches 9 and 10 are swapped relative to the naive
+    bit-order guess - an earlier version of this stub had them backwards,
+    a real bug that stayed invisible until a switch other than 8 was
+    actually toggled, since the default pattern has all 3 off). The
+    same manual's Table 7-11 also gives the *meaning* of switches 1-8
+    (baud rate, parity enable, parity select, line terminator) -
+    beyond that, switches 9-10's own meaning (printer/plotter device
+    selection per Table 7-11, footnote c) and the exact GPIB-side
+    switch semantics are still open (see `STILL_PENDING_DECODE.md`).
 
     **Polarity is active-LOW, confirmed 2026-09-17** against a real
     exerciser-screen photo showing `comm_param` reading `0xF3` with a
@@ -730,12 +738,20 @@ class InteractiveDipSwitches:
         uc_eng.mem_write(address, bytes([current]) * size)
         return True
 
+    # Bit-to-switch map for the State/Status Buffer's 3 switch bits,
+    # confirmed 2026-09-17 against the Options manual's Table 7-36
+    # ("RS-232-C Status Buffer Functions") - deliberately NOT
+    # sequential (bit4 is switch 10, bit5 is switch 9, not the other
+    # way around as an earlier version of this stub assumed):
+    # bit 3 = switch 8, bit 4 = switch 10, bit 5 = switch 9.
+    _STATUS_BIT_TO_SWITCH = {3: 8, 4: 10, 5: 9}
+
     def _on_status_read(self, uc_eng, access, address, size, value, user_data):
         # Same active-LOW polarity as _on_param_read above.
         current = uc_eng.mem_read(address, 1)[0] | 0x38  # bits 3-5 all "off" (1) by default
-        for i in range(3):
-            if self.switches[7 + i]:
-                current &= ~(1 << (3 + i))
+        for bit, switch_num in self._STATUS_BIT_TO_SWITCH.items():
+            if self.switches[switch_num - 1]:
+                current &= ~(1 << bit)
         uc_eng.mem_write(address, bytes([current]) * size)
         return True
 
