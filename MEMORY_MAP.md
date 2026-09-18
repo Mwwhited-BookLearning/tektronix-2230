@@ -525,13 +525,13 @@ wake does wake the CPU, but the following instruction crashes into
 unmapped memory regardless - `halt_cpu` is a one-way trap, not a
 resumable wait state - see `emulator/docs/design.md`). An exhaustive
 search of every `[0x758]`/`[0x1B48]` reference in the main ROM (proven
-and heuristic) and the comm ROM (proven) found nothing beyond what's
-already documented here and in `FUNCTIONS.md`. **Still open, see
-`TODO.md`**: the mechanism is either in not-yet-disassembled comm-ROM
-code (which has no heuristic pass built for it at all, unlike the main
-ROM), or a pure hardware-level effect (the switch wired directly to
-something like the UART's chip-select or baud-rate-clock enable) that
-would never show up in any disassembly regardless of coverage.
+and heuristic) and the comm ROM found nothing beyond what's already
+documented here and in `FUNCTIONS.md`. **Still open, see `TODO.md`**
+for the current remaining leads and a same-day correction: an earlier
+version of this paragraph claimed the comm ROM "has no heuristic pass
+built for it at all" - false, `disasm/gen_disasm_2998.py` already
+built one in an earlier session (91.69% byte coverage, on par with the
+main ROM's 90-91%), and the search above already covered it.
 
 ## Two separate A/D converters, both now named
 

@@ -64,33 +64,49 @@ instead of assuming bare `nasm` resolves.
       **Searched exhaustively for the mechanism and found nothing**:
       every reference to `[0x758]` (the front-panel byte) and
       `[0x1B48]` across the main ROM's proven listing, its heuristic
-      listing, and the comm ROM's proven listing - all already
-      accounted for by what's already documented (the boot-time flag
-      setup and `print_string_far`'s gate). `[0x1B7A]` *is* written
-      (by `selftest_sequence_enter`/`selftest_sequence_exit`,
+      listing, and the comm ROM's listing - all already accounted for
+      by what's already documented (the boot-time flag setup and
+      `print_string_far`'s gate). `[0x1B7A]` *is* written (by
+      `selftest_sequence_enter`/`selftest_sequence_exit`,
       `0xF7BA5`/`0xF7D99` - heuristic-reachability only, correcting an
       earlier same-day claim that it was never written at all) but has
       no connection to `[0x758]` or SELECT C1/C2 at all, so it isn't
       the missing mechanism either.
-      **Two remaining possibilities, neither yet explorable with what
-      this project currently has**: (1) the mechanism lives in
-      not-yet-disassembled comm-ROM code - the comm ROM (`160-2998`)
-      has no heuristic disassembly pass built for it at all (unlike the
-      main ROM's two-tier proven+heuristic setup), so its unreached
-      code is a much bigger blind spot; building one (see `gen_disasm_
-      mainrom_heuristic.py` as a template) would be the concrete next
-      step. (2) it's a pure hardware-level effect - the switch wired
-      directly to something like the UART's chip-select or baud-rate-
-      clock enable, which would never appear in any disassembly at all
-      no matter how much more code gets covered; the Diagrams survey
-      (`docs/diagrams-index.md`) or a fresh schematic trace of the
-      front-panel-to-comm-board wiring would be the only way to check
-      that. The user's own interrupt hypothesis was narrowed but not
-      confirmed: the held/unheld self-test call sequences are
-      identical, so if a missing interrupt is the real cause, its
-      install site must be in code outside the path already traced -
-      most likely inside whichever of the two possibilities above turns
-      out to be true.
+      **Correction, same day**: this entry previously claimed the comm
+      ROM (`160-2998`) "has no heuristic disassembly pass built for it
+      at all" - false. `disasm/gen_disasm_2998.py` already built one in
+      an earlier session (same push-bp-prologue technique as the main
+      ROM's, in fact the main ROM's script's docstring says it borrowed
+      the idea from this one) - it's already what produces the
+      committed `160-2998-14.lst`/`.symbols.json` (400 heuristic entries
+      layered on 24 proven ones, 20446 instructions, 91.69% byte
+      coverage - see `disasm/compute_coverage.py` - on par with the
+      main ROM's own 90-91%). The `[0x758]`/`[0x1B48]` search above
+      already covered this combined listing, not just a proven-only
+      subset. Checked further: the handful of remaining unreached comm-
+      ROM byte ranges (documented in `UNKNOWN_DATA.md`'s "Chip 2998"
+      section, largest two are a contiguous ~2KB span at phys
+      `0x08824C-0x088A57`) don't contain the literal `58 07` (`0x758`
+      LE) or `48 1B` (`0x1B48` LE) immediate-operand byte pattern
+      either - not conclusive (a different addressing form or an
+      entirely different comm-ROM-local variable could still reference
+      the same hardware register) but one more lead closed off.
+      **Two remaining possibilities**: (1) the mechanism lives in that
+      small remaining unreached comm-ROM span, referenced some way this
+      byte-pattern check wouldn't catch - manually reading that ~2KB
+      (`UNKNOWN_DATA.md` "Chip 2998" blocks 6/7) would be the concrete
+      next step, not building new tooling. (2) it's a pure hardware-
+      level effect - the switch wired directly to something like the
+      UART's chip-select or baud-rate-clock enable, which would never
+      appear in any disassembly at all no matter how much more code
+      gets covered; the Diagrams survey (`docs/diagrams-index.md`) or a
+      fresh schematic trace of the front-panel-to-comm-board wiring
+      would be the only way to check that. The user's own interrupt
+      hypothesis was narrowed but not confirmed: the held/unheld self-
+      test call sequences are identical, so if a missing interrupt is
+      the real cause, its install site must be in code outside the
+      path already traced - most likely inside whichever of the two
+      possibilities above turns out to be true.
 - [ ] **User request 2026-09-17: hunt down every hardware jumper** on
       the main boards - they may explain debugging/configuration
       behavior (comm detection, reset) the firmware/emulator can't

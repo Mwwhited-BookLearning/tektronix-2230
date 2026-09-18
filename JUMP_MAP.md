@@ -326,19 +326,19 @@ correctly but the following instruction crashes into unmapped memory
 every time - `halt_cpu` (`0xF1611`) is a genuine one-way trap, not a
 resumable wait state. Exhaustively searched every reference to
 `[0x758]` (the front-panel byte) and `[0x1B48]` across both the
-proven and heuristic main-ROM listings and the comm ROM's proven
-listing - found nothing beyond what's already documented here and in
-`FUNCTIONS.md`. `[0x1B7A]` (`self_test_dispatcher`'s own gate) *is*
-written, by `selftest_sequence_enter`/`selftest_sequence_exit`
-(`0xF7BA5`/`0xF7D99`, heuristic-reachability only, no proven caller
-found) - correcting an earlier same-day claim that it was never
-written at all - but neither of those addresses has any connection to
-`[0x758]` or SELECT C1/C2, so this isn't the missing mechanism either.
-Remaining leads: not-yet-disassembled comm-ROM code (which has no
-heuristic pass built for it yet, unlike the main ROM), or a pure
-hardware-level effect (the switch wired directly to something like the
-UART's chip-select or baud-rate-clock enable) that would never appear
-in any disassembly at all.
+proven and heuristic main-ROM listings and the comm ROM's listing
+(which, correcting a same-day error below, already has its own
+heuristic layer too) - found nothing beyond what's already documented
+here and in `FUNCTIONS.md`. `[0x1B7A]` (`self_test_dispatcher`'s own
+gate) *is* written, by `selftest_sequence_enter`/`selftest_sequence_
+exit` (`0xF7BA5`/`0xF7D99`, heuristic-reachability only, no proven
+caller found) - correcting an earlier same-day claim that it was
+never written at all - but neither of those addresses has any
+connection to `[0x758]` or SELECT C1/C2, so this isn't the missing
+mechanism either. See `TODO.md`'s SELECT C1/C2 entry for the current
+remaining leads (a small unread comm-ROM byte span, or a pure
+hardware-level effect) - a same-day claim here that the comm ROM "has
+no heuristic pass" was wrong and has been corrected there.
 
 ## Level 1 detail: (more as identified)
 

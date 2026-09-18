@@ -9540,7 +9540,7 @@ L_8604D:
     2998:606E  [8606E]  57              push    di
     2998:606F  [8606F]  2bff            sub     di, di
     2998:6071  [86071]  57              push    di
-    2998:6072  [86072]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:6072  [86072]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:6077  [86077]  83c40a          add     sp, 0xa
     2998:607A  [8607A]  e90500          jmp     L_86082  ; 0x6082
 L_8607D:
@@ -9683,7 +9683,7 @@ L_861A1:
     2998:61C2  [861C2]  57              push    di
     2998:61C3  [861C3]  2bff            sub     di, di
     2998:61C5  [861C5]  57              push    di
-    2998:61C6  [861C6]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:61C6  [861C6]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:61CB  [861CB]  83c40a          add     sp, 0xa
     2998:61CE  [861CE]  e90500          jmp     L_861D6  ; 0x61d6
 L_861D1:
@@ -9856,7 +9856,7 @@ L_8634C:
     2998:638E  [8638E]  57              push    di
     2998:638F  [8638F]  2bff            sub     di, di
     2998:6391  [86391]  57              push    di
-    2998:6392  [86392]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:6392  [86392]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:6397  [86397]  83c40a          add     sp, 0xa
     2998:639A  [8639A]  e90500          jmp     L_863A2  ; 0x63a2
 L_8639D:
@@ -10033,7 +10033,7 @@ L_8652B:
     2998:656D  [8656D]  57              push    di
     2998:656E  [8656E]  2bff            sub     di, di
     2998:6570  [86570]  57              push    di
-    2998:6571  [86571]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:6571  [86571]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:6576  [86576]  83c40a          add     sp, 0xa
     2998:6579  [86579]  e90500          jmp     L_86581  ; 0x6581
 L_8657C:
@@ -10225,7 +10225,7 @@ L_8673C:
     2998:6764  [86764]  50              push    ax
     2998:6765  [86765]  b81400          mov     ax, 0x14
     2998:6768  [86768]  50              push    ax
-    2998:6769  [86769]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    2998:6769  [86769]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     2998:676E  [8676E]  eb03            jmp     L_86773  ; 0x6773
 L_86770:
     2998:6770  [86770]  e99e02          jmp     L_86A11  ; 0x6a11
@@ -10284,7 +10284,7 @@ L_867E1:
     2998:6809  [86809]  50              push    ax
     2998:680A  [8680A]  bf1400          mov     di, 0x14
     2998:680D  [8680D]  57              push    di
-    2998:680E  [8680E]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    2998:680E  [8680E]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     2998:6813  [86813]  83c406          add     sp, 6
     2998:6816  [86816]  8306720409      add     word ptr [0x472], 9
     2998:681B  [8681B]  c70670040000    mov     word ptr [0x470], 0
@@ -10374,7 +10374,7 @@ L_868D7:
     2998:68F9  [868F9]  50              push    ax
     2998:68FA  [868FA]  b81400          mov     ax, 0x14
     2998:68FD  [868FD]  50              push    ax
-    2998:68FE  [868FE]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    2998:68FE  [868FE]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     2998:6903  [86903]  83c406          add     sp, 6
     2998:6906  [86906]  8306720409      add     word ptr [0x472], 9
     2998:690B  [8690B]  8d7eca          lea     di, [bp - 0x36]
@@ -10432,7 +10432,7 @@ L_86973:
     2998:699B  [8699B]  50              push    ax
     2998:699C  [8699C]  bf1400          mov     di, 0x14
     2998:699F  [8699F]  57              push    di
-    2998:69A0  [869A0]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    2998:69A0  [869A0]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     2998:69A5  [869A5]  83c406          add     sp, 6
     2998:69A8  [869A8]  8306720409      add     word ptr [0x472], 9
     2998:69AD  [869AD]  8d7eb2          lea     di, [bp - 0x4e]
@@ -10467,7 +10467,7 @@ L_86973:
     2998:69EC  [869EC]  50              push    ax
     2998:69ED  [869ED]  b80002          mov     ax, 0x200
     2998:69F0  [869F0]  50              push    ax
-    2998:69F1  [869F1]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:69F1  [869F1]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:69F6  [869F6]  83c40a          add     sp, 0xa
     2998:69F9  [869F9]  c43e5e04        les     di, ptr [0x45e]
     2998:69FD  [869FD]  893ed204        mov     word ptr [0x4d2], di
@@ -11352,7 +11352,7 @@ L_872FE:
     2998:733E  [8733E]  53              push    bx
     2998:733F  [8733F]  bb0002          mov     bx, 0x200
     2998:7342  [87342]  53              push    bx
-    2998:7343  [87343]  9a480408f4      lcall   SUB_F44C8  ; 0xf408, 0x448
+    2998:7343  [87343]  9a480408f4      lcall   compute_and_print_cursor_position_readout  ; 0xf408, 0x448
     2998:7348  [87348]  83c406          add     sp, 6
     2998:734B  [8734B]  c47ef6          les     di, ptr [bp - 0xa]
     2998:734E  [8734E]  893e5e04        mov     word ptr [0x45e], di
@@ -11381,7 +11381,7 @@ L_87370:
     2998:7383  [87383]  57              push    di
     2998:7384  [87384]  2bff            sub     di, di
     2998:7386  [87386]  57              push    di
-    2998:7387  [87387]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:7387  [87387]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:738C  [8738C]  83c40a          add     sp, 0xa
     2998:738F  [8738F]  e9fe01          jmp     L_87590  ; 0x7590
 L_87392:
@@ -11397,7 +11397,7 @@ L_87392:
     2998:73A5  [873A5]  57              push    di
     2998:73A6  [873A6]  2bff            sub     di, di
     2998:73A8  [873A8]  57              push    di
-    2998:73A9  [873A9]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:73A9  [873A9]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:73AE  [873AE]  83c40a          add     sp, 0xa
     2998:73B1  [873B1]  e9dc01          jmp     L_87590  ; 0x7590
 L_873B4:
@@ -11413,7 +11413,7 @@ L_873B4:
     2998:73C7  [873C7]  57              push    di
     2998:73C8  [873C8]  2bff            sub     di, di
     2998:73CA  [873CA]  57              push    di
-    2998:73CB  [873CB]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:73CB  [873CB]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:73D0  [873D0]  83c40a          add     sp, 0xa
     2998:73D3  [873D3]  e9ba01          jmp     L_87590  ; 0x7590
 L_873D6:
@@ -11429,7 +11429,7 @@ L_873D6:
     2998:73E9  [873E9]  57              push    di
     2998:73EA  [873EA]  2bff            sub     di, di
     2998:73EC  [873EC]  57              push    di
-    2998:73ED  [873ED]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:73ED  [873ED]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:73F2  [873F2]  83c40a          add     sp, 0xa
     2998:73F5  [873F5]  e99801          jmp     L_87590  ; 0x7590
 L_873F8:
@@ -11445,7 +11445,7 @@ L_873F8:
     2998:740B  [8740B]  57              push    di
     2998:740C  [8740C]  2bff            sub     di, di
     2998:740E  [8740E]  57              push    di
-    2998:740F  [8740F]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:740F  [8740F]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:7414  [87414]  83c40a          add     sp, 0xa
     2998:7417  [87417]  e97601          jmp     L_87590  ; 0x7590
 L_8741A:
@@ -11461,7 +11461,7 @@ L_8741A:
     2998:742D  [8742D]  57              push    di
     2998:742E  [8742E]  2bff            sub     di, di
     2998:7430  [87430]  57              push    di
-    2998:7431  [87431]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:7431  [87431]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:7436  [87436]  83c40a          add     sp, 0xa
     2998:7439  [87439]  e95401          jmp     L_87590  ; 0x7590
 L_8743C:
@@ -11477,7 +11477,7 @@ L_8743C:
     2998:744F  [8744F]  57              push    di
     2998:7450  [87450]  2bff            sub     di, di
     2998:7452  [87452]  57              push    di
-    2998:7453  [87453]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:7453  [87453]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:7458  [87458]  83c40a          add     sp, 0xa
     2998:745B  [8745B]  e93201          jmp     L_87590  ; 0x7590
 L_8745E:
@@ -11493,7 +11493,7 @@ L_8745E:
     2998:7471  [87471]  57              push    di
     2998:7472  [87472]  2bff            sub     di, di
     2998:7474  [87474]  57              push    di
-    2998:7475  [87475]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:7475  [87475]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:747A  [8747A]  83c40a          add     sp, 0xa
     2998:747D  [8747D]  e91001          jmp     L_87590  ; 0x7590
 L_87480:
@@ -11509,7 +11509,7 @@ L_87480:
     2998:7493  [87493]  57              push    di
     2998:7494  [87494]  2bff            sub     di, di
     2998:7496  [87496]  57              push    di
-    2998:7497  [87497]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:7497  [87497]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:749C  [8749C]  83c40a          add     sp, 0xa
     2998:749F  [8749F]  e9ee00          jmp     L_87590  ; 0x7590
 L_874A2:
@@ -11525,7 +11525,7 @@ L_874A2:
     2998:74B5  [874B5]  57              push    di
     2998:74B6  [874B6]  2bff            sub     di, di
     2998:74B8  [874B8]  57              push    di
-    2998:74B9  [874B9]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:74B9  [874B9]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:74BE  [874BE]  83c40a          add     sp, 0xa
     2998:74C1  [874C1]  e9cc00          jmp     L_87590  ; 0x7590
 L_874C4:
@@ -11541,7 +11541,7 @@ L_874C4:
     2998:74D7  [874D7]  57              push    di
     2998:74D8  [874D8]  2bff            sub     di, di
     2998:74DA  [874DA]  57              push    di
-    2998:74DB  [874DB]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:74DB  [874DB]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:74E0  [874E0]  83c40a          add     sp, 0xa
     2998:74E3  [874E3]  e9aa00          jmp     L_87590  ; 0x7590
 L_874E6:
@@ -11557,7 +11557,7 @@ L_874E6:
     2998:74F9  [874F9]  57              push    di
     2998:74FA  [874FA]  2bff            sub     di, di
     2998:74FC  [874FC]  57              push    di
-    2998:74FD  [874FD]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:74FD  [874FD]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:7502  [87502]  83c40a          add     sp, 0xa
     2998:7505  [87505]  e98800          jmp     L_87590  ; 0x7590
 L_87508:
@@ -11573,7 +11573,7 @@ L_87508:
     2998:751B  [8751B]  57              push    di
     2998:751C  [8751C]  2bff            sub     di, di
     2998:751E  [8751E]  57              push    di
-    2998:751F  [8751F]  9a730d13f3      lcall   SUB_F3EA3  ; 0xf313, 0xd73
+    2998:751F  [8751F]  9a730d13f3      lcall   compute_and_print_item_delta_readout  ; 0xf313, 0xd73
     2998:7524  [87524]  83c40a          add     sp, 0xa
     2998:7527  [87527]  e96600          jmp     L_87590  ; 0x7590
 L_8752A:
@@ -12815,7 +12815,7 @@ FUNC_2998_934C:
     2998:93DC  [893DC]  c416ae06        les     dx, ptr [0x6ae]
     2998:93E0  [893E0]  06              push    es
     2998:93E1  [893E1]  52              push    dx
-    2998:93E2  [893E2]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    2998:93E2  [893E2]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     2998:93E7  [893E7]  83c40a          add     sp, 0xa
     2998:93EA  [893EA]  c706aa060000    mov     word ptr [0x6aa], 0
     2998:93F0  [893F0]  2bff            sub     di, di
@@ -12862,7 +12862,7 @@ L_89435:
     2998:9457  [89457]  8d7f02          lea     di, [bx + 2]
     2998:945A  [8945A]  06              push    es
     2998:945B  [8945B]  57              push    di
-    2998:945C  [8945C]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    2998:945C  [8945C]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     2998:9461  [89461]  83c40a          add     sp, 0xa
     2998:9464  [89464]  c47eec          les     di, ptr [bp - 0x14]
     2998:9467  [89467]  26c60511        mov     byte ptr es:[di], 0x11
@@ -13180,7 +13180,7 @@ L_8977D:
     2998:9793  [89793]  06              push    es
     2998:9794  [89794]  bb6422          mov     bx, 0x2264
     2998:9797  [89797]  53              push    bx
-    2998:9798  [89798]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    2998:9798  [89798]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     2998:979D  [8979D]  83c40a          add     sp, 0xa
     2998:97A0  [897A0]  bf808f          mov     di, 0x8f80
     2998:97A3  [897A3]  57              push    di
