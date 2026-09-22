@@ -177,3 +177,47 @@ than left buried in `.lst` files:
 - `[0x780]` — referenced early in boot-adjacent code, role unknown.
 - `[0x61A]`, `[0x61B]` — referenced in `SUB_E004F` (one of the first
   functions in the main ROM), a small getter/setter-looking pair.
+- `[0x1C94]`, `[0x1DDC]` — found 2026-09-22 while manually tracing
+  `160-3633` physical `0xEFF99-0xEFFED` (a byte range `UNKNOWN_DATA.md`
+  had flagged as unidentified data - see `docs/decode-anomalies/
+  unknown-data-deep-dive-2026-09-15.md`'s "Follow-up, 2026-09-22"
+  section for the full trace; that range turned out to be real code,
+  not data). Both are loaded via `les`/`lds`-style far-pointer reads
+  (`c4 1e 94 1c` / `c4 1e dc 1d`); the original static read found one
+  call site each with `di` scaled by a small multiplier (`*8` for
+  `[0x1c94]`, `*9`/`*10` for `[0x1ddc]`), which looked like the classic
+  shape of a RAM pointer to a fixed-stride record table, same pattern
+  as the comm ROM's `[0x732]` above.
+
+  **Revised same day after a live emulator check.** A full grep of both
+  ROMs' readable disassembly found `les ..., [0x1ddc]` at **64 call
+  sites** (`di`/`bx`/`dx` as the destination register) - not a rare,
+  single-purpose pointer at all. Watching both cells live
+  (`AccessCounter.install_watch_range`, a narrow 4-byte range each,
+  over a 5M-instruction boot trace that hits this ROM's "POWER UP
+  FAILURES"/RAM-NMI-error path) showed 24 of those 64 sites actually
+  execute, but the far-pointer value read back at `[0x1ddc]` varies
+  wildly call to call - `0000:0000` most of the time, but also
+  `3020:2020` (9 hits, all from the one recurring site at physical
+  `0xE126C`, apparently called periodically - roughly every 10,000
+  instructions), `FF00:0400`, `4100:4107`, and `746E:6320` (the last is
+  literally ASCII bytes, i.e. this cell was holding leftover string
+  data at that moment, not a pointer at all). That inconsistency is
+  the opposite of what a dedicated, stable "record table pointer"
+  variable should look like - **`[0x1ddc]` is far more likely
+  general-purpose/reused scratch RAM that many unrelated routines
+  borrow for their own temporary far pointer, not a single owned
+  table**. The `*9`/`*10` stride seen at one call site may still be
+  real for *that* caller, but it doesn't generalize to the variable as
+  a whole. `[0x1c94]`'s one known call site (`160-3532` physical
+  `0xFB94A`) never executed in this same run, so it's still unverified
+  either way. Neither cell's actual table contents/purpose are
+  confirmed; treat the "record table" framing above as superseded, not
+  as fact. (Separately: this check also caught a mistake in how the
+  live run's own access log was read the first time - `AccessCounter`
+  doesn't count memory *reads* unless a `watch` range is explicitly
+  installed for that run, per `io_stubs.AccessCounter`'s documented
+  Unicorn 2.1.4 stack-corruption bug; an earlier read of a pre-existing
+  dump that had no watch installed showed `read=0` for both cells, and
+  that was wrongly reported as "nothing ever reads these" rather than
+  "this dump never watched reads.")

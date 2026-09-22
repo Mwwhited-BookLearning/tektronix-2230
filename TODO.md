@@ -320,6 +320,25 @@ instead of assuming bare `nasm` resolves.
       a fuller alphabet or more icon variants nearby, and compare
       flipped/un-flipped Y-axis renders for every shape (only shapes
       5-7 were checked both ways so far).
+      **Follow-up 2026-09-22**: picked up 4 more of the ~44 blocks not
+      individually chased yet. Real finding: `160-3633` physical
+      `0xEFF99-0xEFFED` isn't data at all - it's genuine reachable code
+      (manually traced all 85 bytes; two branches converge cleanly back
+      into already-known code) that a coverage-tooling boundary bug
+      orphaned, which also explains what had looked like an
+      unexplained landing artifact at the same spot as a simple
+      off-by-one instead. **Next step if picked up**: check whether
+      this is systematic - both jumps in that function's tail target
+      addresses past `0xFFFF` (wrapping into `160-3532`'s file-offset
+      space per the combined 128KB main-ROM convention), so there may
+      be more spurious "unknown data" blocks sitting just upstream of
+      any other 0xFFFF-crossing jump in `160-3633`/`160-3532`; worth an
+      automated pass rather than manual spot checks. See `docs/decode-
+      anomalies/unknown-data-deep-dive-2026-09-15.md`'s "Follow-up,
+      2026-09-22" section (findings 7-9) for this and 3 smaller,
+      lower-value looks (2 end-of-chip blocks confirmed as ordinary
+      unprogrammed EPROM filler, 1 plausible-but-unconfirmed ROM
+      quadrant-boundary table, 1 still-unresolved small-int table).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see

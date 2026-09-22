@@ -460,3 +460,107 @@ None of the addresses discussed here were renamed in
 `gen_disasm_x86.FUNCTIONAL_NAMES`/`FUNCTIONS.md` - none reached this
 project's "mechanism confirmed" bar for a rename. See
 `STILL_PENDING_DECODE.md` for these as tracked open items.
+
+## Follow-up, 2026-09-22
+
+A second manual pass, picking up a handful of the ~44 blocks the
+2026-09-15 pass didn't individually chase. Four quick looks, one real
+finding worth acting on.
+
+### 7. `160-3633` file `0xFF99-0xFFED` (block 20): not data at all - a coverage-tooling bug orphaned 85 bytes of real code (confirmed)
+
+This block sits right after code the heuristic disassembler already
+has (`...0xEFF80-0xEFF96`, ending in a `jmp` at `0xEFF96`) and right
+before more code it already has (resuming at `0xEFFEF`). Manually
+decoding all 85 bytes byte-by-byte confirms it's a single coherent,
+valid instruction stream the whole way through - not a coincidence:
+
+- `mov di, [bp-0xA]` then three `shl di,1` (`di = param*8`), `les bx,
+  [0x1C94]`, `es: mov dl, [bx+di+7]` - an indexed 8-byte-stride
+  far-pointer table lookup, result zero-extended into `dx` and stashed
+  at `[bp-0x10]`.
+- A second indexed test re-derives `di = param*10` against
+  `[di+0x1BE2]` bit 0, and branches on both that flag and `[bp-8]`
+  through two short paths - **both of which converge back at
+  `0xFFEF`**, exactly where the heuristic disassembler's own listing
+  already has valid code waiting. That convergence is the real proof
+  this is genuine, reachable control flow, not 85 bytes that merely
+  happen to decode cleanly.
+- One path computes `di = param*9`, does a second far-pointer lookup
+  via a *different* RAM pointer (`[0x1DDC]`), sets a flag bit, and
+  `lcall`s `0xF7BF:0x043B` before a final `jmp` forward.
+
+**Root cause of why this showed up as "unknown" at all**: that final
+`jmp`'s 3 bytes (`e9 27 00`) straddle the block's own labeled end at
+`0xFFED` - the trailing `00` byte at `0xFFEE` is genuinely part of
+this instruction, not a new one. The block-boundary math (in whichever
+of `find_unknown_data.py`/the coverage scanner drew this block's
+edges) stopped 1 byte short of where the real instruction actually
+ends, orphaning that single byte - which is exactly what caused the
+*heuristic listing itself* to mis-decode a bogus instruction starting
+at `0xFFEE` (`add byte ptr [bp+di-0xfba], cl`), a false "landing
+artifact" that isn't a real compiler/linker quirk at all, just this
+off-by-one. Both this jump and the earlier one at `0xFFB8`
+(`74 48`/`75 2d`, not shown above) resolve to targets *past* `0xFFFF`
+- they wrap into `160-3532`'s own file-offset space (`0xF0004`/
+  `0xF0016`) under this project's already-established combined
+128KB main-ROM addressing convention (`MEMORY_MAP.md`). **Worth
+checking as a next step**: whether the coverage/heuristic tooling
+systematically fails to follow any jump whose target wraps past a
+chip's nominal 64KB half this way - if so, there may be more spurious
+"unknown data" blocks immediately upstream of a 0xFFFF-crossing jump
+elsewhere in `160-3633`/`160-3532`, not just this one instance.
+Two new candidate RAM-pointer variables came out of this trace,
+`[0x1C94]` and `[0x1DDC]` - added to `VARIABLES.md`'s "not yet
+identified but seen referenced" list, purpose still unknown.
+
+### 8. End-of-chip blocks are just unprogrammed EPROM filler (confirmed, mundane)
+
+Checked the last block of each of the 3 chips - `160-3633` block 20
+covers the sub-case above, but `160-3532` block 20 (`0xFFFC0-0xFFFEF`,
+right before the real 8088 reset-vector bytes at `0xFFFF0`, which
+*are* already disassembled) and `160-2998` block 9
+(`0x8FE91-0x8FFFFF`) are both **entirely `0xFF` bytes** (`160-3532`'s
+has two leading `0x00` bytes, then all `0xFF`). This is the standard
+signature of unprogrammed/erased EPROM space, not a real table -
+closed, no further action needed.
+
+### 9. `160-3633` block 1 (`0xE0205-0xE0269`): a plausible but unconfirmed ROM-quadrant address table
+
+Sits immediately after `boot_init`'s own final backward `jmp` (to
+`L_E00C2`, `0xE00C2`) - genuinely skipped over at runtime by that
+branch, not a landing-artifact false positive like block 20 above (no
+convergence back into already-known code found downstream). Decoded
+as far pointers, the first 5 entries are `E000:8000`\-`0xE8000`,
+`F000:8000`\-`0xF8000`, `E000:0000`\-`0xE0000`, `F000:0000`\-`0xF0000`,
+`0000:0000`\-`0x00000` - i.e. the base address and midpoint of
+*exactly* `160-3633` and `160-3532`'s own 64KB chip spans. The
+remaining ~30 words continue with `0x0000`/`0x4000`/`0x8000`/`0xC000`/
+`0xFFFF`-style values against segments `E000`/`F000`/`0000` - the four
+16KB-aligned boundaries of a 64KB space, consistent with a ROM
+self-test table that reports pass/fail per 16KB quadrant (matching the
+already-known `"ROM/RAM/NMI :"` self-test category in `STRINGS.md`).
+**Not confirmed**: an exhaustive grep for any code that computes a
+pointer into `0xE0205` (or indexes off a register loaded from it)
+found nothing - either it's read only via a fully dynamic/computed
+address this search can't find, or it's dead/superseded data. Treat
+the "self-test ROM quadrant table" framing as a hypothesis, not a
+finding.
+
+### `160-2998` block 8 (`0x88D1C-0x88D3D`, 34 bytes): looked, no hypothesis yet
+
+All 34 bytes are small integers in the range 2-6 (mostly 3) - too
+uniform to be far pointers (already ruled out per the general
+convention above), and not an obvious counter/ramp either. Sits ~700
+bytes after the confirmed command-keyword-table cluster
+(`0x88005-0x88A57`) with real code in between, so not obviously part
+of that same structure. No further progress; left open.
+
+## Updated summary table
+
+| # | Chip | File offset | Confidence | What |
+|---|---|---|---|---|
+| 7 | 3633 | `0xFF99-0xFFED` | **Confirmed** | Not data - genuine reachable code a coverage-tooling off-by-one orphaned; also explains a previously-unexplained "landing artifact" at this exact spot as a boundary bug, not a compiler/linker quirk |
+| 8 | 3532 / 2998 | `0xFFFC0-0xFFFEF` / `0x8FE91-0x8FFFF` | Confirmed, mundane | Unprogrammed EPROM filler (`0xFF`) before/after each chip's real fixed vectors |
+| 9 | 3633 | `0xE0205-0xE0269` | Plausible, unconfirmed | ROM base/quadrant address table, sits right after `boot_init`'s own final branch; no consumer found |
+| - | 2998 | `0x88D1C-0x88D3D` | Unresolved | Small-int (2-6) table, no hypothesis yet |

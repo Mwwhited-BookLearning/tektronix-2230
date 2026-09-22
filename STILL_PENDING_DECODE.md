@@ -463,6 +463,25 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   disassembled (see the comm-ROM section above).
 - `SUB_F6382`'s "capstone misreading opcode `0x0F`" theory is a
   reasonable explanation but not fully confirmed.
+- **New 2026-09-22: found a real coverage-tooling off-by-one, not just
+  another landing artifact.** `160-3633` physical `0xEFF99-0xEFFED`
+  was listed in `UNKNOWN_DATA.md` as unidentified data; manually
+  decoding all 85 bytes found it's genuine reachable code (two
+  branches converge cleanly back into already-disassembled code at
+  `0xFFEF`) that a boundary-computation bug orphaned - the block's own
+  labeled end (`0xFFED`) cuts a `jmp` instruction one byte short,
+  leaving a stray byte at `0xFFEE` that the heuristic disassembler
+  then misdecoded into a bogus instruction, which is exactly what had
+  looked like an unexplained landing artifact. **Not yet checked**:
+  whether this is systematic - i.e. whether the coverage/heuristic
+  tooling generally fails to follow jumps whose target wraps past a
+  chip's nominal 64KB half (both jumps in this function's tail target
+  addresses past `0xFFFF`, resolving into `160-3532`'s own file-offset
+  space per the combined 128KB main-ROM convention). See `docs/decode-
+  anomalies/unknown-data-deep-dive-2026-09-15.md`'s "Follow-up,
+  2026-09-22" section, finding 7. Two new candidate RAM-pointer
+  variables came out of the trace, `[0x1C94]`/`[0x1DDC]` (see
+  `VARIABLES.md`), purpose unknown.
 - **New systematic instance found 2026-09-15**: a previously-unknown
   real ~100-entry jump table in `160-3532` (file offset `0x1A33`-
   `0x213A`) has 2 of its 4 real callers (from `FUNC_3633_E9FA`, a

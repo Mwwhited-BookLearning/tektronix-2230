@@ -93,6 +93,23 @@ matches the tables below):
   keyword-table cluster; likely id-to-handler-address, not fully
   decoded - see "6." in the deep-dive doc.
 
+## Follow-up, 2026-09-22
+
+- `3633 0xFF99-0xFFED` (block 20) - **not data at all**, confirmed
+  genuine reachable code that a coverage-tooling off-by-one orphaned
+  (the same bug also explains a previously-unexplained "landing
+  artifact" at this exact spot). See "7." in the deep-dive doc.
+- `3532 0xFFFC0-0xFFFEF` (block 20) / `2998 0x8FE91-0x8FFFF` (block 9)
+  - confirmed unprogrammed EPROM filler (`0xFF`), not real data.
+- `3633 0xE0205-0xE0269` (block 1) - plausible but unconfirmed
+  ROM-quadrant address table, sits right after `boot_init`'s own final
+  branch.
+- `2998 0x88D1C-0x88D3D` (block 8) - looked, no hypothesis yet (small
+  2-6 integer table).
+
+Full detail in `docs/decode-anomalies/unknown-data-deep-dive-2026-09-
+15.md`'s "Follow-up, 2026-09-22" section.
+
 ## Summary
 
 Minimum block size shown: 32 bytes.
