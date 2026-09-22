@@ -4564,7 +4564,18 @@ void __cdecl16far FUN_000f_7a3c(void)
 
 
 
-void __cdecl16far FUN_000f_7ba5(void)
+/* selftest_sequence_enter (confidence: Mechanism confirmed (heuristic-reachability caveat: no
+   proven caller found - likely reached only via an indirect/function-pointer call this project
+   hasn't traced))
+   
+   Evidence: Sets `[0x1B7A]=1` as its first act - `VARIABLES.md`'s already-traced (2026-09-13) "the
+   full automated self-test sequence is actively running" flag, read at many self-test-adjacent
+   sites throughout the main ROM. **Corrected 2026-09-18**: an earlier same-day claim that
+   `[0x1B7A]` is "never written by any code this project has disassembled" was wrong - it's simply
+   not in the proven-reachability listing, only the heuristic one (confirmed here, and in
+   `selftest_sequence_exit` below) */
+
+void __cdecl16far selftest_sequence_enter(void)
 
 {
   undefined2 unaff_CS;
@@ -4670,7 +4681,12 @@ void __cdecl16far FUN_000f_7c00(void)
 
 
 
-void __cdecl16far FUN_000f_7d99(void)
+/* selftest_sequence_exit (confidence: Mechanism confirmed; same heuristic-reachability caveat)
+   
+   Evidence: The counterpart to `selftest_sequence_enter`: clears `[0x1B7A]=0` right before calling
+   `reset_display_and_notify_comm` */
+
+void __cdecl16far selftest_sequence_exit(void)
 
 {
   undefined2 unaff_DS;

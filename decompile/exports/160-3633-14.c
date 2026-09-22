@@ -754,11 +754,24 @@ void __cdecl16far wait_readout_tick(void)
 
 
 
-/* print_string_far (confidence: Confirmed)
+/* print_string_far (confidence: Confirmed (including the newly-found suppress gate))
    
    Evidence: `(str_off, str_seg)` - loops a far-pointer nul-terminated string byte-by-byte, calling
-   `print_char` per byte. Every observed call site passes a far pointer into segment `0xFF7B`
-   (landing in `160-3532`), i.e. a fixed string table */
+   `print_char` per byte (each preceded by `wait_readout_tick`, throttling to the readout hardware's
+   real pace). Every observed call site passes a far pointer into segment `0xFF7B` (landing in
+   `160-3532`), i.e. a fixed string table. **Found 2026-09-18**: checks `[0x1B48]==0` on entry and
+   returns *immediately* (`retf 4`) if so - printing literally nothing, not even a partial string -
+   the same flag `print_boot_rom_id_banner` also checks itself before ever calling this.
+   `[0x1B48]==0` occurs exactly when the momentary front-panel button SELECT C1/C2 is held alone (no
+   `MEM1`/`2`/`3`/`MENU ADV`) at the moment `[0x758]` gets sampled early in boot (see
+   `JUMP_MAP.md`'s boot-sequence diagram) - this is the confirmed, disassembly-level mechanism
+   behind a live investigation into why holding that button suppresses all self-test diagnostic text
+   in the emulator, though it directly contradicts the service manual's own description of that
+   button ("invoking extended DIAGNOSTICS," *more* output including an RS-232 ASCII error dump, not
+   none) - see `MEMORY_MAP.md`'s "Puzzle" section for the still-open question of whether this
+   function's target (`0x40000+0x6F0`) is genuinely the real UART or just a CRT-adjacent mirror,
+   since the manual's promised extended output may go out through some other, not-yet-found channel
+   entirely */
 
 void __stdcall16far print_string_far(word str_off,word str_seg)
 
@@ -2065,15 +2078,26 @@ undefined2 __cdecl16far selftest_comm_fget_flag(void)
 
 
 
-/* selftest_comm_readback (confidence: Confirmed (full instruction trace))
+/* selftest_comm_readback (confidence: Confirmed (full instruction trace + emulator verification))
    
    Evidence: References `COMM_RB`/`rb(1)=`/`rb(0)=` - called as the 2nd phase by
    `selftest_comm_loopback_a`. Reads/writes physical `0x40000+0x67C`/`0x6F8` (the readout memory
    window, not the comm ROM's own `0x80000` address). **Fully traced 2026-09-13**: resets
    `[0x1BFA]=0`, reads a status byte from `0x4067C`, and treats `0x40`/`0x60`/`0xC0`/`0xD0`/`0xE0`
    as passing values - but only sets `[0x1BFA]=1` when the value is exactly `0xD0`; anything else
-   fails with a report line and clears `[0x1BF9]`. This `[0x1BFA]` side effect is what
-   `selftest_comm_fget_flag` checks next - see
+   fails with a report line and clears `[0x1BF9]`. **Exact mechanism decoded 2026-09-17**: it writes
+   `0` then `1` to the Interrupt Mask Latch's diagnostic output `3D` (`0x406FB`), reading `0x4067C`
+   once after each write, and combines the two as `(read1&0xC0)>>2 | (read2&0xC0)` - the "status
+   byte" isn't one raw readback, it's this derived combination, requiring bit `0x40` fixed high and
+   bit `0x80` to go `0`→`1` between the two reads (a real hardware loopback of output `3D` - see
+   `MEMORY_MAP.md`'s Interrupt Mask Latch section) to ever reach exactly `0xD0`. Modeled by
+   `io_stubs.DiagCommLatchLoopback`, confirmed to make this test pass. **Conflicts with the Options
+   manual's Table 7-36** (`docs/options.md`), which names bit `0x40` (not `0x80`) as `DIAG`/`3D` and
+   bit `0x80` as the unrelated `/DCD2` - tested bit `0x40` directly and it does NOT reach `0xD0`
+   (produces `0x40`, a genuine fail), so the disassembly-required bit `0x80` is kept pending a real
+   schematic trace - see `MEMORY_MAP.md`'s Interrupt Mask Latch section and
+   `io_stubs.DiagCommLatchLoopback`'s docstring for the full conflict writeup. This `[0x1BFA]` side
+   effect is what `selftest_comm_fget_flag` checks next - see
    `VARIABLES.md`/`docs/comm-rom/rs232-early-investigation.md`'s "Correction: COMM_LOOPBACK's
    UNTESTED result" */
 
@@ -3833,10 +3857,19 @@ void __cdecl16far draw_display_test_pattern(void)
 
 
 
-/* selftest_display_irq_idle (confidence: Confirmed via string reference)
+/* selftest_display_irq_idle (confidence: Mechanism confirmed; confirmed this function itself passes
+   and is not the TIMEOUT source)
    
    Evidence: Readout/CRT display controller interrupt line, idle-state check (`MI`/`line stuck
-   high`/`Display controller`) */
+   high`/`Display controller`): zeroes `[0x1AEE]`, calls `enable_interrupts`/`disable_interrupts`
+   (`0xE5D2D`/`0xE5D2F`, literal `sti`/`cli`) back-to-back with no code between them, then would
+   fail with a "line stuck asserted while idle" message if `[0x1AEE]` were nonzero afterward.
+   **Corrected 2026-09-18**: a fresh instruction-level trace proved this function actually PASSES in
+   the emulator - `[0x1AEE]`/`[0x1AF2]` are both `0` immediately before and after the `sti`/`cli`
+   window, so its own `je` branch to the pass path is taken, and it falls straight through into
+   `selftest_display_irq_active` next. The previously-documented "`MI : Display controller :
+   TIMEOUT`" failure was wrongly attributed to *this* function (see `emulator/docs/design.md`'s
+   superseded 2026-09-16 section) - it's actually produced by `selftest_display_irq_active` below */
 
 undefined2 __cdecl16far selftest_display_irq_idle(void)
 
@@ -3862,10 +3895,25 @@ undefined2 __cdecl16far selftest_display_irq_idle(void)
 
 
 
-/* selftest_display_irq_active (confidence: Confirmed via string reference)
+/* selftest_display_irq_active (confidence: Fully traced and confirmed 2026-09-18; fixed in the
+   emulator via `io_stubs.DisplayChipIrqStub` (see `emulator/docs/design.md`))
    
-   Evidence: Readout/CRT display controller interrupt line, active check after drawing a test shape
-   (`Display controller`/`TIMEOUT`/`unable to reset`) */
+   Evidence: Readout/CRT display controller interrupt line, active check after drawing a test shape.
+   Sets a trigger bit (`or byte es:[di+0x201], 0x80` on the far-pointer struct at `[0x1DDC]`), draws
+   and commits a small test vector (coordinates derived from `[0x1AFA]`/`[0x1AF8]`), zeroes
+   `[0x1AF0]`/`[0x1AF2]`/`[0x1AEE]`, enables interrupts, reads the Display Chip Interrupt Reset
+   register (physical `0x41000`, Table 3-1) via a helper at `0xE3B1:0x8FA`, then busy-polls
+   `[0x1AEE]` for up to 100 iterations (interrupts left enabled throughout) - prints **"`MI :
+   Display controller : TIMEOUT`"** (confirmed by decoding the ROM string table at
+   `0xFF7B0+0x4d1/0x4d4/0x4e9`) and fails if `[0x1AEE]` never goes nonzero. `[0x1AEE]` only becomes
+   nonzero via `INT2_HANDLER_EARLY` (`0xE5D67`) ORing `[0x1AF2]` into it on an NMI tick - and
+   nothing in this emulator ever set `[0x1AF2]`, so the loop always exhausted, which is the *real*
+   source of the TIMEOUT message (not `selftest_display_irq_idle`, corrected above). Regardless of
+   that outcome, it then calls a reset routine (`0xE3B1:0x919`), re-zeroes `[0x1AEE]`, does a second
+   bare `sti`/`cli` window, and prints a second, different message, **"`MI : Display controller :
+   unable to reset mi[splay controller]`"** (string table offsets `0x4f2/0x4f5/0x50a`) if `[0x1AEE]`
+   is nonzero *immediately* after that (not yet observed in practice - the reset call doesn't
+   re-read `0x41000`, so `[0x1AEE]` stays at the `0` this function itself just set) */
 
 uint __cdecl16far selftest_display_irq_active(void)
 

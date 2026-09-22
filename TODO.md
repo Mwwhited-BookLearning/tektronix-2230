@@ -116,6 +116,29 @@ instead of assuming bare `nasm` resolves.
       cause, its install site must be in code outside the path already
       traced - most likely wired to the same hardware effect above,
       since every code-based lead is now exhausted.
+      **Reviewed 2026-09-22, no code issue found**: re-checked this
+      whole thread (prompted by the user recalling "issues" from the
+      end of the previous session) against `emulator/captured-notes/
+      SelectC1C2-Set/README.md` - the user's own note from just before
+      this investigation started (`aca0921`, 2026-09-17 23:59),
+      floating a "the registers might be inverted" hypothesis based on
+      the checked/unchecked runs (`4305063`=checked=0 diag lines,
+      `5391063`=unchecked=16 lines). That hypothesis is independently
+      disproven, not just assumed away: `VARIABLES.md`'s `[0x758]`
+      entry documents a 2026-09-13 live-hardware test where physically
+      pressing SELECT C1/C2 flipped `dig=` octet 3 `0x08`->`0x88`
+      (bit7 going high on press) - exactly matching `io_stubs.
+      InteractiveFrontPanel`'s active-high model for this bit
+      (`("SWB2", 7, False)`). So the emulator's button polarity is
+      correct, not inverted; the checked-run's zero output is the real,
+      already-documented `[0x1B48]`-gate behavior, not a register-
+      mapping bug. Also re-ran `emu.py --show-diag-text` for a full
+      30M-instruction boot (unheld baseline) and confirmed it still
+      completes cleanly (17 diag lines, 0 unmapped faults) - the
+      `hlt`-detection fix and the reverted wake-experiment from
+      `41de556` left no leftover code (diff was comment-only) and
+      nothing is broken. This closes the loop on the README note; the
+      only open item remains the hardware-wiring possibility above.
 - [ ] **User request 2026-09-17: hunt down every hardware jumper** on
       the main boards - they may explain debugging/configuration
       behavior (comm detection, reset) the firmware/emulator can't
