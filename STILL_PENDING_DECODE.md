@@ -331,6 +331,24 @@ top item.
   data than continuing to chase the pointer. Full detail in `docs/
   display/vector-display-and-stroke-font.md`'s "Follow-up, 2026-09-15:
   tried shape-matching" section.
+- **2026-09-23: retried the "find a confirmed caller" next step for
+  `FUNC_3633_E60C`/`FUNC_3633_DF56` - still nothing.** Grepped every
+  `.lst` listing (proven and heuristic, all three chips) for any
+  reference to either address - the only hits are the two functions'
+  own `push bp` lines, confirming `ref_count: 0` isn't a heuristic-
+  scanner gap. A blind byte-scan of all three ROMs for a far pointer
+  resolving to either address (trying every segment `0xC000`-`0xFFFF`)
+  is not a sound technique (too many trial segments, no selective
+  hit) and is recorded as a dead end, not a lead. Also hit, and ruled
+  out, a false trail worth flagging again: two heavily-referenced
+  nearby functions (`SUB_ECEDA` `0xECEDA` ref=17, `FUNC_3633_CF19`
+  `0xECF19`) turned out to be more callers of the *other*, already-
+  documented `[0x1D10]` item-handler table (unrelated to the stroke
+  font, see the bullet above) - easy to re-conflate mid-search since
+  they share this address neighborhood. Net: practical conclusion
+  from 2026-09-16 stands unchanged; no new static-analysis avenue
+  found. Full detail in `docs/display/vector-display-and-stroke-
+  font.md`'s "Follow-up, 2026-09-23" section.
 
 ## Front-panel switches
 

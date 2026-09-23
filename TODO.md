@@ -357,7 +357,58 @@ instead of assuming bare `nasm` resolves.
       EPROM filler, 1 plausible-but-unconfirmed ROM quadrant-boundary
       table, 1 still-unresolved small-int table).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
-      table into SVG files + a catalog. Mechanism is fully understood
+      table into SVG files + a catalog. **2026-09-16: closed for this
+      project's real hardware** - `draw_readout_char` opens with
+      `cmp byte [0x1b83], 0x14 / je <return>`, and `[0x1B83]` is
+      `detect_comm_option_hw`'s comm-presence flag; both of this
+      project's physical test units are RS-232/Option-12-equipped
+      (flag=`0x14`), so this function returns immediately without
+      drawing anything - the stroke-font path is dead code for the
+      hardware actually being reverse-engineered here.
+      `print_string_far`/`write_readout_port_byte` (the fixed
+      `0x40000+0x6F0` port bank) is the confirmed real diagnostic-text
+      channel, independent of comm-detection status. See
+      `docs/display/vector-display-and-stroke-font.md`'s "2026-09-16"
+      section for the full trace (via `io_stubs.py`'s
+      `CommPresenceProbe` stub) and `STILL_PENDING_DECODE.md`. Left
+      here only because the underlying mystery is still genuinely
+      unresolved as a low-priority curiosity, not because it blocks
+      anything: the `[0x1DB0]` table's runtime value (`E9A3:0000`,
+      confirmed both statically and via live trace) doesn't behave
+      like a working glyph table when walked, and no downstream
+      renderer that could turn stroke-font style data into real HPGL/
+      CRT output has been found.
+
+      **2026-09-23: picked back up, no new progress, two loose ends
+      closed.** Retried the "find a confirmed caller of `FUNC_3633_
+      E60C`/`FUNC_3633_DF56`" next step - grepped every listing (all 3
+      chips, proven+heuristic), zero call sites anywhere, confirming
+      `ref_count: 0` isn't a scanner gap. A blind far-pointer byte scan
+      across all ROMs (every possible segment) is not a sound technique
+      and found nothing credible - recorded as a dead end, don't retry
+      the same way. Also hit and ruled out a false lead: `SUB_ECEDA`
+      (`0xECEDA`, ref=17) and `FUNC_3633_CF19` (`0xECF19`), in the same
+      address neighborhood, turned out to be more callers of the
+      *unrelated* `[0x1D10]` item-handler dispatch table (already
+      documented under `dispatch_item_handler_if_enabled`), not
+      stroke-font material - easy to re-conflate, so flagging again.
+      Full detail: `docs/display/vector-display-and-stroke-font.md`'s
+      "Follow-up, 2026-09-23" section, `STILL_PENDING_DECODE.md`.
+      **Paused here, decision pending**: cheap static-analysis avenues
+      are exhausted; the two remaining options are (a) a properly-
+      targeted far-pointer search using segment bases already confirmed
+      elsewhere in the ROM (not a blind sweep), or (b) a longer live-
+      emulator trace exploring menus/modes beyond the boot self-test
+      banner. Given it's a low-priority curiosity (not a practical
+      blocker, per the 2026-09-16 closure above), next session should
+      either commit to one of those two or switch to a different
+      backlog item (comm-ROM incoming-byte path, hardware jumper hunt,
+      or the rename-everything sweep are the other live candidates in
+      this file) rather than defaulting back into this hunt by inertia.
+
+      Below is the original investigation history, preserved as-is.
+
+      Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see
       `docs/display/vector-display-and-stroke-font.md`), but the
       table's physical address (`[0x1DB0]`'s value) hasn't been found -

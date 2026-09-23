@@ -752,3 +752,67 @@ for the full reasoning). This address range was never a candidate in
 the stroke-font search above, and no code has been found calling into
 it either - it's a second, independent open question, not a
 resolution of this one.
+
+## Follow-up, 2026-09-23: retried the "find a confirmed caller" next step for `FUNC_3633_E60C`/`FUNC_3633_DF56` - still nothing, plus a false-lead warning
+
+Picked this thread back up per the "Still not found" note above (find
+confirmed callers of `FUNC_3633_DF56`/`0xEDF56`-`0xEE705` despite
+`ref_count: 0`). Two things came out of this session, both negative/
+cautionary rather than progress:
+
+**False lead, worth flagging explicitly since it's easy to re-hit**:
+while scanning the `~0xEB700`-`0xEE900` neighborhood for other
+functions touching `[0x45E]`, found two more functions that looked
+promising at first - `SUB_ECEDA` (`0xECEDA`, `ref_count: 17`, the
+most-referenced unnamed label in this whole cluster) and
+`FUNC_3633_CF19` (`0xECF19`) immediately following it. Both read
+`[0x464]`, shift it left 4 (×16-byte stride), index into a table based
+at `[0x1D10]` (`les di, ptr [0x1d10]`), check `es:[bx+di+6]`/
+`es:[bx+di+8]` for non-zero, and if so push a literal reason code (`3`
+from `SUB_ECEDA`, `2` from `FUNC_3633_CF19`, the latter additionally
+gated by `cmp word [0x3d6],0 / jle <skip>`) and `lcall es:[bx+di+6]`.
+This is **not** a new stroke-font lead - it's the *same* `[0x1D10]`
+per-item handler table already documented above (see the
+"`dispatch_item_handler_if_enabled`... is unrelated to the
+stroke-font reading found here" paragraph) as a separate, unrelated
+mechanism that just happens to share this address neighborhood. These
+two functions are best read as two more, previously-undocumented
+callers/siblings of that *other*, already-tracked dispatch mechanism -
+not as progress on this hunt. Not written up under `FUNCTIONS.md`/
+`dispatch_item_handler_if_enabled` yet since that's a distinct topic
+from this doc; noting it here only so a future session doesn't
+re-spend time re-discovering that `[0x1D10]`-table code in this same
+neighborhood is a dead end for the stroke-font question specifically.
+
+**Retried the actual suggested next step**: grepped every `.lst`
+listing (proven and heuristic, all three chips) for any textual
+reference to `EE60C`/`EDF56` - the only two hits in the entire
+disassembly are the two functions' own `push bp` prologue lines
+themselves; zero call or jump sites anywhere, confirming the
+`ref_count: 0` finding is not a heuristic-scanner gap - there is
+genuinely no direct (literal-target) call to either function in any
+statically-decoded code. Also tried a blind byte-level scan of all
+three ROM binaries for any 4-byte little-endian far pointer
+(`seg:off`) whose physical address (`seg*16+off`) resolves to
+`0xEDF56` or `0xEE60C`, trying every segment `0xC000`-`0xFFFF` against
+each binary - this is **not a credible technique** (16K+ segment
+candidates × 3 files is enough trials that a spurious 4-byte match is
+expected by chance, and the one hit found, `seg=E9F8 off=468C`, is not
+selective or corroborated by anything else) and produced nothing
+worth trusting; recording the attempt and its negative result so it
+isn't retried the same way. A real version of this technique would
+need to first narrow the segment search to values the ROM actually
+uses as bases elsewhere (the same kind of targeted approach that found
+`E9A3:0000` for `[0x1DB0]`), not a blind full-range sweep.
+
+**Net effect**: no further progress on locating a caller for
+`FUNC_3633_E60C`/`FUNC_3633_DF56`, and the practical question remains
+settled per the 2026-09-16 conclusion above (dead code on this
+project's real, comm-equipped hardware). If picked up again, the two
+real remaining avenues are (a) a properly-targeted far-pointer search
+using only segment bases already confirmed to appear elsewhere in this
+ROM rather than a blind sweep, or (b) live emulator tracing with a
+breakpoint at `0xEDF56`/`0xEE60C` across a much longer/more varied
+instruction run than the boot-to-self-test-banner trace already done,
+to see if either is ever reached under some other menu/mode this
+project hasn't yet exercised live.
