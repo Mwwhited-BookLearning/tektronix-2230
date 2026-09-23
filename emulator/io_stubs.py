@@ -5,6 +5,8 @@ let a specific piece of firmware logic reach a real, meaningful
 conclusion instead of reading inert RAM - see individual docstrings for
 which real register(s) each one is standing in for and why.
 """
+import collections
+
 from unicorn import x86_const as x86
 
 # Shared ANSI colors so interactive.py's trace scroll (gray - meant to
@@ -363,6 +365,116 @@ class DiagnosticTextCapture:
             self.lines.append("".join(self.buffer))
             self.sink(f"{ANSI_WHITE}[DIAG TEXT] {''.join(self.buffer)!r} (unterminated){ANSI_RESET}")
             self.buffer = []
+
+
+class VectorDisplay:
+    """Captures on-screen vector line-draw commands so a front end (the
+    Tkinter TUI's canvas) can render what the firmware is actually
+    plotting, instead of only its register state - user request
+    2026-09-22: "can you replace the TUI with some other GUI ... that
+    can have a canvas that can display the vector buffer?"
+
+    Hooks only `plot_line_to`'s entry (physical `0xE7E0D`, `160-3633`) -
+    not `update_plot_position` (`0xE7D7D`) too, and not either of their
+    own higher-level callers (`draw_pending_line_segment`/`reset_plot_
+    home_or_acq`) - because `plot_line_to` is the single choke point
+    every draw command already funnels through: both functions dispatch
+    on the same mode selector `[0x6ca]` and (mode 1 aside, see below)
+    both end up writing their new, scaled position into the same two
+    RAM cells, `[0x6b2]`/`[0x6b4]` - confirmed directly in `disasm/
+    160-3633-14_readable.asm` (`update_plot_position`/`plot_line_to`,
+    physical `0xE7D7D`/`0xE7E0D`). That means `[0x6b2]`/`[0x6b4]`, read
+    live at the moment `plot_line_to` is entered, already hold exactly
+    the "pen was last moved/drawn to here" position left behind by
+    whatever called `update_plot_position` (a pen-up move) most
+    recently - no separate position-tracking state needed on this
+    class's own side, and no need to separately hook `update_plot_
+    position` at all, since it never draws anything itself.
+
+    **Physical addresses derived from the confirmed `DS=0x8F80` flat
+    variable-space convention** this same file already relies on for
+    the neighboring `[0x6D6]`/`[0x6E2]` far pointers (see `MASK_LATCH_
+    FAR_PTR_ADDRS`'s docstring above - `[0x712]` independently confirmed
+    RAM-identity-mapped at physical `0x8FF12` = `0x8F800 + 0x712`) -
+    `[0x6ca]`/`[0x6b2]`/`[0x6b4]` sit in that exact same low-offset
+    range and are referenced by the exact same ROM segment, so the same
+    `0x8F800` base applies without needing a fresh derivation.
+
+    **Stack-argument extraction happens at the function's raw entry
+    point, before its own `push bp; mov bp, sp` prologue runs** - same
+    situation `DiagnosticTextCapture`'s docstring already flags for a
+    different function ("BP isn't set up yet at entry"). Both `x`/`y`
+    are confirmed (`disasm/gen_disasm_x86.PARAMETER_NAMES`) to live at
+    `[bp+6]`/`[bp+8]`, which - for a far call's 4-byte return address
+    (`[bp+2]`=ret IP, `[bp+4]`=ret CS) - resolves to `SP+4`/`SP+6` at
+    the raw entry point (`SP_entry = bp_final + 2`, since `push bp`
+    hasn't yet consumed the word that becomes `[bp+0]`). Read directly
+    off `SS:SP` the same way `find_block13_caller.py`'s one-off
+    investigation script already read a return address off the stack -
+    an established, working technique in this project, not a new one.
+
+    **Mode 1 (the HPGL plotter passthrough - `PD%d,%d;` emitted via
+    `format_string_va`) is deliberately excluded**: its branch never
+    writes `[0x6b2]`/`[0x6b4]` at all, so it has no on-screen position
+    effect to capture, and a real caller mixing mode-1 output with the
+    other modes would otherwise produce a spurious segment jumping to
+    wherever the pen was last left by a *different*, non-consecutive
+    call. Every other mode (0/2/3/4/8) does update those two cells and
+    is treated as a real segment - this hasn't been individually
+    verified per-mode against real hardware, only derived from reading
+    the shared dispatch shape both functions have in common.
+
+    Segment coordinates are stored **unscaled** (each function's own
+    first move: `shl` the raw `[bp+6]`/`[bp+8]` argument by 1 twice,
+    i.e. `*4`, before storing into `[0x6b2]`/`[0x6b4]` - this class
+    divides back out by 4 so a consumer works in the same raw ~0-1023
+    coordinate space the firmware's own callers pass in, not the
+    internal *4-scaled one)."""
+
+    PLOT_LINE_TO_ADDR = 0xE7E0D
+    VARSPACE_BASE = 0x8F800  # DS=0x8F80, see class docstring
+    MODE_ADDR = VARSPACE_BASE + 0x6CA    # [0x6ca]
+    CUR_X_ADDR = VARSPACE_BASE + 0x6B2   # [0x6b2]
+    CUR_Y_ADDR = VARSPACE_BASE + 0x6B4   # [0x6b4]
+    HPGL_PASSTHROUGH_MODE = 1
+
+    def __init__(self, max_segments=4000):
+        self.segments = collections.deque(maxlen=max_segments)
+        self.max_segments = max_segments
+        # Monotonically increasing count of every segment ever appended
+        # (unlike `len(segments)`, never shrinks when the deque evicts
+        # its oldest entry past `max_segments`) - lets a consumer like
+        # the Tkinter canvas draw only the segments it hasn't already
+        # drawn, instead of re-walking and redrawing the whole deque on
+        # every refresh tick. `clear()` resets it back to 0 too, so a
+        # consumer comparing against its own last-seen total can detect
+        # "the buffer was cleared" (total went backwards) the same way
+        # it detects "new segments arrived" (total went forwards).
+        self.total = 0
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_CODE, self._on_entry,
+                     None, self.PLOT_LINE_TO_ADDR, self.PLOT_LINE_TO_ADDR)
+
+    def _on_entry(self, uc_eng, address, size, user_data):
+        mode = int.from_bytes(uc_eng.mem_read(self.MODE_ADDR, 2), "little")
+        if mode == self.HPGL_PASSTHROUGH_MODE:
+            return
+        ss = uc_eng.reg_read(x86.UC_X86_REG_SS)
+        sp = uc_eng.reg_read(x86.UC_X86_REG_SP)
+        raw_x = int.from_bytes(uc_eng.mem_read((ss << 4) + ((sp + 4) & 0xFFFF), 2), "little")
+        raw_y = int.from_bytes(uc_eng.mem_read((ss << 4) + ((sp + 6) & 0xFFFF), 2), "little")
+        old_x = int.from_bytes(uc_eng.mem_read(self.CUR_X_ADDR, 2), "little") // 4
+        old_y = int.from_bytes(uc_eng.mem_read(self.CUR_Y_ADDR, 2), "little") // 4
+        self.segments.append((old_x, old_y, raw_x, raw_y))
+        self.total += 1
+
+    def clear(self):
+        self.segments.clear()
+        self.total = 0
+
+    def status(self):
+        return f"{len(self.segments)} line segment(s) captured (max {self.max_segments})"
 
 
 class InteractiveFrontPanel:

@@ -25,7 +25,7 @@ from io_stubs import (CommPresenceProbe, DiagCommLatchLoopback, DiagnosticTextCa
                        DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
                        FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
                        InteractiveDipSwitches, AccessCounter, DisplayChipIrqStub,
-                       ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
+                       VectorDisplay, ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
 HMA_ALIAS_SIZE = 0x10000
@@ -134,6 +134,7 @@ class Debugger:
         self.front_panel = InteractiveFrontPanel()
         self.dip_switches = InteractiveDipSwitches()
         self.uart = InteractiveUartMock(sink=self.output, on_tx=self._on_tx)
+        self.vector_display = VectorDisplay()
         self.access_counter = AccessCounter()
         self._low_ram_buffer = None
         self._setup_memory()
@@ -281,6 +282,7 @@ class Debugger:
         # InteractiveUartMock's docstring.
         self.uart.install(self.emu, uc)
         self.diag.install(self.emu, uc)
+        self.vector_display.install(self.emu, uc)
 
     def _on_code(self, uc_eng, address, size, user_data):
         # Found 2026-09-18 investigating a user report that SELECT C1/C2
@@ -706,6 +708,11 @@ Commands:
                      Real \\r/\\n/tab bytes print as real line breaks/
                      tabs, not escaped text
   outgoing clear     discard everything captured so far on that side
+  vector             show how many on-screen vector line segments have
+                     been captured so far (see io_stubs.VectorDisplay -
+                     the TUI's canvas renders these live; this is just
+                     the count, for the plain REPL)
+  vector clear       discard every captured line segment
   diag               show all captured diagnostic-text lines so far
   help, ?            show this text
   quit, exit, q      leave the debugger
@@ -918,6 +925,11 @@ def dispatch_command(dbg, line):
             return [f"cleared {n} outgoing byte(s)"]
         text = dbg.uart.outgoing_text()
         return [text if text else "(nothing written yet)"]
+    if cmd == "vector":
+        if rest and rest[0].lower() == "clear":
+            dbg.vector_display.clear()
+            return ["vector buffer cleared"]
+        return [dbg.vector_display.status()]
     if cmd == "diag":
         if not dbg.diag.lines:
             return ["(no diagnostic text captured yet)"]

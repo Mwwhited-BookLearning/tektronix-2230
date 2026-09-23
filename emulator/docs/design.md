@@ -1393,6 +1393,115 @@ the stack happens to be at some point during a long run, since (as
 this exact trace showed) it isn't fixed at one place for the whole
 boot sequence.
 
+## Tkinter vector-display GUI, converted from Textual, 2026-09-23
+
+The user asked to replace the Textual-based full-screen dashboard
+(`tui.py`) with "some other GUI such as a webform or winform that can
+have a canvas that can display the vector buffer" - Pygame was
+considered and rejected (no built-in widget toolkit for the
+registers/log/front-panel controls), and Tkinter was chosen instead:
+it ships in the Python standard library (no extra install), and its
+`Canvas` widget supports native retained-mode vector drawing
+(`create_line`), which is exactly what's needed to render captured
+oscilloscope plot segments. The user's explicit final instruction was
+"convert to tkinter."
+
+`tui.py` was rewritten from scratch on Tkinter/`ttk`, keeping the same
+filename and `Tek2230App` class name (nothing else in the repo
+references it, and the ask was to replace the TUI, not rename it). It
+preserves every feature of the Textual original - registers panel,
+incoming/outgoing/log scrollback, front-panel checkboxes plus the
+3-way horizontal-mode dropdown, DIP-switch checkboxes, a command input
+bar with history (up/down), F1-F7 and Ctrl+Q key bindings, the
+busy/live-mode guarding that blocks a second long-running command
+while one is in flight, and the reset button - and adds a new
+`Canvas` rendering the vector-plot capture described below.
+
+**Threading**: Tkinter has no `call_from_thread` equivalent (unlike
+Textual). Worker threads that run long emulator commands never touch a
+widget directly; they only enqueue zero-arg callables via
+`self._post(fn)` -> `self._ui_queue.put(fn)`, and
+`self.root.after(50, self._drain_ui_queue)` polls/drains that queue on
+the main thread, which remains the only place any widget method gets
+called as a result of background-thread work. This is the same
+`_busy`-flag-guards-a-second-worker-thread and
+`Debugger.queue_action`-between-`run_live`-bursts pattern the Textual
+version used, just re-plumbed for Tkinter's polling model instead of
+`call_from_thread`.
+
+**Vector-display capture** (`io_stubs.VectorDisplay`, already present
+in `debugger_core.py`/`io_stubs.py` as prior work by the time this
+session picked the task up - wired into `Debugger._boot`/
+`_setup_stubs` and exposed via a `vector`/`vector clear` REPL command):
+hooks `plot_line_to`'s raw entry point (physical `0xE7E0D`, ROM
+`160-3633`) with `UC_HOOK_CODE`, *before* its own `push bp; mov bp, sp`
+prologue runs - so, same as `DiagnosticTextCapture`, its two
+"arguments" are read directly off `SS:SP+4`/`SS:SP+6` rather than
+`[bp+6]`/`[bp+8]` (the far-call stack layout `PARAMETER_NAMES` uses
+for this function assumes `push bp` already ran; at the raw entry
+point that's 2 words higher up the stack). The previous pen position
+comes from `[0x6b2]`/`[0x6b4]` (already scaled by 4 in firmware,
+descaled back to the ~0-1023 raw coordinate space here), and mode 1
+(HPGL passthrough, read from `[0x6ca]`) is skipped since it has no
+on-screen effect. Segments are stored as `(old_x, old_y, new_x, new_y)`
+4-tuples in a bounded `deque(maxlen=4000)`.
+
+This session added a `total` counter to `VectorDisplay` (`self.total`,
+incremented once per captured segment in `_on_entry`, reset to 0 in
+`clear()`). Unlike `len(segments)`, which stops growing (and can even
+look unchanged) once the bounded deque starts evicting old entries,
+`total` lets a consumer tell "new data arrived" apart from "buffer was
+cleared" apart from "segments arrived but some were evicted before
+ever being drawn" - which is what `tui.py`'s `_redraw_vector` needs to
+draw only the newly-arrived segments (`create_line` for each) instead
+of clearing and redrawing up to 4000 lines every 50ms UI-queue tick.
+It only falls back to a full `delete("vec")` + redraw when `total`
+resets (buffer cleared) or when more segments arrived since the last
+redraw than the deque can hold (some were evicted unseen).
+
+**Verification** (via the project's own `.venv`,
+`./.venv/Scripts/python.exe`): `py_compile` on all edited files;
+`tkinter` import and `TkVersion` check; full `Tek2230App` construction
+plus `step 50` dispatch with no crash; front-panel checkbox/DIP-switch/
+mode-dropdown toggles cross-checked against
+`dbg.front_panel.status()`/`dbg.dip_switches.status()`; help text;
+command-history recall sequence; `_do_reset()` returning the front
+panel to its idle baseline; clean shutdown via `action_quit_app()`; a
+3,000,000-instruction `run` completing via the worker thread without
+crashing (0 vector segments captured - a firmware-reachability fact,
+since a plain cold boot doesn't drive the plotter that deep into
+self-test/menu code, not a capture bug); and a synthetic-segment
+injection test (20 segments written directly into
+`vd.segments`/`vd.total`) confirming the draw/clear pipeline end to
+end - 20 segments produced 20 canvas items, and dispatching
+`vector clear` through the real command path dropped it back to 0.
+
+`requirements.txt` no longer lists `textual` (tkinter is stdlib);
+`tui.bat`'s and `interactive.py`'s docstrings/comments were updated to
+describe the Tkinter dashboard and note the Windows "tcl/tk" install
+component instead of a pip package.
+
+**Follow-up same day**: the user flagged that the vector canvas should
+stay square. The coordinate math was already uniform (`VECTOR_SCALE`
+applied identically to X and Y, since `VectorDisplay`'s raw coordinates
+are both ~0-1023, 10-bit), but the canvas itself was a fixed
+520x520 `tk.Canvas` sitting in a resizable `PanedWindow` pane -
+correct at startup, but it wouldn't track the pane if the window were
+resized, and had no mechanism to grow to use available space. Fixed by
+packing the canvas into a holder frame that fills its pane
+(`fill="both", expand=True`) and binding that holder's `<Configure>`
+event (`_on_vector_frame_resize`): on every resize it picks the
+largest square that fits (`min(event.width, event.height)`, minus a
+small pad), resizes the canvas widget to that square, and forces a
+full redraw at the new per-instance scale (`self._vector_size`/
+`self._vector_scale`, replacing the old fixed module-level
+`VECTOR_CANVAS_SIZE`/`VECTOR_SCALE` constants at the draw call site -
+those constants remain as the startup default). Verified via a
+synthetic resize-event call (`_on_vector_frame_resize` with a
+300x250 stand-in event) confirming the canvas shrinks to a centered
+242x242 square and redraws captured segments correctly at the new
+scale.
+
 ## Non-goals reminder
 
 If this tool successfully answers the stroke-font question, resist the

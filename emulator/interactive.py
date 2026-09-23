@@ -4,13 +4,14 @@ live register/flag state and the current instruction after every stop,
 and lets you single-step, set breakpoints, and simulate front-panel
 button presses or incoming serial bytes while the firmware runs.
 
-Built on `debugger_core.py` (shared with `tui.py`, the Textual-based
-dashboard alternative) and the same memory map/stubs as `emu.py` (the
-headless batch tracer) - use `emu.py` for long, unattended runs (much
-faster, no per-step Python round-trip), this one for interactive
-exploration via a classic scrollback prompt, or `tui.py` for a live
-full-screen dashboard view (needs `textual` installed - see
-`requirements.txt`/`tui.bat`).
+Built on `debugger_core.py` (shared with `tui.py`, the Tkinter-based
+dashboard alternative, which also shows a live vector-display canvas)
+and the same memory map/stubs as `emu.py` (the headless batch tracer)
+- use `emu.py` for long, unattended runs (much faster, no per-step
+Python round-trip), this one for interactive exploration via a
+classic scrollback prompt, or `tui.py` for a live full-screen
+dashboard view (`tkinter` is part of the Python standard library, no
+extra install needed - see `tui.bat`).
 
 Usage:
     python interactive.py [--revision 13|14] [--tick-interval N]

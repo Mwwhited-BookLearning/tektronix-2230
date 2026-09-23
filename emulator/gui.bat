@@ -1,8 +1,10 @@
 @echo off
 rem Sets up (or reuses) a venv in emulator\.venv with the packages from
-rem requirements.txt, then runs the Textual-based TUI. See
-rem interactive.bat for the plain REPL alternative - same venv, same
-rem requirements.
+rem requirements.txt, then runs the Tkinter-based dashboard (tkinter is
+rem part of the Python standard library - if a Windows Python install is
+rem missing it, reinstall from python.org with the "tcl/tk" component
+rem checked). See interactive.bat for the plain REPL alternative - same
+rem venv, same requirements.
 setlocal
 cd /d "%~dp0"
 

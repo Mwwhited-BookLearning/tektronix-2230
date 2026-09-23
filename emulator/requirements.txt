@@ -1,3 +1,2 @@
 unicorn==2.1.4
 capstone==5.0.7
-textual==8.2.8
