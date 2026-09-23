@@ -95,7 +95,7 @@ matches the tables below):
 
 ## Follow-up, 2026-09-22
 
-- `3633 0xFF99-0xFFED` (block 20) - **not data at all**, confirmed
+- `3633 0xEFF99-0xEFFED` (block 20) - **not data at all**, confirmed
   genuine reachable code that a coverage-tooling off-by-one orphaned
   (the same bug also explains a previously-unexplained "landing
   artifact" at this exact spot). See "7." in the deep-dive doc.
@@ -106,9 +106,31 @@ matches the tables below):
   branch.
 - `2998 0x88D1C-0x88D3D` (block 8) - looked, no hypothesis yet (small
   2-6 integer table).
+- **A systematic sweep for more wrapping-jump-orphaned blocks (the
+  mechanism above) came back negative** - block 20 is the only
+  instance project-wide. But the sweep's "sandwiched between covered
+  code" signal, while too weak alone (37 of 49 blocks match it), did
+  surface one more confirmed real find and one non-find worth noting:
+  - `3633 0x956E-0x95A0` (block 13) - **not data**, two real
+    `retf`-terminated leaf subroutines writing to the confirmed
+    front-panel A/D control latch and reading `fp_intstat`. No
+    far-pointer reference to either entry address found anywhere in
+    the project, so the real caller is still unresolved. See "10." in
+    the deep-dive doc.
+  - `3532 0x1A86-0x213A` (blocks 6-12 below) - **not new**, just more
+    of the already-documented ~100-entry jump table (see the
+    2026-09-15 entry above) that the walker didn't get an individual
+    entry point into.
+  - 7 more blocks look like real code by eyeball (clean prologues, or
+    references to already-tracked RAM variables) but aren't
+    rigorously confirmed yet - flagged as open leads, not findings:
+    `3633 0x77F8-0x783C`, `3633 0x9180-0x91EF`, `3633 0x97A2-0x97C9`,
+    `3633 0x9404-0x9471`, `3532 0x8E7-0x9BF`, `3532 0xA73-0xAA9`,
+    `3532 0x6E23-0x6E4B`.
 
 Full detail in `docs/decode-anomalies/unknown-data-deep-dive-2026-09-
-15.md`'s "Follow-up, 2026-09-22" section.
+15.md`'s "Follow-up, 2026-09-22" section (including the second-pass
+subsection).
 
 ## Summary
 

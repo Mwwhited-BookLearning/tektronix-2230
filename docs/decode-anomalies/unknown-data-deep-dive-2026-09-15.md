@@ -556,11 +556,123 @@ bytes after the confirmed command-keyword-table cluster
 (`0x88005-0x88A57`) with real code in between, so not obviously part
 of that same structure. No further progress; left open.
 
+## Follow-up, 2026-09-22 (second pass): a systematic sweep for the wrapping-jump mechanism, and one more confirmed code block
+
+Finding 7 above flagged a "worth checking as a next step": does the
+coverage tooling systematically miss code sitting just upstream of any
+jump whose target wraps past `0xFFFF` into the neighboring chip's
+file-offset space? `disasm/find_sandwiched_unknown_blocks.py` answers
+this directly - it re-walks the full proven+heuristic entry-point
+corpus, then for every remaining `UNKNOWN_DATA.md`-style gap checks (a)
+whether it's "sandwiched" (covered code immediately before *and* after
+the gap - the shape block 20 had) and (b) whether the covered
+instruction immediately before it is a jmp/call/conditional-jump whose
+*unmasked* Capstone target is in `0x10000-0x1FFFF` (this chip's other
+64KB half).
+
+**The wrapping-jump mechanism specifically is confirmed isolated to
+block 20** - across every chip's entire proven+heuristic instruction
+corpus, exactly one instance exists project-wide (the same two jumps
+already described in finding 7). No second wrapping-jump-orphaned
+block was found.
+
+**But the "sandwiched" shape alone is far too weak a signal to stop
+there**: 37 of the 49 total unknown blocks across all three chips
+match it - unsurprising in a packed ROM where most bytes are code, so
+it doesn't discriminate real orphaned code from ordinary data tables
+that merely happen to sit between two functions. Manually
+disassembling the highest-signal candidates anyway (ranked by a crude
+"% cleanly decoded" proxy, then eyeballed) turned up:
+
+- **One more fully confirmed instance - see finding 10 below.**
+- Several `160-3532` "sandwiched" blocks in the `0x1A86-0x213A` range
+  (file offsets `0x1A86`, `0x1B0E`, `0x1BFE`, `0x1C6D`, `0x1D1E`,
+  `0x205F`, `0x208A`) are **not new mysteries at all** - they fall
+  entirely inside finding 1's already-documented ~100-entry jump
+  table (`0x1A33-0x213A`). Finding 1 already notes only 2 of that
+  table's 4 known real callers land cleanly on an entry; these
+  sub-ranges are simply table entries the recursive-descent walker
+  never got an instruction-level entry point into, not independent
+  unknowns.
+- Six more blocks that *look* like real code by eyeball (clean
+  `push bp`-style prologues, or direct references to already-tracked
+  RAM variables) but aren't yet rigorously confirmed the way block 13
+  was - no far-pointer/caller search done, no control-flow convergence
+  verified. Flagged here as open leads, not findings:
+  - `160-3633` `0xE77F8-0xE783C` (69B) - signed abs-value/negation
+    logic (`cmp dx,0; jge; neg dx; neg ax; sbb dx,0`) on stack
+    parameters `[bp+0xa]`/`[bp+0xc]` - resembles a signed
+    division/remainder helper.
+  - `160-3633` `0xE9180-0xE91EF` (112B) - a repeated
+    `push di; lcall 0xF0EB:0x151; ...` pattern against varying `di`
+    constants - looks like a table/dispatch lookup called with
+    different item IDs.
+  - `160-3633` `0xE97A2-0xE97C9` (40B) - a `cmp`/`loop`-driven `movsb`
+    string-copy.
+  - `160-3633` `0xE9404-0xE9471` (110B) - coherent conditional logic
+    over `[0x530]` and a `[bp-0xc]` local, computing `di = index*4`.
+  - `160-3532` `0xF08E7-0xF09BF` (217B) - touches the already-tracked
+    plot-position variables `[0x6C0]`/`[0x6C4]`/`[0x6D6]`.
+  - `160-3532` `0xF0A73-0xF0AA9` (55B) and `0xF6E23-0xF6E4B` (41B) -
+    touch the plot-scale variable cluster (`[0x712]`/`[0x716]`/
+    `[0x71A]`/`[0x722]`) and RAM variables `[0x1B72]`/`[0x1B64]`
+    respectively.
+- The rest of the inspected candidates are ordinary data/noise. Two
+  are worth naming because they rule out code outright: `160-3633`
+  `0xEACE6-0xEAD07` decodes to `int1` (a reserved opcode) and
+  `fld`/`fdiv` (x87 FPU instructions - not present on this 8088-class
+  design), and a couple of others (`0xEAD15-0xEAD9F`, `160-3532`
+  `0xF8000-0xF802A`) don't decode as any valid instruction at all from
+  their very first byte.
+
+### 10. `160-3633` block 13 (`0xE956E-0xE95A0`, 51 bytes): two more real leaf subroutines, caller still unresolved (confirmed code, unresolved entry mechanism)
+
+Manually decoding this "sandwiched" block finds two small,
+`retf`-terminated far-called subroutines, not data:
+
+- **Sub-routine 1** (`0x956E-0x9580`, 18 bytes): sets `es=0x4000`,
+  `di=0x37F6` (physical `0x437F6`, the already-confirmed Front Panel
+  A/D control latch, U6104), writes the byte `0x1D` to it, far-calls
+  `0xF15A:0x0001` (physical `0xF15A1`, an existing heuristic-only
+  symbol `SUB_F15A1`), then `retf`.
+- **Sub-routine 2** (`0x9581-0x95A0`, 32 bytes): `push si`; sets
+  `es=0x4000`, `di=0x37F6`, `si=0x37FB` (physical `0x437FB`, the
+  already-confirmed Main Front Panel Input, U6103 / `fp_intstat`);
+  tests bit `0x4` of `fp_intstat`; both branches converge on reading
+  the flat-DS variable `[0x4E4]` and writing it to the A/D control
+  latch at `[es:di]`; `pop si; retf`.
+
+Unlike block 20 (finding 7), no wrapping jump is involved - these are
+entered via far-call/`retf` semantics, and the code itself is
+unambiguously real (it manipulates two independently-confirmed
+hardware registers in a coherent, non-garbage sequence). What's
+**not** resolved: no literal far-pointer bytes anywhere in any of the
+three ROM binaries reference either entry address
+(`0xE000:956E`/`0xE000:9581`, checked via raw byte-pattern search), and
+neither address appears in the already-documented 82-entry RAM
+far-pointer table (`docs/acquisition-and-plotting/ram-far-pointer-
+table.md`) or anywhere else in the project's docs/symbols. The real
+caller is presumably a computed/indirect far pointer not yet found -
+the same open-ended "unresolved far-pointer call" shape as that RAM
+far-pointer table family, just not yet traced to its source.
+
+**Net effect on finding 7's "worth checking" lead**: the *specific*
+wrapping-jump mechanism is now confirmed isolated to block 20 alone.
+But the *general* phenomenon it's a symptom of - real, reachable code
+that the coverage tooling has no entry point into, because nothing in
+the proven/heuristic corpus computes its actual (indirect/far) caller
+- recurs here via a different root cause. Worth remembering as a
+category, not just this one instance: an unresolved-caller block
+doesn't mean "probably data," it can mean "definitely code, caller not
+found yet."
+
 ## Updated summary table
 
-| # | Chip | File offset | Confidence | What |
+| # | Chip | Physical | Confidence | What |
 |---|---|---|---|---|
-| 7 | 3633 | `0xFF99-0xFFED` | **Confirmed** | Not data - genuine reachable code a coverage-tooling off-by-one orphaned; also explains a previously-unexplained "landing artifact" at this exact spot as a boundary bug, not a compiler/linker quirk |
+| 7 | 3633 | `0xEFF99-0xEFFED` | **Confirmed** | Not data - genuine reachable code a coverage-tooling off-by-one orphaned; also explains a previously-unexplained "landing artifact" at this exact spot as a boundary bug, not a compiler/linker quirk |
 | 8 | 3532 / 2998 | `0xFFFC0-0xFFFEF` / `0x8FE91-0x8FFFF` | Confirmed, mundane | Unprogrammed EPROM filler (`0xFF`) before/after each chip's real fixed vectors |
 | 9 | 3633 | `0xE0205-0xE0269` | Plausible, unconfirmed | ROM base/quadrant address table, sits right after `boot_init`'s own final branch; no consumer found |
+| 10 | 3633 | `0xE956E-0xE95A0` | **Confirmed code**, caller unresolved | Two `retf`-terminated leaf subroutines writing to the confirmed front-panel A/D control latch and reading `fp_intstat`; no far-pointer reference to either entry found anywhere in the project |
 | - | 2998 | `0x88D1C-0x88D3D` | Unresolved | Small-int (2-6) table, no hypothesis yet |
+| - | 3633 / 3532 | 6 blocks, listed above | Unconfirmed lead | Look like real code by eyeball (prologues / known-variable references); no caller/convergence check done yet |

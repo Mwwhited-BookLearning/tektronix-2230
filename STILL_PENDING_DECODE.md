@@ -472,16 +472,31 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   labeled end (`0xFFED`) cuts a `jmp` instruction one byte short,
   leaving a stray byte at `0xFFEE` that the heuristic disassembler
   then misdecoded into a bogus instruction, which is exactly what had
-  looked like an unexplained landing artifact. **Not yet checked**:
-  whether this is systematic - i.e. whether the coverage/heuristic
-  tooling generally fails to follow jumps whose target wraps past a
-  chip's nominal 64KB half (both jumps in this function's tail target
-  addresses past `0xFFFF`, resolving into `160-3532`'s own file-offset
-  space per the combined 128KB main-ROM convention). See `docs/decode-
-  anomalies/unknown-data-deep-dive-2026-09-15.md`'s "Follow-up,
-  2026-09-22" section, finding 7. Two new candidate RAM-pointer
-  variables came out of the trace, `[0x1C94]`/`[0x1DDC]` (see
-  `VARIABLES.md`), purpose unknown.
+  looked like an unexplained landing artifact. Two new candidate
+  RAM-pointer variables came out of the trace, `[0x1C94]`/`[0x1DDC]`
+  (see `VARIABLES.md`), purpose unknown.
+  **Checked systematically (2026-09-22, second pass)**: wrote
+  `disasm/find_sandwiched_unknown_blocks.py` to test whether the
+  coverage/heuristic tooling generally fails to follow jumps whose
+  target wraps past a chip's own 64KB half (both jumps in this
+  function's tail resolve into `160-3532`'s own file-offset space per
+  the combined 128KB main-ROM convention). **Negative** - exactly one
+  instance exists project-wide (this same block). But the broader
+  phenomenon - real code the tooling has no entry point into - does
+  recur via a *different* root cause: `160-3633` physical
+  `0xE956E-0xE95A0` is two more real `retf`-terminated leaf
+  subroutines (writes to the confirmed front-panel A/D control latch,
+  reads `fp_intstat`), not data, but no literal far-pointer anywhere in
+  any of the three ROMs references either entry address, so the real
+  caller is a still-unresolved computed/indirect far call. 7 further
+  "sandwiched" blocks look like real code by eyeball (clean prologues,
+  or references to already-tracked RAM variables) but aren't
+  rigorously confirmed yet - flagged as open leads. Also clarified that
+  several other "sandwiched" `160-3532` blocks (`0x1A86-0x213A`) are
+  just uncovered pieces of the jump table already documented just
+  below (finding 1), not new mysteries. See `docs/decode-anomalies/
+  unknown-data-deep-dive-2026-09-15.md`'s "Follow-up, 2026-09-22"
+  section, findings 7 and 10 plus the second-pass subsection.
 - **New systematic instance found 2026-09-15**: a previously-unknown
   real ~100-entry jump table in `160-3532` (file offset `0x1A33`-
   `0x213A`) has 2 of its 4 real callers (from `FUNC_3633_E9FA`, a

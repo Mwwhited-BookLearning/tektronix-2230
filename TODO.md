@@ -327,18 +327,35 @@ instead of assuming bare `nasm` resolves.
       into already-known code) that a coverage-tooling boundary bug
       orphaned, which also explains what had looked like an
       unexplained landing artifact at the same spot as a simple
-      off-by-one instead. **Next step if picked up**: check whether
-      this is systematic - both jumps in that function's tail target
-      addresses past `0xFFFF` (wrapping into `160-3532`'s file-offset
-      space per the combined 128KB main-ROM convention), so there may
-      be more spurious "unknown data" blocks sitting just upstream of
-      any other 0xFFFF-crossing jump in `160-3633`/`160-3532`; worth an
-      automated pass rather than manual spot checks. See `docs/decode-
-      anomalies/unknown-data-deep-dive-2026-09-15.md`'s "Follow-up,
-      2026-09-22" section (findings 7-9) for this and 3 smaller,
-      lower-value looks (2 end-of-chip blocks confirmed as ordinary
-      unprogrammed EPROM filler, 1 plausible-but-unconfirmed ROM
-      quadrant-boundary table, 1 still-unresolved small-int table).
+      off-by-one instead. **Follow-up 2026-09-22 (second pass)**: wrote
+      `disasm/find_sandwiched_unknown_blocks.py` to check systematically
+      whether that wrapping-jump mechanism recurs elsewhere - it
+      doesn't; exactly one instance exists project-wide (the block 20
+      case already found). But its weaker "sandwiched between covered
+      code" signal (too noisy alone - 37 of 49 blocks match it) led to
+      manually checking the highest-ranked candidates by hand, which
+      found **one more confirmed real block**: `160-3633` physical
+      `0xE956E-0xE95A0` is two real `retf`-terminated leaf subroutines
+      (writes to the confirmed front-panel A/D control latch, reads
+      `fp_intstat`), not data - but unlike block 20, no far-pointer
+      reference to either entry point exists anywhere in the project,
+      so the actual caller is still unresolved (a computed/indirect far
+      call, presumably). Also clarified that several other "sandwiched"
+      `160-3532` blocks (`0x1A86-0x213A`) are just more of the
+      already-documented ~100-entry jump table, not new mysteries.
+      **Next step if picked up**: 7 more blocks looked plausible by
+      eyeball (clean prologues or references to already-tracked RAM
+      variables - listed in the deep-dive doc's second-pass section)
+      but weren't rigorously confirmed the way the two above were (no
+      caller/far-pointer search, no convergence check) - worth tracing
+      one at a time the same way, starting with `160-3633`
+      `0xE77F8-0xE783C` (looks like a signed abs-value/division
+      helper). See `docs/decode-anomalies/unknown-data-deep-dive-2026-
+      09-15.md`'s "Follow-up, 2026-09-22" section (findings 7-10, plus
+      the second-pass subsection) for this and 3 smaller, lower-value
+      looks (2 end-of-chip blocks confirmed as ordinary unprogrammed
+      EPROM filler, 1 plausible-but-unconfirmed ROM quadrant-boundary
+      table, 1 still-unresolved small-int table).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. Mechanism is fully understood
       (`draw_readout_char`'s pen/coarse/fine bit-packing, see
