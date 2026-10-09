@@ -413,10 +413,14 @@ full derivation.
   Timer U4231), `[0x32E]`=`0x437EE` (Record Counter), `[0x332]`=
   `0x437DE` (B Delay Timer), `[0x326]`/`[0x336]`/`[0x33A]` similarly
   resolved. No longer an open "which hardware" question.
-- **Still genuinely open**: what real acquisition hardware returns
-  for a plain `run_adc_selftest`-style read of `0x4377E` (busy flag +
-  12-bit value, as opposed to `ACQ_AB`'s address-walk pattern) - not
-  yet traced or stubbed in the emulator.
+- **Resolved in the emulator, 2026-10-09**: `io_stubs.
+  AdcSelftestReadbackStub` couples `run_adc_selftest`'s plain
+  busy-flag+12-bit read of `0x4377E` to `[bp+0xc]+[bp+0x16]`, computed
+  generically off the caller's own stack frame at the exact read
+  instruction (`0xE137A`) - fixes both `HS_ACQ` and `TBD hs/2`'s
+  `"acq_mem cntr"` mismatch without needing `TBD hs/2`'s own
+  `[0x1DCC]` table decoded. Verified live against a full boot trace.
+  No longer open.
 - **Still genuinely open**: what firmware or hardware mechanism fills
   the incrementing-ramp pattern `verify_pattern_with_report` expects
   at `0x48000` - `configure_measurement_hw` only ever reads one byte

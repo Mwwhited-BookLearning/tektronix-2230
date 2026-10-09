@@ -125,6 +125,26 @@ to their exact source, now explained by the register identities above:
   `verify_pattern_with_report`'s ramp check. Tracked in `TODO.md`'s
   `emulator/` next-steps item.
 
+**`acq_mem cntr` mismatch resolved, same day**: `io_stubs.
+AdcSelftestReadbackStub` hooks the exact read instruction inside
+`run_adc_selftest` (`0xE137A`) and writes `[bp+0xc]+[bp+0x16]` (read
+live off the caller's own stack frame, not hardcoded) into `0x4377E`'s
+low 12 bits before the read executes - the same formula confirmed
+above, just computed generically instead of per-call-site. Because
+`run_adc_selftest`'s comparison code is identical for every caller,
+this fixes **both** `HS_ACQ` and `TBD hs/2` in one stub, without ever
+needing `run_indexed_adc_selftest`'s own `[0x1DCC]` table decoded -
+verified live: both `"acq_mem cntr"` mismatch lines are gone from a
+full boot trace, with the busy-wait loop itself left untouched (RAM's
+default-0 busy bit already matched every captured run). Confirmed via
+an A/B run (same trace with/without the stub, `git stash`) that the
+boot's eventual `halt_cpu` panic stop (`0xF1611`) happens identically
+either way - a pre-existing, unrelated stopping point, not a
+regression this stub introduced. The `verify_pattern_with_report`
+"fill @" ramp-pattern mismatch (the `[0x31E]`/`0x48000` buffer's
+real-hardware-fill question, above) is untouched by this stub and
+remains the one open piece of this investigation.
+
 ## Possible waveform acquisition buffer init (updated: likely a plot-scale cache, not a buffer)
 
 Found while renaming `160-3532:0x03F4`/`0x0414`/`0x0446` (all three

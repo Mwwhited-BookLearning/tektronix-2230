@@ -414,7 +414,27 @@ ACQ_AB : read-back     0 <>   FFE
    expected at far ptr `[0x31E]` (physical `0x48000`, confirmed genuine
    Acquisition RAM - the firmware itself never writes this ramp, so a
    stub would need to synthesize it). Tracked in `TODO.md`'s
-   `emulator/` next-steps item; no stub attempted yet.
+   `emulator/` next-steps item.
+
+   **(1) fixed same day**, with `io_stubs.AdcSelftestReadbackStub`:
+   rather than hardcode a value per self-test, it hooks the exact read
+   instruction inside `run_adc_selftest` itself (`0xE137A`, the
+   function both `HS_ACQ` and `TBD hs/2` call into) and computes the
+   expected value generically from the live caller's own stack frame
+   (`[bp+0xc]+[bp+0x16]` - `run_adc_selftest`'s own comparison formula,
+   confirmed byte-exact against `HS_ACQ`'s captured failure). Because
+   the formula only reads the *current* call's arguments, it resolves
+   `TBD hs/2` too without ever decoding `run_indexed_adc_selftest`'s
+   own `[0x1DCC]` device table - a case where tracing the shared callee
+   generalizes further than tracing either caller would have alone.
+   Verified end-to-end: a full boot trace no longer prints either
+   `"acq_mem cntr"` mismatch line, and (via an A/B run with/without the
+   stub, `git stash`) the run's later `halt_cpu` panic stop at
+   `0xF1611` is confirmed unchanged either way - a pre-existing
+   stopping point, not something this stub caused. (2) remains open:
+   both self-tests' `"fill @"` mismatch persists untouched, and the run
+   now continues one self-test further into a third, still-unnamed
+   `"TBD ps/2"` failure with the same shape.
 
 Both were genuine "not simulatable with a flat value" cases, exactly
 the kind design.md's own stub philosophy anticipates ("only add real

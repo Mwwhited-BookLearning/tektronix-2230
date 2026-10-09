@@ -51,9 +51,21 @@ failures (`HS_ACQ`, `TBD hs/2`). **Traced 2026-10-09** (see
 `docs/self-test/hardware-probes.md`): both read the exact same
 Acquisition Memory Address Buffer register (`0x4377E`, U3427) the
 already-stubbed `ACQ_AB` test uses, just with a plain busy-flag+value
-read instead of an address-walk write - register identity isn't the
-blocker, a coupling stub for this different read pattern is still
-needed (see `TODO.md`).
+read instead of an address-walk write.
+
+**`acq_mem cntr` mismatch fixed, same day**, with `io_stubs.
+AdcSelftestReadbackStub`: hooks the exact read instruction inside
+`run_adc_selftest` (`0xE137A`) and writes back `[bp+0xc]+[bp+0x16]`,
+read live off the caller's own stack frame rather than hardcoded -
+since that comparison is identical for every caller, one stub fixes
+both `HS_ACQ` and `TBD hs/2` without needing `TBD hs/2`'s own
+`[0x1DCC]` device-table bytes decoded. Verified live (both `"acq_mem
+cntr"` mismatches gone from a full boot trace; A/B'd via `git stash`
+that the run's later `halt_cpu` panic stop is unchanged either way).
+Both self-tests' separate `"fill @"` ramp-pattern mismatch (what fills
+`[0x31E]`/`0x48000`'s expected incrementing byte pattern) is untouched
+by this stub and is the next thing blocking a fully-clean power-up
+sequence through the debugger-core front ends (see `TODO.md`).
 
 **Interactive mode, 2026-09-16**: `python interactive.py` is a REPL
 debugger built on the same memory map and stubs - shows live register/

@@ -269,6 +269,62 @@ class AcqAbAddrWalkStub:
         uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
 
 
+class AdcSelftestReadbackStub:
+    """Couples `run_adc_selftest`'s (`0xE12F4`) final 12-bit readback of
+    the Acquisition Memory Address Buffer (`0x4377E`, U3427 - the same
+    register `AcqAbAddrWalkStub` above already overlays on a disjoint
+    bitmask, `0xFFE` there vs. the whole low-12-bits value read here;
+    safe because the two tests never run concurrently - see below) into
+    the exact value its own comparison needs, derived generically from
+    the caller's own stack arguments rather than hardcoded per self-test.
+
+    `run_adc_selftest`'s comparison (see `FUNCTIONS.md`/`docs/self-test/
+    hardware-probes.md`) is `actual(0x4377E & 0xFFF) == [bp+0xc] +
+    [bp+0x16]` - both caller-supplied arguments, confirmed byte-exact
+    against the `HS_ACQ` self-test's live captured failure (`"HS_ACQ :
+    acq_mem cntr 800 <> 0AB"`: `selftest_hs_acq` pushes `[bp+0xc]=0xa2`,
+    `[bp+0x16]=9`, and `0xa2+9=0xAB`). Because the comparison itself -
+    not just its inputs - is identical for every caller (`HS_ACQ` and
+    the `TBD hs/2` table-driven dispatcher, `run_indexed_adc_selftest`
+    at `0xE230B`, both just call `run_adc_selftest`), reading the two
+    arguments live off the stack at the exact read instruction
+    generalizes to both without needing `TBD hs/2`'s own ROM table
+    bytes (at far ptr `[0x1dcc]`) decoded first.
+
+    Hooked at the exact instruction (`0xE137A`, `les di, ptr [0x322]`)
+    rather than the register address, for the same reason
+    `AcqAbAddrWalkStub`'s docstring gives: a plain address-based hook
+    would also fire on the busy-wait loop's own earlier reads of this
+    same register (harmless to leave alone - plain RAM's default `0`
+    already keeps the busy bit clear on every captured run so far) and
+    on `verify_adc_calibration`'s unrelated `ACQ_AB` read of the same
+    physical address, which must keep seeing `AcqAbAddrWalkStub`'s own
+    walk pattern, not this formula. Writing bits `0-11` here between
+    the two self-tests is fine precisely because they run sequentially,
+    never interleaved - `ACQ_AB` is long finished reading before
+    `HS_ACQ`/`TBD hs/2` ever reach this instruction."""
+
+    CHECK_INSN_ADDR = 0xE137A
+    READBACK_ADDR = 0x4377E
+    VALUE_MASK = 0xFFF
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_CODE, self._on_exec,
+                     None, self.CHECK_INSN_ADDR, self.CHECK_INSN_ADDR)
+
+    def _on_exec(self, uc_eng, address, size, user_data):
+        ss = uc_eng.reg_read(x86.UC_X86_REG_SS)
+        bp = uc_eng.reg_read(x86.UC_X86_REG_BP)
+        threshold_a = int.from_bytes(
+            uc_eng.mem_read((ss << 4) + ((bp + 0xC) & 0xFFFF), 2), "little")
+        threshold_b = int.from_bytes(
+            uc_eng.mem_read((ss << 4) + ((bp + 0x16) & 0xFFFF), 2), "little")
+        expected = (threshold_a + threshold_b) & self.VALUE_MASK
+        current = int.from_bytes(uc_eng.mem_read(self.READBACK_ADDR, 2), "little")
+        new_value = (current & ~self.VALUE_MASK) | expected
+        uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
+
+
 class DiagCommLatchLoopback:
     """Couples writes to the Interrupt Mask Latch's diagnostic output
     3D (physical `0x406FB`) into bit `0x80` of the Option Status

@@ -21,7 +21,8 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import (AcqAbAddrWalkStub, CommPresenceProbe, DiagCommLatchLoopback,
+from io_stubs import (AcqAbAddrWalkStub, AdcSelftestReadbackStub, CommPresenceProbe,
+                       DiagCommLatchLoopback,
                        DiagnosticTextCapture, DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS,
                        FRONT_PANEL_STUBS, FixedByteRead, InteractiveFrontPanel,
                        InteractiveUartMock, InteractiveDipSwitches, AccessCounter,
@@ -270,6 +271,11 @@ class Debugger:
         # readback register) - install order relative to it doesn't
         # matter, see AcqAbAddrWalkStub's own docstring.
         AcqAbAddrWalkStub().install(self.emu, uc)
+        # Resolves the HS_ACQ/TBD hs/2 self-test failures (both call
+        # run_adc_selftest, 0xE12F4) by computing the exact expected
+        # readback generically from each call's own stack arguments -
+        # see AdcSelftestReadbackStub's own docstring for the derivation.
+        AdcSelftestReadbackStub().install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat baseline
         # so it only adjusts bit 0x80 on top - see its own docstring
         # for the disassembly-derived reasoning (selftest_comm_readback).

@@ -304,16 +304,28 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       same* Acquisition Memory Address Buffer register (U3427) the
       already-stubbed `ACQ_AB` test reads, not a separate ADC. So the
       register identity is no longer the blocker; what's still
-      missing is (1) the real acquisition hardware's write-then-
+      missing is (1) ~~the real acquisition hardware's write-then-
       readback behavior for *this* read pattern (plain 12-bit value +
-      busy flag, not an address walk like `ACQ_AB`'s), and (2) what
+      busy flag, not an address walk like `ACQ_AB`'s)~~ **done
+      2026-10-09** - `io_stubs.AdcSelftestReadbackStub` hooks
+      `run_adc_selftest`'s exact read instruction (`0xE137A`) and
+      writes back `[bp+0xc]+[bp+0x16]`, read live off the caller's own
+      stack frame - since the comparison code is identical for every
+      caller, this one stub fixes both `HS_ACQ` and `TBD hs/2` without
+      needing `TBD hs/2`'s own `[0x1DCC]` table decoded. Verified live
+      (both `"acq_mem cntr"` mismatches gone; A/B'd via `git stash`
+      that the run's later `halt_cpu` panic stop is unchanged either
+      way, so not a regression). See `docs/self-test/hardware-
+      probes.md` and `changes/2026-10-09.md`. Still open: (2) what
       fills the incrementing-ramp pattern `verify_pattern_with_report`
       expects at far ptr `[0x31E]` (physical `0x48000`, confirmed
       genuine Acquisition RAM U3418/U3419 - `configure_measurement_hw`
-      never writes it, so something else must). Next step: figure out
-      (1)/(2) well enough to extend or add an `io_stubs.py` coupling
-      stub, following the same derivation approach as
-      `AcqAbAddrWalkStub`.
+      never writes it, so something else must) - both `HS_ACQ`/`TBD
+      hs/2`'s `"fill @"` mismatches persist, and the run now continues
+      one self-test further into a third, still-unnamed `"TBD ps/2"`
+      failure with the same `"fill @"` shape. Next step: figure out
+      (2) well enough to extend or add an `io_stubs.py` coupling stub,
+      following the same derivation approach as `AcqAbAddrWalkStub`.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Full history
       and findings in `docs/decode-anomalies/unknown-data-deep-dive-
