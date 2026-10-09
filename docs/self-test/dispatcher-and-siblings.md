@@ -255,6 +255,36 @@ found for it) and remains the sole still-open "which analog front-
 panel control" question, with VOLTS/DIV still the leading candidate
 for it alone.
 
+**Reinforcement + correction, 2026-10-09** (from emulator tracing of
+the `HS_ACQ`/`TBD hs/2` failures surfaced after fixing `ACQ_AB` - see
+`docs/self-test/hardware-probes.md` and `changes/2026-10-09.md`):
+confirmed in full detail that `selftest_front_panel_switch_a`'s step
+helper `run_adc_selftest_range` (`0xE22AF`) is exactly the same
+function that sweeps the `A_TO_D_TESTS` device table (`[0x1DCC]`) via
+`run_indexed_adc_selftest` (`0xE230B`), and that this sweep's index 0
+record is literally named `"hs/2"` - which is what produces the
+`"TBD hs/2"` self-test label text. This doesn't change the open
+question above (still "which analog front-panel control does
+`selftest_front_panel_switch_a` itself sweep, 0-8" - VOLTS/DIV remains
+the leading candidate), but it does newly confirm `run_adc_selftest_
+range`/`run_indexed_adc_selftest` is a second, independent consumer of
+the same `configure_measurement_hw`/`run_adc_selftest`/`verify_
+pattern_with_report` primitive documented in `hardware-probes.md`.
+
+That primitive's register identity is **no longer unconfirmed**:
+reading `init_selftest_register_group`'s body directly (same session)
+showed `[0x322]` is fixed to physical `0x4377E` - the exact same
+"Acquisition Memory Address Buffer Low bits U3427" register
+`verify_adc_calibration` compares for `ACQ_AB` right above. So
+`run_adc_selftest_range`'s `A_TO_D_TESTS` sweep (and `selftest_hs_acq`)
+are reading back the acquisition memory address buffer, not an
+independent ADC - see `hardware-probes.md`'s rewritten section for the
+full register table. This also means `selftest_front_panel_switch_a`'s
+0-8 sweep is exercised via the acquisition-address-buffer readback,
+not a front-panel A/D converter as a stale `FUNCTIONS.md` note once
+implied (also corrected this session) - doesn't resolve "which analog
+control", but rules out one previously-plausible-sounding connection.
+
 **Still genuinely unresolved**: the *write* side of the real ACQ_AB
 test (driving the walking pattern onto the address counters U3423-
 U3425 the manual describes) was NOT found anywhere in `step_acq_ab_

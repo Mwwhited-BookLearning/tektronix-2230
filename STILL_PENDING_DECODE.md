@@ -398,6 +398,33 @@ See `docs/self-test/front-panel-switches.md` and `VARIABLES.md`.
 - **`[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern** isn't tied to
   a specific named `SWB1`/`SWB2` bit.
 
+## Acquisition self-test hardware (HS_ACQ/TBD hs/2 emulator blocker)
+
+See `docs/self-test/hardware-probes.md`'s 2026-10-09 rewrite for the
+full derivation.
+
+- **Register identities now fully resolved** (2026-10-09): the
+  `configure_measurement_hw`/`run_adc_selftest`/`verify_pattern_with_
+  report`/`wait_stable_measurement` cluster's far pointers all resolve
+  to already-CONFIRMED (`MEMORY_MAP.md`, Table 3-1) physical
+  addresses - `[0x322]`=`0x4377E` (Acquisition Memory Address Buffer
+  U3427, the *same register* `ACQ_AB` reads), `[0x31E]`=`0x48000`
+  (Acquisition RAM U3418/U3419), `[0x32A]`=`0x437F7` (Clock Delay
+  Timer U4231), `[0x32E]`=`0x437EE` (Record Counter), `[0x332]`=
+  `0x437DE` (B Delay Timer), `[0x326]`/`[0x336]`/`[0x33A]` similarly
+  resolved. No longer an open "which hardware" question.
+- **Still genuinely open**: what real acquisition hardware returns
+  for a plain `run_adc_selftest`-style read of `0x4377E` (busy flag +
+  12-bit value, as opposed to `ACQ_AB`'s address-walk pattern) - not
+  yet traced or stubbed in the emulator.
+- **Still genuinely open**: what firmware or hardware mechanism fills
+  the incrementing-ramp pattern `verify_pattern_with_report` expects
+  at `0x48000` - `configure_measurement_hw` only ever reads one byte
+  from there (result discarded), never writes the ramp, and `0x48000`
+  is confirmed genuine RAM (not a counter/PROM), so something else
+  (real hardware DMA during a capture cycle, or untraced firmware)
+  must be responsible.
+
 ## Display / CRT readout hardware
 
 See `docs/display/readout-memory.md` and `TODO.md`.

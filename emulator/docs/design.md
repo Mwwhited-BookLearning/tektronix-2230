@@ -401,8 +401,20 @@ ACQ_AB : read-back     0 <>   FFE
    several different things). Verified end-to-end: a full boot trace
    no longer prints any `ACQ_AB` failure line, and the self-test
    sequence progresses further still, into two new previously-
-   unreached failures, `HS_ACQ` and `TBD hs/2` (not yet investigated -
-   see `TODO.md`).
+   unreached failures, `HS_ACQ` and `TBD hs/2`.
+
+   **Traced 2026-10-09** (see `docs/self-test/hardware-probes.md` and
+   `changes/2026-10-09.md`): both read the far ptr `[0x322]`, which
+   turns out to be physical `0x4377E` - the *exact same* Acquisition
+   Memory Address Buffer register (U3427) `ACQ_AB`'s stub already
+   writes to, not a separate ADC. So this isn't a new hardware-identity
+   gap; it needs (1) a plausible value for a plain busy-flag+12-bit
+   read of that register (as opposed to `ACQ_AB`'s address-walk write
+   pattern), and (2) something to fill the incrementing-ramp pattern
+   expected at far ptr `[0x31E]` (physical `0x48000`, confirmed genuine
+   Acquisition RAM - the firmware itself never writes this ramp, so a
+   stub would need to synthesize it). Tracked in `TODO.md`'s
+   `emulator/` next-steps item; no stub attempted yet.
 
 Both were genuine "not simulatable with a flat value" cases, exactly
 the kind design.md's own stub philosophy anticipates ("only add real

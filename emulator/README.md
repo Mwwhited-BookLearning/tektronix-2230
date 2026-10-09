@@ -47,7 +47,13 @@ value gap, which is itself a useful distinction.
 for each. The debugger-core-based front ends (`interactive.py`/
 `tui.py`) now get a full boot run with no `ACQ_AB` or display-timeout
 failures, progressing into two new, previously-unreached self-test
-failures (`HS_ACQ`, `TBD hs/2`) not yet investigated.
+failures (`HS_ACQ`, `TBD hs/2`). **Traced 2026-10-09** (see
+`docs/self-test/hardware-probes.md`): both read the exact same
+Acquisition Memory Address Buffer register (`0x4377E`, U3427) the
+already-stubbed `ACQ_AB` test uses, just with a plain busy-flag+value
+read instead of an address-walk write - register identity isn't the
+blocker, a coupling stub for this different read pattern is still
+needed (see `TODO.md`).
 
 **Interactive mode, 2026-09-16**: `python interactive.py` is a REPL
 debugger built on the same memory map and stubs - shows live register/

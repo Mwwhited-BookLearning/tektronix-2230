@@ -296,8 +296,24 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       new, previously-unreached failures - **next self-test failures
       blocking a fully-clean power-up sequence**: `HS_ACQ` (`acq_mem
       cntr 0800 <> 00AB`, then several `fill @` byte mismatches) and
-      `TBD hs/2` (same shape, different counter/fill values) - neither
-      investigated yet.
+      `TBD hs/2` (same shape, different counter/fill values).
+      **Fully traced 2026-10-09** (see `docs/self-test/hardware-
+      probes.md` and `changes/2026-10-09.md`): both bottom out in
+      `run_adc_selftest`/`verify_pattern_with_report`, and the far
+      ptr `[0x322]` they poll turns out to be `0x4377E` - the *exact
+      same* Acquisition Memory Address Buffer register (U3427) the
+      already-stubbed `ACQ_AB` test reads, not a separate ADC. So the
+      register identity is no longer the blocker; what's still
+      missing is (1) the real acquisition hardware's write-then-
+      readback behavior for *this* read pattern (plain 12-bit value +
+      busy flag, not an address walk like `ACQ_AB`'s), and (2) what
+      fills the incrementing-ramp pattern `verify_pattern_with_report`
+      expects at far ptr `[0x31E]` (physical `0x48000`, confirmed
+      genuine Acquisition RAM U3418/U3419 - `configure_measurement_hw`
+      never writes it, so something else must). Next step: figure out
+      (1)/(2) well enough to extend or add an `io_stubs.py` coupling
+      stub, following the same derivation approach as
+      `AcqAbAddrWalkStub`.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Full history
       and findings in `docs/decode-anomalies/unknown-data-deep-dive-
