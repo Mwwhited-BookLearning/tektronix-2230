@@ -796,13 +796,21 @@ sharper photo to confirm exactly.
 
   This resolves `STILL_PENDING_DECODE.md`'s long-standing "which
   specific switch controls which decoded setting" open item in full.
-  **Not yet nailed down**: the exact physical/DS-segment address of
-  `[0x4EC]`/`[0x4ED]`/`[0x4EF]`/`[0x461]` themselves (these are
-  comm-ROM flat-variable offsets; which data segment they resolve
-  under - and whether that collides with the main ROM's own unrelated
-  `[0x4EC]`-named cluster documented in `VARIABLES.md` - is a separate,
-  still-open question, not needed to resolve the bit-level mapping
-  above).
+
+  **DS segment/physical address also resolved, same day**: traced the
+  call chain into `read_dip_switches_serial_config` -
+  `comm_rom_boot_init` (`0x9628C`) explicitly sets `DS=0x8F80` (`mov
+  di,0x8f80; push di; lcall set_ds_return_old`) immediately before
+  calling `poll_dip_switch_change` (`0x962C2`), which is the sole
+  caller of `read_dip_switches_serial_config` - the same `DS=0x8F80`
+  comm-task context already confirmed elsewhere
+  (`docs/comm-rom/rs232-early-investigation.md`). So `[0x4EC]`/
+  `[0x4ED]`/`[0x4EF]`/`[0x461]` resolve to physical **`0x8FCEC`/
+  `0x8FCED`/`0x8FCEF`/`0x8FC61`** - confirmed **distinct** from the
+  main ROM's unrelated, identically-numbered `[0x4EC]`-named
+  front-panel cluster in `VARIABLES.md` (different ROM, different DS
+  segment; the shared offset number is coincidental, not a collision).
+  See `VARIABLES.md`'s updated Comm ROM section.
 
 ## Resolved this session (2026-09-13, from the service manual)
 
