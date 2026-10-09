@@ -144,7 +144,7 @@ FUNCTIONAL_NAMES`:
 | `selftest_mm_acq` (`0xE26D6`) | `MM_ACQ` | Min-max acquisition mode |
 | `selftest_xy_acq` (`0xE286C`) | `XY_ACQ` | X-Y acquisition mode |
 | `selftest_cursor_delta_time` (`0xE2CEC`) | `CDT` / `PRE-DETRIG` / `TIME-OUT` | Cursor delta-time measurement |
-| `selftest_front_panel_switch_b` (`0xE2FC8`) | (none) | Front-panel control, range 0-0x15 |
+| `selftest_acq_ab_addr_walk` (`0xE2FC8`, **RENAMED 2026-10-09** from `selftest_front_panel_switch_b`) | `ACQ_AB` (via its step helper's sole callee, `verify_adc_calibration`) | Acquisition memory address-bus walk (U3423-U3425 -> U3427/U3428), NOT a front-panel control - see correction below |
 | an **inline block** (no separate sub) | (none) | Runs `configure_measurement_hw`+poll+`clear_selftest_status_flags` directly in `self_test_dispatcher`'s own body, gated on `[0x1B7A]!=1` - result NOT OR-folded (informational, like `check_comm_option_installed`) |
 | `selftest_tb_divider` (`0xE252A`, conditional) | `TB_DIVIDER` (via `HARDWARE.md` photo, not a code string) | Timebase divider, range 0-0x18, only tested if comm option's RAM/IO confirmed |
 | `selftest_measure_and_report` (`0xE0FD0`) | (none) | Enable/run/disable measurement (identified previous session) |
@@ -160,15 +160,20 @@ FUNCTIONAL_NAMES`:
 the raw disassembly for the exact sequence, documented in
 `gen_disasm_x86.FUNCTIONAL_NAMES`'s comments.)
 
-The three front-panel-control tests (`selftest_front_panel_switch_a`/
-`_b`, and the third one) don't reference a diagnostic string
-directly - identified instead by their distinctive shape: each scans
-`update_menu_position` across a fixed range (0-8, 0-0x15, 0-0x18
-respectively) via a small step-helper, exactly the same mechanism the
-real menu-navigation cursor uses (see "Menu navigation" in
-`VARIABLES.md`). This means they're testing actual front-panel
-controls (knobs/switches) by sweeping them through their full range,
-not reading a fixed diagnostic ID.
+The three tests originally grouped together as "front-panel-control
+tests" (`selftest_front_panel_switch_a`/`_b`, and the third one) were
+identified by a shared distinctive *shape*, not a diagnostic string
+directly: each scans `update_menu_position` across a fixed range (0-8,
+0-0x15, 0-0x18 respectively) via a small step-helper, exactly the same
+mechanism the real menu-navigation cursor uses (see "Menu navigation"
+in `VARIABLES.md`). **As of 2026-10-09 this is now known to be too
+broad a generalization for all three** - see the correction below:
+the middle one (`_b`) turns out to be the `ACQ_AB` acquisition-memory
+address-bus test, not a front-panel control at all, even though it
+happens to reuse the same `update_menu_position` range-scan shape for
+unrelated bookkeeping. The shape match alone was a reasonable starting
+heuristic but not sufficient on its own, which is exactly why
+`CLAUDE.md`'s convention is to check for a string reference first.
 
 **Update - the third one is `selftest_tb_divider`, not a comm-option
 switch.** Tracing `0xE252A`'s step helper (`step_tb_divider_test`,
@@ -191,14 +196,88 @@ digital position read. This is a real clue for "which control": it's
 very plausibly an **analog/potentiometer-based** front-panel control
 (read through the A/D converter) rather than a purely digital rotary
 switch - VOLTS/DIV is the leading candidate given its 9-ish detent
-positions matching the 0-8 sweep range. **`selftest_front_panel_
+positions matching the 0-8 sweep range. `selftest_front_panel_
 switch_b`'s step helper (`step_front_panel_switch_b_test`, 0xE2FFC)
-turns out to use the exact same shape** - it also calls an ADC
+turns out to use the exact same shape - it also calls an ADC
 verification routine (`verify_adc_calibration`) rather than a digital
-read, over its 0-0x15 (21-position) range. So both of the still-open
+read, over its 0-0x15 (21-position) range. ~~So both of the still-open
 front-panel-control tests are ADC-verified analog controls, not
 digital switches - VOLTS/DIV (CH1) and VOLTS/DIV (CH2) is now a more
-likely pairing than VOLTS/DIV + TIME/DIV, though not confirmed.
+likely pairing than VOLTS/DIV + TIME/DIV, though not confirmed.~~
+**Superseded - see correction immediately below: `_b` isn't a
+front-panel control at all.**
+
+**CORRECTION, 2026-10-09: `selftest_front_panel_switch_b` /
+`step_front_panel_switch_b_test` are actually the real `ACQ_AB`
+self-test, not a front-panel control - renamed to
+`selftest_acq_ab_addr_walk` / `step_acq_ab_addr_walk`.** This came out
+of the emulator work tracing the power-up self-test log's `ACQ_AB :
+read-back 0 <> N` failures (`N` = `2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE,
+7FE, FFE` - a classic address-line walking pattern; see
+`emulator/docs/design.md`). Following `CLAUDE.md`'s own
+string-cross-reference convention (check the referenced string before
+anything else) rather than trusting the earlier shape-only
+identification:
+
+- `verify_adc_calibration` (`step_front_panel_switch_b_test`'s sole
+  callee, `ref_count: 1`) builds its failure message from a
+  **hardcoded literal string "ACQ_AB"** - confirmed by reading the raw
+  bytes at `160-3532-14.bin` file offset `0xFD3C` directly (`b'ACQ_AB
+  \x00...'`), not a caller-supplied or dynamic label. It also
+  references the literal strings "read-back" (`0xFD2E`) and " <>"
+  (`0xFD38`) from the same `0xFF7B0`-based string table, exactly
+  reproducing the emulator's captured `"ACQ_AB : read-back 0 <> N"`
+  message format.
+- It compares the far ptr `[0x322]` - which `init_selftest_register_
+  group`'s `group==1` branch sets exactly once to the fixed value
+  `0x4000:0x377E` (physical `0x4377E`) - against an expected value
+  masked with `0xFFE`. `0x4377E` is the already-CONFIRMED (via the
+  real service manual's Table 3-1, see `docs/comm-rom/option-
+  detection.md`) **"Acquisition Memory Address Buffer Low bits
+  U3427."**
+- `step_front_panel_switch_b_test` scans positions `0`-`0x15` (22
+  positions) computing a walking-bit pattern (`0xFFE` shifted left/
+  right by `|position - 0xB|`, re-masked with `0xFFE`) as the expected
+  value - this reproduces the emulator's observed 11-entry failure
+  sequence `2,6,E,1E,3E,7E,FE,1FE,3FE,7FE,FFE` exactly (shift amounts
+  10 down to 0), and the 0-0x15 position count matches the service
+  manual's own description of the real `ACQ_AB` test almost exactly:
+  *"This test checks the address bus of the acquisition memory.
+  Twenty one unique patterns are written into the address counters
+  (U3423 U3424 and U3425) and read back through the acquisition
+  address buffers (U3427 U3428)."*
+
+This resolves (corrects) the "VOLTS/DIV (CH1) and VOLTS/DIV (CH2)"
+guess struck through above - `_b` was never a VOLTS/DIV control at
+all. `selftest_front_panel_switch_a` is unaffected by this correction
+(different step helper, different callee, no `ACQ_AB`-string match
+found for it) and remains the sole still-open "which analog front-
+panel control" question, with VOLTS/DIV still the leading candidate
+for it alone.
+
+**Still genuinely unresolved**: the *write* side of the real ACQ_AB
+test (driving the walking pattern onto the address counters U3423-
+U3425 the manual describes) was NOT found anywhere in `step_acq_ab_
+addr_walk` or its caller `selftest_acq_ab_addr_walk`. The only
+hardware touch in this call chain is a constant `mov byte [es:di], 0`
+to physical `0x437BE` (far ptr `[0x326]`) - always writes `0`, never a
+per-position pattern - and `update_menu_position` itself (confirmed by
+a full read of its body) does no hardware I/O at all, only touching
+software bookkeeping variables (`[0x1B50]`, `[0x1B51]`, `[0x1B18]`,
+`[0x4E7]`, `[0x4E8]`). `0x437BE` is itself a separately-CONFIRMED,
+already-named register (`MEMORY_MAP.md`: **"Acquisition Mode Register
+U3310"**) - so this write is plausibly resetting/re-arming the
+acquisition hardware into a known mode each step (which might
+indirectly reset the address counters on real hardware as a side
+effect), rather than writing a per-position address pattern directly;
+not confirmed. Also checked `init_selftest_register_group`
+(`0xE4443`, the function that sets up `[0x322]` and friends) for a
+write hiding there instead - it's pure RAM pointer-table setup (8
+far-pointer pairs written to `[0x31E]`-`[0x32C]`), no hardware I/O at
+all. So the real write-then-readback coupling mechanism this self-test
+depends on is still untraced - consistent with `emulator/docs/
+design.md`'s existing conclusion that this specific failure can't yet
+be given a faithful (non-static) emulator stub.
 
 The `selftest_display_irq_idle`/`selftest_display_irq_active`
 (`0xE3F2C`/`0xE3F99`) pair - referenced from a *different* part of the

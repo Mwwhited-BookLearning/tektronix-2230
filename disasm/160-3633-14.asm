@@ -3823,7 +3823,7 @@ L_E2F42:
     db 0x00, 0x00, 0xc7, 0x06, 0x5c, 0x1b, 0x00, 0x00, 0x83, 0x7e, 0x06, 0x03, 0x75, 0x14, 0xff, 0x76  ; 2F9B
     db 0x06, 0x9a, 0xbc, 0x00, 0xf4, 0xe2, 0x89, 0x46, 0xf8, 0x50, 0x9a, 0x8d, 0x05, 0x6b, 0xe0, 0xe9  ; 2FAB
     db 0x05, 0x00, 0x2b, 0xc0, 0xe9, 0x00, 0x00, 0x8b, 0xe5, 0x5d, 0xca, 0x02, 0x00  ; 2FBB
-selftest_front_panel_switch_b:
+selftest_acq_ab_addr_walk:
     push bp                                  ; 2FC8: push bp
     db 0x8b, 0xec  ; 2FC9: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 2FCB: sub sp, 8
@@ -3847,7 +3847,7 @@ L_E2FE1:
     db 0x8b, 0xe5  ; 2FF8: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 2FFA: pop bp
     retf                                     ; 2FFB: retf 
-step_front_panel_switch_b_test:
+step_acq_ab_addr_walk:
     push bp                                  ; 2FFC: push bp
     db 0x8b, 0xec  ; 2FFD: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xc                              ; 2FFF: sub sp, 0xc
@@ -8027,7 +8027,7 @@ mark_task_ready:
     db 0x8b, 0xe5  ; 6AA5: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 6AA7: pop bp
     retf 2                                   ; 6AA8: retf 2
-L_E6AAB:
+finish_boot_init_and_start_scheduler:
     push bp                                  ; 6AAB: push bp
     db 0x8b, 0xec  ; 6AAC: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 6AAE: sub sp, 8
@@ -10040,7 +10040,7 @@ L_E97FA:
     db 0x0a, 0xeb, 0x07, 0x90, 0x2b, 0xf0, 0xff, 0x46, 0x0a, 0x49, 0x83, 0xf9, 0x00, 0x7f, 0xf5, 0x89  ; 9828
     db 0x76, 0x06, 0x8b, 0x5e, 0x0a, 0x81, 0xe3, 0x07, 0x00, 0x89, 0x5e, 0xfe, 0x8b, 0x56, 0x0a, 0xd1  ; 9838
     db 0xea, 0xd1, 0xea, 0xd1, 0xea, 0x83, 0xfa, 0x00, 0x75, 0x03, 0xe9, 0xb5, 0x00, 0x83, 0x7e, 0x12  ; 9848
-SUB_E9858:
+decimate_peakdet_samples:
     add byte [di + 0x55], dh                 ; 9858: add byte ptr [di + 0x55], dh
 L_E985B:
     mov cx, 8                                ; 985B: mov cx, 8

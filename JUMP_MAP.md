@@ -117,7 +117,7 @@ partition "self_test_dispatcher (0xE4244, renamed - was SUB_E4244)" {
   endif
   note right: CORRECTED - an earlier\nread of this function missed this\nchunk of its body entirely and\nwrongly attributed several LATER\ncalls to the surrounding caller\ninstead of here
 
-  :selftest_front_panel_switch_b\n(range 0-0x15, control not confirmed);
+  :selftest_acq_ab_addr_walk\n(ACQ_AB address-bus walk, range 0-0x15;\nrenamed 2026-10-09 from\nselftest_front_panel_switch_b);
   :selftest_acq_ram\n(ACQ_RAM even/odd);
 
   if ([0x1B83]==0x1E?) then (yes)

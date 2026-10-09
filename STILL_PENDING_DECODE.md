@@ -378,11 +378,19 @@ See `docs/self-test/front-panel-switches.md` and `VARIABLES.md`.
 
 - **`[0x758]`/`SWB2`'s bit map is confirmed** (`MEM 1`/`2`/`3`, `MENU
   ADV`, `SELECT C1/C2`, `MENU`, `1K/4K`, `POS/SEL`) - but these are all
-  menu/memory controls, not the analog VOLTS/DIV-style switches the 3
-  `update_menu_position`-range-scan self-tests
-  (`selftest_front_panel_switch_a`/`_b`, `selftest_comm_option_
-  switch`) are believed to exercise. **Which physical control each of
-  those 3 self-tests actually corresponds to is still unconfirmed.**
+  menu/memory controls, not the analog VOLTS/DIV-style switch the
+  `update_menu_position`-range-scan self-test `selftest_front_panel_
+  switch_a` is believed to exercise (leading candidate: VOLTS/DIV).
+  **Which physical control it actually corresponds to is still
+  unconfirmed.** Of the other 2 functions originally grouped with it
+  by shape alone: `selftest_tb_divider` was resolved (it's `TB_DIVIDER`,
+  confirmed via `HARDWARE.md`), and `selftest_front_panel_switch_b` was
+  **renamed 2026-10-09 to `selftest_acq_ab_addr_walk`** - it's actually
+  the `ACQ_AB` acquisition-memory address-bus self-test, not a
+  front-panel switch at all, despite reusing the same scan shape (see
+  `docs/self-test/dispatcher-and-siblings.md`'s correction). So only
+  `selftest_front_panel_switch_a` remains an actual open "which
+  physical control" question in this group.
 - **`[0x759]`/`SWB1`'s bit map is not yet confirmed** - the same
   code-structure-vs-named-bits technique that worked for `SWB2` hasn't
   been repeated here because no literal-address read site has been

@@ -6688,7 +6688,7 @@ L_E2F42:
     3633:2F47  [E2F47]  5d              pop     bp
     3633:2F48  [E2F48]  ca0200          retf    2
 
-selftest_front_panel_switch_b:
+selftest_acq_ab_addr_walk:
     3633:2FC8  [E2FC8]  55              push    bp
     3633:2FC9  [E2FC9]  8bec            mov     bp, sp
     3633:2FCB  [E2FCB]  83ec08          sub     sp, 8
@@ -6703,7 +6703,7 @@ selftest_front_panel_switch_b:
 L_E2FE1:
     3633:2FE1  [E2FE1]  bf0300          mov     di, 3
     3633:2FE4  [E2FE4]  57              push    di
-    3633:2FE5  [E2FE5]  9abc00f4e2      lcall   step_front_panel_switch_b_test  ; 0xe2f4, 0xbc
+    3633:2FE5  [E2FE5]  9abc00f4e2      lcall   step_acq_ab_addr_walk  ; 0xe2f4, 0xbc
     3633:2FEA  [E2FEA]  8946f8          mov     word ptr [bp - 8], ax
     3633:2FED  [E2FED]  258000          and     ax, 0x80
     3633:2FF0  [E2FF0]  3d0000          cmp     ax, 0
@@ -6712,7 +6712,7 @@ L_E2FE1:
     3633:2FF8  [E2FF8]  8be5            mov     sp, bp
     3633:2FFA  [E2FFA]  5d              pop     bp
     3633:2FFB  [E2FFB]  cb              retf    
-step_front_panel_switch_b_test:
+step_acq_ab_addr_walk:
     3633:2FFC  [E2FFC]  55              push    bp
     3633:2FFD  [E2FFD]  8bec            mov     bp, sp
     3633:2FFF  [E2FFF]  83ec0c          sub     sp, 0xc
@@ -8265,7 +8265,7 @@ self_test_dispatcher:
     3633:4274  [E4274]  0946f6          or      word ptr [bp - 0xa], ax
 L_E4277:
     3633:4277  [E4277]  c706181b0100    mov     word ptr [0x1b18], 1
-    3633:427D  [E427D]  9a8800f4e2      lcall   selftest_front_panel_switch_b  ; 0xe2f4, 0x88
+    3633:427D  [E427D]  9a8800f4e2      lcall   selftest_acq_ab_addr_walk  ; 0xe2f4, 0x88
     3633:4282  [E4282]  0946f6          or      word ptr [bp - 0xa], ax
     3633:4285  [E4285]  c706181b0100    mov     word ptr [0x1b18], 1
     3633:428B  [E428B]  9aa60197e1      lcall   selftest_acq_ram  ; 0xe197, 0x1a6

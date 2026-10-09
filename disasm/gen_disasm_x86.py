@@ -897,26 +897,71 @@ FUNCTIONAL_NAMES = {
                                                # display_irq_idle, to
                                                # reset that pattern's
                                                # state before the test
-    0xE2FFC: "step_front_panel_switch_b_test", # per-position worker
-                                               # for selftest_front_
-                                               # panel_switch_b: scans
-                                               # 0-0x15 (21 positions)
+    0xE2FFC: "step_acq_ab_addr_walk",           # **RENAMED 2026-10-09
+                                               # from step_front_panel_
+                                               # switch_b_test** - traced
+                                               # verify_adc_calibration's
+                                               # own failure-message
+                                               # construction byte-for-
+                                               # byte: it hardcodes the
+                                               # literal string "ACQ_AB"
+                                               # (confirmed by reading
+                                               # 160-3532-14.bin file
+                                               # offset 0xFD3C directly,
+                                               # not just disassembly),
+                                               # not a generic/caller-
+                                               # supplied label. Combined
+                                               # with the register match
+                                               # (reads far ptr [0x322] =
+                                               # fixed 0x4000:0x377E =
+                                               # physical 0x4377E, the
+                                               # CONFIRMED "Acquisition
+                                               # Memory Address Buffer
+                                               # Low bits U3427" per
+                                               # MEMORY_MAP.md) and the
+                                               # iteration count (0-0x15
+                                               # = 22 positions, matching
+                                               # the service manual's
+                                               # "Twenty one unique
+                                               # patterns" ACQ_AB
+                                               # description almost
+                                               # exactly), this is the
+                                               # real ACQ_AB address-
+                                               # line-walking self-test,
+                                               # not a front-panel-
+                                               # switch test - see
+                                               # docs/self-test/
+                                               # dispatcher-and-
+                                               # siblings.md's 2026-10-09
+                                               # correction. Per
+                                               # position: scans 0-0x15
                                                # via update_menu_
                                                # position, computes a
-                                               # shifted 0xFFE
-                                               # threshold mask per
-                                               # position, calls
-                                               # verify_adc_calibration
-                                               # (ADC readback check,
-                                               # same shape as switch_
-                                               # a's run_adc_selftest_
-                                               # range/verify_adc_
-                                               # calibration pairing),
-                                               # formats the result and
-                                               # a unit-label string
-                                               # (from a RAM buffer at
-                                               # [0x476]) into a report
-                                               # message
+                                               # shifted 0xFFE threshold
+                                               # mask (the expected
+                                               # walked-bit pattern),
+                                               # calls verify_adc_
+                                               # calibration to compare
+                                               # it against the register,
+                                               # formats the result and a
+                                               # unit-label string (from
+                                               # a RAM buffer at [0x476])
+                                               # into a report message.
+                                               # The actual *write* side
+                                               # (what drives the
+                                               # walking pattern onto the
+                                               # address counters
+                                               # U3423-U3425 the manual
+                                               # describes) still isn't
+                                               # found anywhere in this
+                                               # function or its caller
+                                               # - the only hardware
+                                               # touch here is a `mov
+                                               # byte [es:di], 0` to
+                                               # physical 0x437BE (far
+                                               # ptr [0x326]) that always
+                                               # writes a constant 0, not
+                                               # a pattern.
     0xE060A: "verify_prc_readback_pattern",     # a 2-phase state
                                                # machine driven by
                                                # [0x1B5F]: phase 1
@@ -2507,11 +2552,29 @@ FUNCTIONAL_NAMES = {
                                                # over range 0-8 (9
                                                # positions) via its step
                                                # helper (0xE22AF)
-    0xE2FC8: "selftest_front_panel_switch_b", # wrapper: scans
-                                               # update_menu_position
-                                               # over range 0-0x15 (21
-                                               # positions) via its step
-                                               # helper (0xE2FFC)
+    0xE2FC8: "selftest_acq_ab_addr_walk",       # **RENAMED 2026-10-09
+                                               # from selftest_front_
+                                               # panel_switch_b** - just
+                                               # the wrapper/loop driver
+                                               # for its step helper
+                                               # (0xE2FFC, see that
+                                               # entry's comment for the
+                                               # full evidence: hardcoded
+                                               # "ACQ_AB" string, U3427
+                                               # register match, 21/22-
+                                               # position count match
+                                               # against the service
+                                               # manual's ACQ_AB
+                                               # description). Only
+                                               # observed hardware touch
+                                               # in this wrapper itself
+                                               # is calling update_menu_
+                                               # position(1, 0x15, 0)
+                                               # once up front, which has
+                                               # no I/O of its own - the
+                                               # wrapper just loops the
+                                               # step helper over
+                                               # positions 0-0x15.
     0xE252A: "selftest_tb_divider",            # **CORRECTED from an
                                                # earlier wrong name
                                                # selftest_comm_option_

@@ -525,9 +525,13 @@ instead of assuming bare `nasm` resolves.
       **Checked 2026-09-14: `update_menu_position` is NOT this
       candidate after all** - enumerated all 9 of its callers
       exhaustively (proven+heuristic) and every single one is a
-      self-test function (`selftest_front_panel_switch_a`/`_b`,
+      self-test function (`selftest_front_panel_switch_a`,
+      `selftest_acq_ab_addr_walk` (renamed 2026-10-09 from
+      `selftest_front_panel_switch_b` - it's the real `ACQ_AB` test,
+      see `docs/self-test/dispatcher-and-siblings.md`),
       `run_adc_selftest_range`, `selftest_tb_divider`, `step_tb_
-      divider_test`, `step_front_panel_switch_b_test`, `wait_stable_
+      divider_test`, `step_acq_ab_addr_walk` (renamed from
+      `step_front_panel_switch_b_test`), `wait_stable_
       measurement`, `run_indexed_adc_selftest`, `selftest_comm_
       readback`) - it's scoped entirely to diagnostic test-position
       scanning, not general menu navigation. Its own backing variable
@@ -665,10 +669,26 @@ instead of assuming bare `nasm` resolves.
       proven-reachable routine named," not literally every heuristic
       placeholder. Mechanically: add `{address: "name"}` to `gen_
       disasm_x86.FUNCTIONAL_NAMES`, add the matching `FUNCTIONS.md`
-      entry, then regenerate everything (`gen_disasm_x86.py`, `gen_
-      disasm_mainrom_heuristic.py`, `gen_source.py`, `gen_source_
-      readable.py`) and re-verify byte-identical/length-matching before
-      committing.
+      entry, then regenerate everything: `gen_disasm_x86.py`, `gen_
+      disasm_mainrom_heuristic.py`, `gen_source.py <nasm>` (bare CLI
+      default - proven-only entry points, correct for 160-3633/160-3532
+      *and* for 160-2998's own `_readable.asm`), **then
+      `gen_source_2998.py <nasm>` separately** to regenerate plain
+      `160-2998-14.asm` with its own heuristic layer included (`gen_
+      disasm_2998.py`'s prologue-scan entries) - skipping this step
+      silently reverts the comm ROM's `.asm` to proven-only coverage,
+      discarding ~20000 previously-recovered heuristic instructions
+      (discovered the hard way 2026-10-09, see `changes/2026-10-09.md`;
+      `gen_source_readable.py` needs no separate comm-ROM step - its
+      2998 output is intentionally proven-only, unlike the plain
+      `.asm`). Don't substitute `validate_all.py`'s "all three heuristic
+      sources combined" entry-point formula for `gen_source_2998.py`'s
+      narrower one - it round-trips byte-identical too, but corrupts the
+      diagnostic comment field on ~150 instructions via a `visited`-dict
+      overwrite when the main-ROM heuristic layer's entries alias into
+      comm-ROM physical addresses. Re-verify byte-identical/length-
+      matching (and a near-zero `git diff --stat` on files your rename
+      shouldn't have touched) before committing.
 - [x] **RESOLVED 2026-09-14 - the live RS-232 command silence was a
       baud-rate reliability problem, not firmware.** A day-long live
       investigation (interrupt mask latch tracing, the `[0x712]`

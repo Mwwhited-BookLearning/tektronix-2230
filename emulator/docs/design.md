@@ -335,17 +335,55 @@ ACQ_AB : read-back     0 <>   FFE
    boot trace no longer prints either of `selftest_display_irq_active`'s
    two failure messages, and the self-test sequence progresses one step
    further into the (separate, still-open) `ACQ_AB` failures below.
-2. **`ACQ_AB` read-back failures** (still open): the sequence
-   `2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE, 7FE, FFE` is a textbook
-   **address-line walking test**
-   (one more bit shifted in on each failure) - almost certainly
-   exercising the Acquisition Memory Address Buffer (`0x4377E`/
-   `0x4377F`, `U3427`/`U3428`) and/or the acquisition RAM's real
-   address decode. See `MEMORY_MAP.md`'s updated entry for this
-   register. Would need a real write-then-readback coupling stub (like
-   `CommPresenceProbe`'s, but wired to the actual `0x48000-0x4BFFF`
-   acquisition RAM or a dedicated readback path) to pass - not built
-   yet, since the real coupling mechanism isn't traced.
+2. **`ACQ_AB` read-back failures** (still open, mechanism deepened
+   2026-10-09): the sequence `2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE, 7FE,
+   FFE` is a textbook **address-line walking test** (one more bit
+   shifted in on each failure) - exercising the Acquisition Memory
+   Address Buffer (`0x4377E`/`0x4377F`, `U3427`/`U3428`). See
+   `MEMORY_MAP.md`'s updated entry for this register.
+
+   **The code path producing this is now fully identified**: the
+   functions originally named `selftest_front_panel_switch_b`/`step_
+   front_panel_switch_b_test` (`0xE2FC8`/`0xE2FFC`) were misidentified
+   - they're actually the real `ACQ_AB` test, renamed to
+   `selftest_acq_ab_addr_walk`/`step_acq_ab_addr_walk`. Confirmed three
+   independent ways: (a) the failure message's "ACQ_AB" text is a
+   **hardcoded literal string** in `verify_adc_calibration` (the step
+   helper's sole callee), not a dynamic/shared label - confirmed by
+   reading `160-3532-14.bin` file offset `0xFD3C` directly; (b) it
+   compares the far ptr `[0x322]` (fixed `0x4000:0x377E` = physical
+   `0x4377E`, the CONFIRMED U3427 register) against an expected value;
+   (c) the step helper's computed shifted-`0xFFE` pattern across its
+   0-0x15 (22-position) scan reproduces this exact 11-entry failure
+   sequence (shift amounts 10 down to 0), matching the service
+   manual's "Twenty one unique patterns... written into the address
+   counters (U3423 U3424 U3425) and read back through... (U3427
+   U3428)" almost exactly. Full writeup: `docs/self-test/dispatcher-
+   and-siblings.md`'s 2026-10-09 correction.
+
+   **Still genuinely open - this did NOT turn up the missing write
+   side needed for a coupling stub.** Read `step_acq_ab_addr_walk`'s
+   and its caller's full bodies looking specifically for the "write
+   the pattern into U3423-U3425" half the manual describes: the only
+   hardware touch anywhere in this call chain is a constant `mov byte
+   [es:di], 0` to physical `0x437BE` (far ptr `[0x326]`, always writes
+   `0`, never a per-position pattern), and `update_menu_position`
+   (confirmed by reading its full body) does no hardware I/O at all -
+   only software bookkeeping (`[0x1B50]`, `[0x1B51]`, `[0x1B18]`,
+   `[0x4E7]`, `[0x4E8]`). `0x437BE` is a separately-CONFIRMED named
+   register (`MEMORY_MAP.md`: "Acquisition Mode Register U3310") - so
+   this write plausibly re-arms the acquisition hardware into a known
+   mode each step (which might indirectly reset the address counters
+   as a side effect on real hardware), rather than driving a
+   per-position address pattern directly; not confirmed. Also checked
+   `init_selftest_register_group` (`0xE4443`, the function that
+   populates `[0x322]` and its sibling pointers) for a hidden write -
+   it's pure RAM pointer-table setup (8 far-pointer pairs), no
+   hardware I/O at all. So a `CommPresenceProbe`-style
+   write-then-readback coupling stub genuinely has no write-side
+   trigger address to hook yet - this isn't a gap in the emulator's
+   stub coverage, it's a gap in what's been traced in the firmware
+   itself.
 
 Both are genuine "not simulatable with a flat value" cases, exactly the
 kind design.md's own stub philosophy anticipates ("only add real

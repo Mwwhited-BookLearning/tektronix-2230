@@ -3843,10 +3843,10 @@
     "notes": null
   },
   "E2FC8": {
-    "name": "selftest_front_panel_switch_b",
+    "name": "selftest_acq_ab_addr_walk",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "selftest_front_panel_switch_b",
+    "functional_name": "selftest_acq_ab_addr_walk",
     "notes": null
   },
   "E2FE1": {
@@ -3857,10 +3857,10 @@
     "notes": null
   },
   "E2FFC": {
-    "name": "step_front_panel_switch_b_test",
+    "name": "step_acq_ab_addr_walk",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": "step_front_panel_switch_b_test",
+    "functional_name": "step_acq_ab_addr_walk",
     "notes": null
   },
   "E3045": {
