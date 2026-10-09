@@ -143,3 +143,24 @@ own entry-point boundaries have the same dual/overlapping-decode
 ambiguity documented elsewhere in this cluster (`SUB_EF393`'s first
 instruction is a `jle` that lands mid-loop inside `SUB_EF346`'s body,
 matching the shared-tail shape, not a fresh call convention).
+
+**Correction/deepening, 2026-10-09**: re-read `SUB_EF346`'s full body
+while checking it as a naming candidate (per the established "name for
+what it does despite entry-point ambiguity" precedent used for
+`init_front_panel_cluster_defaults` etc.) and found "feeds the
+position into `copy_char_cell_template_and_sync`" undersells it -
+after the wraparound clamp, `SUB_EF346` itself does its **own**
+unconditional `memcpy_far` (`0xEF403`-`0xEF438`) between two `[0x1C14]`
+slots indexed directly by `[bp+6]`/`[bp+8]` (no `+1` offset), using a
+separately-computed write position (`es:[bp-0xE] + [bp+0xA]`, stored to
+`[bp-0x12]` but not obviously consumed again before the `memcpy_far`)
+- then falls through into `copy_char_cell_template_and_sync`'s *own*,
+separately-gated, `+1`-offset copy of the same table. So this isn't a
+clamp-then-copy-once pipeline, it's **two stacked copies with
+different indexing** into the same table, and what the first
+`memcpy_far`'s destination/source actually represent (vs. the second)
+isn't understood yet - **not confident enough to name even under the
+relaxed precedent**; this needs the `[bp-0x12]`/first-`memcpy_far`
+relationship traced further, not just the preamble's clamp math. Left
+unrenamed; recording the deeper shape so the next pass doesn't have to
+re-derive it from scratch.
