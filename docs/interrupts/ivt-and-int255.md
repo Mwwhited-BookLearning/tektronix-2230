@@ -135,7 +135,25 @@ byte), not the place incoming bytes actually get read and parsed. The
 real byte-reception path is **still not found** - it's back to either
 `process_gpib_command_byte`'s chain (via the still-unconfirmed-
 reachable `FUNC_2998_39F5`), or a genuinely different, not-yet-found
-hook. This tick-driven interrupt chain was still worth fully tracing
+hook.
+
+**Correction, 2026-09-15 (2 days after this was written)**: the
+"`0x839D1` just re-invokes `draw_boot_splash_and_option_icon`"
+characterization above turned out to undersell this badly - a later,
+deeper trace (see `FUNCTIONS.md`'s `comm_call_main_rom` row and
+`docs/interrupts/task-scheduler.md`'s 2026-09-15 follow-up) found
+`0x839D1` is actually a real state-machine loop, now named
+`comm_call_main_rom`: it swaps `DS` to the main ROM, calls
+`process_gpib_command_byte` at 2 points, dispatches through a computed
+pointer table at `[0x72A]`, and uses `create_task` as a cooperative
+yield point to reschedule itself. So this section's "none of these
+three leads to a byte-reception function" conclusion is itself now in
+question for this specific call target - `comm_call_main_rom` does
+call `process_gpib_command_byte`, just not in the "immediately
+re-invokes and returns" shape originally assumed here. Left the
+original paragraph intact since it's what motivated finding
+`poll_comm_status_tick` in the first place, but don't treat its
+characterization of `0x839D1` as current. This tick-driven interrupt chain was still worth fully tracing
 (it resolved the hardware-interrupt-exists question definitively and
 produced real, useful documentation), it just isn't the specific
 answer to "where does `ID?` get parsed."

@@ -112,7 +112,7 @@ grounded rather than partially inferred.
 Tracing `update_menu_position`'s `[0x4E7]`/`[0x4E8]` bit tests (looking
 for a clean cross-reference to the service manual's `SWB1`/`SWB2`
 signal names - see `HARDWARE.md`) led to a heuristic-only function,
-`FUNC_3633_92D1` (`0xE92D1` - **no call site to it found yet, proven or
+`FUNC_3633_92D1` (`0xE92D1`, now `init_front_panel_cluster_defaults` - **no call site to it found yet, proven or
 heuristic; reachability not confirmed**), that initializes a whole
 cluster of neighboring bytes together, gated on the same `[0x1B83]==
 0x14` dispatch already documented above:
