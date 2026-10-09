@@ -10,9 +10,11 @@ Tracing what actually calls `SUB_E094B` (now `init_selftest_report_record`, see 
 reading `0xE416F` (`160-3633`) end-to-end for the first time instead
 of just skimming its call list, and it turned out to contain **zero**
 OR-fold test calls - it's entirely print/banner setup: `SUB_E3567`
-(clear/init a line buffer region), `SUB_E3930`, `SUB_E3854`, a helper
-that prints two far-pointer strings (`SUB_E4217`, itself calling
-`SUB_E3821` then `print_string_far` twice), then the mirror-image
+(now `init_print_region`, clear/init a line buffer region), `SUB_E3930`
+(now `plot_readout_point`), `SUB_E3854` (now `draw_readout_char`), a
+helper that prints two far-pointer strings (`SUB_E4217`, now
+`print_banner_line`, itself calling `SUB_E3821`, now
+`print_readout_string`, then `print_string_far` twice), then the mirror-image
 sequence again, ending with `mov word [0x1B10], 3` and `retf`. This
 routine is now renamed `print_selftest_banner`.
 
@@ -42,8 +44,10 @@ later session re-read `self_test_dispatcher`'s body end-to-end more
 carefully than the first pass here, which had actually missed a chunk
 - see "Identified self_test_dispatcher's sibling subroutines" below
 for the full corrected list and how each was found). The earlier text
-in this section claiming `SUB_E28FE`/`SUB_E227E`/`SUB_E26D6`/
-`SUB_E286C`/`SUB_E2CEC` were *not* test calls, but part of the
+in this section claiming `SUB_E28FE` (now `selftest_hs_acq`)/`SUB_E227E`
+(now `selftest_front_panel_switch_a`)/`SUB_E26D6` (now `selftest_mm_acq`)/
+`SUB_E286C` (now `selftest_xy_acq`)/`SUB_E2CEC` (now
+`selftest_cursor_delta_time`) were *not* test calls, but part of the
 surrounding caller instead, **was wrong** - they are genuine direct
 test calls inside `self_test_dispatcher`, confirmed by a full re-read.
 
@@ -53,7 +57,8 @@ character-output loop to the readout hardware's actual pace, and
 status bytes tied to the far-pointer table `SUB_E4443` (now
 `init_selftest_register_group`) sets up.
 
-`SUB_E374E`, `SUB_E3821`, and `SUB_E0AF5` (now `print_string_far`) -
+`SUB_E374E` (now `close_print_record`), `SUB_E3821` (now
+`print_readout_string`), and `SUB_E0AF5` (now `print_string_far`) -
 previously listed here as unidentified sibling test subroutines - are
 **not tests at all**. They're display/print primitives, found by
 tracing the actual bytes each is called with (far pointers into a

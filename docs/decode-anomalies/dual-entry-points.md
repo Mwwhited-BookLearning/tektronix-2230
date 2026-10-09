@@ -59,9 +59,9 @@ bytes short of the real instruction boundary; still not renaming
 routine - `compute_and_draw_scale_marker` (the function `L_EDA0A`
 lands inside) was named on the strength of the other ~90% of its body,
 which is completely coherent.
-## A third decode anomaly: SUB_F6382, likely capstone misreading opcode 0x0F
+## A third decode anomaly: SUB_F6382 (now draw_marker_box_and_update_position), likely capstone misreading opcode 0x0F
 
-`SUB_F6382` (`160-3532`, 3 far-call sites from `160-3633`) opens with
+`SUB_F6382` (now `draw_marker_box_and_update_position`, `160-3532`, 3 far-call sites from `160-3633`) opens with
 `0f 7e 05` -> capstone reads this as the SSE2/MMX instruction `movd
 dword ptr [di], mm0`, impossible on an 8086/8088. Unlike `SUB_EAC86`
 (pure garbage for many bytes with no coherent reconvergence - see
@@ -125,7 +125,7 @@ above:
   fallthrough - and the *same* literal `(0xEA34, 0x946)` target is
   called from **4 separate places**: 3 times in `160-3532` (all inside
   one small routine near `0xF58B1`) and once from the comm ROM
-  (`2998_alias_90000`, inside `SUB_924D2`/`build_comm_status_message`).
+  (`2998_alias_90000`, inside `build_comm_status_message` (`SUB_924D2`)).
   A shared target called this consistently from two different ROMs
   strongly implies it's supposed to be a real, working function.
 - **New: the calling convention is now fully understood**, even though
@@ -173,7 +173,7 @@ inside `draw_boot_splash_and_option_icon` (`SUB_ED7DF`, renamed),
 called once from the comm ROM's own boot sequence (`0x839E3`) - direct
 confirmation this really is boot-time splash-screen code, not a
 speculative label. That function also draws a second, position-
-computed graphic via `SUB_F6382` right after the splash logo, gated by
+computed graphic via `SUB_F6382` (now `draw_marker_box_and_update_position`) right after the splash logo, gated by
 a flag byte - likely an installed-option indicator icon alongside the
 "TEKTRONIX" logo.
 
@@ -246,7 +246,17 @@ nothing sets up beforehand), splitting into the same two buckets:
   i.e. the acquisition/plot scale-clamp subsystem has its *own*
   cluster of these, separate from the boot-splash one.
 
-None of these six were renamed. Taken together with the boot-splash
+None of these six were renamed **at the time this was written**.
+`SUB_ED9BC`/`SUB_EEA58` (and, from the related cluster further below,
+`SUB_F0C2A`/`SUB_F5D89`) were since confidently named anyway -
+`compute_and_draw_scale_marker`/`clear_readout_attrs_for_item`/
+`draw_pending_line_segment`/`tag_position_marker_and_dispatch` - once
+their mechanisms were independently traced (see `FUNCTIONS.md`); the
+ambiguous-entry-point anomaly itself was never resolved, they were
+just named for *what they do* rather than *how they're entered*, same
+reasoning as `init_front_panel_cluster_defaults`'s heuristic-only
+rename elsewhere. `SUB_E8E03`/`SUB_E8E29`/`SUB_E97DC`/`SUB_F5898`
+remain genuinely unrenamed. Taken together with the boot-splash
 cluster, this now looks like a **project-wide convention** (values
 passed in registers/`bp` across certain far calls, established by
 matching caller/callee code this tooling doesn't model) rather than a
@@ -259,8 +269,8 @@ Found more instances in the self-test/hardware-output area:
 `SUB_F750A` (called via fallthrough from `L_F7504`, itself inside
 another un-prologued block) reads/writes `[bp-8]`/`[bp-0xA]`/`[bp-0xC]`
 freely, calls the confirmed `write_hw_shift_register`, and touches
-`[di+0x550]` - the same per-task/per-item flag word `SUB_F0C2A`'s
-family also touches. `SUB_F7603` (called from `0xEF4FB`, a clean far
+`[di+0x550]` - the same per-task/per-item flag word
+`draw_pending_line_segment`'s (`SUB_F0C2A`) family also touches. `SUB_F7603` (called from `0xEF4FB`, a clean far
 call, no fallthrough predecessor - genuinely reached "cold") likewise
 uses `[bp-8]`/`[bp-0xC]`/`[bp-0xE]`/`[bp-0x12]` from its very first
 instruction with no setup. Since `SUB_F7603` is reached with no
@@ -299,8 +309,9 @@ is speculation, not confirmed. Still not renaming any of these.
 "frame-sharing helper" theory now has a plausible mechanical basis.**
 Both end with a bare `retf` (no immediate, i.e. **caller-cleans-
 stack**), the opposite of the callee-cleans `retf N` convention used
-almost everywhere else in this codebase (including `SUB_F5D89`,
-called from the very same neighborhood, which *does* end `retf 2`).
+almost everywhere else in this codebase (including
+`tag_position_marker_and_dispatch` (`SUB_F5D89`), called from the very
+same neighborhood, which *does* end `retf 2`).
 Their shared caller (`0xEF467`-ish) calls both with a completely
 ordinary `push`-args-then-`lcall` sequence - no special `mov bp, ...`
 trick is visible at the call site. Put together, the likely

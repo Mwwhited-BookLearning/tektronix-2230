@@ -501,8 +501,9 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   some other systematic cause, is unresolved** - would be worth
   checking against the `-13` comm ROM revision if it's ever
   disassembled (see the comm-ROM section above).
-- `SUB_F6382`'s "capstone misreading opcode `0x0F`" theory is a
-  reasonable explanation but not fully confirmed.
+- `SUB_F6382` (now `draw_marker_box_and_update_position`)'s "capstone
+  misreading opcode `0x0F`" theory is a reasonable explanation but not
+  fully confirmed.
 - **New 2026-09-22: found a real coverage-tooling off-by-one, not just
   another landing artifact.** `160-3633` physical `0xEFF99-0xEFFED`
   was listed in `UNKNOWN_DATA.md` as unidentified data; manually

@@ -76,8 +76,10 @@ target isn't ordinary local control flow.
 targets): 127 `loop`, 885 `goto`, 5 `mixed`, **15 `cross-fn`**. Of
 those 15, most match the "un-prologued entry" cluster already
 documented above (`SUB_EF346`/`SUB_EF393`, `SUB_EFB64`/`SUB_EFBA5`,
-`SUB_F156E`/`SUB_F1581`, `SUB_F4150`/`SUB_F5184`, `SUB_F6382`/
-`SUB_F635E`) plus the big multi-entry plot/acq region around
+`SUB_F156E`/`SUB_F1581`, `compute_and_format_sample_delta_readout`
+(`SUB_F4150`)/`SUB_F5184`, `draw_marker_box_and_update_position`
+(`SUB_F6382`)/`draw_wide_marker_box` (`SUB_F635E`)) plus the big
+multi-entry plot/acq region around
 `draw_pending_line_segment`/`reset_plot_home_or_acq`/
 `reset_all_channel_plot_caches` - good independent confirmation that
 those groupings are real, not cherry-picked.
@@ -100,7 +102,8 @@ an undiscovered function this time.
 
 **Two `cross-fn` hits turned out to be heuristic false positives when
 manually verified** (worth knowing before trusting this tool's list
-blindly): `L_EE139` (flagged as "owned by `SUB_EDFFD`, crossed from
+blindly): `L_EE139` (flagged as "owned by `SUB_EDFFD` (now
+`dispatch_item_handler_if_enabled`), crossed from
 `write_hw_shift_register`") is really just `write_hw_shift_register`'s
 own loop-top, 2 bytes before where the recursive descent happened to
 plant that function's `SUB_` label - the "owning function" bisection
@@ -122,6 +125,7 @@ loop, sharing its `[bp-8]` local) turned out to be a real secondary
 entry point into that function - confirmed and renamed to
 `sync_shift_register_output` (see `FUNCTIONS.md`). This also surfaced
 that `update_display_mode_flags` is the one that *sets* the
-`[0x1BEC]` scale-clamp bound (`0x400`/`0x1000`) that the `SUB_ED9BC`/
-`L_EDA0A` region reads - connecting two previously-separate
+`[0x1BEC]` scale-clamp bound (`0x400`/`0x1000`) that the
+`compute_and_draw_scale_marker` (`SUB_ED9BC`)/`L_EDA0A` region reads -
+connecting two previously-separate
 investigation threads.

@@ -39,7 +39,7 @@ jump/call opcode instead of a coincidentally-valid data-looking one**:
   time of the call - i.e. this is a real indirect jump, but indexed
   off the caller's own stack frame rather than a fixed table in ROM,
   and its behavior can't be statically resolved without knowing what
-  `SUB_F4150` leaves in `di` at that call site.
+  `compute_and_format_sample_delta_readout` leaves in `di` at that call site.
 - `SUB_F6F4A`: a **third/fourth instance** of the `SUB_E90A5`/
   `SUB_E92B0`-class "lands 1 byte into a legitimate instruction"
   anomaly. The byte right before it (`0xF6F49`) is the last byte of a

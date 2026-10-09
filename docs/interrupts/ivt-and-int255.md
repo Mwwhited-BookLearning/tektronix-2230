@@ -5,7 +5,8 @@ see `docs/README.md` for the full table of contents.
 
 ## Interrupt vector table entries (real code entry points)
 
-The reset routine and two later routines (`SUB_E5E53`, inside what's
+The reset routine and two later routines (`SUB_E5E53`, since renamed
+`install_late_interrupt_vectors`, inside what's
 now `INT255_HANDLER_EARLY`'s neighborhood) install real 8086 interrupt
 vectors by writing directly into low memory with `es=0` (or `es=0x3F`,
 whose paragraph base `0x3F0` still lands inside the 1KB IVT that spans
@@ -36,7 +37,8 @@ distinction already suspected for INT255.
 from `SUB_E62EE`) on every tick** - this ties `PRC_READBACK`
 (`verify_prc_readback_pattern`) into a genuine background watchdog: it
 dispatches to `verify_prc_readback_pattern` when `[0x1B5E]` is set (or
-a fallback `SUB_FDB8F` otherwise), tracks 3 independent sticky/debounce
+a fallback `SUB_FDB8F`, since renamed `poll_comm_probe_until_match`,
+otherwise), tracks 3 independent sticky/debounce
 failure counters, and on a clean result calls through a hook function
 pointer at `[0x740]`. So `PRC_READBACK` isn't only a menu-invoked self-
 test - it (or its fallback) genuinely runs continuously in the

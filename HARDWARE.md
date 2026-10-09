@@ -299,7 +299,7 @@ control groups, useful for cross-referencing the self-test/menu work:
 - **VERTICAL MODE**: `CH1` / `BOTH` / `CH2`, `X-Y`, `BW LIMIT`,
   `ADD` / `ALT` / `CHOP` — the `X-Y` switch is the physical control
   behind the `[0x6C1]`/`[0x6C0]`-driven X-Y plotting path already found
-  in `SUB_F0C2A` (`and ax,3; cmp ax,2` → X-Y mode) and `reset_plot_
+  in `draw_pending_line_segment` (`SUB_F0C2A`; `and ax,3; cmp ax,2` → X-Y mode) and `reset_plot_
   home_or_acq`. Confirms X-Y is a real, physically-selected vertical
   mode, not just an HPGL output quirk.
 - **HORIZONTAL MODE**: `A` / `BOTH` / `B` — ties to the dual-timebase

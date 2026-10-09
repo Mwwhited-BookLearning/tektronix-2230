@@ -144,7 +144,8 @@ SREF  4k (1,2,3 FULL)
 ```
 
 ### Self-test / power-up diagnostics
-Directly confirms the self-test dispatcher found in `SUB_E416F` (see
+Directly confirms the self-test dispatcher found in `SUB_E416F` (now
+`print_selftest_banner`, see
 `FUNCTIONS.md`, `JUMP_MAP.md`) — this is (or is very close to) its
 actual printed output:
 ```

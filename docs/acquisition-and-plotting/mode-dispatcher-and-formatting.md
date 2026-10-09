@@ -29,7 +29,8 @@ confirmation that `[0x752]` (scheduler tick count) doubles as a
 lightweight timebase for non-hardware timeouts elsewhere in the
 firmware, not just the busy-wait use in `wait_readout_tick`.
 
-**Left unresolved: `SUB_E804F`.** One of the two call sites for this
+**Since renamed: `SUB_E804F` is `update_indexed_value_if_changed`.**
+One of the two call sites for this
 function's sibling (also reached from the plot-position-cache code
 around `update_plot_position`/`plot_line_to`) is `SUB_E804F`, whose
 first bytes (`1c 1d` = `sbb al, 0x1d`) don't form a recognizable
@@ -50,9 +51,12 @@ derived from the caller's argument, and conditionally writes a
 coordinate/id table entry and flag it dirty if the value changed,"
 but the un-prologued opening means the register-level details (what's
 really in `ax`/`bx` on entry) aren't trustworthy. Left unrenamed
-pending a closer look; flagged here rather than guessed. Not
-classified as a `SUB_EAC86`-style anomaly since the code past the
-odd opening is coherent, not garbage.
+the un-prologued-opening anomaly itself is unresolved, but the
+mechanism was confident enough to name anyway - same reasoning as
+`init_front_panel_cluster_defaults` and the `compute_and_draw_scale_
+marker` cluster elsewhere in `docs/decode-anomalies/dual-entry-
+points.md`. Not classified as a `SUB_EAC86`-style anomaly since the
+code past the odd opening is coherent, not garbage.
 ## Found: a decimal-formatting engine tangled up with SUB_F5184/L_F50FA/SUB_ED0AE
 
 While tracing `compute_and_format_sample_delta_readout` (`SUB_F4150`,
@@ -111,7 +115,7 @@ just not their exact standalone entry-point boundaries, which is a
 narrower and more honest thing to leave unresolved than the mechanism
 itself.
 
-## Found: the print-record character-cell-copy engine (SUB_EF346/SUB_EF393/SUB_EF440)
+## Found: the print-record character-cell-copy engine (SUB_EF346/SUB_EF393/copy_char_cell_template_and_sync, was SUB_EF440)
 
 A second entangled-but-now-mostly-understood region, in the same style
 as the decimal-formatting engine above. `SUB_EF346`/`SUB_EF393` are a

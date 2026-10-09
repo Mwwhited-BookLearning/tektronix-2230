@@ -37,7 +37,7 @@ what that purpose is (is `0x8F80` a real point coordinate? is the
 saved/restored value meaningful, or is only the side effect of the
 call wanted?) still isn't understood.
 
-**Checked for the `SUB_F6382`/`SUB_E90A5`-style "landing 1-byte-early
+**Checked for the `SUB_F6382` (now `draw_marker_box_and_update_position`)/`SUB_E90A5`-style "landing 1-byte-early
 into a neighboring instruction" explanation** and it does NOT apply
 here: the bytes immediately before `0xF0078` (`0xF0070-0xF0077`) are
 never reached by recursive descent from any other confirmed path, so
@@ -67,7 +67,7 @@ just GPIB) personality of the comm ROM's serial path.
 
 ### Direction correction: the ring buffer is a TX queue, not RX
 
-Found while investigating `serial_tx_buffer_put` and `SUB_96872`: the
+Found while investigating `serial_tx_buffer_put` and `SUB_96872` (now `spawn_task_with_tag`): the
 ring buffer at `[0x448]`(read)/`[0x44C]`(write), base `0xAF` size
 `0x384`, has `serial_tx_buffer_put` as its PRODUCER (writes the next
 byte to transmit and advances `[0x44C]`) and what was named

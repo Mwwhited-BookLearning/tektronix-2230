@@ -5,7 +5,8 @@ see `docs/README.md` for the full table of contents.
 
 ## The readout/CRT display memory (physical 0x40000-0x4FFFF)
 
-Found while tracing `SUB_E07B4` (`160-3633`, the report-printing
+Found while tracing `SUB_E07B4` (now `print_selftest_report_line`,
+`160-3633`, the report-printing
 routine that wraps `print_selftest_banner`/`self_test_dispatcher` -
 see above) down through its print-primitive call chain:
 `print_string_far` (`0xE0AF5`) loops over a far-pointer nul-terminated
@@ -21,7 +22,8 @@ generator**, matching this scope's known "readout" text overlay
 system (channel/volts/time labels drawn on the CRT alongside the
 analog trace).
 
-A related routine, `SUB_E0B6C`/`SUB_E0B41`, writes a short run of
+A related routine, `SUB_E0B6C`/`SUB_E0B41` (now
+`init_readout_port_config`/`reset_readout_port`), writes a short run of
 *different* literal bytes to *consecutive* offsets from that same
 base (`0x40000+0x6F1`, `+0x6F2`, `+0x6F3` = `0x29`, `0x23`, `0x06`) -
 consistent with a small fixed command/parameter block (position,
@@ -38,7 +40,7 @@ back to `[0x1CC4]` (also `0x4000`-segment in every call site checked
 so far), this looks like a **dual-plane buffer inside the same 64KB
 window**: a "character" plane at `0x40000-0x47FFF` and a second plane
 (attribute? inverse-video? a shadow copy?) at `0x48000-0x4FFFF`,
-`0x8000` higher. `SUB_E0BA3` separately reads raw bytes back out of a pointer
+`0x8000` higher. `SUB_E0BA3` (now `print_scratch_buffer_range`) separately reads raw bytes back out of a pointer
 initialized to exactly `0x48000` (`[0x31E:0x320]`) and passes each one
 directly to `append_readout_char` (`0xE39F0`) - i.e. it's re-printing
 bytes it just read from that second plane, consistent with echoing

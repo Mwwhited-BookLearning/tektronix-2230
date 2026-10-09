@@ -21,7 +21,6 @@ see `docs/README.md` for the full table of contents.
    scheme and confirm whether it's driven by the same 8088 or a separate
    coprocessor.
 4. Start filling in `functional_name` in the `.symbols.json` files as
-   routines are understood (e.g. `SUB_E06B6` looks like a small
-   dispatch/switch function keyed on a low nibble — candidate name once
-   confirmed: something like `set_mode_from_param` or similar, pending
-   more context on the 0x1B50/0x1B51/0x1B18 memory locations it touches).
+   routines are understood (e.g. `SUB_E06B6`, since renamed
+   `update_menu_position` - see `FUNCTIONS.md` - confirming the
+   dispatch/switch-on-low-nibble guess made here).

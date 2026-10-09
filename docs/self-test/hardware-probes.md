@@ -30,10 +30,10 @@ status bits (`0x2000`, `0x4000`) in `[0x322]`.
 
 **Working hypothesis**: this is the firmware's generic **ADC-based
 self-test primitive**, reused across several of `self_test_dispatcher`'s
-still-unidentified subroutines (`SUB_E3F2C`, `SUB_E3F99`, etc. are good
-candidates to check next - if any of them call `configure_measurement_
-hw`/`run_adc_selftest` directly, that would both identify them and
-narrow down which physical measurement each one performs). **Not
+sibling tests (`SUB_E3F2C`/`SUB_E3F99`, since renamed
+`selftest_display_irq_idle`/`selftest_display_irq_active`, were checked
+per this lead but turned out not to call `configure_measurement_hw`/
+`run_adc_selftest` directly - see `FUNCTIONS.md`). **Not
 confirmed**: which physical ADC/ADC-mux this addresses, or whether
 `[0x322]`'s bits 13/14 (checked by `wait_stable_measurement`) mean
 "calibration valid"/"lock detected" (plausible for a timebase PLL) or
