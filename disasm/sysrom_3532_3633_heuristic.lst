@@ -13906,7 +13906,7 @@ SUB_E92BF:
     3633:92CD  [E92CD]  8be5            mov     sp, bp
     3633:92CF  [E92CF]  5d              pop     bp
     3633:92D0  [E92D0]  cb              retf    
-FUNC_3633_92D1:
+init_front_panel_cluster_defaults:
     3633:92D1  [E92D1]  55              push    bp
     3633:92D2  [E92D2]  8bec            mov     bp, sp
     3633:92D4  [E92D4]  83ec10          sub     sp, 0x10

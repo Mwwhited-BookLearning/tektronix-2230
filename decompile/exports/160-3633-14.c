@@ -8123,7 +8123,19 @@ uint __cdecl16far assert_and_halt(void)
 
 
 
-void __cdecl16far FUN_000e_92d1(void)
+/* init_front_panel_cluster_defaults (confidence: Mechanism confirmed; reachability not confirmed
+   (no call site found - heuristic-only, same caveat as `selftest_sequence_enter`/`_exit` above))
+   
+   Evidence: Dispatches on `[0x1B83]` (the comm-detection result byte) `==0x14`: on that branch,
+   sets `[0x4E7]`/`[0x4EB]`/`[0x4F8]`/`[0x4FC]`/`[0x4F4]`/`[0x4F0]`/`[0x4FB]`/`[0x4E0]` and a couple
+   of `[0x1D1C]`-indexed table entries to one fixed set of defaults, plus a 4-iteration loop writing
+   into `[di+0x574]`/`[di+0x576]`/`[di+0x580]`/`[bx+0x564]`/`[bx+0x55A]`; on the other branch, a
+   different fixed pattern (`[0x4F7]`/`[0x4FB]`/`[0x4E8]`/`[0x4EC]`/`[0x4F4]`/`[0x4F0]`) plus a
+   15-iteration loop over the `[0x1D1C]` table and a call to `SUB_F1023` - this is VARIABLES.md's
+   "`[0x4E0]`-`[0x4FC]` cluster" initializer, confirming those ~11 bytes are one related group whose
+   defaults depend on the still-unresolved `[0x1B83]` hardware-variant question */
+
+void __cdecl16far init_front_panel_cluster_defaults(void)
 
 {
   uint *puVar1;

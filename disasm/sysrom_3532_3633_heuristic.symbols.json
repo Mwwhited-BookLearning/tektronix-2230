@@ -8470,10 +8470,10 @@
     "notes": null
   },
   "E92D1": {
-    "name": "FUNC_3633_92D1",
+    "name": "init_front_panel_cluster_defaults",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "init_front_panel_cluster_defaults",
     "notes": null
   },
   "E9332": {

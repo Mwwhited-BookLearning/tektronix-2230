@@ -1987,6 +1987,22 @@ FUNCTIONAL_NAMES = {
                                                # if a computed bound is
                                                # exceeded, halt with a
                                                # diagnostic code
+    0xE92D1: "init_front_panel_cluster_defaults", # heuristic-only, not
+                                               # confirmed reachable -
+                                               # dispatches on [0x1B83]
+                                               # (comm-detection result)
+                                               # ==0x14 and inits the
+                                               # related [0x4E0]-[0x4FC]
+                                               # front-panel byte cluster
+                                               # (VARIABLES.md's
+                                               # "[0x4E0]-[0x4FC]
+                                               # cluster") to one of 2
+                                               # different default
+                                               # patterns depending on
+                                               # which branch, plus a
+                                               # per-entry init loop over
+                                               # the [0x1D1C] far-pointer
+                                               # table
     0xE777D: "mul32",                         # 32-bit x 32-bit -> 32-bit
                                                # (truncated) multiply,
                                                # classic 3-partial-
