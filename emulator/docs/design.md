@@ -431,10 +431,72 @@ ACQ_AB : read-back     0 <>   FFE
    `"acq_mem cntr"` mismatch line, and (via an A/B run with/without the
    stub, `git stash`) the run's later `halt_cpu` panic stop at
    `0xF1611` is confirmed unchanged either way - a pre-existing
-   stopping point, not something this stub caused. (2) remains open:
-   both self-tests' `"fill @"` mismatch persists untouched, and the run
-   now continues one self-test further into a third, still-unnamed
-   `"TBD ps/2"` failure with the same shape.
+   stopping point, not something this stub caused.
+
+   **(2) also fixed, same day**, with `io_stubs.AdcRampFillStub`: a
+   closer re-read of `verify_pattern_with_report` found it already
+   tracks its own "expected" value in a local (`[bp-0xe]`, updated
+   after each comparison by an alternating `[bp+0x14]`/`[bp+0x16]`
+   increment, masked `&0xFF` - a byte-wraparound not previously
+   documented) - so rather than synthesize ramp content from nothing,
+   the stub just mirrors that already-computed local into the buffer
+   byte about to be read, one instruction before the comparison
+   (`0xE113A`). Since the self-test is defined to pass on real working
+   hardware, its own computed expectation *is* the correct value by
+   construction - no synthesis or guessing needed after all. Also
+   found while re-reading the function: mismatch *printing* stops once
+   the loop index exceeds `6` even though the comparison loop itself
+   runs the full window - explaining why every captured failure only
+   ever showed a handful of `"fill @"` lines, previously misattributed
+   to capture truncation. Verified end-to-end: `HS_ACQ` and `TBD hs/2`
+   no longer appear at all in a full boot trace, and the previously-
+   unreached `TBD ps/2` is fixed the same way with no further changes
+   needed (same shared code path).
+
+   **Clearing all three revealed a fourth, structurally different
+   failure**: `MM_ACQ` (`selftest_mm_acq`, `0xE26D6`). It doesn't call
+   `verify_pattern_with_report` at all - its own inline loop compares
+   the *difference* between two adjacent scratch-buffer bytes against
+   two fixed allowed deltas (`0xFF` or `0xC7`), stepping its index by 2
+   (and reusing the same "stop printing past index 6" idiom). This one
+   has no single computed "expected value" local to mirror - fixing it
+   would mean writing specific byte content that produces one of those
+   two deltas, which is a guess about real hardware behavior (plausibly
+   a DAC/ramp rollover characteristic) rather than something derived
+   from the self-test's own logic, so it's deliberately left unstubbed.
+   See `FUNCTIONS.md`'s `selftest_mm_acq` entry and `STILL_PENDING_
+   DECODE.md` for the open question.
+
+   **Next-reached failure after `MM_ACQ`, `CDT`'s `"PRE-DETRIG"`, also
+   fixed, same day**, with `io_stubs.AcqMemReadyBitStub`: traced
+   `wait_stable_measurement` (`0xE2DC9`) fully - after its stability-
+   polling loop on `[0x32A]` (physical `0x437F7`) settles, it reads
+   `[0x322]` (the same `0x4377E` Acquisition Memory Address Buffer
+   register) twice more, checking bit `0x4000` (folds a soft status bit
+   into the return value, not a failure path) and bit `0x2000` (if
+   clear, prints `"PRE-DETRIG"` and forces the return value to the
+   `0xFFFF` failure sentinel). The branch structure directly implies the
+   pass condition, so the stub ORs bit `0x2000` set at the exact check
+   instruction (`0xE2EC8`) - derived, not guessed, the same principle as
+   `AdcSelftestReadbackStub`. Bit `0x4000` is deliberately left
+   untouched, since folding in the extra `0x100` would corrupt the
+   numeric range check below. Fixes all 4 call sites (2 in
+   `measure_cursor_delta_time`, 2 in `selftest_display_result_mode`,
+   same argument pairs) with one stub. Verified live (`"PRE-DETRIG"`
+   gone) and A/B'd via `git stash` (same `halt_cpu` stop, no
+   regression).
+
+   **Clearing `PRE-DETRIG` revealed a different, still-open `CDT`
+   failure**: `measure_cursor_delta_time` range-checks the raw
+   stabilized value of `[0x32A]` against `[0x55,0x73]` and the delta
+   between two such reads against `[0xc8,0xd2]`, printing `"uncaled :
+   min/delta = <value>"` on failure. Plain RAM's default (`0`) falls
+   outside both windows. Unlike the ready-bit check, there's no
+   branch-implied target value here - passing needs `[0x32A]` to hold a
+   specific plausible calibration constant, which can't be derived from
+   the self-test's own logic alone, so it's deliberately left unstubbed.
+   See `FUNCTIONS.md`'s `measure_cursor_delta_time` entry and
+   `STILL_PENDING_DECODE.md` for the open question.
 
 Both were genuine "not simulatable with a flat value" cases, exactly
 the kind design.md's own stub philosophy anticipates ("only add real

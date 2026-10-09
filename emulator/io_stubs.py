@@ -325,6 +325,115 @@ class AdcSelftestReadbackStub:
         uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
 
 
+class AcqMemReadyBitStub:
+    """Couples `wait_stable_measurement`'s (`0xE2DC9`) "PRE-DETRIG"
+    status-bit check - bit `0x2000` of the Acquisition Memory Address
+    Buffer readback (`0x4377E`, U3427 - the same register every other
+    stub in this cluster deals with, on a disjoint bit position: bits
+    `0-11` for `AcqAbAddrWalkStub`/`AdcSelftestReadbackStub`, bit
+    `0x1000` for `CommPresenceProbe`, bit `0x2000` here).
+
+    After its data-stability polling loop, `wait_stable_measurement`
+    reads `[0x322]` twice in separate instructions: once to OR a soft
+    status bit (`0x100`) into its own return value if bit `0x4000` is
+    set (no failure path - just extra info folded into the result,
+    which would push the caller's expected numeric ranges, see below,
+    well out of range if ever set), and once more to check bit `0x2000`
+    - if clear, it prints `"<label> : PRE-DETRIG <arg>"` and forces the
+    return value to the `0xFFFF` failure sentinel. **Derived, not
+    guessed**: the branch structure itself says "bit clear -> fail,"
+    so bit `0x2000` must read as set for this check to pass - there's
+    no ambiguity about *which* value passes, only whether forcing it is
+    legitimate, and it's the same kind of real-hardware-status-flag
+    coupling `DisplayChipIrqStub` already does for a different pending
+    bit. Bit `0x4000` is deliberately left untouched (not forced either
+    way) - plain RAM's default `0x800` already keeps it clear, and this
+    stub must not change that, since `measure_cursor_delta_time`
+    compares the *raw* returned value against narrow numeric windows
+    (`0x55-0x73`, `0xc8-0xd2`) that an extra `0x100` folded in would
+    blow straight past.
+
+    Hooked at the exact instruction that performs the `0x2000` check
+    (`0xE2EC8`, `mov dx, word ptr es:[di]`), not the register address -
+    same anti-ambiguity reasoning as every other stub in this file;
+    this read is shared by all 4 call sites of `wait_stable_measurement`
+    (`measure_cursor_delta_time`/`CDT`'s 2 calls plus 2 more at
+    `0xE5BCE`/`0xE5BE1` using the identical argument pairs, likely a
+    live calibration-readout display reusing the same hardware wait),
+    so one hook generalizes across all of them. Traced live 2026-10-09
+    after `AdcSelftestReadbackStub`/`AdcRampFillStub` cleared the
+    earlier acquisition self-tests and exposed `CDT`'s `"PRE-DETRIG 9A"`/
+    `"PRE-DETRIG 8A"` failures for the first time."""
+
+    CHECK_INSN_ADDR = 0xE2EC8
+    READBACK_ADDR = 0x4377E
+    READY_BIT = 0x2000
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_CODE, self._on_exec,
+                     None, self.CHECK_INSN_ADDR, self.CHECK_INSN_ADDR)
+
+    def _on_exec(self, uc_eng, address, size, user_data):
+        current = int.from_bytes(uc_eng.mem_read(self.READBACK_ADDR, 2), "little")
+        uc_eng.mem_write(self.READBACK_ADDR,
+                         (current | self.READY_BIT).to_bytes(2, "little"))
+
+
+class AdcRampFillStub:
+    """Couples `verify_pattern_with_report`'s (`0xE1116`) per-byte
+    incrementing-ramp check at the `[0x31E]`/physical `0x48000`
+    Acquisition RAM buffer to the exact value the check itself expects
+    - the `"fill @"` mismatch left over after `AdcSelftestReadbackStub`
+    above fixed this same pair of self-tests' `"acq_mem cntr"`
+    mismatch.
+
+    **Why this one can't be derived from a register-write coupling,
+    unlike every other stub in this file**: `run_adc_selftest` zero-
+    fills this exact window, then calls `configure_measurement_hw`
+    (which only ever *reads* one byte from it, result discarded - see
+    `FUNCTIONS.md`'s `configure_measurement_hw` entry), then busy-polls
+    `0x4377E` - nothing in the traced firmware call chain writes the
+    ramp back in between. On real hardware, something (plausibly a
+    counter/DMA side effect of the same acquisition-memory cycle the
+    busy-wait is polling for) fills it; this emulator has no model of
+    that hardware at all, so there is no write to couple *from*.
+
+    Instead, mirrors the exact value `verify_pattern_with_report`
+    itself already tracks as "expected" (`[bp-0xe]`, recomputed by the
+    firmware every iteration via its own parity-alternating `[bp+0x14]`/
+    `[bp+0x16]` increments - see `FUNCTIONS.md`) into the buffer byte
+    about to be read, one instruction before the comparison (`0xE113A`,
+    `mov dl, byte ptr es:[bx+di]` - `es:bx+di` is already the correct
+    target address by this point, computed by the 2 instructions just
+    before it). This is a direct application of this project's
+    standing "derive the self-test's own pass condition and feed it
+    back" technique (`DiagCommLatchLoopback`, `AdcSelftestReadbackStub`
+    above) rather than a guess - the self-test is defined to pass on
+    real working hardware, so the value it computes as "expected" *is*
+    the real hardware's correct ramp value by construction, for any
+    caller of `verify_pattern_with_report` (not just `HS_ACQ`/`TBD
+    hs/2` specifically - whichever self-test's threshold parameters
+    produce the comparison, this stub satisfies it the same way)."""
+
+    CHECK_INSN_ADDR = 0xE113A
+    EXPECTED_LOCAL_OFFSET = -0xE  # [bp-0xe], see verify_pattern_with_report
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_CODE, self._on_exec,
+                     None, self.CHECK_INSN_ADDR, self.CHECK_INSN_ADDR)
+
+    def _on_exec(self, uc_eng, address, size, user_data):
+        ss = uc_eng.reg_read(x86.UC_X86_REG_SS)
+        bp = uc_eng.reg_read(x86.UC_X86_REG_BP)
+        expected = uc_eng.mem_read(
+            (ss << 4) + ((bp + self.EXPECTED_LOCAL_OFFSET) & 0xFFFF), 1)[0]
+        es = uc_eng.reg_read(x86.UC_X86_REG_ES)
+        bx = uc_eng.reg_read(x86.UC_X86_REG_BX)
+        di = uc_eng.reg_read(x86.UC_X86_REG_DI)
+        target = (es << 4) + ((bx + di) & 0xFFFF)
+        uc_eng.mem_write(target, bytes([expected]))
+
+
 class DiagCommLatchLoopback:
     """Couples writes to the Interrupt Mask Latch's diagnostic output
     3D (physical `0x406FB`) into bit `0x80` of the Option Status

@@ -277,22 +277,85 @@ in `docs/theory-of-operation.md`):
   (R9107/C9107). This is consistent with `f10-f12-option-installation.
   md`'s note that P9107 gets moved when a comm option is installed,
   and with it being reset/clock-timing-related rather than a data
-  jumper. Read with reasonable confidence on a closer second pass, but
-  the surrounding area is visually dense (many small components in a
-  tight cluster) - a physical-board photo cross-check would raise
-  confidence further before treating this as settled.
-- **P9105**: a separate jumper near U9103A/B, printed with **TEST**/
-  **NORM** labels and an accompanying note "**REMOVE TEST FROM P9105
-  IF 1 AND 3 SWAPPED**" (implying a 3-pin header where pins 1 and 3
-  can be swapped, selecting between test and normal operation for a
-  signal feeding toward the display controller path, e.g. `ALE TO
-  U920B-2`).
+  jumper. **Electrical connection confirmed 2026-10-09** (re-read at
+  2x crop zoom): its wiper (pin 3) feeds input pin 9 of `U9102C`
+  (74ALS32, a 2-input OR gate) whose *other* input (pin 10) is
+  `U9104`'s own `RESET` output; the gate's output (pin 8) pulls up
+  through `R9106` (4.7K).
+  **Corrected, same day, after a closer re-read**: the gate's output
+  does **not** go to "RESET TO U9208-9" - that text is a *different*,
+  separate net on this same crowded page (`U9104`'s raw `RESET` output
+  fans out directly off-page to Diagram 15/Digital Display, tagged
+  `10⟨15⟩`, entirely independent of the OR gate). `U9102C`'s actual
+  output instead continues rightward *on this same page* into the
+  CPU/latch cluster - traced directly into **`U9111`**, whose own
+  schematic block is explicitly labeled **"8088, 8 BIT
+  MICROPROCESSOR"** (first direct schematic-text confirmation of the
+  CPU part number - see `docs/architecture/cpu-and-language.md`'s new
+  "Schematic-level confirmation" note). So `U9102C`'s output is the
+  CPU's own local `RESET` input line, gated by whichever fixed level
+  `P9107` selects - **not** a signal sent to another board/diagram as
+  previously (incorrectly) stated. `U9104` is independently confirmed
+  here as an Intel-8284A-pinout clock generator (`CSYNC`/`PCLK`/`EFI`/
+  `RES`/`RDY1`/`AEN1`/`RDY2`/`AEN2`/`READY` match the 8284A exactly).
+  **Still unresolved**: which position (ON or OFF) drives pin 9 high
+  vs. low, and so what P9107 actually does to the CPU's reset timing -
+  the two position pins have no visible rail label (`+5V`/`GND`) in
+  this crop, so treat the OR-gate wiring and its CPU-reset destination
+  as confirmed but the ON/OFF semantics as still open; don't guess
+  which position is "comm installed" without further tracing.
+- **P9105 is two separate connectors, not one** - re-read 2026-10-09,
+  correcting the single "P9105" entry above:
+  - **`P9105A`**: a 3-pin "**REMOVE FOR TEST**" header near `U9103G`
+    (74ALS240), feeding `NMI` (pin 17) through pull-up `R9113H` (4.7K).
+    Carries the note "**NOTE: * EARLIEST BOARD VERSION HAS PINS 1 AND
+    3 SWAPPED**" - this is the "1 AND 3 SWAPPED" note, not `P9105`
+    itself (correcting the prior entry's attribution). Normally
+    installed (bridging whatever feeds `NMI`); pulled for test.
+  - **`P9105C`**: a separate 2-position jumper printed with **TEST**/
+    **NORM** labels, feeding the `EN` (enable, pin 1) input of the
+    first half of `U9106` (74LS139, dual 2-to-4 decoder). That
+    decoder's outputs drive `BLK0`-`BLK3` and (its second half) `RAM
+    SEG`/`TO SEG`/`COM SEG` (signals already named in `MEMORY_MAP.md`/
+    elsewhere as display/storage-CRT segment-timing related) - this
+    is the jumper matching this project's "plausibly a genuine
+    firmware self-test/diagnostic-mode strap" hypothesis, now with a
+    concrete destination (a CRT-segment decoder's enable, not a data
+    path).
+    **TEST/NORM semantics, partly resolved 2026-10-09** by
+    cross-referencing the manual's own prose rather than further
+    schematic tracing: `docs/theory-of-operation.md`'s "Decoder"
+    section states plainly "In normal operation, address block decoder
+    U9106 is always enabled" - i.e. the manual independently confirms
+    "normal operation" = U9106 enabled, which lines up directly with
+    the jumper's own **NORM** label feeding U9106's `EN` pin. By
+    elimination, **TEST** is the position that takes U9106 out of its
+    always-enabled normal state - consistent with the same manual's
+    `docs/maintenance.md` describing a distinct "hardware kernel test"
+    mode (also separately referenced for `R9113`'s NOP-vs-vector
+    behavior in `docs/theory-of-operation.md`'s "Latch and Buffer"
+    section) and power-up Kernel tests that check CPU/RAM/ROM before
+    normal decoding would be relied on. This resolves the *direction*
+    (NORM=enabled, TEST=disabled-or-altered) from manual text, not a
+    schematic trace - the exact pin-level polarity (active-high vs.
+    active-low `EN`, and precisely what TEST substitutes for normal
+    block decoding) is still not traced from the schematic itself and
+    remains open.
 
-**P9104 was not found** as a jumper designator on any of the 34 pages
-surveyed. (U9104 is a component - the Clock Generator/Oscillator IC -
-not a jumper; nothing labeled `P9104` was seen.) It's possible this
-designator doesn't exist and the earlier reference conflated it with
-P9105/P9107, or it exists on a page outside this 34-page selection.
+**P9104 IS a genuine jumper after all - the prior "not found" claim
+below was wrong, corrected 2026-10-09.** A closer 2x-zoom crop of page
+65 (around grid B5, right next to `U9104`'s own `RES` pin 11 and the
+`R9107`(270K)/`C9107`(3.3µF) RC reset-timing network) shows a
+2-position jumper explicitly labeled **`P9104`** with **`RESET`**
+(pin 2) and **`NORM`** (pin 1) printed directly on it - exactly
+matching `docs/theory-of-operation.md`'s own already-OCR'd text
+("Manually moving jumper P9104 to the RESET position forces a reset
+of the Microprocessor and the Display Controller"), word for word.
+The earlier survey pass simply missed this small label in a visually
+dense cluster, not a nonexistent designator - `U9104` (the Clock
+Generator/Oscillator IC) and `P9104` (this reset jumper, on the same
+RC network feeding that IC's own `RES` pin) are two different,
+co-located components sharing adjacent reference numbers, both real.
 
 No other jumper symbols (P-prefixed 2/3-pin headers with position
 labels) were found on any of the remaining 32 pages - the analog

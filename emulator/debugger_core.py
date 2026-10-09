@@ -21,7 +21,7 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import (AcqAbAddrWalkStub, AdcSelftestReadbackStub, CommPresenceProbe,
+from io_stubs import (AcqAbAddrWalkStub, AcqMemReadyBitStub, AdcRampFillStub, AdcSelftestReadbackStub, CommPresenceProbe,
                        DiagCommLatchLoopback,
                        DiagnosticTextCapture, DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS,
                        FRONT_PANEL_STUBS, FixedByteRead, InteractiveFrontPanel,
@@ -276,6 +276,16 @@ class Debugger:
         # readback generically from each call's own stack arguments -
         # see AdcSelftestReadbackStub's own docstring for the derivation.
         AdcSelftestReadbackStub().install(self.emu, uc)
+        # Resolves the same self-tests' separate "fill @" ramp-pattern
+        # mismatch by mirroring verify_pattern_with_report's own
+        # already-computed "expected" local into the buffer byte it's
+        # about to compare - see AdcRampFillStub's own docstring.
+        AdcRampFillStub().install(self.emu, uc)
+        # Resolves CDT's "PRE-DETRIG" failure by forcing the
+        # Acquisition Memory Address Buffer's bit 0x2000 ("ready")
+        # set at the exact instruction wait_stable_measurement checks
+        # it - see AcqMemReadyBitStub's own docstring.
+        AcqMemReadyBitStub().install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat baseline
         # so it only adjusts bit 0x80 on top - see its own docstring
         # for the disassembly-derived reasoning (selftest_comm_readback).

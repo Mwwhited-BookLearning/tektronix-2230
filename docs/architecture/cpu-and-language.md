@@ -9,6 +9,17 @@ see `docs/README.md` for the full table of contents.
   wrong — opcode-frequency heuristics on 6800-family were misleading.
   Confirmed by TekWiki (w140.com/tekwiki/wiki/2230) and by getting fully
   coherent, self-consistent x86 disassembly at the real reset vector.)
+  **Schematic-level confirmation, 2026-10-09**: Diagram 14
+  ("Microprocessor and Store Panel Controls," board A10,
+  `docs/diagrams-index.md`) explicitly labels **U9111** "8088, 8 BIT
+  MICROPROCESSOR" in its own component block - the first direct
+  schematic-text confirmation of the CPU part number, independent of
+  (and corroborating) the disassembly-based identification above. The
+  same page also confirms U9104 matches an Intel 8284A-type clock
+  generator's pinout (`CSYNC`/`PCLK`/`EFI`/`RES`/`RDY1`/`AEN1`/`RDY2`/
+  `AEN2`/`READY` - the 8284A's exact pin set), consistent with a real
+  8088/8086 system (the 8284A is the standard 8086-family clock driver/
+  ready-logic chip, not used with other architectures).
 - Three ROMs, each shipped in (at least) two firmware revisions (`-13`,
   `-14`; TekWiki also references `-01`/`-15` revisions we don't have):
   - `160-2998-13/14.bin` — comm/GPIB-RS232 option board ROM (silkscreen

@@ -58,14 +58,45 @@ AdcSelftestReadbackStub`: hooks the exact read instruction inside
 `run_adc_selftest` (`0xE137A`) and writes back `[bp+0xc]+[bp+0x16]`,
 read live off the caller's own stack frame rather than hardcoded -
 since that comparison is identical for every caller, one stub fixes
-both `HS_ACQ` and `TBD hs/2` without needing `TBD hs/2`'s own
-`[0x1DCC]` device-table bytes decoded. Verified live (both `"acq_mem
-cntr"` mismatches gone from a full boot trace; A/B'd via `git stash`
-that the run's later `halt_cpu` panic stop is unchanged either way).
-Both self-tests' separate `"fill @"` ramp-pattern mismatch (what fills
-`[0x31E]`/`0x48000`'s expected incrementing byte pattern) is untouched
-by this stub and is the next thing blocking a fully-clean power-up
-sequence through the debugger-core front ends (see `TODO.md`).
+`HS_ACQ`, `TBD hs/2`, and `MM_ACQ` without needing any of their own
+device-table bytes decoded. Verified live (all `"acq_mem cntr"`
+mismatches gone from a full boot trace; A/B'd via `git stash` that the
+run's later `halt_cpu` panic stop is unchanged either way).
+
+**Separate `"fill @"` ramp-pattern mismatch also fixed, same day**,
+with `io_stubs.AdcRampFillStub`: `verify_pattern_with_report`
+(`0xE1116`) already tracks its own "expected" value in a local
+(`[bp-0xe]`) as it loops - the stub just mirrors that already-computed
+value into the buffer byte about to be read, one instruction before
+the comparison (`0xE113A`), rather than guessing real hardware
+content. Fixes `HS_ACQ`, `TBD hs/2`, and a previously-unreached third
+self-test, `TBD ps/2` - all three no longer appear at all in a clean
+boot trace. Clearing them revealed a **fourth**, structurally
+different failure, `MM_ACQ` (`selftest_mm_acq`): its own inline check
+(adjacent-byte deltas against two fixed allowed values, `0xFF`/`0xC7`)
+has no single computed "expected value" to mirror, so it's left
+deliberately unstubbed rather than guessed at (see `TODO.md`).
+
+**Next-reached failure, `CDT`'s `"PRE-DETRIG"`, also fixed, same
+day**, with `io_stubs.AcqMemReadyBitStub`: `wait_stable_measurement`
+(`0xE2DC9`, called from `measure_cursor_delta_time`/`selftest_cursor_
+delta_time` and `selftest_display_result_mode`) checks bit `0x2000` of
+the same `0x4377E` register - the stub ORs that bit set at the exact
+check instruction (`0xE2EC8`), directly implied by the branch
+structure ("bit clear -> fail"). Bit `0x4000` is deliberately left
+untouched since it would corrupt a downstream numeric check (next
+paragraph). Verified live and A/B'd via `git stash` (same `halt_cpu`
+stop, no regression).
+
+Clearing `PRE-DETRIG` revealed a *different* `CDT` failure -
+`"uncaled : min = 0"` / `"uncaled : delta = 0"` -
+`measure_cursor_delta_time` range-checks the raw stabilized value
+against `[0x55,0x73]`/`[0xc8,0xd2]`, and the register's plain-RAM
+default (`0`) falls outside both. Unlike the ready-bit check, there's
+no branch-implied target value here, so - along with `MM_ACQ`'s delta
+check above - this is now the next thing blocking a fully-clean
+power-up sequence through the debugger-core front ends (see
+`TODO.md`).
 
 **Interactive mode, 2026-09-16**: `python interactive.py` is a REPL
 debugger built on the same memory map and stubs - shows live register/

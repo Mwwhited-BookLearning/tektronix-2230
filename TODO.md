@@ -227,6 +227,51 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
         actual meaning (what circuit each position connects to), since
         the survey only confirmed the jumpers exist and their labels,
         not their electrical effect.
+      - **Next step done, 2026-10-09** (re-read page 65 at 2x crop
+        zoom - see `docs/diagrams-index.md`'s updated "Jumper
+        findings" section for full detail): the prior bullet's own
+        "`P9104` is NOT a jumper" conclusion was **wrong** - a closer
+        crop shows a real 2-position jumper explicitly printed
+        `P9104` with `RESET`/`NORM` labels, sitting on the same RC
+        network, exactly matching `docs/theory-of-operation.md`'s
+        text word for word. `U9104` (the clock IC) and `P9104` (this
+        jumper) are two different, co-located parts - the survey just
+        missed the small label the first time. Also found that
+        "`P9105`" is actually **two** separate connectors: `P9105A`
+        (3-pin "REMOVE FOR TEST," feeds `NMI`, with an earliest-board-
+        revision pin-1/3-swap note) and `P9105C` (the TEST/NORM one,
+        feeds the `EN` pin of decoder `U9106`, which drives
+        `BLK0`-`BLK3`/`RAM SEG`/`TO SEG`/`COM SEG`). And `P9107`'s
+        wiper now has a traced destination: it feeds one input of OR
+        gate `U9102C`, ORed with `U9104`'s own `RESET` output.
+        **Corrected, same day**: the OR gate's output does NOT go to
+        "RESET TO U9208-9" - that text is a different net on the same
+        page (`U9104`'s raw `RESET` fanning out directly off-page to
+        Diagram 15/Digital Display). `U9102C`'s real output continues
+        on-page into the CPU/latch cluster, traced directly into
+        `U9111` - whose schematic block is explicitly labeled "8088, 8
+        BIT MICROPROCESSOR" (first direct schematic-text confirmation
+        of the CPU part number, see `docs/architecture/cpu-and-
+        language.md`). So `P9107` gates the CPU's own local reset
+        line, not a cross-board signal. **Still unresolved**: which of
+        `P9107`'s two positions (ON/OFF) drives its OR-gate input high
+        vs. low, and in turn whether that's the comm-detect mechanism
+        originally suspected - the schematic crop doesn't show a rail
+        label on either position pin, so this remains open rather than
+        guessed. `P9105C`'s direction is now partly resolved (same day,
+        via manual cross-reference, not further schematic tracing):
+        `docs/theory-of-operation.md`'s "Decoder" section states "In
+        normal operation, address block decoder U9106 is always
+        enabled" - matching the jumper's own **NORM** label, so **TEST**
+        is by elimination the position that takes U9106 out of its
+        normal always-enabled state (consistent with the manual's
+        documented power-up "hardware kernel test" mode). Exact pin
+        polarity and what TEST substitutes for normal decoding are
+        still not traced from the schematic - see `docs/diagrams-
+        index.md`'s updated `P9105C` entry. Real next step, if ever
+        revisited, is tracing `P9107`'s position pins to their
+        rail/signal source on an adjacent schematic page, or checking
+        the physical unit.
       - **Same survey, on the bit-6-vs-bit-7 conflict above**: page 114
         (Diagram 23, RS-232 Option Board) confirms `DIAG` and `RLSD`
         (the real schematic name for what `/DCD2` refers to) are two
@@ -242,33 +287,6 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
         enough evidence that `U1236` stays the confirmed designator in
         `MEMORY_MAP.md`, but flag if a sharper look at the original
         page 114 scan ever contradicts that.
-- [ ] **Reminder (user, 2026-09-16)**: review service manual **page
-      415** - the acquisition memory logic (RAM chips + decode logic).
-      User's own preview while noting this down: 2x 2048x8 static RAM,
-      **`U3418`/`U3419`**, that look fed by the DAC. These 2 chips are
-      already independently confirmed in this project as the physical
-      backing for `MEMORY_MAP.md`'s `0x48000-0x4BFFF` "Acquisition
-      Memory - 4 images of Acquisition RAM U3418/U3419" range - a
-      component-level schematic trace here (matching the RS-232 option
-      board reviews already integrated, see `changes/2026-09-16.md`)
-      would do for the acquisition/DAC path what that review did for
-      the comm option: name the actual decode/support chips around the
-      already-known address range, not just the RAM itself.
-
-      **Unconfirmed hypothesis, added while previewing the page**:
-      `U3418`/`U3419`'s own address lines are `AA1`-`AA11` (11 lines,
-      matching each chip's own 2048-byte capacity exactly -
-      `2^11=2048`). User's guess, explicitly not yet verified against
-      the actual logic: **`AA0`** (one bit lower than the chips' own
-      address bus) selects between `CH1`/`CH2` - i.e. the 2 RAM chips
-      might be a per-channel pair rather than an interleaved/depth-
-      doubling pair, with `AA0` as the bank-select bit sitting outside
-      each chip's own address pins. No existing finding in this
-      project to cross-check against (checked `MEMORY_MAP.md`/
-      `VARIABLES.md` for any prior channel-select-bit note for the
-      acquisition RAM specifically - none found, this is new
-      territory). Confirm or refute directly from the page 415 logic
-      when reviewed.
 - [ ] **`emulator/` next steps** (built 2026-09-16, see `emulator/
       README.md`/`emulator/docs/design.md`): resolved the stroke-font
       glyph-table hunt for this project's real hardware (full story in
@@ -316,16 +334,115 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       (both `"acq_mem cntr"` mismatches gone; A/B'd via `git stash`
       that the run's later `halt_cpu` panic stop is unchanged either
       way, so not a regression). See `docs/self-test/hardware-
-      probes.md` and `changes/2026-10-09.md`. Still open: (2) what
-      fills the incrementing-ramp pattern `verify_pattern_with_report`
-      expects at far ptr `[0x31E]` (physical `0x48000`, confirmed
-      genuine Acquisition RAM U3418/U3419 - `configure_measurement_hw`
-      never writes it, so something else must) - both `HS_ACQ`/`TBD
-      hs/2`'s `"fill @"` mismatches persist, and the run now continues
-      one self-test further into a third, still-unnamed `"TBD ps/2"`
-      failure with the same `"fill @"` shape. Next step: figure out
-      (2) well enough to extend or add an `io_stubs.py` coupling stub,
-      following the same derivation approach as `AcqAbAddrWalkStub`.
+      probes.md` and `changes/2026-10-09.md`. (2) ~~what fills the
+      incrementing-ramp pattern `verify_pattern_with_report` expects at
+      far ptr `[0x31E]` (physical `0x48000`)~~ **done 2026-10-09** -
+      `io_stubs.AdcRampFillStub` hooks the exact per-byte comparison
+      read (`0xE113A`) and mirrors `verify_pattern_with_report`'s own
+      already-computed "expected" local back into the buffer, since
+      the self-test is defined to pass on real hardware - fixes
+      `HS_ACQ`, `TBD hs/2`, *and* the previously-unreached `TBD ps/2`
+      with one stub. Both now fully gone from a clean boot trace. See
+      `docs/self-test/hardware-probes.md` for the full derivation
+      (including 2 previously-undocumented mechanics found while
+      re-reading the function: the expected-value accumulator wraps
+      `&0xFF`, and mismatch *printing* silently stops past loop index
+      `6` even though the comparison itself keeps going). **New open
+      item found by clearing these three**: `selftest_mm_acq`
+      (`MM_ACQ`) is now reachable too, and fails its own *different*
+      "fill @"-shaped check (not `verify_pattern_with_report` - an
+      inline loop comparing adjacent scratch-buffer byte deltas
+      against 2 fixed allowed values, `0xFF`/`0xC7`). Deliberately
+      *not* stubbed yet: there's no single computed "expected value"
+      local to mirror here, so fixing it would mean guessing actual
+      buffer content rather than deriving it - see `FUNCTIONS.md`'s
+      `selftest_mm_acq` entry for the full mechanism as traced so far.
+      Separately, traced the next-reached failure after `MM_ACQ`:
+      `CDT`'s `"PRE-DETRIG"` (`wait_stable_measurement`, called from
+      `measure_cursor_delta_time`/`selftest_cursor_delta_time` and
+      `selftest_display_result_mode`). **Done 2026-10-09** -
+      `io_stubs.AcqMemReadyBitStub` ORs bit `0x2000` into `[0x4377E]`
+      at the exact check instruction (`0xE2EC8`), directly implied by
+      the branch structure ("bit clear -> fail"), leaving bit `0x4000`
+      untouched since it would corrupt a downstream numeric check.
+      Verified live and A/B'd via `git stash` (same `halt_cpu` stop).
+      **New open item found by clearing it**: `CDT` now fails a
+      *different* way - `"uncaled : min = 0"` / `"uncaled : delta =
+      0"` - because `measure_cursor_delta_time` range-checks the raw
+      stabilized value against `[0x55,0x73]`/`[0xc8,0xd2]`, and
+      `[0x32A]`'s plain-RAM default (`0`) falls outside both. This
+      looks like it needs a genuine calibration constant, not a logic
+      fix, so it's left unstubbed - see `docs/self-test/hardware-
+      probes.md` and `STILL_PENDING_DECODE.md`.
+      Traced the next-reached failure past `CDT` too: `FP_a2d`
+      (`selftest_front_panel_adc`/`selftest_init_channel_hw`, a
+      *different*, interrupt-driven `[0x1D20]`-based register cluster,
+      unrelated to the `[0x322]`/`0x4377E` one above). Its busy-wait
+      "ready" bit (`es:[di+5]&4`) is just as derivable as `CDT`'s was,
+      but fixing only that doesn't make it pass: the real return value
+      is built from a dual read of a separate data register
+      (`es:[di+4]`), and that register's unstubbed-RAM default (`0`)
+      still fails the self-test's `[0x100,0x700]` range check either
+      way - just with a different message (`"gnd"` instead of
+      `"TIME-OUT"`). **Deliberately not stubbed** - same "don't guess
+      real hardware content" reasoning as `MM_ACQ` - see
+      `STILL_PENDING_DECODE.md`'s new "Front-panel A/D converter
+      self-test" section and `FUNCTIONS.md`'s `selftest_init_channel_
+      hw` entry.
+      Also traced `ROMS`'s `"MISMATCH,14,4C,14"` failure fully, and
+      **this one's genuinely resolved, not a stub candidate at all** -
+      `selftest_rom_checksum` isn't a computed checksum, it's a
+      revision-byte cross-check between two ROM-embedded headers at
+      physical `0xE0000`/`0xE8000` (the low/high 32KB of `160-3633`'s
+      own 64KB image). Both bytes come straight from real ROM content
+      the emulator already maps correctly (`0x14`/`0x4C`), and the two
+      far pointers it reads through (`[0x1DD4]`/`[0x1DD8]`) *are*
+      initialized by the already-documented `init_far_pointer_table_
+      sysrom` table after all - an earlier same-day pass wrongly ruled
+      that table out by comparing dest-offsets against the wrong base
+      segment. One genuinely open question remains (whether `0xE8000`
+      is really a second physical chip's header or just an incidental
+      byte) - see `STILL_PENDING_DECODE.md`'s new "Main ROM revision
+      cross-check" section and `FUNCTIONS.md`'s `selftest_rom_checksum`
+      entry.
+      Finally, traced `COMM_ROM`'s `"0C8F <> 2BA3"` checksum mismatch
+      and **it's also fully resolved, genuinely not an emulator gap**:
+      `selftest_comm_rom` checksums `160-2998` against its own
+      embedded expected value (the big-endian word at its own first 2
+      bytes, `0x2BA3`) via `compute_range_checksum` (a shift-and-add-
+      with-carry running checksum) over physical `0x80002-0x87FFF`
+      then `0x90000-0x97FFF`. Running the identical algorithm directly
+      over `binary/160-2998-14.bin` in Python gives `0x0C8F`,
+      reproducing the live trace exactly - a deterministic, ROM-only
+      computation with zero RAM/stub dependency, same category of
+      finding as `ROMS`. See `STILL_PENDING_DECODE.md`'s new "Comm ROM
+      checksum" section.
+      Last, traced `COMM_LB`'s `"FGET NOT SET"`/`"FGET NOT CLEAR"`
+      failures (`selftest_comm_fget_flag`, `0xE1FBC`) - **this one's
+      a genuine stub candidate, same category as `MM_ACQ`, not a
+      resolved-ROM-content finding like `ROMS`/`COMM_ROM`**. Both
+      subtests write a command byte to physical `0x406F3` (the 4th of
+      the comm option's 8-register UART/GPIB bank) then check
+      `comm_stat`/`0x4067C` bit `0x4` (`TBRE`) and `comm_param`/
+      `0x406BC` bit `0x80` (the UART's live TX-line bit). Both fail
+      deterministically because `0x406F3` isn't one of the two
+      registers `io_stubs.InteractiveUartMock` models (`0x406F0`/
+      `0x406F1`, the 8251 data/control pair), so the write never
+      updates anything `comm_stat`'s `TBRE` mirror reads from, and
+      `comm_param` bit `0x80` is a static, never-toggled
+      `COMM_OPTION_STUBS` baseline. Left unstubbed on purpose:
+      `MEMORY_MAP.md` already flags `0x406F1`-`0x406F3` as plausibly
+      TMS9914A (GPIB chip) register space rather than confirmed UART
+      registers, so there's no independently-confirmed real semantics
+      to build a stub from without guessing. See `STILL_PENDING_
+      DECODE.md`'s new "Comm-board loopback flag check" section and
+      `FUNCTIONS.md`'s `selftest_comm_loopback_b` entry.
+      **With this, every diagnostic line reached by a full boot trace
+      has now been traced to a known cause**: 4 are genuine stub
+      candidates deliberately left unstubbed pending real hardware
+      content (`MM_ACQ`, `FP_a2d`'s `"gnd"`, `CDT`'s `"uncaled"`,
+      `COMM_LB`), and 2 are genuine ROM-content inconsistencies with
+      no further emulator-side work possible (`ROMS`, `COMM_ROM`).
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Full history
       and findings in `docs/decode-anomalies/unknown-data-deep-dive-
@@ -579,7 +696,11 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
       not yet clear which wins or whether the DIP switch only sets
-      power-on defaults. `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
+      power-on defaults. (The DIP switch's own switch-to-setting bit
+      mapping is now fully resolved - see `MEMORY_MAP.md`'s "RS-232
+      option board" section, 2026-10-09 - so this item is purely about
+      runtime-menu-vs-DIP-switch precedence now, not an additional
+      unknown mapping.) `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
       `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Live session, 2026-09-14 (continued)") -

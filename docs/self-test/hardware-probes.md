@@ -140,10 +140,80 @@ default-0 busy bit already matched every captured run). Confirmed via
 an A/B run (same trace with/without the stub, `git stash`) that the
 boot's eventual `halt_cpu` panic stop (`0xF1611`) happens identically
 either way - a pre-existing, unrelated stopping point, not a
-regression this stub introduced. The `verify_pattern_with_report`
-"fill @" ramp-pattern mismatch (the `[0x31E]`/`0x48000` buffer's
-real-hardware-fill question, above) is untouched by this stub and
-remains the one open piece of this investigation.
+regression this stub introduced.
+
+**`verify_pattern_with_report`'s "fill @" ramp-pattern mismatch also
+resolved, same day**: re-read its full body to pin down the exact
+expected-value mechanics - the running "expected" local (`[bp-0xe]`,
+seeded from `[bp+0x12]`) is updated *after* each comparison by adding
+`[bp+0x16]` or `[bp+0x14]` depending on the loop index's parity, then
+masked `&0xFF` (wraps mod 256, not a 16-bit sum - not previously
+documented). Also found that mismatch *printing* silently stops once
+the loop index exceeds `6`, even though the comparison loop itself
+keeps running to the full `[bp+0x10]` bound - this is why every
+captured failure only ever showed a handful of "fill @" lines
+regardless of window size, previously (incorrectly) chalked up to
+capture truncation. Since the firmware already computes its own
+"expected" value as a local, `io_stubs.AdcRampFillStub` just mirrors
+that already-computed value into the buffer byte about to be read, one
+instruction before the comparison (`0xE113A`) - no guessing about real
+hardware content required, since the self-test is defined to pass on
+working hardware. Verified live: `HS_ACQ` and `TBD hs/2` no longer
+appear *at all* in a full boot trace's diagnostic output, and a
+previously-unreached third self-test, `TBD ps/2`, is fixed the same
+way with no further changes (same shared code path).
+
+**Clearing all three revealed a fourth, structurally different "fill
+@"-shaped check**, inside `selftest_mm_acq` (`0xE26D6`, `MM_ACQ`) -
+*not* a call to `verify_pattern_with_report` at all, but its own inline
+loop: it compares the *difference* between two adjacent scratch-buffer
+bytes against two fixed allowed deltas (`0xFF` or `0xC7`), stepping its
+index by 2 (reusing the same "stop printing after index > 6" idiom,
+landing on the same last-printed index `6` despite the different
+step). This has no single "already-computed expected value" to mirror
+the way `verify_pattern_with_report` did - satisfying it means writing
+specific byte *content* into the buffer, which would be guessing at
+what real acquisition hardware produces rather than deriving it from
+the self-test's own logic, so it's left deliberately unstubbed. See
+`FUNCTIONS.md`'s `selftest_mm_acq` entry for the full mechanism and
+`TODO.md` for this as the next open item.
+
+**`CDT`'s `"PRE-DETRIG"` failure resolved, same day**: traced
+`wait_stable_measurement` (`0xE2DC9`, called from both
+`measure_cursor_delta_time`/`selftest_cursor_delta_time` and
+`selftest_display_result_mode`) fully. After its stability-polling
+loop on `[0x32A]` (physical `0x437F7`) settles, it reads `[0x322]`
+(physical `0x4377E`, the same Acquisition Memory Address Buffer
+register `verify_adc_calibration`/`run_adc_selftest` already use)
+twice more: once to fold a soft status bit into the return value if
+bit `0x4000` is set (not a failure path), once to check bit `0x2000`
+- if that bit reads clear, it prints `"<label> : PRE-DETRIG <hex
+arg>"` and forces the return value to the `0xFFFF` failure sentinel.
+The branch structure directly implies the pass condition (bit must be
+set), so `io_stubs.AcqMemReadyBitStub` ORs bit `0x2000` into that
+register at the exact check instruction (`0xE2EC8`) - derived from the
+self-test's own logic, not guessed, the same principle as
+`AdcSelftestReadbackStub`. Bit `0x4000` is deliberately left
+untouched: setting it would fold an extra `0x100` into the return
+value, which would then corrupt `measure_cursor_delta_time`'s
+subsequent raw-value range checks (see below). Verified live
+(`"PRE-DETRIG"` no longer appears) and via an A/B `git stash` check
+(same `halt_cpu` stop at `0xF1611` with/without the stub).
+
+**Clearing `PRE-DETRIG` revealed a different, still-open `CDT`
+problem**: `measure_cursor_delta_time` calls `wait_stable_measurement`
+twice (arg pairs `0x8f,0x9a` and `0x8e,0x8a`), takes
+`delta = result1 - result2`, then separately range-checks `result1`
+against `[0x55, 0x73]` and `delta` against `[0xc8, 0xd2]`, printing
+`"uncaled : min = <value>"` / `"uncaled : delta = <value>"` on
+failure. With the ready-bit stub in place, `[0x32A]` now stabilizes at
+plain RAM's default (`0`), which falls outside both windows. Unlike
+the ready-bit check, there's no single branch-implied target here -
+passing requires `[0x32A]` to hold a specific *value* in a plausible
+range, which looks like a genuine calibration constant rather than a
+logic bit, so it's left unstubbed pending more information. See
+`FUNCTIONS.md`'s `measure_cursor_delta_time`/`wait_stable_measurement`
+entries and `STILL_PENDING_DECODE.md` for this as the next open item.
 
 ## Possible waveform acquisition buffer init (updated: likely a plot-scale cache, not a buffer)
 

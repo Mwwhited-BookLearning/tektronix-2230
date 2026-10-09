@@ -162,6 +162,22 @@ The single biggest cluster of open items - see
   the switches are active-LOW (ON pulls the bit to `0`), confirmed
   against a live exerciser-screen photo - only the switch-to-setting
   mapping beyond baud rate remains open, not the bit-level polarity.
+  **Fully resolved 2026-10-09**, by combining a fresh line-by-line
+  disassembly of `read_dip_switches_serial_config`
+  (`0x966E7`-`0x96780`) with `docs/options.md`'s OCR'd Tables 7-7, 7-8,
+  7-9 (RS-232-C PARAMETERS switch), and the already-confirmed Table
+  7-36 bit map for the State Buffer. See `MEMORY_MAP.md`'s "RS-232
+  option board" section for the full switch-by-switch bit formulas;
+  summary: switches 1-4 = baud nibble (unchanged); switch 5 = parity
+  enable/disable (gates whether switches 6-7 are even consulted);
+  switches 6-7 = parity type (ODD/MARK/EVEN/SPACE, in the firmware's
+  own 1-4 internal order, which is *not* the same order as Table 7-9's
+  ODD/EVEN/MARK/SPACE listing - switch 7, not switch 6, turned out to
+  be the higher-weight bit of the firmware's internal code); switch 8
+  = CR vs CR-LF line terminator; switches 9-10 = printer/plotter
+  device select (HP-GL/ThinkJet/Epson), consistent with - and now
+  fully explained by - the switch-9/10 bit swap Table 7-36 had already
+  surfaced. No remaining open sub-question here.
 - **`COMM/DATA/STOP_BITS`/`FLOW` (runtime menu) vs. the rear-panel DIP
   switch** - both configure overlapping RS-232 parameters; not clear
   which wins or whether the DIP switch only sets power-on defaults.
@@ -398,7 +414,7 @@ See `docs/self-test/front-panel-switches.md` and `VARIABLES.md`.
 - **`[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern** isn't tied to
   a specific named `SWB1`/`SWB2` bit.
 
-## Acquisition self-test hardware (HS_ACQ/TBD hs/2 emulator blocker)
+## Acquisition self-test hardware (HS_ACQ/TBD hs/2/TBD ps/2/MM_ACQ/CDT emulator blocker)
 
 See `docs/self-test/hardware-probes.md`'s 2026-10-09 rewrite for the
 full derivation.
@@ -417,17 +433,205 @@ full derivation.
   AdcSelftestReadbackStub` couples `run_adc_selftest`'s plain
   busy-flag+12-bit read of `0x4377E` to `[bp+0xc]+[bp+0x16]`, computed
   generically off the caller's own stack frame at the exact read
-  instruction (`0xE137A`) - fixes both `HS_ACQ` and `TBD hs/2`'s
-  `"acq_mem cntr"` mismatch without needing `TBD hs/2`'s own
-  `[0x1DCC]` table decoded. Verified live against a full boot trace.
-  No longer open.
-- **Still genuinely open**: what firmware or hardware mechanism fills
-  the incrementing-ramp pattern `verify_pattern_with_report` expects
-  at `0x48000` - `configure_measurement_hw` only ever reads one byte
-  from there (result discarded), never writes the ramp, and `0x48000`
-  is confirmed genuine RAM (not a counter/PROM), so something else
-  (real hardware DMA during a capture cycle, or untraced firmware)
-  must be responsible.
+  instruction (`0xE137A`) - fixes `HS_ACQ`, `TBD hs/2`, and `MM_ACQ`'s
+  `"acq_mem cntr"` mismatch without needing any of their own call-site
+  tables decoded. Verified live against a full boot trace. No longer
+  open.
+- **Also resolved in the emulator, same day**: `verify_pattern_with_
+  report`'s "fill @" ramp-pattern mismatch - `io_stubs.AdcRampFillStub`
+  mirrors that function's own already-computed "expected" local
+  (`[bp-0xe]`) into the buffer byte about to be read, one instruction
+  before its comparison (`0xE113A`), since the self-test is defined to
+  pass on real working hardware. Fixes `HS_ACQ`, `TBD hs/2`, and the
+  previously-unreached `TBD ps/2` - all three no longer appear at all
+  in a full boot trace. No longer open; what real hardware mechanism
+  *would* fill this buffer on an actual scope remains unknown, but is
+  no longer blocking the emulator.
+- **Newly found, still genuinely open**: clearing the above revealed a
+  fourth, previously-unreached failure, `MM_ACQ` (`selftest_mm_acq`,
+  `0xE26D6`) - fails its *own* distinct check, not a call to `verify_
+  pattern_with_report`: an inline loop comparing the difference
+  between two adjacent scratch-buffer bytes against two fixed allowed
+  deltas (`0xFF` or `0xC7`). Genuinely open because there's no
+  "already-computed expected value" local here to mirror - writing a
+  stub would mean picking actual byte content that produces one of
+  those two deltas, which is a guess about real acquisition hardware
+  behavior (a DAC/ramp rollover pattern?), not a derivation from the
+  self-test's own logic. See `FUNCTIONS.md`'s `selftest_mm_acq` entry.
+- **Also resolved in the emulator, same day**: the next-reached
+  failure after `MM_ACQ`, `CDT`'s `"PRE-DETRIG"` (`wait_stable_
+  measurement`, `0xE2DC9`) - `io_stubs.AcqMemReadyBitStub` ORs bit
+  `0x2000` into `[0x4377E]` at the exact check instruction (`0xE2EC8`),
+  directly implied by the branch structure ("bit clear -> fail"), not
+  guessed. Bit `0x4000` deliberately left untouched - setting it would
+  corrupt the downstream numeric range check below. Verified live and
+  A/B'd via `git stash` (same `halt_cpu` stop, no regression).
+- **Newly found, still genuinely open**: clearing `PRE-DETRIG` revealed
+  a *different* `CDT` failure - `"uncaled : min = 0"` / `"uncaled :
+  delta = 0"`. `measure_cursor_delta_time` range-checks the raw
+  stabilized value of `[0x32A]` (physical `0x437F7`) against
+  `[0x55,0x73]` and the delta between two such reads against
+  `[0xc8,0xd2]`; plain RAM's default (`0`) falls outside both. Unlike
+  the ready-bit check, there's no branch-implied target value here -
+  passing requires `[0x32A]` to hold a specific plausible calibration
+  constant, which can't be derived from the self-test's own logic
+  alone. See `FUNCTIONS.md`'s `measure_cursor_delta_time` entry.
+
+## Front-panel A/D converter self-test (`FP_a2d`/`"[0x1D20]"` cluster, emulator blocker, genuinely open)
+
+See `FUNCTIONS.md`'s `selftest_front_panel_adc`/`selftest_init_channel_hw`
+entries for the full derivation (traced 2026-10-09, continuing past `CDT`
+in the boot trace).
+
+- **Mechanism fully traced, not yet resolvable**: `selftest_front_panel_
+  adc` (`0xE296E`, `FP_a2d`) makes 3 calls to `selftest_init_channel_hw`
+  (`0xE2AB0`, channels `0x22`/`0xE0`/`0x40`), sums the 2nd+3rd results,
+  and range-checks the sum against `[0x100,0x700]` (`"gnd = <hex> <>
+  5"` on failure). Each `selftest_init_channel_hw` call writes a command
+  sequence to a far-pointer hardware register block at `[0x1D20]`, then
+  busy-polls a countdown (seeded `0x800`) waiting for either an ISR-set
+  flag (`[0x1AEE]&1` - no ISR for this chip located yet) or a status bit
+  (`es:[di+5]&4`); if the countdown hits 0 first, it prints `"<label> :
+  TIME-OUT"` and returns `0xFFFF`. Live-captured trace (`"FP_a2d :
+  TIME-OUT"` then `"FP_a2d : gnd =  FFFF> 5"`) matches this exactly: the
+  1st call times out, the 2nd call also times out (`0xFFFF` summed with
+  the 3rd call's near-zero result lands outside `[0x100,0x700]`).
+- **Why this is genuinely open, not just unstubbed yet**: the `0x4`
+  status bit is directly derivable the same way `AcqMemReadyBitStub`'s
+  bit was ("bit clear -> keep waiting/fail" implies "pass needs it
+  set") - but fixing *only* that doesn't make `FP_a2d` pass. Once the
+  busy-wait resolves, the function still builds its real return value
+  from reading the chip's data register (`es:[di+4]`) *twice* and
+  combining the bits (`(read1<<2) + (read2>>6)`) - a dual-read ADC
+  sampling scheme. With that register's unstubbed default (`0`), the
+  result is still `0`, which still falls outside `[0x100,0x700]` - just
+  with a different printed message (`"gnd"` instead of `"TIME-OUT"`),
+  not an actual pass. A real fix needs a plausible ADC sample value,
+  which is content-guessing exactly like `selftest_mm_acq`'s delta
+  check - so no stub was attempted for either half of this one.
+- Hardware identity: `[0x1D20]`'s command sequence plus the dual-read
+  data construction strongly suggest a real front-panel A/D converter
+  chip (3 channels for `0x22`/`0xE0`/`0x40`, consistent with the
+  self-test's own name) - but this isn't independently confirmed
+  against a schematic/service manual.
+
+## Main ROM revision cross-check (`ROMS`/`"MISMATCH"`, resolved mechanism, one open question remains)
+
+See `FUNCTIONS.md`'s `selftest_rom_checksum` entry for the full derivation
+(traced 2026-10-09, same session as `FP_a2d` above).
+
+- **Fully resolved, not an emulator issue**: `selftest_rom_checksum`
+  (`0xE16EA`, `ROMS`) is a revision-byte cross-check, not a computed
+  checksum. It compares a one-byte "revision" field (offset `+4` of a
+  small embedded header: id word, BCD part-number digits, revision
+  byte, `0xEB` sentinel, then a `"Copyright..."` string) at physical
+  `0xE0000` (start of `160-3633`'s low 32KB) against the same field at
+  physical `0xE8000` (start of its high 32KB). The real ROM bytes give
+  `0x14` and `0x4C` respectively - genuinely different - which
+  reproduces the live `"ROMS : MISMATCH,14,4C,14"` trace exactly, with
+  the 3rd value always the byte at literal physical `0x80004` (`160-
+  2998`'s own header, `0x14`). Nothing here needs a stub: both bytes
+  are plain ROM content the emulator already maps correctly, and
+  `[0x1DD4]`/`[0x1DD8]` (the two far pointers used) are themselves
+  correctly initialized by `init_far_pointer_table_sysrom`'s existing
+  embedded table - an earlier same-day pass had wrongly ruled that
+  table out as the source, by comparing its dest-offsets (`ES=0x209`-
+  relative) directly against `[0x1DD4]`/`[0x1DD8]`'s flat-space
+  offsets without converting through the base-segment difference.
+- **One open question remains**: whether physical `0xE8000` is
+  supposed to be a second physical EPROM chip's own header (i.e.
+  `160-3633`'s logical 64KB mapped range is built from two separately
+  revision-stamped 32KB chips, matching the service manual's Table 3-1
+  "low/high half of U9109"/"low/high half of U9110" chip-pair
+  language that `MEMORY_MAP.md` elsewhere set aside - but for a
+  different, unrelated question, whether `160-3532`/`160-3633`
+  interleave across *address space*, which stays correctly rejected
+  and is orthogonal to this) - or whether `0xE8000` was never meant to
+  be a header location at all and `0x4C` is just an incidental code/
+  data byte that happens to sit there, making this self-test's check
+  spurious. The actual bytes at `0xE8000` (`f7 ea c4 1e 4c 1d 8b f8 26
+  c4 51 02 89 56 f4 8c`) don't contain a recognizable `"Copyri"` run
+  the way the genuine header at `0xE0000` does, which leans toward the
+  "incidental byte" explanation, but isn't conclusive either way
+  without an independent source (e.g. a second physical unit's dump,
+  or schematic-level chip-count confirmation) - left open rather than
+  guessed.
+
+## Comm ROM checksum (`COMM_ROM`/`"0C8F <> 2BA3"`, resolved - genuine ROM-content mismatch, not an emulator gap)
+
+See `FUNCTIONS.md`'s `selftest_comm_rom`/`verify_rom_checksum_and_report`/
+`compute_range_checksum` entries for the full derivation (traced
+2026-10-09, same session as `ROMS` above).
+
+- **Fully resolved**: `selftest_comm_rom` checksums the comm ROM
+  (`160-2998`) against its own embedded expected value. The stored
+  expected value is the big-endian word at the ROM's own first 2
+  bytes (physical `0x80000`/`0x80001`, `0x2BA3`); the computed value
+  chains `compute_range_checksum` (a shift-left-then-add-with-carry
+  running checksum, 1 byte at a time, inclusive range) over physical
+  `0x80002-0x87FFF` (the ROM's low 32KB minus its own 2-byte checksum
+  header) then `0x90000-0x97FFF` (the upper 32KB, read via its real,
+  independently-confirmed own address - not the "RAM alias" reading
+  this project corrected away from in `MEMORY_MAP.md`). Running the
+  exact same algorithm directly over `binary/160-2998-14.bin` in
+  Python gives computed=`0x0C8F`, expected=`0x2BA3` - reproducing the
+  live `"comm_rom_0 0C8F <> 2BA3"` trace exactly.
+- Like `ROMS` just above, **this is conclusively not an emulator-
+  fidelity question** - the whole computation is deterministic,
+  ROM-only arithmetic with no RAM or stub dependency whatsoever. The
+  dumped `160-2998-14.bin` file's content simply doesn't satisfy its
+  own embedded checksum. No further investigation is possible from
+  the emulator side; resolving *why* would need either a second,
+  independently-dumped copy of this ROM to compare against, or giving
+  up on finding an explanation beyond "this dump's checksum doesn't
+  verify" (the same category of finding as `ROMS`, and plausibly
+  related to it - both are consistency checks on ROM content that
+  this specific set of dumps fails).
+
+## Comm-board loopback flag check (`COMM_LB`/`"FGET NOT SET"`/`"FGET NOT CLEAR"`, failure mechanism fully traced - genuine stub candidate, deliberately left unstubbed)
+
+See `FUNCTIONS.md`'s `selftest_comm_loopback_b` entry for the full
+derivation (traced 2026-10-09, same session as `ROMS`/`COMM_ROM`
+above - this was the last diagnostic line left from that session's
+full-boot-trace sweep).
+
+- **Mechanism fully traced**: `selftest_comm_fget_flag` (`0xE1FBC`)
+  writes a literal command byte to physical `0x406F3` (the 4th
+  register of the comm-option's 8-register UART/GPIB bank,
+  `0x406F0`-`0x406F7`), then checks `comm_stat` (`0x4067C`) bit `0x4`
+  (`TBRE` per `MEMORY_MAP.md`'s Table 7-36) and `comm_param`
+  (`0x406BC`) bit `0x80` (the UART's own live serial-data-output line,
+  per that file's 2026-09-16 schematic-trace finding). Subtest 1
+  writes `0x86`, needs both bits SET; subtest 2 writes `6`, needs both
+  CLEAR. Both fail in the live trace, and both failures are fully
+  explained, deterministically, by the current emulator model: the
+  write target (`0x406F3`) isn't one of the two registers
+  `io_stubs.InteractiveUartMock` actually models (`0x406F0`
+  data/`0x406F1` control, the standard 8251 pair), so it never updates
+  the i8251 core's `command` register - `comm_stat` bit `0x4`
+  (mirrored from `chip.txrdy_r()`) stays permanently `0`, failing
+  subtest 1 unconditionally. `comm_param` bit `0x80` is a static
+  `COMM_OPTION_STUBS` baseline (`0xF8`) with no dynamic coupling to
+  anything, so it stays permanently `1`, failing subtest 2's CLEAR
+  requirement unconditionally too.
+- **Deliberately left unstubbed, not a bug to fix**: `MEMORY_MAP.md`
+  already flags `0x406F1`-`0x406F3` as plausibly TMS9914A (GPIB chip)
+  register space rather than confirmed UART registers (the
+  `init_readout_port_config`/`write_readout_port_byte` puzzle, "eight
+  internal registers" count match). There's no independently-confirmed
+  real register semantics for `0x406F3` to build a stub from - doing
+  so would mean guessing how a write there is really supposed to
+  affect `comm_stat`/`comm_param`, which this project has no source
+  for. Same category as `MM_ACQ`/`FP_a2d`'s `"gnd"`/`CDT`'s
+  `"uncaled"`: real hardware content genuinely unknown, left open
+  rather than guessed.
+- **What would resolve this**: either a real-hardware exerciser-screen
+  trace of `comm_stat`/`comm_param` while deliberately toggling
+  whatever `0x406F3` really is (GPIB-chip register vs. a 3rd
+  UART-adjacent register), or a schematic trace of the comm board's
+  UART/GPIB chip-select decoding for that specific address - the same
+  kind of evidence that already resolved `comm_param`'s/`comm_stat`'s
+  other bit assignments earlier in `MEMORY_MAP.md`.
 
 ## Display / CRT readout hardware
 
