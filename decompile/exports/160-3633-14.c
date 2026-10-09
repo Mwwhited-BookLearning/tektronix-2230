@@ -2794,12 +2794,13 @@ uint __stdcall16far wait_stable_measurement(undefined1 param_1,undefined2 param_
 
 
 
-/* selftest_front_panel_switch_b (confidence: Mechanism confirmed; which physical control not
-   confirmed)
+/* selftest_acq_ab_addr_walk (confidence: Confirmed via hardcoded string + register + position-count
+   match)
    
-   Evidence: Front-panel control test, scans `update_menu_position` over range 0-0x15 */
+   Evidence: Wrapper/loop driver scanning `update_menu_position` over range 0-0x15 via its step
+   helper - the real `ACQ_AB` self-test (see `0xE2FFC` below), not a front-panel-switch test */
 
-uint __cdecl16far selftest_front_panel_switch_b(void)
+uint __cdecl16far selftest_acq_ab_addr_walk(void)
 
 {
   uint uVar1;
@@ -2818,13 +2819,24 @@ uint __cdecl16far selftest_front_panel_switch_b(void)
 
 
 
-/* step_front_panel_switch_b_test (confidence: Confirmed)
+/* step_acq_ab_addr_walk (confidence: Confirmed (compare side); write side NOT traced)
    
-   Evidence: Per-position worker for `selftest_front_panel_switch_b` (0-0x15): computes a shifted
-   `0xFFE` threshold mask and calls `verify_adc_calibration` - same ADC-readback shape as switch_a
-    */
+   Evidence: Per-position worker for `selftest_acq_ab_addr_walk` (0-0x15): computes a shifted
+   `0xFFE` threshold mask and calls `verify_adc_calibration`, which builds its failure message from
+   the **hardcoded literal string "ACQ_AB"** (confirmed by reading `160-3532-14.bin` file offset
+   `0xFD3C` directly) and compares the far ptr `[0x322]` (fixed `0x4000:0x377E` = physical
+   `0x4377E`, the CONFIRMED "Acquisition Memory Address Buffer Low bits U3427" per `MEMORY_MAP.md`)
+   - this is the real `ACQ_AB` address-line-walking self-test the service manual describes ("Twenty
+   one unique patterns... written into the address counters U3423/U3424/U3425 and read back
+   through... U3427 U3428"), not a front-panel-switch test. The computed shifted-`0xFFE` pattern
+   across positions 0-0xB-0x15 reproduces the emulator's observed failure sequence
+   `2,6,E,1E,3E,7E,FE,1FE,3FE,7FE,FFE` exactly. **Still open**: the *write* side (driving the
+   walking pattern onto the address counters) isn't found anywhere in this function or its caller -
+   the only hardware touch here is a constant `mov byte [es:di],0` to physical `0x437BE` (far ptr
+   `[0x326]`), not a per-position pattern write; see `docs/self-test/dispatcher-and-siblings.md`'s
+   2026-10-09 correction and `emulator/docs/design.md`'s `ACQ_AB` section. */
 
-uint __stdcall16far step_front_panel_switch_b_test(undefined2 param_1)
+uint __stdcall16far step_acq_ab_addr_walk(undefined2 param_1)
 
 {
   int iVar1;

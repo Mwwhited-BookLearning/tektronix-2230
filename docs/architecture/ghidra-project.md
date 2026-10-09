@@ -12,6 +12,17 @@ tool alongside this project's own custom disassembler
 as `binary/`'s raw dumps or `hardware/photos/`'s originals, not
 something to expect a fresh clone to have.
 
+**Environment note**: the Ghidra install itself currently lives at
+`C:\repo\tools\ghidra` (confirmed 2026-10-09 - it's moved at least
+once before; don't trust a specific path from an older dated session
+note without checking it still exists). `decompile/apply_names.py`
+and `decompile/export_decompiled_c.py` both call `pyghidra.start()`
+with no path argument, so PyGhidra needs `GHIDRA_INSTALL_DIR` set in
+the environment first, e.g.:
+```
+GHIDRA_INSTALL_DIR="C:\repo\tools\ghidra" python apply_names.py
+```
+
 ## The four imported programs
 
 | Program | Represents | Ghidra block |

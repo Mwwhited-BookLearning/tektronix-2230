@@ -7,6 +7,16 @@ argument where a `gen_source*.py` script accepts one (e.g. `python
 gen_source_2998.py "C:\Users\mwwhi\AppData\Local\bin\NASM\nasm.exe"`)
 instead of assuming bare `nasm` resolves.
 
+**Environment note**: Ghidra is installed at `C:\repo\tools\ghidra`
+(confirmed 2026-10-09 - moved here from a prior `Downloads\
+ghidra_12.1.3_PUBLIC_20260817\...` location some earlier session's
+notes still referenced, which no longer exists). `decompile/
+apply_names.py`/`export_decompiled_c.py` call `pyghidra.start()` with
+no explicit path, so it must be given via the `GHIDRA_INSTALL_DIR`
+env var: `GHIDRA_INSTALL_DIR="C:\repo\tools\ghidra" python
+apply_names.py`. See `docs/architecture/ghidra-project.md`'s
+"Environment" note for the same.
+
 ## Next up
 
 - [ ] **User report 2026-09-18: SELECT C1/C2 (momentary front-panel
