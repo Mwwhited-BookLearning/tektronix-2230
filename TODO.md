@@ -518,25 +518,6 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       still-unfound general menu-navigation code above, not
       independently solvable by this technique. Worth retrying once
       (if ever) that general mechanism is found.
-- [x] **RESOLVED 2026-09-15**: diffed `160-2998-13.bin` vs `-14.bin`
-      byte-for-byte - only 133 bytes differ total, in exactly 3 runs (a
-      6-byte header, and two runs starting at the 16KB-page boundaries
-      `0x4000`/`0xC000`, ~63-67 bytes each - "two ~16KB-aligned
-      regions" meant page-*aligned start*, not 16KB-*long*). At
-      `0x84000`: `-13` has a small, previously undocumented config-check
-      routine (tests `[0x0623]`/`[0x0002]`/`[0x05FA]`/`[0x05F7]`); `-14`
-      has a truncated, non-terminated leftover copy of the ROM's own
-      copyright string in the same slot (the real, complete copy lives
-      at file offset `0x000a` in both revisions) - most likely a build
-      artifact, not functional. At `0xC000`: corrects an existing claim
-      that both comm-ROM pages 2 and 3 carry the boot-stub far-jump -
-      true only for `-14`; `-13` has no page-3 boot stub at all (that
-      offset falls mid-function in `-13`, patched over in `-14`). Full
-      writeup, hex dumps, and hand-disassembly in
-      `docs/comm-rom/revision-13-vs-14-diff.md`. **Not done**: actually
-      disassembling `-13`'s changed regions into the project's tooling
-      (the two `-13`-only routines found are hand-decoded only) - low
-      priority since `-13` isn't this project's baseline chip.
 - [ ] `write_readout_port_byte`/`init_readout_port_config`/`print_char`/
       `print_string_far` (all used exclusively for the self-test text
       banner) write to physical `0x406F0`-`0x406F3`, inside the comm-
@@ -642,68 +623,34 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       comm-ROM physical addresses. Re-verify byte-identical/length-
       matching (and a near-zero `git diff --stat` on files your rename
       shouldn't have touched) before committing.
-- [x] **RESOLVED 2026-09-14 - the live RS-232 command silence was a
-      baud-rate reliability problem, not firmware.** A day-long live
-      investigation (interrupt mask latch tracing, the `[0x712]`
-      dispatch table, `poll_comm_status_tick`, exhaustive settings
-      elimination, a two-ROM-revision cross-check) chased what turned
-      out to be a red herring: at 9600 baud, both scopes reliably
-      returned clean-looking but content-blind `STATUS 98;READY;`
-      responses to every command. Dropping to **1200 baud** made every
-      command work correctly and immediately (`ID?`, `EVEnt?`, `SET?`,
-      `HELp?` all returned exactly the documented format). All of that
-      day's disassembly findings remain accurate documentation of how
-      the comm ROM actually works (interrupt masking, the tick-driven
-      status poller, the byte-classification table, etc.) - they just
-      weren't the blocker. Full transcript and reasoning trail in
-      `docs/comm-rom/rs232-breakthrough.md`'s "RESOLVED, 2026-09-14: it was baud rate
-      reliability all along, not firmware".
-
-      **Still genuinely open, lower priority now**:
+- [ ] **RS-232 comm thread**: the original "live command silence"
+      blocker is **resolved** (2026-09-14 - baud-rate reliability, not
+      firmware; dropping to 1200 baud fixed it. See `docs/comm-rom/
+      rs232-breakthrough.md` and `changes/2026-09-14.md`). Still
+      genuinely open, lower priority now:
       - Which `[0x1B83]` value (`0x1E` vs `0x14`) means "comm option
-        installed" - see `detect_comm_option_hw` in `FUNCTIONS.md` and
-        `docs/comm-rom/option-detection.md` "Found the actual source of [0x1B83]". Write-
-        probe address confirmed as general-purpose "Time Base Mode
-        Register U4119", not comm-specific, but exact bit semantics
-        still unresolved.
+        installed" - write-probe address confirmed as general-purpose
+        Time Base Mode Register U4119, not comm-specific; exact bit
+        semantics still unresolved. See `detect_comm_option_hw` in
+        `FUNCTIONS.md`, `docs/comm-rom/option-detection.md`.
       - The genuine UART-receive entry point (where an incoming byte
-        first lands in `[6]`/`[0x580]`) is still unfound in the
-        disassembly. **Progress 2026-09-14**: found the likely backing
-        *data* for the keyword matcher itself - a real command-keyword
-        table in the comm ROM (file offsets `0x8A59`-`0x8F1D`) whose
-        entries match the live `HELp?` list byte-for-byte, plus a
-        6-byte-per-entry index/dispatch table immediately before it
-        that resolves numeric command IDs to far pointers landing
-        exactly on each keyword's table entry - see `docs/comm-rom/rs232-live-session-2026-09-14.md`'s
-        "Found the real command-keyword table" and `docs/comm-rom/command-keyword-table.md` for the full extracted contents. **Still not found**:
-        the code that actually walks this index table / assigns the
-        numeric command ID from incoming bytes - a grep for the far
-        pointers' literal segment value found zero hits in the
-        already-disassembled code, so it's either computed dynamically
-        or lives in an unreached region.
-      - `STAtus?` returned `STATUS 128;` at 1200 baud once, and never
-        again - **investigated further 2026-09-14, not reproduced**:
-        10 consecutive live `STAtus?` calls at 4800 baud all returned a
-        clean `STATUS 0;`, and Table 7-34's bit layout hardcodes bit 7
-        to `0` in every documented category, so no ROM code path can
-        produce it under the documented status scheme. Best remaining
-        explanation is a one-off transient serial glitch, not a
-        firmware defect - see `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Live session,
-        2026-09-14 (continued)" for the full writeup. Also newly found
-        in the same session: some query responses substitute an inline
-        `STATUS <code>;` for a single field's value (e.g. `DELAY
-        VALUE:STATUS 98;`) rather than failing the whole response -
-        worth remembering when parsing any response programmatically.
-      - Whether `FUNC_2998_39F5` (the originally-suspected polling
-        loop, never confirmed reachable) or `poll_comm_status_tick`
-        (confirmed reachable via the real hardware interrupt, but only
-        does status housekeeping) relates to the real receive path is
-        still unresolved - moot for practical use now that RS-232
-        communication works, but open for anyone continuing the
-        disassembly.
-      - Diffing/disassembling comm ROM revision `-13` (Scope 1, vs. the
-        `-14` this project has actually read) is no longer motivated by
-        a suspected defect, but remains a legitimate documentation gap.
+        first lands in `[6]`/`[0x580]`) is still unfound. The command-
+        keyword table and its 6-byte-per-entry dispatch index ARE found
+        (`docs/comm-rom/command-keyword-table.md`), but the code that
+        walks it / assigns numeric command IDs from incoming bytes is
+        not - a grep for the dispatch table's literal segment value
+        found zero hits in already-disassembled code.
+      - `STAtus?` returning `STATUS 128;` once was never reproduced
+        (10/10 clean `STATUS 0;` on retry) and Table 7-34 hardcodes bit
+        7 to `0` in every documented category - likely a one-off
+        transient serial glitch, not a firmware defect. See
+        `docs/comm-rom/rs232-live-session-2026-09-14.md`.
+      - Whether `FUNC_2998_39F5` or `poll_comm_status_tick` relates to
+        the real receive path is unresolved but moot now that RS-232
+        works in practice.
+      - Diffing/disassembling comm ROM revision `-13` remains a
+        legitimate documentation gap, not a motivated investigation
+        anymore.
 - [ ] Which physical front-panel control each of the 3 `update_menu_
       position`-range-scan self-tests (`selftest_front_panel_switch_a`/
       `_b`, `selftest_comm_option_switch`) corresponds to isn't
