@@ -11119,7 +11119,15 @@ FUN_000e_e3bc(byte *param_1,undefined2 param_2,undefined2 param_3,byte *param_4,
 
 
 
-int __stdcall16far FUN_000e_e510(byte param_1)
+/* draw_readout_char_dup1 (confidence: Mechanism confirmed; never confirmed reachable)
+   
+   Evidence: 2026-10-08: structurally identical to `draw_readout_char` - same `[bp+6]` char arg,
+   same `shl` x2 index into the `[0x1DB0]` stroke table, same `es:[bx+di]` far-pointer resolution,
+   writes through `[0x45E]` - but `ref_count: 0` in both the heuristic scanner and Ghidra's
+   independent decompile; no confirmed caller found by either. First of two unreached duplicates
+   found in `160-3633` (see `draw_readout_char_dup2`) */
+
+int __stdcall16far draw_readout_char_dup1(byte param_1)
 
 {
   byte bVar1;
@@ -11150,7 +11158,14 @@ int __stdcall16far FUN_000e_e510(byte param_1)
 
 
 
-int __stdcall16far FUN_000e_e60c(byte param_1)
+/* draw_readout_char_dup2 (confidence: Mechanism confirmed; never confirmed reachable)
+   
+   Evidence: 2026-10-08: second unreached duplicate of `draw_readout_char` in `160-3633`,
+   immediately after `draw_readout_char_dup1` - same mechanism, `ref_count: 0` in both the heuristic
+   scanner and an independent Ghidra decompile cross-check; tracked across several sessions as
+   `FUNC_3633_E60C`/`FUNC_3633_DF56` before being named here */
+
+int __stdcall16far draw_readout_char_dup2(byte param_1)
 
 {
   byte *pbVar1;

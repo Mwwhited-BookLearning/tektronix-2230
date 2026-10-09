@@ -89,16 +89,16 @@ original mix-up. See `docs/self-test/dispatcher-and-siblings.md`
 start
 partition "print_selftest_banner (0xE416F)" {
   :Called from 0xE07F8,\nguarded by [0x1B10]==0;
-  :Print "before" banner text\n(SUB_E3567, SUB_E3930, SUB_E3854,\nSUB_E4217 -> print_string_far x2);
-  :Print "after" banner text\n(SUB_E374E, SUB_E3930, SUB_E3854,\nSUB_E4217 again);
+  :Print "before" banner text\n(init_print_region, plot_readout_point, draw_readout_char,\nprint_banner_line -> print_string_far x2);
+  :Print "after" banner text\n(close_print_record, plot_readout_point, draw_readout_char,\nprint_banner_line again);
   :mov [0x1B10], 3;
-  note right: NO test calls at all -\npreviously misattributed here.\nSUB_E374E/SUB_E3821/print_string_far\nare display primitives, not tests\n(see MEMORY_MAP.md readout/CRT entry)
+  note right: NO test calls at all -\npreviously misattributed here.\nclose_print_record/print_readout_string/print_string_far\nare display primitives, not tests\n(see MEMORY_MAP.md readout/CRT entry)
 }
-:Caller far-calls SUB_E094B next\n(same outer routine, unconditional);
-partition "SUB_E094B (not yet renamed)" {
+:Caller far-calls init_selftest_report_record next\n(same outer routine, unconditional);
+partition "init_selftest_report_record (0xE094B)" {
   :Load far pointer from [0x1C80]\ninto [0x1B56]/[0x1B58];
   :Write a fixed 3-byte record (3, 2, 0) there;
-  note right: looks like initializing a\nsmall counter/record structure, not\nlogging a specific test result - this\ncall site has no test result available\n\nSUB_E097B (companion, 1 call site) then\npacks/dedups nibble values into the\nsame structure
+  note right: looks like initializing a\nsmall counter/record structure, not\nlogging a specific test result - this\ncall site has no test result available\n\nappend_selftest_report_char (companion, 1 call site) then\npacks/dedups nibble values into the\nsame structure
 }
 stop
 @enduml

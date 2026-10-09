@@ -6,8 +6,9 @@ see `docs/README.md` for the full table of contents.
 ## Possible ADC/measurement self-test hardware
 
 Found while renaming the `SUB_E12F4`/`SUB_E2DC9`/`SUB_E0DCC` cluster
-(`160-3633`) - flagged as a lead at the end of the previous renaming
-session. These three, plus `selftest_init_channel_hw` (`0xE2AB0`) and
+(`160-3633`, now `run_adc_selftest`/`wait_stable_measurement`/
+`configure_measurement_hw`) - flagged as a lead at the end of the
+previous renaming session. These three, plus `selftest_init_channel_hw` (`0xE2AB0`) and
 `clear_selftest_status_flags` (`0xE0E56`) from earlier, all read/write
 a shared set of "hardware register" variables via far pointers:
 `[0x322]`, `[0x326]`, `[0x32A]`, `[0x32E]`, `[0x336]`, `[0x33A]`, plus

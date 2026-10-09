@@ -167,7 +167,7 @@ void boot_init(void) {
 
 **Correction this session**: this routine was previously documented as
 `self_test_dispatcher` running ~25 subsystem tests. Reading it fully
-(prompted by tracing what calls `SUB_E094B`) found it contains **no
+(prompted by tracing what calls `init_selftest_report_record`) found it contains **no
 test calls at all** - only banner-printing. The real dispatcher is a
 different function, `0xE4244` (below), which now carries the
 `self_test_dispatcher` name. See `docs/self-test/dispatcher-and-siblings.md` "self_test_dispatcher
@@ -207,11 +207,12 @@ void print_selftest_banner(void) {
 }
 ```
 
-Its caller (the outer routine `SUB_E07B4`, not this function itself)
-immediately far-calls `SUB_E094B` next, unconditionally:
+Its caller (the outer routine `print_selftest_report_line` (`0xE07B4`),
+not this function itself) immediately far-calls
+`init_selftest_report_record` next, unconditionally:
 
 ```c
-void SUB_E094B(void) {  // not yet renamed
+void init_selftest_report_record(void) {
     // Loads a far pointer from [0x1C80] into [0x1B56]/[0x1B58], then
     // writes a fixed 3-byte record at it: byte0=3, byte1=2, byte2=0.
     // No test result is available at this call site (it's called

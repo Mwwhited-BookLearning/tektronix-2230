@@ -14742,10 +14742,10 @@
     "notes": null
   },
   "EE510": {
-    "name": "FUNC_3633_E510",
+    "name": "draw_readout_char_dup1",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_readout_char_dup1",
     "notes": null
   },
   "EE532": {
@@ -14798,10 +14798,10 @@
     "notes": null
   },
   "EE60C": {
-    "name": "FUNC_3633_E60C",
+    "name": "draw_readout_char_dup2",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_readout_char_dup2",
     "notes": null
   },
   "EE62E": {
@@ -18375,10 +18375,10 @@
     "notes": null
   },
   "F213B": {
-    "name": "FUNC_3532_213B",
+    "name": "draw_readout_char_3532_1",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_readout_char_3532_1",
     "notes": null
   },
   "F216C": {
@@ -18403,10 +18403,10 @@
     "notes": null
   },
   "F21C0": {
-    "name": "FUNC_3532_21C0",
+    "name": "draw_readout_char_3532_2",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_readout_char_3532_2",
     "notes": null
   },
   "F21F1": {
@@ -18438,10 +18438,10 @@
     "notes": null
   },
   "F2251": {
-    "name": "FUNC_3532_2251",
+    "name": "draw_readout_char_3532_3",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_readout_char_3532_3",
     "notes": null
   },
   "F2282": {
@@ -18466,10 +18466,10 @@
     "notes": null
   },
   "F22D6": {
-    "name": "FUNC_3532_22D6",
+    "name": "draw_tick_marks_3532",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "draw_tick_marks_3532",
     "notes": null
   },
   "F2319": {

@@ -1006,7 +1006,69 @@ void __stdcall16far FUN_000f_1a05(void)
 
 
 
-uint __stdcall16far FUN_000f_21c0(byte param_1)
+/* draw_readout_char_3532_1 (confidence: Mechanism confirmed; never confirmed reachable)
+   
+   Evidence: 2026-10-08: same `char -> x4 index -> [0x1DB0]` lookup mechanism as
+   `draw_readout_char`, but compiled into the *other* main-ROM half (`160-3532`) and writing through
+   a different buffer (`[0x6AE]`, word-advanced by 2/stroke, offset via `(ES-DS)<<4` rather than
+   `160-3633`'s flat `[0x45E]`) - shares the `[0x1C02]` second-plane-offset variable with the
+   `160-3633` family (see `plot_readout_point`'s entry above), confirming both are compiled
+   instances of the same underlying display-list-append logic. `ref_count: 0`, no caller found via
+   listing grep or Ghidra; first of three such functions found in this chip, via a direct grep for
+   every `[0x1DB0]` reference across both chips' listings at once - see
+   `docs/display/vector-display-and-stroke-font.md` "Follow-up, 2026-10-08" */
+
+uint draw_readout_char_3532_1(undefined2 param_1,byte param_2)
+
+{
+  byte bVar1;
+  int iVar2;
+  byte *pbVar3;
+  byte bVar4;
+  uint in_DX;
+  uint uVar5;
+  byte *pbVar6;
+  byte *pbVar7;
+  byte *pbVar8;
+  int unaff_DS;
+  
+  pbVar7 = (byte *)((int)*(undefined4 *)0x6ae +
+                   ((int)((ulong)*(undefined4 *)0x6ae >> 0x10) - unaff_DS) * 0x10);
+  pbVar3 = (byte *)*(undefined4 *)((uint)param_2 * 4 + (int)*(undefined4 *)&DAT_000f_1cc0);
+  pbVar6 = (byte *)pbVar3;
+  uVar5 = in_DX & 0xff;
+  while( true ) {
+    bVar1 = *pbVar6;
+    pbVar6 = pbVar6 + 1;
+    if (bVar1 == 0) break;
+    *pbVar7 = bVar1 & 0xf;
+    pbVar8 = pbVar7 + 1;
+    uVar5 = (bVar1 & 0x70) >> 4;
+    *pbVar8 = (char)uVar5 + (char)*(undefined2 *)0x6aa;
+    iVar2 = *(int *)&DAT_000f_1b12;
+    pbVar8[iVar2 + 1] = 2;
+    pbVar8[iVar2 + 2] = 2;
+    bVar4 = 8;
+    if ((bVar1 & 0x80) != 0) {
+      bVar4 = 9;
+    }
+    pbVar8[iVar2] = bVar4;
+    pbVar8[iVar2 + -1] = bVar4;
+    *(int *)0x6ae = *(int *)0x6ae + 2;
+    pbVar7 = pbVar7 + 2;
+  }
+  return uVar5;
+}
+
+
+
+/* draw_readout_char_3532_2 (confidence: Mechanism confirmed; never confirmed reachable)
+   
+   Evidence: 2026-10-08: second of the three `160-3532` siblings of `draw_readout_char_3532_1` -
+   identical prologue and `[0x6AE]`/`(ES-DS)<<4` buffer addressing through to its own `[0x1DB0]`
+   lookup */
+
+uint __stdcall16far draw_readout_char_3532_2(byte param_1)
 
 {
   byte bVar1;
@@ -1059,7 +1121,11 @@ uint __stdcall16far FUN_000f_21c0(byte param_1)
 
 
 
-uint __stdcall16far FUN_000f_2251(byte param_1)
+/* draw_readout_char_3532_3 (confidence: Mechanism confirmed; never confirmed reachable)
+   
+   Evidence: 2026-10-08: third of the three `160-3532` siblings; same mechanism as `_1`/`_2` */
+
+uint __stdcall16far draw_readout_char_3532_3(byte param_1)
 
 {
   byte bVar1;
@@ -1103,7 +1169,16 @@ uint __stdcall16far FUN_000f_2251(byte param_1)
 
 
 
-void __stdcall16far FUN_000f_22d6(byte param_1,byte param_2)
+/* draw_tick_marks_3532 (confidence: Mechanism confirmed; exact visual purpose not confirmed)
+   
+   Evidence: 2026-10-08: immediately after the `_3532_1`/`_2`/`_3` trio and shares their same
+   `[0x6AE]`/`[0x1C02]` buffer-append idiom, but does **not** read `[0x1DB0]` - instead loops a
+   fixed `ch=4` marker with `cl` stepped by 3 per iteration until `cl>=dl`, writing a stroke-list
+   entry pair each time. Reads as a repeating tick/mark generator for the same display list rather
+   than a glyph-table reader; name is mechanism-only, exact visual role (ruler? dashes?) not
+   confirmed */
+
+void __stdcall16far draw_tick_marks_3532(byte param_1,byte param_2)
 
 {
   int iVar1;

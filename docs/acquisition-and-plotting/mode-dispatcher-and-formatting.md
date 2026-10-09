@@ -5,7 +5,7 @@ see `docs/README.md` for the full table of contents.
 
 ## Found: the acquisition mode-change dispatcher (handle_acq_mode_change)
 
-`SUB_E80E4` takes a single "what changed" flags word (arg at `[bp-8]`)
+`handle_acq_mode_change` takes a single "what changed" flags word (arg at `[bp-8]`)
 and dispatches on individual bits, each corresponding to one aspect of
 acquisition/display state that just changed:
 

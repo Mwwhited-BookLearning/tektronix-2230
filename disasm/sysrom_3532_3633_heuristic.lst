@@ -21629,7 +21629,7 @@ L_EE4D7:
     3633:E50A  [EE50A]  8be5            mov     sp, bp
     3633:E50C  [EE50C]  5d              pop     bp
     3633:E50D  [EE50D]  ca0400          retf    4
-FUNC_3633_E510:
+draw_readout_char_dup1:
     3633:E510  [EE510]  55              push    bp
     3633:E511  [EE511]  8bec            mov     bp, sp
     3633:E513  [EE513]  83ec0a          sub     sp, 0xa
@@ -21725,7 +21725,7 @@ L_EE5EE:
     3633:E606  [EE606]  8be5            mov     sp, bp
     3633:E608  [EE608]  5d              pop     bp
     3633:E609  [EE609]  ca0200          retf    2
-FUNC_3633_E60C:
+draw_readout_char_dup2:
     3633:E60C  [EE60C]  55              push    bp
     3633:E60D  [EE60D]  8bec            mov     bp, sp
     3633:E60F  [EE60F]  83ec0a          sub     sp, 0xa
@@ -27142,7 +27142,7 @@ L_F2054:
 L_F2089:
     3532:2089  [F2089]  cb              retf    
 
-FUNC_3532_213B:
+draw_readout_char_3532_1:
     3532:213B  [F213B]  55              push    bp
     3532:213C  [F213C]  8bec            mov     bp, sp
     3532:213E  [F213E]  56              push    si
@@ -27207,7 +27207,7 @@ L_F21B6:
     3532:21BB  [F21BB]  5e              pop     si
     3532:21BC  [F21BC]  5d              pop     bp
     3532:21BD  [F21BD]  ca0200          retf    2
-FUNC_3532_21C0:
+draw_readout_char_3532_2:
     3532:21C0  [F21C0]  55              push    bp
     3532:21C1  [F21C1]  8bec            mov     bp, sp
     3532:21C3  [F21C3]  56              push    si
@@ -27279,7 +27279,7 @@ L_F2247:
     3532:224C  [F224C]  5e              pop     si
     3532:224D  [F224D]  5d              pop     bp
     3532:224E  [F224E]  ca0200          retf    2
-FUNC_3532_2251:
+draw_readout_char_3532_3:
     3532:2251  [F2251]  55              push    bp
     3532:2252  [F2252]  8bec            mov     bp, sp
     3532:2254  [F2254]  56              push    si
@@ -27344,7 +27344,7 @@ L_F22CC:
     3532:22D1  [F22D1]  5e              pop     si
     3532:22D2  [F22D2]  5d              pop     bp
     3532:22D3  [F22D3]  ca0200          retf    2
-FUNC_3532_22D6:
+draw_tick_marks_3532:
     3532:22D6  [F22D6]  55              push    bp
     3532:22D7  [F22D7]  8bec            mov     bp, sp
     3532:22D9  [F22D9]  56              push    si

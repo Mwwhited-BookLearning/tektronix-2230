@@ -6,7 +6,7 @@ see `docs/README.md` for the full table of contents.
 ## Found: the self-test dispatcher
 
 **CORRECTION (this session): `self_test_dispatcher` was misnamed.**
-Tracing what actually calls `SUB_E094B` (see next section) led to
+Tracing what actually calls `SUB_E094B` (now `init_selftest_report_record`, see next section) led to
 reading `0xE416F` (`160-3633`) end-to-end for the first time instead
 of just skimming its call list, and it turned out to contain **zero**
 OR-fold test calls - it's entirely print/banner setup: `SUB_E3567`
@@ -25,7 +25,7 @@ routine above). `check_comm_option_installed`'s option-detection call
 is one link in this chain but notably does NOT get OR'd into the same
 accumulator the way its neighbors do - consistent with "is an option
 installed" being informational rather than a pass/fail test that
-could error out. One test (`SUB_E252A`) is conditionally skipped based
+could error out. One test (`SUB_E252A`, now `selftest_tb_divider`) is conditionally skipped based
 on `[0x1B83]==0x1E` - the same "comm option RAM/IO confirmed" config
 byte `check_comm_option_installed` checks, so this dispatcher already
 adapts its own test list based on what `check_comm_option_installed`
@@ -50,7 +50,8 @@ test calls inside `self_test_dispatcher`, confirmed by a full re-read.
 `wait_readout_tick` (`0xE0ADD`) throttles `print_string_far`'s
 character-output loop to the readout hardware's actual pace, and
 `clear_selftest_status_flags` (`0xE0E56`) resets a small group of
-status bytes tied to the far-pointer table `SUB_E4443` sets up.
+status bytes tied to the far-pointer table `SUB_E4443` (now
+`init_selftest_register_group`) sets up.
 
 `SUB_E374E`, `SUB_E3821`, and `SUB_E0AF5` (now `print_string_far`) -
 previously listed here as unidentified sibling test subroutines - are
@@ -92,7 +93,9 @@ address 0 to make an accidental null-pointer call harmlessly return,
 a common embedded-firmware defensive trick), initializes the readout
 vector display-list buffer (`[0x1AF4]`/`[0x1AF6]` from `[0x1CC4]`,
 `[0x1C02]=0x8000` - the dual-plane offset), runs setup via `SUB_E4443`/
-`SUB_E75C0`/`SUB_E128D`, picks a test-mode byte `[0x1B48]` based on
+`SUB_E75C0`/`SUB_E128D` (now `init_selftest_register_group`/
+`detect_comm_option_hw`/`verify_adc_control_toggle`), picks a
+test-mode byte `[0x1B48]` based on
 `[0x758]`, calls `init_selftest_report_screen`, and then calls
 `print_selftest_report_line` exactly once immediately followed by
 `self_test_dispatcher` itself. This is the actual entry point that
@@ -143,8 +146,8 @@ FUNCTIONAL_NAMES`:
 | `check_comm_option_installed` (`0xE44F1`) | (n/a, not OR-folded) | Comm/GPIB option detect |
 | `selftest_rom_checksum` (`0xE16EA`) | `ROMS` / `MISMATCH` | Main ROM checksum |
 | `selftest_comm_rom` (`0xE1E3E`) | `COMM_ROM` | Comm ROM checksum (both its `0x80000` real address and `0x90000` alias) |
-| `selftest_comm_loopback_a` (`0xE1D28`) | `COMM_LB` (via `SUB_E20B0`) | Comm-board loopback, phase A |
-| `selftest_comm_loopback_b` (`0xE1DB3`) | `COMM_LB` / `FGET NOT SET` / `FGET NOT CLEAR` (via `SUB_E1FBC`) | Comm-board loopback, phase B |
+| `selftest_comm_loopback_a` (`0xE1D28`) | `COMM_LB` (via `selftest_comm_readback`) | Comm-board loopback, phase A |
+| `selftest_comm_loopback_b` (`0xE1DB3`) | `COMM_LB` / `FGET NOT SET` / `FGET NOT CLEAR` (via `selftest_comm_fget_flag`) | Comm-board loopback, phase B |
 | `selftest_comm_ram` (`0xE1E90`) | `COMM_RAM` / `CMOS NOT SUPPORTED` | Comm-board RAM |
 | `selftest_cmos` (`0xE1F18`) | `CMOS` / `reformated` / `recovered` | CMOS/NVRAM (with recovery) |
 

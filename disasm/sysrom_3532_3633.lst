@@ -533,7 +533,7 @@ L_9177D:
     2998_alias_90000:1793  [91793]  06              push    es
     2998_alias_90000:1794  [91794]  bb6422          mov     bx, 0x2264
     2998_alias_90000:1797  [91797]  53              push    bx
-    2998_alias_90000:1798  [91798]  9a480351e9      lcall   SUB_E9858  ; 0xe951, 0x348
+    2998_alias_90000:1798  [91798]  9a480351e9      lcall   decimate_peakdet_samples  ; 0xe951, 0x348
     2998_alias_90000:179D  [9179D]  83c40a          add     sp, 0xa
     2998_alias_90000:17A0  [917A0]  bf808f          mov     di, 0x8f80
     2998_alias_90000:17A3  [917A3]  57              push    di
@@ -12136,7 +12136,7 @@ L_E97FA:
     3633:9804  [E9804]  5d              pop     bp
     3633:9805  [E9805]  ca0400          retf    4
 
-SUB_E9858:
+decimate_peakdet_samples:
     3633:9858  [E9858]  007555          add     byte ptr [di + 0x55], dh
 L_E985B:
     3633:985B  [E985B]  b90800          mov     cx, 8

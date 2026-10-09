@@ -37,10 +37,10 @@ for the full reasoning.
 
 | Value | Meaning | Where seen |
 |---|---|---|
-| `0xAA55` | RAM/IO write-test pattern | `SUB_E44F1`'s option-board presence check (`docs/comm-rom/option-detection.md`) |
-| byte + one's-complement = `0xFF` | Header/identity checksum | Every ROM's own 10-byte self-ID header (byte 4 = BCD revision, byte 5 = its complement); also what `SUB_E44F1` re-derives when probing for a valid ROM at a given address |
+| `0xAA55` | RAM/IO write-test pattern | `check_comm_option_installed`'s option-board presence check (`docs/comm-rom/option-detection.md`) |
+| byte + one's-complement = `0xFF` | Header/identity checksum | Every ROM's own 10-byte self-ID header (byte 4 = BCD revision, byte 5 = its complement); also what `check_comm_option_installed` re-derives when probing for a valid ROM at a given address |
 | `0xFF` (repeated) | Sentinel/unprogrammed-EPROM value | Trailing unused EPROM space (e.g. all of `160-2998`'s last 16 bytes); also used as a "no value"/blank marker in a few config-byte comparisons |
-| `0x1E` | Expected config-byte value | `SUB_E44F1` checks `[0x1B83] == 0x1E` as part of confirming RAM/IO presence - meaning unconfirmed |
+| `0x1E` | Expected config-byte value | `check_comm_option_installed` checks `[0x1B83] == 0x1E` as part of confirming RAM/IO presence - meaning unconfirmed |
 
 ## 160-3633 (main ROM, low half)
 

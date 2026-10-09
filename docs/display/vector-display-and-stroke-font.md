@@ -816,3 +816,97 @@ breakpoint at `0xEDF56`/`0xEE60C` across a much longer/more varied
 instruction run than the boot-to-self-test-banner trace already done,
 to see if either is ever reached under some other menu/mode this
 project hasn't yet exercised live.
+
+## Follow-up, 2026-10-08: found the family is much bigger than thought - a matching, previously undocumented cluster in `160-3532` too
+
+Went looking for every reference to `[0x1DB0]` directly (`grep -n "ptr
+\[0x1db0\]"` across every proven and heuristic listing for all three
+chips) instead of continuing to stumble onto siblings one at a time.
+This turned up two genuinely new things.
+
+**A third `160-3633` sibling**: `FUNC_3633_E510` (physical `0xEE510`),
+immediately before `FUNC_3633_E60C` and structurally identical to it -
+same `[bp+6]` char argument, same `shl ×2` (`×4`) index into
+`[0x1DB0]`, same `es:[bx+di]` far-pointer resolution, same jump into a
+(separately-duplicated, not shared-by-call) stroke-fetch loop that
+writes through `[0x45E]` using the identical `and 0x70 / sar ×4`
+`coarse` extraction. Confirmed via the listing that a clean `retf 4`
+ends the unrelated function immediately before it and a clean `retf 2`
+ends `FUNC_3633_E510` itself before `FUNC_3633_E60C`'s own `push bp` -
+real, bounded, separate functions, not a landing-artifact/fallthrough
+situation. `ref_count: 0`, same as its siblings. (Also checked
+`FUNC_3633_E708`, right after `FUNC_3633_E60C`'s own `retf 2` - **ruled
+out**, it's unrelated code reading `[0x1B8B]`/`[0x1B8A]`/`[0x1B75]`
+and calling `SUB_F6DC9`, no `[0x1DB0]`/`[0x45E]` touch at all. Worth
+recording so it isn't re-suspected later just for being adjacent.)
+
+**The much bigger finding**: three more `[0x1DB0]` readers exist in
+**`160-3532`** (physical `0xF215F`, `0xF21E4`, `0xF2275`, inside
+`FUNC_3532_213B`/`FUNC_3532_21C0`/`FUNC_3532_2251` respectively) - a
+completely separate, previously-undocumented cluster in the *other*
+main-ROM half. This doc had only ever looked at `160-3633`'s copy of
+the mechanism; nobody had grepped the comm/main ROM pair's other chip
+for the same table reference before. All three use the identical
+`char → ×4 index → les [0x1DB0] → es:[bx+si]` formula (register `si`
+instead of `di` - cosmetically different compiler output, same
+operation), and all three are `ref_count: 0` - unreached, same as
+their `160-3633` cousins.
+
+**What's different here, and worth its own note**: the output side
+uses a buffer at far pointer `[0x6AE]` (word-incremented by 2 per
+stroke pair, directly analogous to `160-3633`'s `[0x45E]`), but the
+*write offset* into it is computed with `(ES-DS) << 4` (paragraph
+distance between the far pointer's own segment and the current data
+segment) added to the running pointer, rather than `160-3633`'s flat
+byte-pointer-plus-index approach - a different compiled idiom for
+what's structurally the same "append to a far-pointer-tracked
+display list" operation. **Confirmed cross-chip-shared variable**:
+`[0x1C02]` (used as a `bx`-index into the `[0x6AE]`-based buffer here)
+is the *exact same* variable `160-3633`'s `FUNC_3633_E60C`/
+`FUNC_3633_E510` use as a `bx`-index into *their* `[0x45E]`-based
+buffer - real evidence these two chips' mechanisms are two compiled
+instances of the same underlying display-list-append logic, sharing
+RAM state, not just a coincidental resemblance. (`[0x6AE]`, `[0x6AA]`,
+`[0x1C02]` are not yet in `VARIABLES.md` - worth adding once this
+thread gets a confident name.)
+
+**A fourth, related-but-distinct `160-3532` function**: `FUNC_3532_
+22D6` (`0xF22D6`), immediately after the trio, shares the exact same
+`[0x6AE]`/`[0x1C02]` buffer-append idiom but does **not** read
+`[0x1DB0]` at all - its body draws a fixed `ch=4` tick-mark pattern in
+a `cl`-stepped loop (`add cl, 3` per iteration up to `dl`), i.e. it
+looks like a scale/ruler-mark drawing routine for the same display
+list, analogous to `160-3633`'s already-named `compute_and_draw_scale_
+marker`. Also `ref_count: 0`. Not a glyph-table reader itself, but
+clearly part of the same cluster's output machinery - noted for
+whoever picks this up next, not investigated further this session.
+
+**Caller search, same negative result, now also checked via Ghidra for
+the new cluster**: no listing (proven or heuristic, either chip) has
+any call/jump to `0xF213B`/`0xF21C0`/`0xF2251`/`0xF22D6`, matching
+their `ref_count: 0`. Cross-checked against the independent Ghidra
+decompile too (`decompile/exports/160-3532-14.c`): `FUN_000f_21c0`/
+`FUN_000f_2251`/`FUN_000f_22d6` exist as defined functions there with
+no call sites anywhere in any exported chip's decompiled C either -
+and tellingly, **Ghidra's own auto-analysis never even created a
+function at `0xF213B`** (the gap between the preceding recognized
+function and `FUN_000f_21c0` is large and undefined in Ghidra's view),
+consistent with code so thoroughly unreached that even an independent
+linear-sweep analyzer didn't bother marking it as a function boundary
+on its own.
+
+**Where this leaves things**: the known footprint of "code built to
+read `[0x1DB0]` as a glyph table" is now **six functions across both
+main-ROM chips** - `draw_readout_char` (confirmed reachable, but dead
+on this project's real comm-equipped hardware per 2026-09-16 above),
+`FUNC_3633_E60C`, `FUNC_3633_E510`, `FUNC_3532_213B`, `FUNC_3532_21C0`,
+`FUNC_3532_2251` (all `ref_count: 0`, no caller found by either tool).
+This is real, broader confirmation that the mechanism was a deliberate,
+non-trivial piece of the firmware's design (compiled at least twice,
+into both ROM halves, with matching cross-chip-shared RAM state) - not
+a one-off dead stub - even though reachability is still unproven for
+every copy except the one known to be dead on real hardware. None of
+these six are renamed in `FUNCTIONAL_NAMES` yet (still placeholder
+`FUNC_3633_*`/`FUNC_3532_*` labels) - the mechanism is understood, but
+not confidently enough tied to a specific real-world purpose (which
+menu, which self-test, which display mode) to name with confidence.

@@ -406,6 +406,42 @@ instead of assuming bare `nasm` resolves.
       or the rename-everything sweep are the other live candidates in
       this file) rather than defaulting back into this hunt by inertia.
 
+      **2026-10-08: picked back up per explicit request to go deeper -
+      found the family is much bigger than thought, still no caller.**
+      A direct grep for every `[0x1DB0]` reference across both proven
+      and heuristic listings for *both* main-ROM chips at once (never
+      done before this exact way) turned up 3 more readers: a third
+      `160-3633` sibling (now named `draw_readout_char_dup2` - this is
+      the renamed `FUNC_3633_E60C`/`FUNC_3633_DF56` referenced above -
+      plus a newly found `draw_readout_char_dup1`), and, more
+      significantly, **3 entirely new readers in `160-3532`** (the
+      *other* main-ROM half - this doc had only ever examined
+      `160-3633`'s copy before), now named `draw_readout_char_3532_1`/
+      `_2`/`_3`. All identical mechanism, all `ref_count: 0` in both
+      the heuristic scanner and an independent Ghidra cross-check (for
+      the first of the three, Ghidra's own auto-analysis didn't even
+      create a function boundary - consistent with code that thorough
+      that even a second, independent tool never bothered to mark it).
+      A 4th related `160-3532` function, `draw_tick_marks_3532`, draws
+      into the same shared buffer but doesn't read `[0x1DB0]` itself.
+      Total known footprint is now **6 functions across both chips**
+      with this mechanism; still only `draw_readout_char` itself is
+      confirmed reachable (and dead on this project's real hardware,
+      per 2026-09-16 above). Named all 6 in `FUNCTIONAL_NAMES`/
+      `FUNCTIONS.md` and applied the names to the Ghidra project too
+      (`decompile/apply_names.py`, then regenerated `decompile/
+      exports/160-3633-14.c`/`160-3532-14.c`) since the mechanism is
+      now understood confidently even though reachability isn't. New
+      variables `[0x6AE]`/`[0x6AA]` (160-3532's counterparts of
+      `[0x45E]`/`[0x46E]`) and `[0x1C02]` (confirmed **shared** between
+      both chips' families) added to `VARIABLES.md`. Full detail:
+      `docs/display/vector-display-and-stroke-font.md`'s "Follow-up,
+      2026-10-08" section. **Note**: `binary/aligned/`'s `_readable.asm`
+      regeneration step needs `nasm`, which isn't on `PATH` in this
+      environment - the new names are live in `.lst`/`.symbols.json`/
+      Ghidra, but `_readable.asm`/`binary/aligned/*.bin` are now stale
+      with respect to them until that's rerun somewhere `nasm` exists.
+
       Below is the original investigation history, preserved as-is.
 
       Mechanism is fully understood

@@ -349,6 +349,28 @@ top item.
   from 2026-09-16 stands unchanged; no new static-analysis avenue
   found. Full detail in `docs/display/vector-display-and-stroke-
   font.md`'s "Follow-up, 2026-09-23" section.
+- **2026-10-08: the `[0x1DB0]`-reader family is bigger than thought -
+  6 functions across both main-ROM chips now, still no caller.** A
+  direct grep for every `[0x1DB0]` reference across both chips' proven
+  and heuristic listings at once (not done this way before) found a
+  third `160-3633` sibling and, for the first time, **3 siblings in
+  `160-3532`** - the other main-ROM half, never previously checked for
+  this table. All 6 (`draw_readout_char`, `draw_readout_char_dup1`/
+  `_dup2`, `draw_readout_char_3532_1`/`_2`/`_3`) share the identical
+  `char*4 -> [0x1DB0] -> far-pointer stroke list` mechanism; only
+  `draw_readout_char` is confirmed reachable (and dead on this
+  project's real hardware). A 4th `160-3532` function,
+  `draw_tick_marks_3532`, shares the family's output buffer
+  (`[0x6AE]`/`[0x1C02]`, confirmed shared with `160-3633`'s `[0x45E]`/
+  `[0x1C02]`) without reading `[0x1DB0]` itself. No caller found for
+  any of the 5 unreached siblings via listing grep or an independent
+  Ghidra cross-check (for `draw_readout_char_3532_1`, Ghidra's own
+  auto-analysis didn't even create a function there). All 6 named in
+  `FUNCTIONAL_NAMES`/`FUNCTIONS.md` and in the Ghidra project itself
+  (`decompile/apply_names.py` + re-exported `decompile/exports/*.c`)
+  since the mechanism is confidently understood even though
+  reachability still isn't. Full detail: `docs/display/vector-display-
+  and-stroke-font.md`'s "Follow-up, 2026-10-08" section.
 
 ## Front-panel switches
 

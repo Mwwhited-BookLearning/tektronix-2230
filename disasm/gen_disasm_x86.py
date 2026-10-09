@@ -3736,6 +3736,99 @@ FUNCTIONAL_NAMES = {
                                                # persistent-error watchdog
                                                # in the same family as
                                                # escalate_acq_timeout_reset
+    0xEE510: "draw_readout_char_dup1",        # 2026-10-08: structurally
+                                               # identical to
+                                               # draw_readout_char (0xE3854)
+                                               # - same [bp+6] char arg,
+                                               # same shl x2 index into the
+                                               # [0x1DB0] stroke table, same
+                                               # es:[bx+di] far-pointer
+                                               # resolution, writes through
+                                               # [0x45E] - but ref_count: 0
+                                               # in both the heuristic
+                                               # scanner and Ghidra's
+                                               # independent decompile, no
+                                               # confirmed caller found by
+                                               # either. First of two such
+                                               # unreached duplicates in
+                                               # 160-3633 (see dup2 below);
+                                               # see docs/display/vector-
+                                               # display-and-stroke-font.md
+                                               # "Follow-up, 2026-10-08"
+    0xEE60C: "draw_readout_char_dup2",        # 2026-10-08: second
+                                               # unreached duplicate of
+                                               # draw_readout_char in
+                                               # 160-3633, immediately
+                                               # after dup1 (0xEE510) -
+                                               # same mechanism, same
+                                               # ref_count: 0 in both the
+                                               # heuristic scanner and
+                                               # Ghidra; previously tracked
+                                               # as FUNC_3633_E60C across
+                                               # several sessions before
+                                               # being named here
+    0xF213B: "draw_readout_char_3532_1",      # 2026-10-08: same
+                                               # char -> x4 index ->
+                                               # [0x1DB0] lookup mechanism
+                                               # as draw_readout_char, but
+                                               # compiled into the OTHER
+                                               # main-ROM half (160-3532)
+                                               # and writing through a
+                                               # different buffer
+                                               # ([0x6AE], word-advanced by
+                                               # 2/stroke, offset via
+                                               # (ES-DS)<<4 rather than
+                                               # 160-3633's flat [0x45E])
+                                               # - shares the [0x1C02]
+                                               # bx-index variable with
+                                               # the 160-3633 family,
+                                               # confirming both are
+                                               # compiled instances of the
+                                               # same underlying display-
+                                               # list-append logic.
+                                               # ref_count: 0, no caller
+                                               # found (listing grep or
+                                               # Ghidra); first of three
+                                               # such functions in this
+                                               # chip, found via a direct
+                                               # grep for every [0x1DB0]
+                                               # reference across both
+                                               # chips' listings at once -
+                                               # the first time that exact
+                                               # search had been run
+    0xF21C0: "draw_readout_char_3532_2",      # 2026-10-08: second of the
+                                               # three 160-3532 siblings of
+                                               # draw_readout_char_3532_1 -
+                                               # identical prologue and
+                                               # [0x6AE]/(ES-DS)<<4 buffer
+                                               # addressing through to its
+                                               # own [0x1DB0] lookup;
+                                               # ref_count: 0
+    0xF2251: "draw_readout_char_3532_3",      # 2026-10-08: third of the
+                                               # three 160-3532 siblings;
+                                               # same mechanism as
+                                               # draw_readout_char_3532_1/
+                                               # _2; ref_count: 0
+    0xF22D6: "draw_tick_marks_3532",          # 2026-10-08: immediately
+                                               # after the _3532_1/_2/_3
+                                               # trio and shares their
+                                               # same [0x6AE]/[0x1C02]
+                                               # buffer-append idiom, but
+                                               # does NOT read [0x1DB0] -
+                                               # instead loops a fixed
+                                               # ch=4 marker with cl
+                                               # stepped by 3 per
+                                               # iteration until cl>=dl,
+                                               # writing stroke-list entry
+                                               # pairs each time - reads as
+                                               # a repeating tick/mark
+                                               # generator for the same
+                                               # display list rather than
+                                               # a glyph-table reader;
+                                               # name is mechanism-only,
+                                               # exact visual role (ruler?
+                                               # dashes?) not confirmed.
+                                               # ref_count: 0
 }
 
 # Semantic names for a function's own incoming stack parameters
