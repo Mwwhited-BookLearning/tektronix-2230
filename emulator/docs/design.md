@@ -134,7 +134,7 @@ doesn't depend on it.
 3. Scheduler tick fires at least once (proves the synthetic timer
    approach works) and self-test or normal boot flow continues past
    the point any current static trace has confirmed reachable.
-4. Reaches `draw_readout_char` or `FUNC_3633_E60C` (the two `[0x1DB0]`
+4. Reaches `draw_readout_char` or `FUNC_3633_E60C` (now `draw_readout_char_dup2`) (the two `[0x1DB0]`
    readers) with a real character code as input - log the actual
    physical address dereferenced. This is the concrete target that
    directly answers the open question - once reached, cross-check the

@@ -423,7 +423,7 @@ downstream renderer does with `baseline`+`coarse` isn't a simple
 `Y_hpgl = A + 4*(baseline+coarse)` - solving it precisely needs that
 renderer's own disassembly, not more sample-fitting.
 
-## Found a second, independent reader of `[0x1DB0]` - `FUNC_3633_E60C` (real, structurally confirmed; not proven-reachable)
+## Found a second, independent reader of `[0x1DB0]` - `FUNC_3633_E60C` (now `draw_readout_char_dup2`; real, structurally confirmed; not proven-reachable)
 
 Went hunting for "whatever reads `[0x1CC4]` and produces real output"
 per the previous section's own next-step suggestion - traced through
@@ -472,7 +472,7 @@ accumulates, and why one of the two calls into `0xF6510` passes a
 character byte, is genuinely unresolved - don't trust the earlier
 "character-width measurement" framing if it's echoed anywhere else.
 
-**This function - and the giant function it's embedded in,
+**This function (now `draw_readout_char_dup2`) - and the giant function it's embedded in,
 `FUNC_3633_DF56` (`0xEDF56`) - are both heuristic-only, `ref_count: 0`
 in the symbol table: no confirmed caller was found.** So this is a
 real, structurally solid second consumer of the stroke-font table, not
@@ -753,7 +753,7 @@ the stroke-font search above, and no code has been found calling into
 it either - it's a second, independent open question, not a
 resolution of this one.
 
-## Follow-up, 2026-09-23: retried the "find a confirmed caller" next step for `FUNC_3633_E60C`/`FUNC_3633_DF56` - still nothing, plus a false-lead warning
+## Follow-up, 2026-09-23: retried the "find a confirmed caller" next step for `FUNC_3633_E60C` (now `draw_readout_char_dup2`)/`FUNC_3633_DF56` - still nothing, plus a false-lead warning
 
 Picked this thread back up per the "Still not found" note above (find
 confirmed callers of `FUNC_3633_DF56`/`0xEDF56`-`0xEE705` despite
@@ -824,7 +824,8 @@ Went looking for every reference to `[0x1DB0]` directly (`grep -n "ptr
 chips) instead of continuing to stumble onto siblings one at a time.
 This turned up two genuinely new things.
 
-**A third `160-3633` sibling**: `FUNC_3633_E510` (physical `0xEE510`),
+**A third `160-3633` sibling**: `FUNC_3633_E510` (physical `0xEE510`,
+now `draw_readout_char_dup1`),
 immediately before `FUNC_3633_E60C` and structurally identical to it -
 same `[bp+6]` char argument, same `shl ×2` (`×4`) index into
 `[0x1DB0]`, same `es:[bx+di]` far-pointer resolution, same jump into a
@@ -832,7 +833,7 @@ same `[bp+6]` char argument, same `shl ×2` (`×4`) index into
 writes through `[0x45E]` using the identical `and 0x70 / sar ×4`
 `coarse` extraction. Confirmed via the listing that a clean `retf 4`
 ends the unrelated function immediately before it and a clean `retf 2`
-ends `FUNC_3633_E510` itself before `FUNC_3633_E60C`'s own `push bp` -
+ends `FUNC_3633_E510` (`draw_readout_char_dup1`) itself before `FUNC_3633_E60C`'s own `push bp` -
 real, bounded, separate functions, not a landing-artifact/fallthrough
 situation. `ref_count: 0`, same as its siblings. (Also checked
 `FUNC_3633_E708`, right after `FUNC_3633_E60C`'s own `retf 2` - **ruled
@@ -842,7 +843,8 @@ recording so it isn't re-suspected later just for being adjacent.)
 
 **The much bigger finding**: three more `[0x1DB0]` readers exist in
 **`160-3532`** (physical `0xF215F`, `0xF21E4`, `0xF2275`, inside
-`FUNC_3532_213B`/`FUNC_3532_21C0`/`FUNC_3532_2251` respectively) - a
+`FUNC_3532_213B`/`FUNC_3532_21C0`/`FUNC_3532_2251` - now
+`draw_readout_char_3532_1`/`_2`/`_3` respectively) - a
 completely separate, previously-undocumented cluster in the *other*
 main-ROM half. This doc had only ever looked at `160-3633`'s copy of
 the mechanism; nobody had grepped the comm/main ROM pair's other chip
@@ -862,8 +864,8 @@ byte-pointer-plus-index approach - a different compiled idiom for
 what's structurally the same "append to a far-pointer-tracked
 display list" operation. **Confirmed cross-chip-shared variable**:
 `[0x1C02]` (used as a `bx`-index into the `[0x6AE]`-based buffer here)
-is the *exact same* variable `160-3633`'s `FUNC_3633_E60C`/
-`FUNC_3633_E510` use as a `bx`-index into *their* `[0x45E]`-based
+is the *exact same* variable `160-3633`'s `draw_readout_char_dup2`/
+`draw_readout_char_dup1` (`FUNC_3633_E60C`/`FUNC_3633_E510`) use as a `bx`-index into *their* `[0x45E]`-based
 buffer - real evidence these two chips' mechanisms are two compiled
 instances of the same underlying display-list-append logic, sharing
 RAM state, not just a coincidental resemblance. (`[0x6AE]`, `[0x6AA]`,
@@ -871,7 +873,7 @@ RAM state, not just a coincidental resemblance. (`[0x6AE]`, `[0x6AA]`,
 thread gets a confident name.)
 
 **A fourth, related-but-distinct `160-3532` function**: `FUNC_3532_
-22D6` (`0xF22D6`), immediately after the trio, shares the exact same
+22D6` (`0xF22D6`, now `draw_tick_marks_3532`), immediately after the trio, shares the exact same
 `[0x6AE]`/`[0x1C02]` buffer-append idiom but does **not** read
 `[0x1DB0]` at all - its body draws a fixed `ch=4` tick-mark pattern in
 a `cl`-stepped loop (`add cl, 3` per iteration up to `dl`), i.e. it
@@ -905,8 +907,17 @@ This is real, broader confirmation that the mechanism was a deliberate,
 non-trivial piece of the firmware's design (compiled at least twice,
 into both ROM halves, with matching cross-chip-shared RAM state) - not
 a one-off dead stub - even though reachability is still unproven for
-every copy except the one known to be dead on real hardware. None of
-these six are renamed in `FUNCTIONAL_NAMES` yet (still placeholder
-`FUNC_3633_*`/`FUNC_3532_*` labels) - the mechanism is understood, but
-not confidently enough tied to a specific real-world purpose (which
-menu, which self-test, which display mode) to name with confidence.
+every copy except the one known to be dead on real hardware.
+**Update, 2026-10-08 (same day, later pass)**: all six of these -
+plus the related `FUNC_3532_22D6` tick-mark sibling found above - were
+in fact named shortly after this was written, once named anyway
+*for what they do* rather than for a confirmed real-world purpose,
+same reasoning used for `init_front_panel_cluster_defaults` and the
+`compute_and_draw_scale_marker` cluster: `FUNC_3633_E60C`/`FUNC_3633_
+E510` -> `draw_readout_char_dup2`/`draw_readout_char_dup1`;
+`FUNC_3532_213B`/`FUNC_3532_21C0`/`FUNC_3532_2251` ->
+`draw_readout_char_3532_1`/`_2`/`_3`; `FUNC_3532_22D6` ->
+`draw_tick_marks_3532`. See `FUNCTIONS.md` for each row - the
+real-world purpose (which menu, which self-test, which display mode)
+genuinely remains unconfirmed; only the mechanism and family
+relationship are.

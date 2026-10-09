@@ -288,7 +288,7 @@ top item.
   relative` - it actually calls `plot_readout_point` directly, verified
   against the real `lcall` target.
 - **Found a second, independent reader of `[0x1DB0]`** while chasing
-  the above: `FUNC_3633_E60C` (physical `0xEE60C`) uses the exact same
+  the above: `FUNC_3633_E60C` (physical `0xEE60C`, now `draw_readout_char_dup2`) uses the exact same
   `char*4` indexing and `[0x1DB0]` far-pointer read as `draw_readout_
   char`, and its own stroke loop extracts `fine`/`coarse` with the
   identical mask/shift formula - a real, structurally-verified second
