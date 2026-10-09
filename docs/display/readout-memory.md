@@ -141,6 +141,47 @@ manual as "Display chip interrupt reset"/"Display chip next frame",
 and `SUB_E4429`/`SUB_E440A` have been renamed to `read_display_chip_
 int_reset`/`read_display_chip_frame_trigger` accordingly.
 
+**Further structural evidence against the U1251 theory, 2026-10-09**:
+decoded `init_readout_port_config`'s 3 literal bytes (`0x29`, `0x23`,
+`0x06`, written to `0x406F1`/`0x406F2`/`0x406F3` respectively) against
+the 8251A/82C52 USART's actual Mode- and Command-instruction bit
+layouts (the 82C52 is a pin/register-compatible CMOS 8251A, already
+confirmed as U1251's real part number - see `MEMORY_MAP.md`/
+`HARDWARE.md`). Two independent problems:
+
+1. **Register architecture mismatch.** An 8251A/82C52 exposes exactly
+   *one* addressable control register (Data is the other, separate
+   address) - Mode vs. Command is distinguished purely by *write
+   order* after a chip reset (first write after reset = Mode
+   instruction, every write after that = Command instruction), not by
+   a distinct address per instruction type. `init_readout_port_config`
+   instead writes three *different* literal bytes to three
+   *different, consecutive* addresses (`+1`,`+2`,`+3`) - a pattern
+   that doesn't correspond to how this chip family's register
+   interface works at all, regardless of what the byte values mean.
+2. **All three bytes independently hit the chip's own reserved/invalid
+   field when decoded as a Mode instruction.** The 8251A/82C52 Mode
+   byte's stop-bit field (bits 7-6) is documented as *invalid* when
+   `00` - and `0x29` (`0010_1001`), `0x23` (`0010_0011`), and `0x06`
+   (`0000_0110`) **all** have bits 7-6 `= 00`. Three supposedly
+   independent configuration bytes all landing on the one reserved
+   bit pattern, rather than spreading across the 3 legal values
+   (1/1.5/2 stop bits), is the signature of bytes that were never
+   meant to be interpreted as this chip's Mode instruction at all.
+   (As Command instructions the bytes are merely *odd* rather than
+   invalid - e.g. `0x29` decodes to transmit-enabled-but-also-
+   continuous-break-with-receive-disabled, and `0x23`/`0x06`
+   contradict each other's transmit-enable bit despite allegedly being
+   sequential writes to the same chip with no intervening Mode reset -
+   consistent with the same conclusion from a different angle.)
+
+This doesn't identify what `0x406F0`-`0x406F3` actually *is*, but it
+is new, independent evidence - on top of the already-recorded
+zero-bytes-received live-hardware test - that these three bytes are
+not a real 8251A/82C52 configuration sequence, reinforcing rather than
+replacing the existing "still short of a confident rename" conclusion
+above.
+
 **Not yet confirmed, worth revisiting**: whether `0x40000-0x4FFFF` is
 read *as RAM* anywhere from the CPU's normal address space, or whether
 it's exclusively accessed through this handful of fixed-offset

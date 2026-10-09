@@ -688,10 +688,17 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       confident rename** either way
       (exact U1251 part number/register layout not confirmed) - see
       `docs/display/readout-memory.md`'s expanded "The readout/CRT display memory"
-      section for the full trace. Next step if picked up again: check whether
+      section for the full trace. **Checked 2026-10-09**: decoded
       `init_readout_port_config`'s literal bytes (`0x29`/`0x23`/`0x06`)
-      match documented UART/GPIB mode-register constants for a chip of
-      this era.
+      against the 82C52's (U1251's confirmed part number) actual
+      Mode/Command instruction bit layout - they don't fit. All three
+      independently hit the chip's reserved/invalid stop-bit field
+      when read as Mode bytes, and the write pattern itself (3
+      different bytes to 3 different consecutive addresses) doesn't
+      match how this chip's single-control-register, write-order-
+      based Mode/Command interface actually works. Further evidence
+      against the UART theory, still doesn't identify what the block
+      actually is - remains open.
 - [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
       the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
       config`) - both seem to configure overlapping RS-232 parameters;
