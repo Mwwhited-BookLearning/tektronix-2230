@@ -715,7 +715,21 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       not for baud/parity/terminator. The printer/plotter override's
       actual write site was **not found** - still a genuine open thread
       if picked up again (start from the `EPS7`/`EPS8`/`HPGL`/`TJET`
-      format-name strings in `STRINGS.md`). Also found: the switch is
+      format-name strings in `STRINGS.md`).
+      **Re-checked 2026-10-09**: confirmed `docs/options.md`'s `PLOt`
+      command table really does document a settable `FORmat [XY],
+      HPGl, EPS7, EPS8, TJEt` option (not just a read-only status
+      query), so a software write site genuinely should exist
+      somewhere. Re-grepped both ROMs' full proven+heuristic listings
+      for every occurrence of `[0x461]` (not just the specific `mov
+      byte ptr [0x461], reg` encoding tried before) and confirmed its
+      only two writers anywhere are `read_dip_switches_serial_config`/
+      `read_dip_switches_gpib_config` themselves - nothing else
+      touches it, in either ROM's disassembly. The `FORmat` SET
+      command's handler is most likely sitting in the ~8-9% of each
+      ROM's byte range neither disassembly pass has reached yet - the
+      first lead in this item that points at *why* the write site is
+      missing, rather than just confirming it's missing. Also found: the switch is
       reached through a single non-reentrant boot-time path (`finish_
       boot_init_and_start_scheduler`, entered via one `ljmp`, never
       called again) - no code path re-reads it on IFC, despite the

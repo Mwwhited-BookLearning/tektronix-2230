@@ -193,7 +193,13 @@ The single biggest cluster of open items - see
   manual's own wording (a software/MENU override is explicitly
   promised only for printer/plotter, not baud/parity/terminator) - but
   the actual printer/plotter override code was **not found**, still a
-  genuine open thread.
+  genuine open thread. **Re-checked 2026-10-09**: confirmed the manual's
+  `PLOt FORmat [XY], HPGl, EPS7, EPS8, TJEt` command really is a
+  software SET (not read-only), and re-grepped every reference to
+  `[0x461]` across both ROMs' full proven+heuristic listings - still
+  only the two switch-decode writers, nothing else. The handler most
+  likely lives in the ~8-9% of ROM bytes neither disassembly pass has
+  reached yet, rather than somewhere already-disassembled but missed.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
