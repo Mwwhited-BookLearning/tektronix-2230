@@ -520,7 +520,7 @@ void __stdcall16far FUN_000e_07a3(void)
    fully mapped)
    
    Evidence: The outer routine that wraps `print_selftest_banner`; computes a row Y coordinate from
-   `[0x1B10]*0x32` and prints one self-test report line per call (via `SUB_E35C2`,
+   `[0x1B10]*0x32` and prints one self-test report line per call (via `build_print_region`,
    `plot_readout_point`, `draw_readout_char`, and the other print primitives) */
 
 void __stdcall16far
@@ -635,7 +635,8 @@ void __cdecl16far init_selftest_report_record(void)
    
    Evidence: `(char)` - appends to the self-test report record at `[0x1B56]`, nibble-packing into
    the previous byte when both share a nonzero high nibble, else appending normally and
-   null-terminating */
+   null-terminating. Only one call site found (from inside `print_selftest_banner`'s enclosing
+   routine) */
 
 void __stdcall16far append_selftest_report_char(byte char)
 
@@ -1002,7 +1003,7 @@ configure_measurement_hw
    self-test reset) inferred from context)
    
    Evidence: Zeroes 4 fixed status bytes (`[0x256]`-`[0x259]`) and the byte pointed to by each of 3
-   far pointers `SUB_E4443` sets up (`[0x326]`, `[0x336]`, `[0x33A]`) */
+   far pointers `init_selftest_register_group` sets up (`[0x326]`, `[0x336]`, `[0x33A]`) */
 
 void __cdecl16far clear_selftest_status_flags(void)
 
@@ -1141,8 +1142,8 @@ void __cdecl16far selftest_measure_and_report(void)
 /* selftest_measure_mode (confidence: Confirmed)
    
    Evidence: `idx==1`: enable a measurement mode (`[0x1B5E]=1`); `idx==2`: disable (complementary
-   reset); else (incl. `idx==3`): run the actual measurement (calls `SUB_E296E` + `SUB_E0C3D`) and
-   return its result code in `ax` */
+   reset); else (incl. `idx==3`): run the actual measurement (calls `selftest_front_panel_adc` +
+   `format_selftest_result_string`) and return its result code in `ax` */
 
 void __stdcall16far selftest_measure_mode(int param_1)
 
@@ -1831,7 +1832,7 @@ uint __stdcall16far FUN_000e_1cbc(int param_1)
 
 /* selftest_comm_loopback_a (confidence: Confirmed via string reference)
    
-   Evidence: Comm-board loopback, phase A (via `SUB_E20B0`, `COMM_LB`) */
+   Evidence: Comm-board loopback, phase A (via `selftest_comm_readback`, `COMM_LB`) */
 
 undefined2 __cdecl16far selftest_comm_loopback_a(void)
 
@@ -1886,8 +1887,8 @@ uint __stdcall16far FUN_000e_1d47(int param_1)
 
 /* selftest_comm_loopback_b (confidence: Confirmed via string reference)
    
-   Evidence: Comm-board loopback, phase B (via `SUB_E1FBC`, `COMM_LB`/`FGET NOT SET`/`FGET NOT
-   CLEAR`) */
+   Evidence: Comm-board loopback, phase B (via `selftest_comm_fget_flag`, `COMM_LB`/`FGET NOT
+   SET`/`FGET NOT CLEAR`) */
 
 undefined2 __cdecl16far selftest_comm_loopback_b(void)
 
@@ -3622,8 +3623,9 @@ void __stdcall16far FUN_000e_3a63(int *param_1,int param_2,undefined1 param_3)
 /* run_selftest_sequence (confidence: Confirmed)
    
    Evidence: **The top-level self-test orchestrator.** Writes a marker byte at physical `0x00000`,
-   initializes the readout display-list buffer, runs setup (`SUB_E4443`/`SUB_E75C0`/`SUB_E128D`),
-   picks a test-mode byte `[0x1B48]` from `[0x758]`, calls `init_selftest_report_screen`, then calls
+   initializes the readout display-list buffer, runs setup
+   (`init_selftest_register_group`/`detect_comm_option_hw`/`verify_adc_control_toggle`), picks a
+   test-mode byte `[0x1B48]` from `[0x758]`, calls `init_selftest_report_screen`, then calls
    `print_selftest_report_line` once immediately followed by `self_test_dispatcher` - ties together
    `print_selftest_banner`, `self_test_dispatcher`, and the readout buffer findings from across
    multiple sessions into one place */
@@ -4012,8 +4014,8 @@ void __cdecl16far print_boot_rom_id_banner(void)
    `init_print_region`/`plot_readout_point`/`draw_readout_char`/`print_banner_line`/`close_print_record`)
    and sets `[0x1B10]=3`. **Contains no test calls at all** - the OR-fold test-dispatch pattern
    previously attributed to this address actually belongs to `0xE4244` (next row). Found by tracing
-   what calls `SUB_E094B` and reading this routine end-to-end for the first time. See
-   `docs/self-test/dispatcher-and-siblings.md` "self_test_dispatcher was misnamed" */
+   what calls `init_selftest_report_record` and reading this routine end-to-end for the first time.
+   See `docs/self-test/dispatcher-and-siblings.md` "self_test_dispatcher was misnamed" */
 
 void __cdecl16far print_selftest_banner(void)
 
@@ -4068,11 +4070,11 @@ void __stdcall16far print_banner_line(word string_off,word string_seg)
 /* self_test_dispatcher (confidence: Confirmed)
    
    Evidence: The real dispatcher: ~14 calls to per-subsystem test routines in sequence, each folding
-   a return code into an accumulator at `[bp-0xA]`, returned in `ax`. One test (`SUB_E252A`) is
-   conditionally skipped based on `[0x1B83]==0x1E`. Called from `0xE3DEE`, unconditionally (no
-   `[0x1B10]` gate on this one - that gate belongs to `print_selftest_banner`'s caller instead). See
-   `docs/self-test/dispatcher-and-siblings.md` "Found: the self-test dispatcher" for the full call
-   list */
+   a return code into an accumulator at `[bp-0xA]`, returned in `ax`. One test
+   (`selftest_tb_divider`) is conditionally skipped based on `[0x1B83]==0x1E`. Called from
+   `0xE3DEE`, unconditionally (no `[0x1B10]` gate on this one - that gate belongs to
+   `print_selftest_banner`'s caller instead). See `docs/self-test/dispatcher-and-siblings.md`
+   "Found: the self-test dispatcher" for the full call list */
 
 uint __cdecl16far self_test_dispatcher(void)
 
@@ -5206,7 +5208,7 @@ undefined2 __stdcall16far print_report_frame_mode(int param_1)
    
    Evidence: `idx==1`/`2` toggle the *same* `[0x1B5E]` flag `selftest_measure_mode` uses (a shared
    "measurement active" flag?); `idx==3`/`4` fall through to positioning + printing a result via
-   `set_position_record`/`SUB_E2DC9` */
+   `set_position_record`/`wait_stable_measurement` */
 
 void __stdcall16far selftest_display_result_mode(int param_1)
 
@@ -6044,7 +6046,20 @@ void __stdcall16far mark_task_ready(word task_idx)
 
 
 
-void __cdecl16far FUN_000e_6aab(void)
+/* finish_boot_init_and_start_scheduler (confidence: Confirmed reachable and mechanism confirmed by
+   direct trace)
+   
+   Evidence: First proper compiled-C-style function found (real BP frame). Reached only via a tail
+   `ljmp` from late in `boot_init`'s own chain (`0xE5E4E`, right after
+   `init_far_pointer_table_sysrom`/`INT2_HANDLER_EARLY`) - not a normal call target. Runs
+   `run_selftest_sequence`, zeroes two 12-entry per-task arrays (`[0x768]`/`[0x1A91]`),
+   one-time-inits the acquisition-watchdog config block (`[0x780]`/`[0x790]`/`[0x792]`/etc., guarded
+   by `[0x780]==0`), calls
+   `detect_comm_option_hw`/`compute_readout_buffer_length_and_flag`/`assert_and_halt`/`init_acq_channel_error_table`,
+   then finishes by calling `install_late_interrupt_vectors` and `switch_to_next_task` - the real
+   end of the boot sequence, handing off to the task scheduler */
+
+void __cdecl16far finish_boot_init_and_start_scheduler(void)
 
 {
   undefined2 uVar1;
@@ -6458,8 +6473,9 @@ void __cdecl16far FUN_000e_6ec0(void)
 
 /* notify_comm_rom_a (confidence: Mechanism confirmed)
    
-   Evidence: If comm option installed and `[0x1BFA]` clear, calls a comm-ROM handler (`SUB_96F0D`) -
-   a conditional cross-ROM notification, twin to `notify_comm_rom_b` */
+   Evidence: If comm option installed and `[0x1BFA]` clear, calls a comm-ROM handler
+   (`engage_comm_hold_critical`) - a conditional cross-ROM notification, twin to `notify_comm_rom_b`
+    */
 
 void __cdecl16far notify_comm_rom_a(void)
 
@@ -6477,7 +6493,7 @@ void __cdecl16far notify_comm_rom_a(void)
 /* notify_comm_rom_b (confidence: Mechanism confirmed)
    
    Evidence: Same gating as `notify_comm_rom_a` plus an additional check (`[0x1ACD]==0xA`, task
-   index 10), calls a different comm-ROM handler (`SUB_96EC6`) */
+   index 10), calls a different comm-ROM handler (`release_comm_hold_critical`) */
 
 void __cdecl16far notify_comm_rom_b(void)
 
@@ -7279,10 +7295,10 @@ void __stdcall16far FUN_000e_7c27(void)
 
 /* update_plot_position (confidence: Confirmed mechanism)
    
-   Evidence: `(x, y)` - mode-dispatched on `[0x6CA]`: mode 0 computes a position via `SUB_E80E4`;
-   mode 1 emits the HPGL command `PU%d,%d;` (pen-up move) via `format_string_va` and stores the
-   position; modes 2/3 store directly. Part of the **HPGL plotter output driver** - see
-   `MEMORY_MAP.md` I/O port `0x83` */
+   Evidence: `(x, y)` - mode-dispatched on `[0x6CA]`: mode 0 computes a position via
+   `handle_acq_mode_change`; mode 1 emits the HPGL command `PU%d,%d;` (pen-up move) via
+   `format_string_va` and stores the position; modes 2/3 store directly. Part of the **HPGL plotter
+   output driver** - see `MEMORY_MAP.md` I/O port `0x83` */
 
 void __stdcall16far update_plot_position(word x,word y)
 

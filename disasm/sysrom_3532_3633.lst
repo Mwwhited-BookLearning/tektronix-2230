@@ -9698,7 +9698,7 @@ ENTRY_E5D1_C7:
     3633:5E43  [E5E43]  bbfa3f          mov     bx, 0x3ffa
     3633:5E46  [E5E46]  268b37          mov     si, word ptr es:[bx]
     3633:5E49  [E5E49]  9a5700d1e5      lcall   INT2_HANDLER_EARLY  ; 0xe5d1, 0x57
-    3633:5E4E  [E5E4E]  ea2b00a8e6      ljmp    L_E6AAB  ; 0xe6a8:0x2b
+    3633:5E4E  [E5E4E]  ea2b00a8e6      ljmp    finish_boot_init_and_start_scheduler  ; 0xe6a8:0x2b
 install_late_interrupt_vectors:
     3633:5E53  [E5E53]  fa              cli     
     3633:5E54  [E5E54]  9a2100d1e5      lcall   delay_read_128w  ; 0xe5d1, 0x21
@@ -10582,7 +10582,7 @@ mark_task_ready:
     3633:6AA5  [E6AA5]  8be5            mov     sp, bp
     3633:6AA7  [E6AA7]  5d              pop     bp
     3633:6AA8  [E6AA8]  ca0200          retf    2
-L_E6AAB:
+finish_boot_init_and_start_scheduler:
     3633:6AAB  [E6AAB]  55              push    bp
     3633:6AAC  [E6AAC]  8bec            mov     bp, sp
     3633:6AAE  [E6AAE]  83ec08          sub     sp, 8

@@ -605,6 +605,33 @@ FUNCTIONAL_NAMES = {
                                                # ([idx+0x1A91]), then
                                                # calls SUB_E61E3 - likely
                                                # a "wake up task" primitive
+    0xE6AAB: "finish_boot_init_and_start_scheduler", # reached only via
+                                               # a tail ljmp from late in
+                                               # boot_init's own chain
+                                               # (0xE5E4E, right after
+                                               # init_far_pointer_table_
+                                               # sysrom + INT2_HANDLER_
+                                               # EARLY); runs
+                                               # run_selftest_sequence,
+                                               # zeroes two 12-entry
+                                               # per-task arrays
+                                               # ([0x768]/[0x1A91]),
+                                               # one-time-inits the
+                                               # acquisition-watchdog
+                                               # config block ([0x780]/
+                                               # [0x790]/[0x792]/etc.),
+                                               # calls detect_comm_
+                                               # option_hw/compute_
+                                               # readout_buffer_length_
+                                               # and_flag/init_acq_
+                                               # channel_error_table,
+                                               # then finishes by calling
+                                               # install_late_interrupt_
+                                               # vectors and switch_to_
+                                               # next_task - the real
+                                               # end of the boot sequence,
+                                               # handing off to the task
+                                               # scheduler
     0xFDC73: "sync_status_byte_to_hw",        # writes [0x258] into the
                                                # far-pointer hardware
                                                # register [0x336] -

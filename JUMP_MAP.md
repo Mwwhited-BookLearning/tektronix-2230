@@ -38,21 +38,21 @@ note right: exact meaning of this\nconfig/option byte not\nconfirmed yet
 :Install INT1 (trap) handler\n-> 0xE5D1:019D;
 :Install INT 255 handler (early)\n-> 0xE5D1:0090;
 
-:Far call SUB_E5EAE (0xE5D1:019E)\n(guess: runs INT1 handler's init once);
-:Far call SUB_E5D67 (0xE5D1:0057)\n(guess: runs INT2 handler's init once);
+:Far call init_far_pointer_table_sysrom\n(0xE5D1:019E);
+:Far call INT2_HANDLER_EARLY (0xE5D1:0057);
 
-:Far jump to 0xE6A8:002B\n(SUB_E6AAB, first proper\ncompiled-C-style function found);
+:Far jump to 0xE6A8:002B\n(finish_boot_init_and_start_scheduler,\nfirst proper compiled-C-style\nfunction found);
 
-partition "SUB_E6AAB: looks like the real init dispatcher" {
-  :Call a shared utility twice with\ndifferent pointers, subtract results\n(guess: measuring a buffer/table length);
-  :Call subsystem init routines at\n0xE3B1, 0xFDB3, 0xF9FE, 0xF156\n(guess: display / acquisition / front\npanel / other module init - which\nis which not yet identified);
-  :Zero/initialize several 12-entry\narrays (channel or trace state?);
-  :Call more routines at 0xE75C,\n0xFBCF, 0xE925, 0xE723;
+partition "finish_boot_init_and_start_scheduler: the real end of boot, hands off to the scheduler" {
+  :seg_off_to_linear twice on\n[0x1C80]/[0x1C84], subtract\n-> [0x1C02] (readout buffer length);
+  :Call run_selftest_sequence (0xE3B1),\nclear_measurement_mode_bit (0xFDB3),\nclear_display_chip_int_reset (0xF9FE),\ninit_comm_dispatch_table, SUB_F156E (0xF156);
+  :Zero two 12-entry per-task arrays\n([0x768]/[0x1A91]), one-time-init the\nacquisition-watchdog config block;
+  :Call detect_comm_option_hw (0xE75C),\ncompute_readout_buffer_length_and_flag\n(0xFBCF), assert_and_halt (0xE925),\ninit_acq_channel_error_table (0xE723);
   :Reinstall INT 255 handler (late)\n-> 0xE60B:0005;
   :Reinstall INT2 (NMI) handler (late)\n-> 0xE60B:003A;
   note right: why the same two vectors\nget reprogrammed here is not\nconfirmed - possibly switching\nfrom a POST/diagnostic mode\ninto normal-run mode
-  :Far call 0xE5D1:0143;
-  :Far call 0xE60B:00B6;
+  :Far call install_late_interrupt_vectors\n(0xE5D1:0143);
+  :Far call switch_to_next_task (0xE60B:00B6);
 }
 :retf (returns to... unknown -\nno caller found yet; this may be\ncalled FROM somewhere rather than\nbeing the true top of the boot path);
 
