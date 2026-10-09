@@ -41,6 +41,14 @@ actually needs (real interrupt tracing for the first, a write-then-
 readback coupling stub for the second) - neither is a simple fixed-
 value gap, which is itself a useful distinction.
 
+**Both since fixed**: `Display controller : TIMEOUT` on 2026-09-18
+(`io_stubs.DisplayChipIrqStub`), `ACQ_AB` on 2026-10-09
+(`io_stubs.AcqAbAddrWalkStub`) - see `docs/design.md`'s own sections
+for each. The debugger-core-based front ends (`interactive.py`/
+`tui.py`) now get a full boot run with no `ACQ_AB` or display-timeout
+failures, progressing into two new, previously-unreached self-test
+failures (`HS_ACQ`, `TBD hs/2`) not yet investigated.
+
 **Interactive mode, 2026-09-16**: `python interactive.py` is a REPL
 debugger built on the same memory map and stubs - shows live register/
 flag state and the current instruction after every stop, and adds

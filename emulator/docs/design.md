@@ -361,35 +361,61 @@ ACQ_AB : read-back     0 <>   FFE
    U3428)" almost exactly. Full writeup: `docs/self-test/dispatcher-
    and-siblings.md`'s 2026-10-09 correction.
 
-   **Still genuinely open - this did NOT turn up the missing write
-   side needed for a coupling stub.** Read `step_acq_ab_addr_walk`'s
-   and its caller's full bodies looking specifically for the "write
-   the pattern into U3423-U3425" half the manual describes: the only
-   hardware touch anywhere in this call chain is a constant `mov byte
-   [es:di], 0` to physical `0x437BE` (far ptr `[0x326]`, always writes
-   `0`, never a per-position pattern), and `update_menu_position`
-   (confirmed by reading its full body) does no hardware I/O at all -
-   only software bookkeeping (`[0x1B50]`, `[0x1B51]`, `[0x1B18]`,
-   `[0x4E7]`, `[0x4E8]`). `0x437BE` is a separately-CONFIRMED named
-   register (`MEMORY_MAP.md`: "Acquisition Mode Register U3310") - so
-   this write plausibly re-arms the acquisition hardware into a known
-   mode each step (which might indirectly reset the address counters
-   as a side effect on real hardware), rather than driving a
-   per-position address pattern directly; not confirmed. Also checked
+   **No write-side trigger carrying the pattern itself was ever
+   found** - read `step_acq_ab_addr_walk`'s and its caller's full
+   bodies looking specifically for the "write the pattern into
+   U3423-U3425" half the manual describes: the only hardware touch
+   anywhere in this call chain is a constant `mov byte [es:di], 0` to
+   physical `0x437BE` (far ptr `[0x326]`, always writes `0`, never a
+   per-position pattern), and `update_menu_position` (confirmed by
+   reading its full body) does no hardware I/O at all - only software
+   bookkeeping (`[0x1B50]`, `[0x1B51]`, `[0x1B18]`, `[0x4E7]`,
+   `[0x4E8]`). `0x437BE` is a separately-CONFIRMED named register
+   (`MEMORY_MAP.md`: "Acquisition Mode Register U3310") - so this
+   write plausibly re-arms the acquisition hardware into a known mode
+   each step (which might indirectly reset the address counters as a
+   side effect on real hardware), rather than driving a per-position
+   address pattern directly; not confirmed. Also checked
    `init_selftest_register_group` (`0xE4443`, the function that
    populates `[0x322]` and its sibling pointers) for a hidden write -
    it's pure RAM pointer-table setup (8 far-pointer pairs), no
-   hardware I/O at all. So a `CommPresenceProbe`-style
-   write-then-readback coupling stub genuinely has no write-side
-   trigger address to hook yet - this isn't a gap in the emulator's
-   stub coverage, it's a gap in what's been traced in the firmware
-   itself.
+   hardware I/O at all.
 
-Both are genuine "not simulatable with a flat value" cases, exactly the
-kind design.md's own stub philosophy anticipates ("only add real
+   **Fixed anyway, 2026-10-09**, with `io_stubs.AcqAbAddrWalkStub`:
+   since the real coupling (if any) is on real hardware's side, not
+   traceable in firmware, the stub keeps its own step counter instead
+   of deriving the pattern from the write - incrementing once per
+   confirmed step and computing the same shifted-`0xFFE` pattern
+   `step_acq_ab_addr_walk` itself computes (hand-derived from its
+   disassembly, including the 0-indexing from `update_menu_position`'s
+   own counter). **First version hooked the wrong thing**: triggering
+   off any `UC_HOOK_MEM_WRITE` to `0x437BE` (the `CommPresenceProbe`
+   pattern) desynced immediately, because other self-tests earlier in
+   the dispatcher's sibling list also write `0` to that same physical
+   register for unrelated reasons, firing the hook several times
+   before `selftest_acq_ab_addr_walk` ever gets its turn. Fixed by
+   hooking `UC_HOOK_CODE` on the exact instruction address instead
+   (`0xE300C`) - the same technique `DiagnosticTextCapture` already
+   uses for the same reason (hook the one instruction that means what
+   you think it means, not every access to an address that might mean
+   several different things). Verified end-to-end: a full boot trace
+   no longer prints any `ACQ_AB` failure line, and the self-test
+   sequence progresses further still, into two new previously-
+   unreached failures, `HS_ACQ` and `TBD hs/2` (not yet investigated -
+   see `TODO.md`).
+
+Both were genuine "not simulatable with a flat value" cases, exactly
+the kind design.md's own stub philosophy anticipates ("only add real
 behavior when a specific hang is observed and diagnosed") - correctly
 distinguishing "needs a fixed value" from "needs real modeled coupling"
-is itself useful progress, not a dead end.
+is itself useful progress, not a dead end. `ACQ_AB`'s case shows a
+second wrinkle worth remembering: "needs real modeled coupling" can
+also mean "needs a software-side step counter standing in for a
+hardware mechanism never fully traced," not only a direct value
+transform from the triggering write - and the *address* of a write is
+not always a safe hook target even when the *instruction* that matters
+is uniquely identified, if anything else in the firmware happens to
+touch the same byte.
 
 ## Found and fixed a real bug: no `hlt` detection, 2026-09-18
 

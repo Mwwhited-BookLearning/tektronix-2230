@@ -287,13 +287,17 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       Display Chip Interrupt Reset register (`0x41000`) - see
       `FUNCTIONS.md`'s corrected entries for both functions and
       `io_stubs.DisplayChipIrqStub`, which now couples that read into
-      `[0x1AF2]`/`[0x1AEE]` so the self-test passes; (3) build a
+      `[0x1AF2]`/`[0x1AEE]` so the self-test passes; (3) ~~build a
       write-then-readback coupling stub for the `ACQ_AB` address-line
-      walking test against the Acquisition Memory Address Buffer (see
-      `MEMORY_MAP.md`'s `0x4377E`/`0x4377F` entry) the way
-      `CommPresenceProbe` already couples a different register pair -
-      **still open**, this is the next self-test failure blocking a
-      fully-clean power-up sequence.
+      walking test~~ **done 2026-10-09** - `io_stubs.AcqAbAddrWalkStub`,
+      see `changes/2026-10-09.md` for the full derivation (including a
+      real bug found and fixed verifying it against a live run). The
+      self-test sequence now progresses past `ACQ_AB` entirely, into 2
+      new, previously-unreached failures - **next self-test failures
+      blocking a fully-clean power-up sequence**: `HS_ACQ` (`acq_mem
+      cntr 0800 <> 00AB`, then several `fill @` byte mismatches) and
+      `TBD hs/2` (same shape, different counter/fill values) - neither
+      investigated yet.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
       exported blocks (see `disasm/find_unknown_data.py`). Full history
       and findings in `docs/decode-anomalies/unknown-data-deep-dive-

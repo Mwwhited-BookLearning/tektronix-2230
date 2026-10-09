@@ -21,11 +21,12 @@ from unicorn import x86_const as x86
 
 import memory_map as mm
 from timer import TickScheduler
-from io_stubs import (CommPresenceProbe, DiagCommLatchLoopback, DiagnosticTextCapture,
-                       DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS, FRONT_PANEL_STUBS,
-                       FixedByteRead, InteractiveFrontPanel, InteractiveUartMock,
-                       InteractiveDipSwitches, AccessCounter, DisplayChipIrqStub,
-                       VectorDisplay, ANSI_GRAY, ANSI_RESET, seed_comm_nvram_defaults)
+from io_stubs import (AcqAbAddrWalkStub, CommPresenceProbe, DiagCommLatchLoopback,
+                       DiagnosticTextCapture, DISPLAY_CHIP_STUBS, COMM_OPTION_STUBS,
+                       FRONT_PANEL_STUBS, FixedByteRead, InteractiveFrontPanel,
+                       InteractiveUartMock, InteractiveDipSwitches, AccessCounter,
+                       DisplayChipIrqStub, VectorDisplay, ANSI_GRAY, ANSI_RESET,
+                       seed_comm_nvram_defaults)
 
 HMA_ALIAS_BASE = 0x100000
 HMA_ALIAS_SIZE = 0x10000
@@ -263,6 +264,12 @@ class Debugger:
         self.front_panel.install(self.emu, uc)
         if self.args.comm_installed:
             CommPresenceProbe().install(self.emu, uc)
+        # No FixedByteRead baseline targets 0x4377E, and this stub's own
+        # write-time read-modify-write is independent of CommPresenceProbe's
+        # (different trigger address, disjoint bitmask on the same
+        # readback register) - install order relative to it doesn't
+        # matter, see AcqAbAddrWalkStub's own docstring.
+        AcqAbAddrWalkStub().install(self.emu, uc)
         # Installed after COMM_OPTION_STUBS's fixed comm_stat baseline
         # so it only adjusts bit 0x80 on top - see its own docstring
         # for the disassembly-derived reasoning (selftest_comm_readback).

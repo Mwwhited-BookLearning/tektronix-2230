@@ -181,6 +181,94 @@ class CommPresenceProbe:
         uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
 
 
+class AcqAbAddrWalkStub:
+    """Couples `step_acq_ab_addr_walk`'s per-step hardware write into
+    bits `0x1-0xB` (mask `0xFFE`) of the Acquisition Memory Address
+    Buffer's readback (`0x4377E`, the same register `CommPresenceProbe`
+    above already overlays bit `0x1000` of, on a disjoint bitmask -
+    both coexist via plain read-modify-write, no ordering dependency
+    between them).
+
+    Models `selftest_acq_ab_addr_walk`/`step_acq_ab_addr_walk`
+    (`0xE2FC8`/`0xE2FFC`, see `FUNCTIONS.md`) - the address-line walking
+    test documented in `emulator/docs/design.md`'s "`ACQ_AB` read-back
+    failures" section. Each step writes a constant `0` to the
+    Acquisition Mode Register (`U3310`, physical `0x437BE`, never a
+    per-position pattern - confirmed by reading the full call chain,
+    see that doc) and then expects to read back a specific 12-bit
+    pattern from `0x4377E` that advances one bit position per step:
+    `0, 2, 6, E, 1E, 3E, 7E, FE, 1FE, 3FE, 7FE, FFE` for 0-indexed scan
+    positions 0-11 (position 0 reads back as a trivial pass against
+    plain RAM's default `0`, which is why the captured failure sequence
+    - both unstubbed and the service manual's own language - only ever
+    shows 11 entries starting from position 1, not 12).
+
+    **Found and fixed a real bug while verifying this against a live
+    run, 2026-10-09**: the first version hooked `UC_HOOK_MEM_WRITE` on
+    the Mode Register's *address* (`0x437BE`) directly, incrementing an
+    internal step counter once per write - mirroring `CommPresenceProbe`
+    exactly. That produced nonsense (`ACQ_AB : read-back 7E <> 0`, `1FE
+    <> 2`, ... - the "actual" column running far ahead of, and
+    unrelated to, the "expected" column) because **other code elsewhere
+    in the self-test dispatcher's sibling list also writes `0` to this
+    same physical register for its own unrelated reasons** before
+    `selftest_acq_ab_addr_walk` ever gets its turn, so a plain address-
+    based write hook fires several extra times before the real walk
+    even starts and the counter desyncs immediately. Fixed by hooking
+    `UC_HOOK_CODE` on the exact instruction address instead (`0xE300C`,
+    `mov byte ptr es:[di], 0` inside `step_acq_ab_addr_walk` itself -
+    same "hook the specific instruction, not the register address"
+    technique `DiagnosticTextCapture` above already uses and explains
+    in its own docstring, for exactly this kind of ambiguous-address
+    reason) - this only fires on this function's own write, immune to
+    whatever else in the dispatcher touches the same byte.
+
+    Also hand-derived the *exact* position-to-pattern formula and the
+    0-indexing from `update_menu_position`'s own disassembly (`0xE06B6`)
+    rather than inferring it from symptoms alone: case-1 (the walk's one-
+    time init call) sets the position byte to `-1`; every case-3 step
+    call then increments it first and returns the post-increment value,
+    so the first step call returns `0`, the second `1`, and so on -
+    confirmed by replaying this by hand against `step_acq_ab_addr_walk`'s
+    own `p<0xB`/`p>=0xB` shift-direction branch at `0xE3028`-`0xE3052`
+    and matching all 11 non-trivial captured values exactly.
+
+    Since the real write to `0x437BE` never carries the pattern itself,
+    this stub can't derive the expected value from the write the way
+    `CommPresenceProbe` does - instead it keeps its own step counter,
+    incrementing once per *confirmed* step (not per raw write anymore),
+    exactly mirroring `update_menu_position`'s own counter. This only
+    works because the write always happens before the corresponding
+    read in every step (confirmed from the disassembly order: write
+    `0x437BE`, then compute the expected pattern, then read `0x4377E`
+    via `verify_adc_calibration`) - on real hardware the `0x437BE` write
+    plausibly re-arms/resets the address counters (`U3423-U3425`) as a
+    side effect, which is what this counter stands in for; not
+    confirmed against a schematic."""
+
+    WRITE_INSN_ADDR = 0xE300C
+    READBACK_ADDR = 0x4377E
+    PATTERN_MASK = 0xFFE
+
+    def __init__(self):
+        self.position = 0
+
+    def install(self, emu, uc_module):
+        emu.hook_add(uc_module.UC_HOOK_CODE, self._on_exec,
+                     None, self.WRITE_INSN_ADDR, self.WRITE_INSN_ADDR)
+
+    def _on_exec(self, uc_eng, address, size, user_data):
+        p = self.position
+        self.position += 1
+        if p < 0xB:
+            pattern = (0xFFE >> (0xB - p)) & self.PATTERN_MASK
+        else:
+            pattern = (0xFFE << (p - 0xB)) & self.PATTERN_MASK
+        current = int.from_bytes(uc_eng.mem_read(self.READBACK_ADDR, 2), "little")
+        new_value = (current & ~self.PATTERN_MASK) | pattern
+        uc_eng.mem_write(self.READBACK_ADDR, new_value.to_bytes(2, "little"))
+
+
 class DiagCommLatchLoopback:
     """Couples writes to the Interrupt Mask Latch's diagnostic output
     3D (physical `0x406FB`) into bit `0x80` of the Option Status
