@@ -6642,6 +6642,34 @@
     "functional_name": null,
     "notes": null
   },
+  "E77F8": {
+    "name": "sdiv32_unsigned_divisor",
+    "kind": "entry",
+    "ref_count": 0,
+    "functional_name": "sdiv32_unsigned_divisor",
+    "notes": null
+  },
+  "E780F": {
+    "name": "L_E780F",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7821": {
+    "name": "L_E7821",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
+  "E7835": {
+    "name": "L_E7835",
+    "kind": "loc",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "E783D": {
     "name": "udiv32",
     "kind": "sub",
@@ -6649,11 +6677,25 @@
     "functional_name": "udiv32",
     "notes": null
   },
+  "E7866": {
+    "name": "SUB_E7866",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
+    "notes": null
+  },
   "E788F": {
     "name": "udiv32_core",
     "kind": "sub",
     "ref_count": 1,
     "functional_name": "udiv32_core",
+    "notes": null
+  },
+  "E7895": {
+    "name": "SUB_E7895",
+    "kind": "sub",
+    "ref_count": 1,
+    "functional_name": null,
     "notes": null
   },
   "E7899": {

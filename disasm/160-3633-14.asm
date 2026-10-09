@@ -8750,11 +8750,41 @@ L_E77F0:
     pop bx                                   ; 77F3: pop bx
     pop bp                                   ; 77F4: pop bp
     retf 4                                   ; 77F5: retf 4
-    db 0x55, 0x53, 0x51, 0x8b, 0xec, 0x83, 0xec, 0x02, 0x89, 0x56, 0xfe, 0x83, 0xfa, 0x00, 0x7d, 0x07  ; 77F8
-    db 0xf7, 0xda, 0xf7, 0xd8, 0x83, 0xda, 0x00, 0x8b, 0x5e, 0x0a, 0x8b, 0x4e, 0x0c, 0x83, 0xf9, 0x00  ; 7808
-    db 0x7d, 0x07, 0xf7, 0xd9, 0xf7, 0xdb, 0x83, 0xd9, 0x00, 0x51, 0x53, 0x9a, 0x46, 0x01, 0x72, 0xe7  ; 7818
-    db 0x83, 0x7e, 0xfe, 0x00, 0x7d, 0x07, 0xf7, 0xda, 0xf7, 0xd8, 0x83, 0xda, 0x00, 0x8b, 0xe5, 0x59  ; 7828
-    db 0x5b, 0x5d, 0xca, 0x04, 0x00  ; 7838
+sdiv32_unsigned_divisor:
+    push bp                                  ; 77F8: push bp
+    push bx                                  ; 77F9: push bx
+    push cx                                  ; 77FA: push cx
+    db 0x8b, 0xec  ; 77FB: mov bp, sp (not byte-exact via NASM - see NOTES.md)
+    sub sp, 2                                ; 77FD: sub sp, 2
+    mov word [bp - 2], dx                    ; 7800: mov word ptr [bp - 2], dx
+    cmp dx, 0                                ; 7803: cmp dx, 0
+    jge short 0x780f                         ; 7806: jge 0x1f
+    neg dx                                   ; 7808: neg dx
+    neg ax                                   ; 780A: neg ax
+    sbb dx, 0                                ; 780C: sbb dx, 0
+L_E780F:
+    mov bx, word [bp + 0xa]                  ; 780F: mov bx, word ptr [bp + 0xa]
+    mov cx, word [bp + 0xc]                  ; 7812: mov cx, word ptr [bp + 0xc]
+    cmp cx, 0                                ; 7815: cmp cx, 0
+    jge short 0x7821                         ; 7818: jge 0x31
+    neg cx                                   ; 781A: neg cx
+    neg bx                                   ; 781C: neg bx
+    sbb cx, 0                                ; 781E: sbb cx, 0
+L_E7821:
+    push cx                                  ; 7821: push cx
+    push bx                                  ; 7822: push bx
+    call 0xe772:0x0146                       ; 7823: lcall 0xe772, 0x146
+    cmp word [bp - 2], 0                     ; 7828: cmp word ptr [bp - 2], 0
+    jge short 0x7835                         ; 782C: jge 0x45
+    neg dx                                   ; 782E: neg dx
+    neg ax                                   ; 7830: neg ax
+    sbb dx, 0                                ; 7832: sbb dx, 0
+L_E7835:
+    db 0x8b, 0xe5  ; 7835: mov sp, bp (not byte-exact via NASM - see NOTES.md)
+    pop cx                                   ; 7837: pop cx
+    pop bx                                   ; 7838: pop bx
+    pop bp                                   ; 7839: pop bp
+    retf 4                                   ; 783A: retf 4
 udiv32:
     push bp                                  ; 783D: push bp
     push es                                  ; 783E: push es
@@ -8776,14 +8806,35 @@ udiv32:
     pop es                                   ; 7861: pop es
     pop bp                                   ; 7862: pop bp
     retf 4                                   ; 7863: retf 4
-    db 0x55, 0x06, 0x57, 0x8b, 0xec, 0xff, 0x76, 0x0a, 0xff, 0x76, 0x0c, 0x50, 0x52, 0x8c, 0xd7, 0x8e  ; 7866
-    db 0xc7, 0x8b, 0xfc, 0x83, 0xc7, 0x08, 0xe8, 0x16, 0x00, 0x26, 0x8b, 0x45, 0xfe, 0x26, 0x8b, 0x55  ; 7876
-    db 0xfc, 0x8b, 0xe5, 0x5f, 0x07, 0x5d, 0xca, 0x04, 0x00  ; 7886
+SUB_E7866:
+    push bp                                  ; 7866: push bp
+    push es                                  ; 7867: push es
+    push di                                  ; 7868: push di
+    db 0x8b, 0xec  ; 7869: mov bp, sp (not byte-exact via NASM - see NOTES.md)
+    push word [bp + 0xa]                     ; 786B: push word ptr [bp + 0xa]
+    push word [bp + 0xc]                     ; 786E: push word ptr [bp + 0xc]
+    push ax                                  ; 7871: push ax
+    push dx                                  ; 7872: push dx
+    mov di, ss                               ; 7873: mov di, ss
+    mov es, di                               ; 7875: mov es, di
+    db 0x8b, 0xfc  ; 7877: mov di, sp (not byte-exact via NASM - see NOTES.md)
+    add di, 8                                ; 7879: add di, 8
+    call 0x7895                              ; 787C: call 0x175
+    mov ax, word [es:di - 2]                 ; 787F: mov ax, word ptr es:[di - 2]
+    mov dx, word [es:di - 4]                 ; 7883: mov dx, word ptr es:[di - 4]
+    db 0x8b, 0xe5  ; 7887: mov sp, bp (not byte-exact via NASM - see NOTES.md)
+    pop di                                   ; 7889: pop di
+    pop es                                   ; 788A: pop es
+    pop bp                                   ; 788B: pop bp
+    retf 4                                   ; 788C: retf 4
 udiv32_core:
     push bp                                  ; 788F: push bp
     db 0x2b, 0xed  ; 7890: sub bp, bp (not byte-exact via NASM - see NOTES.md)
     jmp short 0x7899                         ; 7892: jmp 0x179
-    db 0x90, 0x55, 0xbd, 0x01, 0x00  ; 7894
+    db 0x90  ; 7894
+SUB_E7895:
+    push bp                                  ; 7895: push bp
+    mov bp, 1                                ; 7896: mov bp, 1
 L_E7899:
     push ax                                  ; 7899: push ax
     push bx                                  ; 789A: push bx

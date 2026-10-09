@@ -11868,7 +11868,41 @@ L_E77F0:
     3633:77F3  [E77F3]  5b              pop     bx
     3633:77F4  [E77F4]  5d              pop     bp
     3633:77F5  [E77F5]  ca0400          retf    4
-
+sdiv32_unsigned_divisor:
+    3633:77F8  [E77F8]  55              push    bp
+    3633:77F9  [E77F9]  53              push    bx
+    3633:77FA  [E77FA]  51              push    cx
+    3633:77FB  [E77FB]  8bec            mov     bp, sp
+    3633:77FD  [E77FD]  83ec02          sub     sp, 2
+    3633:7800  [E7800]  8956fe          mov     word ptr [bp - 2], dx
+    3633:7803  [E7803]  83fa00          cmp     dx, 0
+    3633:7806  [E7806]  7d07            jge     L_E780F  ; 0x1f
+    3633:7808  [E7808]  f7da            neg     dx
+    3633:780A  [E780A]  f7d8            neg     ax
+    3633:780C  [E780C]  83da00          sbb     dx, 0
+L_E780F:
+    3633:780F  [E780F]  8b5e0a          mov     bx, word ptr [bp + 0xa]
+    3633:7812  [E7812]  8b4e0c          mov     cx, word ptr [bp + 0xc]
+    3633:7815  [E7815]  83f900          cmp     cx, 0
+    3633:7818  [E7818]  7d07            jge     L_E7821  ; 0x31
+    3633:781A  [E781A]  f7d9            neg     cx
+    3633:781C  [E781C]  f7db            neg     bx
+    3633:781E  [E781E]  83d900          sbb     cx, 0
+L_E7821:
+    3633:7821  [E7821]  51              push    cx
+    3633:7822  [E7822]  53              push    bx
+    3633:7823  [E7823]  9a460172e7      lcall   SUB_E7866  ; 0xe772, 0x146
+    3633:7828  [E7828]  837efe00        cmp     word ptr [bp - 2], 0
+    3633:782C  [E782C]  7d07            jge     L_E7835  ; 0x45
+    3633:782E  [E782E]  f7da            neg     dx
+    3633:7830  [E7830]  f7d8            neg     ax
+    3633:7832  [E7832]  83da00          sbb     dx, 0
+L_E7835:
+    3633:7835  [E7835]  8be5            mov     sp, bp
+    3633:7837  [E7837]  59              pop     cx
+    3633:7838  [E7838]  5b              pop     bx
+    3633:7839  [E7839]  5d              pop     bp
+    3633:783A  [E783A]  ca0400          retf    4
 udiv32:
     3633:783D  [E783D]  55              push    bp
     3633:783E  [E783E]  06              push    es

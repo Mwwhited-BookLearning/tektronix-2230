@@ -675,4 +675,108 @@ found yet."
 | 9 | 3633 | `0xE0205-0xE0269` | Plausible, unconfirmed | ROM base/quadrant address table, sits right after `boot_init`'s own final branch; no consumer found |
 | 10 | 3633 | `0xE956E-0xE95A0` | **Confirmed code**, caller unresolved | Two `retf`-terminated leaf subroutines writing to the confirmed front-panel A/D control latch and reading `fp_intstat`; no far-pointer reference to either entry found anywhere in the project |
 | - | 2998 | `0x88D1C-0x88D3D` | Unresolved | Small-int (2-6) table, no hypothesis yet |
-| - | 3633 / 3532 | 6 blocks, listed above | Unconfirmed lead | Look like real code by eyeball (prologues / known-variable references); no caller/convergence check done yet |
+
+All 6 of the "unconfirmed lead" blocks listed in the 2026-09-22 second pass
+above were traced to a conclusion in the 2026-10-09 follow-up below - none
+remain open.
+
+### 11. The 6 remaining unconfirmed leads, traced one at a time (2026-10-09 follow-up)
+
+Per `TODO.md`'s own "next step if picked up" pointer, each of the 6 blocks
+flagged in the 2026-09-22 second pass was manually disassembled and then
+checked for (a) convergence into already-known code immediately past the
+gap, (b) membership inside an already-reached function's own body, or (c) a
+real caller - the same bar findings 7 and 10 above were held to. All 6
+turned out to be genuine code; none were false leads. In order of
+decreasing novelty:
+
+- **`160-3633` `0xE77F8-0xE783C` (69B) - a brand-new standalone function,
+  not previously represented in the symbol table at all.** Manually
+  disassembling the full range (through its own `retf 4` epilogue, ending
+  exactly 1 byte before `udiv32`'s own entry at `0xE783D`) found a complete
+  function with its own `push bp; push bx; push cx; mov bp,sp` prologue -
+  structurally identical to `sdiv32` (`0xE77AE`) except for exactly one
+  difference: where `sdiv32` saves `dx XOR [bp+0xc]` (the XOR of both
+  operands' sign bits) before computing `abs()` of each, this function
+  saves plain `dx` (the dividend's sign alone), so the divisor's sign never
+  affects the final result - only its magnitude does. It also calls a
+  different point inside `udiv32` (`0xE7866`, `+0x29` into `udiv32`'s body,
+  a secondary entry - not `udiv32`'s own primary entry at `0xE783D` that
+  `sdiv32` itself calls; not reconciled further). Root cause for why
+  neither discovery mechanism had ever found it: no literal far-pointer
+  bytes reference `0xE000:77F8` anywhere in any of the 3 ROMs (checked
+  directly - the caller is still genuinely unresolved, same "confirmed
+  code, caller not found" category as finding 10 above), and the mainrom
+  heuristic's push-bp prologue scanner structurally cannot match it either
+  - its signature requires `mov bp,sp` *byte-adjacent* to `push bp`, and
+  this function has `push bx; push cx` in between. A project-wide scan for
+  that exact "delayed prologue" shape turned up only 3 instances total
+  across `160-3633`/`160-3532`: `ashr32` and `sdiv32` themselves (both
+  already known, both missed by the same scanner for the same reason) and
+  this one. Named `sdiv32_unsigned_divisor` and added as a manual
+  `ENTRY_POINTS` tuple in `gen_disasm_x86.py` (a `FUNCTIONAL_NAMES` entry
+  alone doesn't make the walker visit an address it was never going to
+  reach) - see `FUNCTIONS.md`.
+
+- **`160-3633` `0xE9180-0xE91EF` (112B) - the shared tail of an existing
+  switch/case dispatcher, not a new function.** Falls through cleanly from
+  4 already-known, adjacent dispatch-case labels (`L_E9120`/`L_E913F`/
+  `L_E915E`/`L_E917D`, each a `mov di,CONST` setting a different item-ID
+  constant) and converges forward into already-known code at `L_E924B`
+  (`ref_count` 5, i.e. already reached from 5 other places). No own frame,
+  so not independently nameable - it's an outlined dispatcher tail, the
+  same category as other no-own-frame fragments already left unnamed
+  elsewhere in this project.
+
+- **`160-3633` `0xE9404-0xE9471` (110B) - a gap inside an existing,
+  already-reached-but-unnamed function (`FUNC_3633_93D8`), bridging
+  straight into the already-named `merge_record_flags_if_changed`
+  (`0xE9472`).** The `.lst`'s last decoded instruction before the gap is
+  `L_E93FF`'s `cmp byte ptr [0x530], 0` (ending at `0xE9403`); the next
+  decoded instruction anywhere is `merge_record_flags_if_changed`'s own
+  first instruction at exactly `0xE9472` - i.e. the gap's documented
+  boundaries (`0xE9404-0xE9471`) account for *every single byte* between
+  the two, with nothing left over on either side. Manually disassembling
+  the gap shows an entirely ordinary `je 0xe9420`-driven conditional
+  computing `di = index*4` and reading `[0x1D50]`/[bp-0xc]`, then falling
+  straight through into `merge_record_flags_if_changed` with no `jmp` at
+  all - confirming the two are the same function, not two functions back
+  to back (consistent with `merge_record_flags_if_changed`'s own
+  `FUNCTIONS.md` entry already describing it as using `[bp-0x10]`, a
+  caller-frame-relative reference, i.e. it has no prologue of its own and
+  was always a fallthrough continuation of whatever precedes it). No
+  explanation found for *why* the recursive-descent walker stopped
+  precisely at an ordinary, unambiguous `je` - left as an open "why does
+  coverage stop here" question rather than forced to a conclusion, the
+  same honest treatment finding 9 above got.
+
+- **`160-3633` `0xE97A2-0xE97C9` (40B) - not a mystery at all: squarely
+  inside the already-fully-documented `extract_strided_channel_samples`
+  (`0xE9744`).** Manually walking the complete function body from its
+  documented entry at `0xE9744` through its teardown at `0xE97FA` passes
+  directly through this "gap" as one of several unrolled byte/word-copy-
+  stride loop variants - it was never a real gap, just an under-walked
+  part of a function whose existence and purpose were already settled.
+  No doc changes needed beyond this note; `FUNCTIONS.md`'s existing entry
+  already covers it correctly ("2/3/6 bytes seen across the 3 entry
+  points").
+
+- **`160-3532` `0xF08E7-0xF09BF` (217B), `0xF0A73-0xF0AA9` (55B), and
+  `0xF6E23-0xF6E4B` (41B) - all 3 are gaps sandwiched inside already-
+  reached-but-unnamed functions, the same shape as the `0xE9404` case
+  above.** Each gap's bytes decode cleanly (no invalid opcodes) and
+  reference the already-tracked plot-position/plot-scale variable
+  clusters, as already noted in the 2026-09-22 pass. Checking the symbol
+  table this session found, for each one, an already-known (but unnamed)
+  entry a short distance before the gap's start (`FUNC_3532_08CB`, 28
+  bytes before `0xF08E7`; `SUB_F0A4E`, 37 bytes before `0xF0A73`; and
+  `SUB_F6E05`, 30 bytes before `0xF6E23`) *and* an already-known
+  entry/label picking back up at exactly the byte immediately following
+  each gap's end (`SUB_F09C0` at `0xF09C0`, `SUB_F0AAA` at `0xF0AAA`, and
+  `L_F6E4C` at `0xF6E4C`) - the same "gap bytes fully accounted for
+  between two already-reached points" pattern already confirmed for the
+  `0xE9404` case, just not walked instruction-by-instruction end to end
+  the way that one was. Treated as confirmed real code at the same
+  confidence tier as the `0xE9404` finding; full instruction-level walks
+  of these 3 (and any resulting naming of `FUNC_3532_08CB`/`SUB_F0A4E`/
+  `SUB_F6E05`) are left as a follow-up, not done this session.

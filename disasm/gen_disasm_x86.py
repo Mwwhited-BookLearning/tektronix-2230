@@ -119,6 +119,28 @@ ENTRY_POINTS = [
     (0xF0BF, 0x000A, "SUB_F0BFA"),
     (0xF0C2, 0x0006, "SUB_F0C26"),
     (0xF173, 0x000E, "SUB_F173E"),
+    # Found while closing out the last of UNKNOWN_DATA.md's 6 unconfirmed
+    # "looks like code by eyeball" leads (2026-10-09 follow-up to the
+    # 2026-09-22 deep-dive - see docs/decode-anomalies/unknown-data-deep-
+    # dive-2026-09-15.md). Manually disassembled as a complete, self-
+    # contained function (own push bp/push bx/push cx/mov bp,sp prologue
+    # through its own retf 4 epilogue, ending exactly 1 byte before
+    # udiv32's own entry at 0xE783D) - real code, not data, but
+    # structurally invisible to BOTH discovery mechanisms: not reached by
+    # any literal far-call/far-pointer-table entry anywhere in any of the
+    # 3 ROMs (checked directly - caller genuinely unresolved, same
+    # category as SUB_E9472 above), and not matched by the mainrom
+    # heuristic's push-bp prologue scanner either, because that scanner's
+    # signature requires `mov bp,sp` immediately (byte-adjacent) after
+    # `push bp`, while this function has `push bx; push cx` in between
+    # (confirmed via a project-wide scan: only 3 such "delayed prologue"
+    # functions exist across 160-3633/160-3532 - ashr32 and sdiv32 are
+    # the other 2, both already known). Named sdiv32_unsigned_divisor
+    # directly in FUNCTIONAL_NAMES below since its mechanism (a near-
+    # duplicate of sdiv32 that treats the divisor as non-negative
+    # magnitude-only, discarding its sign) is already fully understood -
+    # see FUNCTIONS.md.
+    (0xE77F, 0x0008, "sdiv32_unsigned_divisor"),
 ]
 
 # Semantic names for routines/branch targets whose purpose has been
@@ -2077,6 +2099,61 @@ FUNCTIONAL_NAMES = {
                                                # known to be called from
                                                # anywhere in the proven
                                                # set
+    0xE77F8: "sdiv32_unsigned_divisor",       # closes a real UNKNOWN_DATA.md
+                                               # gap (0xE77F8-0xE783C) that
+                                               # the mainrom heuristic push-
+                                               # bp scanner's "55 8b ec"
+                                               # signature structurally
+                                               # cannot match here (this
+                                               # entry is "push bp; push bx;
+                                               # push cx; mov bp,sp", with
+                                               # the mov bp,sp 2 bytes later
+                                               # than the signature expects
+                                               # - the same gap class as
+                                               # ashr32/sdiv32 themselves,
+                                               # confirmed by a project-wide
+                                               # scan for this exact 55-then-
+                                               # extra-push(es)-then-8bec
+                                               # shape: only 3 instances
+                                               # exist anywhere in 3633/3532,
+                                               # and 2 of the 3 are ashr32/
+                                               # sdiv32 - this is the 3rd).
+                                               # Byte-for-byte structurally
+                                               # identical to sdiv32 (same
+                                               # abs-both-operands-then-call-
+                                               # unsigned-core shape) except
+                                               # for exactly one difference:
+                                               # it saves the DIVIDEND's own
+                                               # sign alone (plain `mov
+                                               # [bp-2],dx`), not sdiv32's
+                                               # `xor bx,dx,[bp+0xc]` sign-
+                                               # XOR-of-both-operands, before
+                                               # deciding whether to negate
+                                               # the result - i.e. it forces
+                                               # the divisor to be treated as
+                                               # non-negative (magnitude
+                                               # only) rather than letting
+                                               # its sign flip the result.
+                                               # Also calls a different
+                                               # target than sdiv32's lcall
+                                               # (0xE7866, +0x29 into
+                                               # udiv32's body, a secondary
+                                               # entry point - not udiv32's
+                                               # own primary entry at
+                                               # 0xE783D that sdiv32 calls;
+                                               # not reconciled further).
+                                               # Caller unresolved - no
+                                               # literal far-pointer bytes
+                                               # referencing 0xE77F8 exist
+                                               # anywhere across all 3 ROMs
+                                               # (checked directly), same
+                                               # "confirmed code, caller not
+                                               # found" category as
+                                               # SUB_E956E's pair. See
+                                               # docs/decode-anomalies/
+                                               # unknown-data-deep-dive-2026-
+                                               # 09-15.md's 2026-10-09
+                                               # follow-up.
     0xE7F39: "plot_scaled_point",             # conditionally plots a
                                                # scaled acquisition point
                                                # via SUB_E90A5 (mode 0

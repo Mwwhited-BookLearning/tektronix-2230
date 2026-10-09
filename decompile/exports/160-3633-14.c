@@ -7059,6 +7059,33 @@ int __stdcall16far sdiv32(undefined2 param_1,uint param_2)
 
 
 
+/* sdiv32_unsigned_divisor (confidence: Confirmed mechanism; caller not found)
+   
+   Evidence: A sibling of `sdiv32` found while closing an `UNKNOWN_DATA.md` gap (was missed by the
+   mainrom heuristic's `push bp`-immediately-`mov bp,sp` prologue scan because this one has an extra
+   `push bx; push cx` in between). Byte-for-byte identical to `sdiv32` except it saves only the
+   dividend's own sign (`mov [bp-2],dx`) rather than `sdiv32`'s XOR-of-both-operands sign, before
+   deciding whether to negate the result - i.e. the divisor's sign never affects the result, only
+   its magnitude is used. Calls a secondary entry into `udiv32` (`0xE7866`, `+0x29` into its body)
+   rather than `udiv32`'s own primary entry at `0xE783D` that `sdiv32` calls - not reconciled
+   further. No caller found anywhere in any of the 3 ROMs (checked for literal far-call bytes); same
+   "confirmed code, caller not found" category as `SUB_E956E` */
+
+int sdiv32_unsigned_divisor(void)
+
+{
+  int iVar1;
+  int in_DX;
+  
+  iVar1 = func_0x000e7866();
+  if (in_DX < 0) {
+    iVar1 = -iVar1;
+  }
+  return iVar1;
+}
+
+
+
 /* udiv32 (confidence: Confirmed)
    
    Evidence: The unsigned 32-bit/32-bit->32-bit divide `sdiv32` calls after handling signs: builds a

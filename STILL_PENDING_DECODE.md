@@ -537,15 +537,35 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   subroutines (writes to the confirmed front-panel A/D control latch,
   reads `fp_intstat`), not data, but no literal far-pointer anywhere in
   any of the three ROMs references either entry address, so the real
-  caller is a still-unresolved computed/indirect far call. 7 further
-  "sandwiched" blocks look like real code by eyeball (clean prologues,
-  or references to already-tracked RAM variables) but aren't
-  rigorously confirmed yet - flagged as open leads. Also clarified that
-  several other "sandwiched" `160-3532` blocks (`0x1A86-0x213A`) are
-  just uncovered pieces of the jump table already documented just
-  below (finding 1), not new mysteries. See `docs/decode-anomalies/
-  unknown-data-deep-dive-2026-09-15.md`'s "Follow-up, 2026-09-22"
-  section, findings 7 and 10 plus the second-pass subsection.
+  caller is a still-unresolved computed/indirect far call. Also
+  clarified that several other "sandwiched" `160-3532` blocks
+  (`0x1A86-0x213A`) are just uncovered pieces of the jump table already
+  documented just below (finding 1), not new mysteries. See
+  `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`'s
+  "Follow-up, 2026-09-22" section, findings 7 and 10 plus the
+  second-pass subsection.
+  **RESOLVED 2026-10-09**: the 6 remaining "unconfirmed lead" blocks
+  from the second-pass subsection were each traced the same rigorous
+  way - none were false leads. `160-3633` `0xE77F8-0xE783C` is a
+  brand-new standalone function (named `sdiv32_unsigned_divisor`, a
+  sibling of `sdiv32` that treats the divisor as magnitude-only;
+  caller still unresolved, same category as the `0xE956E` pair above).
+  `160-3633` `0xE9180-0xE91EF` is the shared, no-own-frame tail of an
+  existing switch/case dispatcher (falls through from 4 known case
+  labels, converges into already-known `L_E924B`). `160-3633`
+  `0xE97A2-0xE97C9` was never a real gap - it's inside the
+  already-fully-documented `extract_strided_channel_samples`.
+  `160-3633` `0xE9404-0xE9471` bridges an already-reached-but-unnamed
+  function straight into the already-named
+  `merge_record_flags_if_changed` via plain fallthrough (why coverage
+  stopped there specifically is still unexplained, left open). The 3
+  `160-3532` blocks (`0xF08E7-0xF09BF`, `0xF0A73-0xF0AA9`,
+  `0xF6E23-0xF6E4B`) are the same "gap sandwiched inside an
+  already-reached function" shape, each with an already-known
+  entry/label picking back up at exactly the byte after the gap ends.
+  See `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`'s
+  "2026-10-09 follow-up" section (finding 11) for the full per-block
+  evidence.
 - **New systematic instance found 2026-09-15**: a previously-unknown
   real ~100-entry jump table in `160-3532` (file offset `0x1A33`-
   `0x213A`) has 2 of its 4 real callers (from `FUNC_3633_E9FA`, a

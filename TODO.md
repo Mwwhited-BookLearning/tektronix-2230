@@ -295,77 +295,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       **still open**, this is the next self-test failure blocking a
       fully-clean power-up sequence.
 - [ ] **User request 2026-09-15**: deep dive into `UNKNOWN_DATA.md`'s
-      exported blocks (see `disasm/find_unknown_data.py`). Found 5
-      things worth following up, ranked by confidence in `docs/decode-
-      anomalies/unknown-data-deep-dive-2026-09-15.md`: (1) a real
-      ~100-entry jump table in `160-3532` with 2 real callers landing
-      1 byte inside it (landing artifact) from a channel-mode
-      dispatcher that itself has zero confirmed callers; (2) a probable
-      per-item Y-position/width table in `160-3633` next to a
-      2-byte function whose body the heuristic decoder over-runs into
-      the table; (3) **the encoding is fully decoded and actually
-      rendered** - built `disasm/decode_vector_icons.py` (pen-bit
-      convention, same as `draw_readout_char`'s stroke font, wider
-      coordinate) and rendered the `160-3633` region to SVG/PNG.
-      **Rendering it changed the conclusion**: a 40-point circle
-      (radius≈14, appears twice as a cyclic point-list rotation) and a
-      small circle sharing its center are real, but 3 medium shapes
-      that looked letter-like at one render scale don't hold up as a
-      clean, orientation-independent alphabet either - genuinely
-      unresolved whether this is a small icon set or a rough font, see
-      the doc for the full before/after reasoning; (4) **revised** -
-      only the first 44 bytes of a 3532 record table are near (not
-      exactly on) an already-known self-test string cluster, the other
-      ~850 bytes are unrelated; also surfaced a methodological gap (a
-      `160-3633` region heuristically "decodes" as including an
-      impossible SSE instruction - `UNKNOWN_DATA.md` can't see
-      "covered but garbage" regions, only uncovered gaps); (5) a
-      grouped incrementing-ID table in the comm ROM, tentatively but
-      not confirmedly related to the manual's Table 7-34 status
-      categories. None reached the confidence bar for a
-      `FUNCTIONS.md` rename yet - see `STILL_PENDING_DECODE.md`'s
-      "Decode anomalies"/"Menu/UI rendering"/"Comm ROM" sections for
-      each as a tracked open item. Next step if picked up: render more
-      of the surrounding ROM with `decode_vector_icons.py` to check for
-      a fuller alphabet or more icon variants nearby, and compare
-      flipped/un-flipped Y-axis renders for every shape (only shapes
-      5-7 were checked both ways so far).
-      **Follow-up 2026-09-22**: picked up 4 more of the ~44 blocks not
-      individually chased yet. Real finding: `160-3633` physical
-      `0xEFF99-0xEFFED` isn't data at all - it's genuine reachable code
-      (manually traced all 85 bytes; two branches converge cleanly back
-      into already-known code) that a coverage-tooling boundary bug
-      orphaned, which also explains what had looked like an
-      unexplained landing artifact at the same spot as a simple
-      off-by-one instead. **Follow-up 2026-09-22 (second pass)**: wrote
-      `disasm/find_sandwiched_unknown_blocks.py` to check systematically
-      whether that wrapping-jump mechanism recurs elsewhere - it
-      doesn't; exactly one instance exists project-wide (the block 20
-      case already found). But its weaker "sandwiched between covered
-      code" signal (too noisy alone - 37 of 49 blocks match it) led to
-      manually checking the highest-ranked candidates by hand, which
-      found **one more confirmed real block**: `160-3633` physical
-      `0xE956E-0xE95A0` is two real `retf`-terminated leaf subroutines
-      (writes to the confirmed front-panel A/D control latch, reads
-      `fp_intstat`), not data - but unlike block 20, no far-pointer
-      reference to either entry point exists anywhere in the project,
-      so the actual caller is still unresolved (a computed/indirect far
-      call, presumably). Also clarified that several other "sandwiched"
-      `160-3532` blocks (`0x1A86-0x213A`) are just more of the
-      already-documented ~100-entry jump table, not new mysteries.
-      **Next step if picked up**: 7 more blocks looked plausible by
-      eyeball (clean prologues or references to already-tracked RAM
-      variables - listed in the deep-dive doc's second-pass section)
-      but weren't rigorously confirmed the way the two above were (no
-      caller/far-pointer search, no convergence check) - worth tracing
-      one at a time the same way, starting with `160-3633`
-      `0xE77F8-0xE783C` (looks like a signed abs-value/division
-      helper). See `docs/decode-anomalies/unknown-data-deep-dive-2026-
-      09-15.md`'s "Follow-up, 2026-09-22" section (findings 7-10, plus
-      the second-pass subsection) for this and 3 smaller, lower-value
-      looks (2 end-of-chip blocks confirmed as ordinary unprogrammed
-      EPROM filler, 1 plausible-but-unconfirmed ROM quadrant-boundary
-      table, 1 still-unresolved small-int table).
+      exported blocks (see `disasm/find_unknown_data.py`). Full history
+      and findings in `docs/decode-anomalies/unknown-data-deep-dive-
+      2026-09-15.md` and `STILL_PENDING_DECODE.md`'s "Decode anomalies"
+      section; resolved-item detail moved to `changes/YYYY-MM-DD.md`
+      per this project's TODO-hygiene convention rather than kept here.
+      **The "sandwiched unknown code" sub-thread (findings 7-11) is now
+      fully closed** - every block `find_unknown_data.py` ever flagged
+      has either a confirmed explanation or an explicitly-tracked open
+      question. **Still open**: the vector-icon-vs-font sub-thread
+      (finding 3) - render more of the surrounding `160-3633` ROM with
+      `disasm/decode_vector_icons.py` to check for a fuller alphabet or
+      more icon variants nearby, and compare flipped/un-flipped Y-axis
+      renders for every shape (only shapes 5-7 checked both ways so
+      far).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. **2026-09-16: closed for this
       project's real hardware** - `draw_readout_char` opens with
