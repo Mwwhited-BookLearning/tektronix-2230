@@ -18976,10 +18976,10 @@ L_ECB3D:
     3633:CB49  [ECB49]  742d            je      L_ECB78  ; 0xcb78
     3633:CB4B  [ECB4B]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3633:CB50  [ECB50]  7426            je      L_ECB78  ; 0xcb78
-    3633:CB52  [ECB52]  9a9b0cc982      lcall   SUB_8392B  ; 0x82c9, 0xc9b
+    3633:CB52  [ECB52]  9a9b0cc982      lcall   test_gpib_lon_or_ton_active  ; 0x82c9, 0xc9b
     3633:CB57  [ECB57]  3d0000          cmp     ax, 0
     3633:CB5A  [ECB5A]  750a            jne     L_ECB66  ; 0xcb66
-    3633:CB5C  [ECB5C]  9aee0cc982      lcall   SUB_8397E  ; 0x82c9, 0xcee
+    3633:CB5C  [ECB5C]  9aee0cc982      lcall   test_gpib_lon_active  ; 0x82c9, 0xcee
     3633:CB61  [ECB61]  3d0000          cmp     ax, 0
     3633:CB64  [ECB64]  7412            je      L_ECB78  ; 0xcb78
 L_ECB66:
@@ -26289,9 +26289,9 @@ SUB_F12D1:
     3532:12D7  [F12D7]  8946f8          mov     word ptr [bp - 8], ax
     3532:12DA  [F12DA]  803ef91b00      cmp     byte ptr [0x1bf9], 0
     3532:12DF  [F12DF]  7413            je      L_F12F4  ; 0x12f4
-    3532:12E1  [F12E1]  9a9b0cc982      lcall   SUB_8392B  ; 0x82c9, 0xc9b
+    3532:12E1  [F12E1]  9a9b0cc982      lcall   test_gpib_lon_or_ton_active  ; 0x82c9, 0xc9b
     3532:12E6  [F12E6]  8946f2          mov     word ptr [bp - 0xe], ax
-    3532:12E9  [F12E9]  9aee0cc982      lcall   SUB_8397E  ; 0x82c9, 0xcee
+    3532:12E9  [F12E9]  9aee0cc982      lcall   test_gpib_lon_active  ; 0x82c9, 0xcee
     3532:12EE  [F12EE]  8946f0          mov     word ptr [bp - 0x10], ax
     3532:12F1  [F12F1]  e9a800          jmp     L_F139C  ; 0x139c
 L_F12F4:

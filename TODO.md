@@ -820,9 +820,18 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
         7 to `0` in every documented category - likely a one-off
         transient serial glitch, not a firmware defect. See
         `docs/comm-rom/rs232-live-session-2026-09-14.md`.
-      - Whether `FUNC_2998_39F5` or `poll_comm_status_tick` relates to
-        the real receive path is unresolved but moot now that RS-232
-        works in practice.
+      - `FUNC_2998_39F5` is now named `comm_call_main_rom` (resolved
+        2026-10-09 - it's `init_comm_dispatch_table`'s `[0x73a]`/
+        `[0x738]` target, confirmed genuinely reached; see
+        `changes/2026-10-09.md` for the full story, including a
+        mislabeling that had attached this function's real body to the
+        wrong address, `0x839D1`, for several weeks). It's a `process_
+        gpib_command_byte`-calling state machine, GPIB-command-focused
+        rather than a general RS-232 byte-receive path - `poll_comm_
+        status_tick` is confirmed unrelated to byte reception (just an
+        icon-redraw/flag-sync poller, see its `FUNCTIONS.md` entry).
+        Still moot for practical purposes now that RS-232 works, but no
+        longer an open "which of these two" question.
       - Diffing/disassembling comm ROM revision `-13` remains a
         legitimate documentation gap, not a motivated investigation
         anymore.

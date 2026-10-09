@@ -5718,7 +5718,7 @@ L_8391C:
     db 0x8b, 0xe5  ; 3927: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 3929: pop bp
     retf                                     ; 392A: retf 
-FUNC_2998_392B:
+test_gpib_lon_or_ton_active:
     push bp                                  ; 392B: push bp
     db 0x8b, 0xec  ; 392C: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 392E: sub sp, 0xa
@@ -5747,7 +5747,7 @@ L_8396F:
     db 0x8b, 0xe5  ; 397A: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 397C: pop bp
     retf                                     ; 397D: retf 
-FUNC_2998_397E:
+test_gpib_lon_active:
     push bp                                  ; 397E: push bp
     db 0x8b, 0xec  ; 397F: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 3981: sub sp, 0xa
@@ -5776,7 +5776,7 @@ L_839C2:
     db 0x8b, 0xe5  ; 39CD: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 39CF: pop bp
     retf                                     ; 39D0: retf 
-comm_call_main_rom:
+redraw_option_status_icon:
     push bp                                  ; 39D1: push bp
     db 0x8b, 0xec  ; 39D2: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 8                                ; 39D4: sub sp, 8
@@ -5791,7 +5791,7 @@ comm_call_main_rom:
     pop bp                                   ; 39F2: pop bp
     retf                                     ; 39F3: retf 
     db 0xff  ; 39F4
-FUNC_2998_39F5:
+comm_call_main_rom:
     push bp                                  ; 39F5: push bp
     db 0x8b, 0xec  ; 39F6: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 0xa                              ; 39F8: sub sp, 0xa
