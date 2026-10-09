@@ -4816,10 +4816,10 @@
     "notes": null
   },
   "8392B": {
-    "name": "FUNC_2998_392B",
+    "name": "test_gpib_lon_or_ton_active",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "test_gpib_lon_or_ton_active",
     "notes": null
   },
   "8396F": {
@@ -4830,10 +4830,10 @@
     "notes": null
   },
   "8397E": {
-    "name": "FUNC_2998_397E",
+    "name": "test_gpib_lon_active",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "test_gpib_lon_active",
     "notes": null
   },
   "839C2": {
@@ -4844,17 +4844,17 @@
     "notes": null
   },
   "839D1": {
-    "name": "comm_call_main_rom",
+    "name": "redraw_option_status_icon",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": "comm_call_main_rom",
+    "functional_name": "redraw_option_status_icon",
     "notes": null
   },
   "839F5": {
-    "name": "FUNC_2998_39F5",
+    "name": "comm_call_main_rom",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "comm_call_main_rom",
     "notes": null
   },
   "83A04": {

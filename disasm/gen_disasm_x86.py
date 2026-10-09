@@ -226,15 +226,102 @@ FUNCTIONAL_NAMES = {
                                                # but swaps DS to a fixed
                                                # segment (0x8F80) first
                                                # via set_ds_return_old
-    0x839D1: "comm_call_main_rom",            # swaps DS to the main
-                                               # ROM's low-RAM segment
-                                               # (0x41, via set_ds_
-                                               # return_old), calls a
-                                               # main-ROM handler
-                                               # (SUB_ED7DF), swaps back -
-                                               # a cross-ROM callback
-                                               # wrapper, same pattern as
-                                               # set_comm_critical_flag
+    0x839D1: "redraw_option_status_icon",     # CORRECTED 2026-10-09
+                                               # (see changes/2026-10-
+                                               # 09.md) - a prior
+                                               # session's "deeper
+                                               # trace" of
+                                               # comm_call_main_rom
+                                               # actually described the
+                                               # NEXT function (0x839F5)
+                                               # by mistake; the real,
+                                               # verified-against-raw-
+                                               # bytes content of THIS
+                                               # address is the original,
+                                               # simple reading: swaps
+                                               # DS to the main ROM's
+                                               # segment (0x41, via
+                                               # set_ds_return_old),
+                                               # calls draw_boot_splash_
+                                               # and_option_icon once,
+                                               # swaps back. Called by
+                                               # poll_comm_status_tick
+                                               # on a comm-DIP-switch-
+                                               # byte bit-0x80 change -
+                                               # i.e. this redraws the
+                                               # installed-option status
+                                               # icon, not boot-only
+    0x839F5: "comm_call_main_rom",            # the REAL state-machine
+                                               # loop (moved here
+                                               # 2026-10-09 from the
+                                               # mislabeled 0x839D1,
+                                               # see changes/2026-10-
+                                               # 09.md) - this is
+                                               # init_comm_dispatch_
+                                               # table's [0x73a]/[0x738]
+                                               # target (segment
+                                               # 0x839F, offset 5),
+                                               # confirming it's really
+                                               # reached, resolving the
+                                               # old "FUNC_2998_39F5
+                                               # reachability couldn't
+                                               # be established" open
+                                               # question. Swaps DS to
+                                               # the main ROM (0x41),
+                                               # calls process_gpib_
+                                               # command_byte directly
+                                               # and via an indexed call
+                                               # through a computed
+                                               # pointer table at
+                                               # [0x72A] (indexed by
+                                               # [0x5A4]*4 - a genuine
+                                               # state-dispatch jump
+                                               # table, not yet
+                                               # independently decoded),
+                                               # checks whether the
+                                               # dispatched state
+                                               # changed, loops back to
+                                               # the top (L_83A04) if
+                                               # not done, and
+                                               # otherwise calls
+                                               # create_task right
+                                               # before looping again -
+                                               # a cooperative yield
+                                               # point, not a one-shot
+                                               # spawn (see docs/
+                                               # interrupts/task-
+                                               # scheduler.md)
+    0x8392B: "test_gpib_lon_or_ton_active",   # returns -1 (else 0) iff
+                                               # [0x732]+0x95 AND +0x96
+                                               # are both nonzero, AND
+                                               # [0x4F1]&0xC0 (GPIB LON
+                                               # or TON, see MEMORY_MAP.
+                                               # md's "GPIB option
+                                               # board" section) is
+                                               # nonzero, AND [0x4F0]
+                                               # (GPIB address) != the
+                                               # 0x1F sentinel. 2026-10-
+                                               # 09: [0x732]+0x95 is set
+                                               # to 0 by poll_dip_switch_
+                                               # change and never
+                                               # written any other
+                                               # value anywhere in
+                                               # either ROM - this
+                                               # function is unreachable
+                                               # -as-shipped with that
+                                               # flag always false, and
+                                               # no call site (direct or
+                                               # table-indirect) was
+                                               # found for it either
+    0x8397E: "test_gpib_lon_active",          # same shape as
+                                               # test_gpib_lon_or_ton_
+                                               # active immediately
+                                               # above but tests only
+                                               # [0x4F1]&0x80 (GPIB LON
+                                               # alone, not TON) -
+                                               # same always-false-flag
+                                               # and no-call-site
+                                               # caveats apply
     0x9605A: "checksum_bytes",                # (far ptr, count) - sums
                                                # `count` bytes starting
                                                # at the pointer into a

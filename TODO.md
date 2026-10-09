@@ -699,15 +699,30 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       based Mode/Command interface actually works. Further evidence
       against the UART theory, still doesn't identify what the block
       actually is - remains open.
-- [ ] Reconcile `COMM/DATA/STOP_BITS`/`FLOW` (a runtime menu) against
-      the rear-panel PARAMETERS DIP switch (`read_dip_switches_serial_
-      config`) - both seem to configure overlapping RS-232 parameters;
-      not yet clear which wins or whether the DIP switch only sets
-      power-on defaults. (The DIP switch's own switch-to-setting bit
-      mapping is now fully resolved - see `MEMORY_MAP.md`'s "RS-232
-      option board" section, 2026-10-09 - so this item is purely about
-      runtime-menu-vs-DIP-switch precedence now, not an additional
-      unknown mapping.) `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
+- [ ] **DIP-switch-vs-menu precedence, mostly resolved 2026-10-09** - see
+      `MEMORY_MAP.md`'s "RS-232 option board" section for the full
+      writeup. Summary: `STOP BITS`/`FLOW` turned out to have **no DIP
+      switch counterpart at all** (confirmed from the manual's own COMM
+      menu tree - they're separate top-level `COMM` submenu items,
+      Option-12-only, with zero switch bits ever decoding to either) -
+      dissolving that half of this item's original premise. For the
+      settings that genuinely are DIP-switch-decoded (baud/parity/
+      terminator/printer-plotter): traced every reference to
+      `[0x4EC]`/`[0x4ED]`/`[0x4EF]`/`[0x461]` in both ROMs and found
+      `read_dip_switches_serial_config` is the *only* writer anywhere -
+      consistent with the manual's own wording, which promises a
+      software/MENU override only for printer/plotter (switches 9-10),
+      not for baud/parity/terminator. The printer/plotter override's
+      actual write site was **not found** - still a genuine open thread
+      if picked up again (start from the `EPS7`/`EPS8`/`HPGL`/`TJET`
+      format-name strings in `STRINGS.md`). Also found: the switch is
+      reached through a single non-reentrant boot-time path (`finish_
+      boot_init_and_start_scheduler`, entered via one `ljmp`, never
+      called again) - no code path re-reads it on IFC, despite the
+      manual's claim that it's "read at power-up and when interface
+      clear messages are received" (that claim may only hold for the
+      *GPIB* PARAMETER switch, a separate decode path not traced here).
+- [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
       `docs/comm-rom/rs232-live-session-2026-09-14.md`'s "Live session, 2026-09-14 (continued)") -
@@ -826,14 +841,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x759]`/`SWB1` once a literal-address read site for either is
       found. `[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern still
       isn't tied to a specific named `SWB1`/`SWB2` bit - remains open.
-- [ ] Found the comm option board's DIP-switch reader (`read_dip_
-      switches_serial_config`/`read_dip_switches_gpib_config`, see
-      `HARDWARE.md`) - still open: map each of the 10 physical switch
-      positions to which specific decoded bit(s) it controls. `[0x629]`
-      (GPIB/RS-232 mode) still isn't confirmed as switch-sourced. The
-      service manual confirms `0x406BC` is the right register ("Option
-      Parameters Latch (in)") but doesn't give a bit-by-bit switch map
-      in the sections read so far.
+- [ ] Comm option board DIP-switch mapping (`read_dip_switches_serial_
+      config`/`read_dip_switches_gpib_config`) - **resolved 2026-10-09**
+      for both RS-232 and GPIB, including `[0x629]`'s origin turning
+      out to be board-type auto-detection rather than a switch (see
+      `MEMORY_MAP.md`'s "RS-232 option board"/"GPIB option board"
+      sections and `changes/2026-10-09.md`). One narrow thread left
+      open: the GPIB switch 8 (TON) bit's physical ON/OFF polarity
+      isn't independently confirmed (no GPIB-equipped unit/schematic
+      available) - not worth its own TODO line unless GPIB hardware or
+      a schematic for that board turns up.
 
 ## Ongoing documentation goal
 

@@ -142,8 +142,13 @@ The single biggest cluster of open items - see
   this is deliberate reuse of a shared math primitive or something
   else is unresolved. See `docs/comm-rom/rs232-flow-control-and-open-
   puzzle.md`.
-- **`[0x629]` (GPIB/RS-232 mode select)** still isn't confirmed as
-  switch-sourced.
+- **`[0x629]` (GPIB/RS-232 mode select)** - **resolved 2026-10-09**:
+  confirmed NOT switch-sourced at all. `poll_dip_switch_change` derives
+  it from a before/after toggle-and-XOR test of the GPIB-config State
+  buffer's bits `0x40`/`0x80` (toggling the Option Interrupt Mask
+  Latch's `3D` output, `[0x6E2]+3`, and re-reading `[0x6DA]`) - a
+  hardware option-board-type auto-detection, not a switch read. See
+  `MEMORY_MAP.md`'s new "GPIB option board" section.
 - **The 10-position PARAMETERS DIP switch is only partially mapped.**
   Only the baud-rate nibble (switches 1-4) has a confirmed bit-to-
   meaning map (see `hardware/manuals/2230_programming/
@@ -179,8 +184,16 @@ The single biggest cluster of open items - see
   fully explained by - the switch-9/10 bit swap Table 7-36 had already
   surfaced. No remaining open sub-question here.
 - **`COMM/DATA/STOP_BITS`/`FLOW` (runtime menu) vs. the rear-panel DIP
-  switch** - both configure overlapping RS-232 parameters; not clear
-  which wins or whether the DIP switch only sets power-on defaults.
+  switch** - **mostly resolved 2026-10-09** (see `MEMORY_MAP.md`'s
+  "RS-232 option board" section): `STOP BITS`/`FLOW` turned out to have
+  no DIP switch counterpart at all, so there's no real conflict for
+  those two. For the settings the switch genuinely decodes (baud/
+  parity/terminator/printer-plotter), `read_dip_switches_serial_config`
+  is the only writer found anywhere in either ROM, consistent with the
+  manual's own wording (a software/MENU override is explicitly
+  promised only for printer/plotter, not baud/parity/terminator) - but
+  the actual printer/plotter override code was **not found**, still a
+  genuine open thread.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

@@ -1267,7 +1267,7 @@ L_80CCC:
     2998:0CCC  [80CCC]  08160306        or      byte ptr [0x603], dl
     2998:0CD0  [80CD0]  c43e3207        les     di, ptr [0x732]
     2998:0CD4  [80CD4]  26808d970009    or      byte ptr es:[di + 0x97], 9
-    2998:0CDA  [80CDA]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:0CDA  [80CDA]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:0CDF  [80CDF]  ff06fc04        inc     word ptr [0x4fc]
     2998:0CE3  [80CE3]  c746f80000      mov     word ptr [bp - 8], 0
     2998:0CE8  [80CE8]  c43e3a07        les     di, ptr [0x73a]
@@ -1493,7 +1493,7 @@ L_80F1B:
     2998:0F1B  [80F1B]  08160306        or      byte ptr [0x603], dl
     2998:0F1F  [80F1F]  c43e3207        les     di, ptr [0x732]
     2998:0F23  [80F23]  2680a59700fe    and     byte ptr es:[di + 0x97], 0xfe
-    2998:0F29  [80F29]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:0F29  [80F29]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:0F2E  [80F2E]  2bdb            sub     bx, bx
     2998:0F30  [80F30]  8ec3            mov     es, bx
 L_80F32:
@@ -2713,7 +2713,7 @@ FUNC_2998_1AE1:
     2998:1AEE  [81AEE]  8c46e2          mov     word ptr [bp - 0x1e], es
     2998:1AF1  [81AF1]  c41e3207        les     bx, ptr [0x732]
     2998:1AF5  [81AF5]  26808f970009    or      byte ptr es:[bx + 0x97], 9
-    2998:1AFB  [81AFB]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:1AFB  [81AFB]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:1B00  [81B00]  bf4100          mov     di, 0x41
     2998:1B03  [81B03]  57              push    di
     2998:1B04  [81B04]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
@@ -2917,7 +2917,7 @@ L_81CF2:
     2998:1D0A  [81D0A]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998:1D0F  [81D0F]  c43e3207        les     di, ptr [0x732]
     2998:1D13  [81D13]  2680a59700fe    and     byte ptr es:[di + 0x97], 0xfe
-    2998:1D19  [81D19]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:1D19  [81D19]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:1D1E  [81D1E]  8be5            mov     sp, bp
     2998:1D20  [81D20]  5d              pop     bp
     2998:1D21  [81D21]  cb              retf    
@@ -5693,7 +5693,7 @@ L_8391C:
     2998:3927  [83927]  8be5            mov     sp, bp
     2998:3929  [83929]  5d              pop     bp
     2998:392A  [8392A]  cb              retf    
-FUNC_2998_392B:
+test_gpib_lon_or_ton_active:
     2998:392B  [8392B]  55              push    bp
     2998:392C  [8392C]  8bec            mov     bp, sp
     2998:392E  [8392E]  83ec0a          sub     sp, 0xa
@@ -5722,7 +5722,7 @@ L_8396F:
     2998:397A  [8397A]  8be5            mov     sp, bp
     2998:397C  [8397C]  5d              pop     bp
     2998:397D  [8397D]  cb              retf    
-FUNC_2998_397E:
+test_gpib_lon_active:
     2998:397E  [8397E]  55              push    bp
     2998:397F  [8397F]  8bec            mov     bp, sp
     2998:3981  [83981]  83ec0a          sub     sp, 0xa
@@ -5751,7 +5751,7 @@ L_839C2:
     2998:39CD  [839CD]  8be5            mov     sp, bp
     2998:39CF  [839CF]  5d              pop     bp
     2998:39D0  [839D0]  cb              retf    
-comm_call_main_rom:
+redraw_option_status_icon:
     2998:39D1  [839D1]  55              push    bp
     2998:39D2  [839D2]  8bec            mov     bp, sp
     2998:39D4  [839D4]  83ec08          sub     sp, 8
@@ -5766,7 +5766,7 @@ comm_call_main_rom:
     2998:39F2  [839F2]  5d              pop     bp
     2998:39F3  [839F3]  cb              retf    
 
-FUNC_2998_39F5:
+comm_call_main_rom:
     2998:39F5  [839F5]  55              push    bp
     2998:39F6  [839F6]  8bec            mov     bp, sp
     2998:39F8  [839F8]  83ec0a          sub     sp, 0xa
@@ -8411,7 +8411,7 @@ FUNC_2998_5517:
     2998:5527  [85527]  756e            jne     L_85597  ; 0x5597
     2998:5529  [85529]  c41e3207        les     bx, ptr [0x732]
     2998:552D  [8552D]  26808f970009    or      byte ptr es:[bx + 0x97], 9
-    2998:5533  [85533]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:5533  [85533]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:5538  [85538]  bf4100          mov     di, 0x41
     2998:553B  [8553B]  57              push    di
     2998:553C  [8553C]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
@@ -8438,7 +8438,7 @@ L_85579:
 L_85585:
     2998:5585  [85585]  c43e3207        les     di, ptr [0x732]
     2998:5589  [85589]  2680a59700fe    and     byte ptr es:[di + 0x97], 0xfe
-    2998:558F  [8558F]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:558F  [8558F]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:5594  [85594]  e90800          jmp     L_8559F  ; 0x559f
 L_85597:
     2998:5597  [85597]  e90000          jmp     L_8559A  ; 0x559a
@@ -20628,7 +20628,7 @@ L_8E4A7:
     2998:E4A7  [8E4A7]  c43e3207        les     di, ptr [0x732]
     2998:E4AB  [8E4AB]  2680a59700fd    and     byte ptr es:[di + 0x97], 0xfd
 L_8E4B1:
-    2998:E4B1  [8E4B1]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:E4B1  [8E4B1]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:E4B6  [8E4B6]  e9d500          jmp     L_8E58E  ; 0xe58e
 L_8E4B9:
     2998:E4B9  [8E4B9]  bfffff          mov     di, 0xffff
@@ -21696,7 +21696,7 @@ L_8F00C:
     2998:F00C  [8F00C]  c43e3207        les     di, ptr [0x732]
     2998:F010  [8F010]  26808d97000a    or      byte ptr es:[di + 0x97], 0xa
 L_8F016:
-    2998:F016  [8F016]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:F016  [8F016]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
 L_8F01B:
     2998:F01B  [8F01B]  8a56f2          mov     dl, byte ptr [bp - 0xe]
     2998:F01E  [8F01E]  80e202          and     dl, 2
@@ -22654,7 +22654,7 @@ L_8FA03:
     2998:FA03  [8FA03]  c43e3207        les     di, ptr [0x732]
     2998:FA07  [8FA07]  2680a59700fb    and     byte ptr es:[di + 0x97], 0xfb
 L_8FA0D:
-    2998:FA0D  [8FA0D]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:FA0D  [8FA0D]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:FA12  [8FA12]  8be5            mov     sp, bp
     2998:FA14  [8FA14]  5d              pop     bp
     2998:FA15  [8FA15]  cb              retf    
@@ -22742,7 +22742,7 @@ L_8FAEE:
     2998:FAEE  [8FAEE]  c43e3207        les     di, ptr [0x732]
     2998:FAF2  [8FAF2]  2680a59700fd    and     byte ptr es:[di + 0x97], 0xfd
 L_8FAF8:
-    2998:FAF8  [8FAF8]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998:FAF8  [8FAF8]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998:FAFD  [8FAFD]  8be5            mov     sp, bp
     2998:FAFF  [8FAFF]  5d              pop     bp
     2998:FB00  [8FB00]  cb              retf    

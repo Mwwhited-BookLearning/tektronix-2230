@@ -209,7 +209,7 @@ a yield can happen," even under the corrected understanding:
 0x0F0DFA  (unnamed, 0xF0D64)         0x0FD0FF  (unnamed, 0xFD006)
 0x0E6952  restart_current_task       0x0FCBA3  (unnamed, 0xFCAF6)
 0x08E88F  (unnamed, 0x87F44)         0x0FD3D1  (unnamed, 0xFD2E8)
-0x083B05  comm_call_main_rom         0x0FD31E  (unnamed, 0xFD2E8)
+0x083B05  comm_call_main_rom (0x839F5) 0x0FD31E  (unnamed, 0xFD2E8)
 0x0FCFEC  (unnamed, 0xFCFD2)         0x0FD56D  (unnamed, 0xFD471)
 0x0FF14F  (unnamed, 0xFF067)         0x0FD6BB  (unnamed, 0xFD471)
 0x0FF39F  (unnamed, 0xFF067)         0x0FD73D  (unnamed, 0xFD471)
@@ -238,7 +238,9 @@ state table instead).
 **Traced a 3rd example - `comm_call_main_rom`'s call site - and it
 makes the real, common usage pattern unambiguous: `create_task` is
 mostly used as a cooperative *yield point*, not a one-shot spawn.**
-`comm_call_main_rom` (`0x8839D1`, comm ROM) is a real state-machine
+`comm_call_main_rom` (`0x839F5`, comm ROM - **the `0x8839D1` address
+originally written here was wrong, see the 2026-10-09 correction
+below**) is a real state-machine
 loop: it switches to the main ROM's `DS` (`0x41`), calls `process_
 gpib_command_byte` a couple of times, does an **indexed call through a
 computed pointer table at `[0x72A]`** (`les di,[0x72A]; ...; lcall
@@ -257,6 +259,23 @@ other words: this function periodically forks a continuation of
 picks its own state machine back up exactly where it left off once
 rescheduled - a cooperative multitasking yield, implemented entirely
 via the fork mechanism rather than a dedicated "yield" primitive.
+
+**Correction, 2026-10-09**: this whole trace is correct, but the
+address originally attached to it here (`0x8839D1` - note the extra
+leading digit, an invalid 20-bit physical address) was a typo/mis-
+transcription for `0x839D1`, which is itself the *wrong* function -
+`0x839D1` is a short, unrelated 35-byte wrapper (now named
+`redraw_option_status_icon`) that happens to sit immediately before
+this one in the comm ROM's listing. The state-machine loop actually
+described here lives at `0x839F5` (now correctly named
+`comm_call_main_rom`), confirmed by an independent raw-byte hex-dump of
+`binary/160-2998-14.bin` at both addresses. See `FUNCTIONS.md`'s rows
+for both addresses and `changes/2026-10-09.md` for the full discovery.
+This also resolves `docs/interrupts/ivt-and-int255.md`'s open "`FUNC_
+2998_39F5` whose reachability couldn't be established" question from
+the same era: `0x839F5` *is* `FUNC_2998_39F5`, and it's reached as
+`init_comm_dispatch_table`'s `[0x73a]`/`[0x738]` target, so reachability
+is now confirmed.
 
 This reframes the earlier 2 examples too, and matches the correction
 above precisely: the self-perpetuating loop found at `0xE6F5C` fits

@@ -137,23 +137,34 @@ real byte-reception path is **still not found** - it's back to either
 reachable `FUNC_2998_39F5`), or a genuinely different, not-yet-found
 hook.
 
-**Correction, 2026-09-15 (2 days after this was written)**: the
-"`0x839D1` just re-invokes `draw_boot_splash_and_option_icon`"
-characterization above turned out to undersell this badly - a later,
-deeper trace (see `FUNCTIONS.md`'s `comm_call_main_rom` row and
-`docs/interrupts/task-scheduler.md`'s 2026-09-15 follow-up) found
-`0x839D1` is actually a real state-machine loop, now named
-`comm_call_main_rom`: it swaps `DS` to the main ROM, calls
-`process_gpib_command_byte` at 2 points, dispatches through a computed
-pointer table at `[0x72A]`, and uses `create_task` as a cooperative
-yield point to reschedule itself. So this section's "none of these
-three leads to a byte-reception function" conclusion is itself now in
-question for this specific call target - `comm_call_main_rom` does
-call `process_gpib_command_byte`, just not in the "immediately
-re-invokes and returns" shape originally assumed here. Left the
-original paragraph intact since it's what motivated finding
-`poll_comm_status_tick` in the first place, but don't treat its
-characterization of `0x839D1` as current. This tick-driven interrupt chain was still worth fully tracing
-(it resolved the hardware-interrupt-exists question definitively and
-produced real, useful documentation), it just isn't the specific
-answer to "where does `ID?` get parsed."
+**Correction, 2026-09-15 (2 days after this was written) - since
+RETRACTED, see the 2026-10-09 correction below**: a 2026-09-15 session
+claimed the "`0x839D1` just re-invokes `draw_boot_splash_and_option_
+icon`" characterization above undersold this badly, and that `0x839D1`
+was actually a real state-machine loop. That claim was itself wrong -
+see below.
+
+**Correction, 2026-10-09**: the 2026-09-15 "correction" above was a
+mistake. An independent raw-byte hex-dump of `binary/160-2998-14.bin`
+at physical `0x839D1` confirms the **original** characterization in
+this section was right all along: `0x839D1` (now named `redraw_option_
+status_icon`) really is a short, simple 35-byte wrapper that swaps
+`DS`, calls `draw_boot_splash_and_option_icon` once, swaps back, and
+returns - not a state machine. The 2026-09-15 session had read past
+this function's `retf` into the *next* function in the listing
+(physical `0x839F5`, which really is the state-machine loop it
+described) and mis-attributed that second function's body to
+`0x839D1`'s name/address. `0x839F5` has been renamed `comm_call_main_
+rom` (moved from `0x839D1`) to reflect this; see `FUNCTIONS.md`'s rows
+for both addresses and `changes/2026-10-09.md` for the full discovery.
+This also means this section's original "none of these three leads to
+a byte-reception function" conclusion for `0x839D1` stands as written -
+it's `poll_dip_switch_change`-style icon-redraw housekeeping, not a
+byte-reception path. Separately, `0x839F5` (the real `comm_call_main_
+rom`) turns out to be reachable after all: it's `init_comm_dispatch_
+table`'s `[0x73a]`/`[0x738]` dispatch target, resolving this section's
+"`FUNC_2998_39F5` whose reachability couldn't be established" open
+question above. This tick-driven interrupt chain was still worth fully
+tracing (it resolved the hardware-interrupt-exists question
+definitively and produced real, useful documentation), it just isn't
+the specific answer to "where does `ID?` get parsed."

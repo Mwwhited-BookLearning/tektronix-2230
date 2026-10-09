@@ -339,7 +339,7 @@ putchar_serial_seg:
     2998:3281  [83281]  5d              pop     bp
     2998:3282  [83282]  ca0200          retf    2
 
-comm_call_main_rom:
+redraw_option_status_icon:
     2998:39D1  [839D1]  55              push    bp
     2998:39D2  [839D2]  8bec            mov     bp, sp
     2998:39D4  [839D4]  83ec08          sub     sp, 8
@@ -2125,7 +2125,7 @@ L_964A7:
     2998_alias_90000:64A7  [964A7]  c43e3207        les     di, ptr [0x732]
     2998_alias_90000:64AB  [964AB]  2680a59700fd    and     byte ptr es:[di + 0x97], 0xfd
 L_964B1:
-    2998_alias_90000:64B1  [964B1]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998_alias_90000:64B1  [964B1]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998_alias_90000:64B6  [964B6]  e9d500          jmp     L_9658E  ; 0x30e
 L_964B9:
     2998_alias_90000:64B9  [964B9]  bfffff          mov     di, 0xffff
@@ -2949,7 +2949,7 @@ L_97A03:
     2998_alias_90000:7A03  [97A03]  c43e3207        les     di, ptr [0x732]
     2998_alias_90000:7A07  [97A07]  2680a59700fb    and     byte ptr es:[di + 0x97], 0xfb
 L_97A0D:
-    2998_alias_90000:7A0D  [97A0D]  9a410dc982      lcall   comm_call_main_rom  ; 0x82c9, 0xd41
+    2998_alias_90000:7A0D  [97A0D]  9a410dc982      lcall   redraw_option_status_icon  ; 0x82c9, 0xd41
     2998_alias_90000:7A12  [97A12]  8be5            mov     sp, bp
     2998_alias_90000:7A14  [97A14]  5d              pop     bp
     2998_alias_90000:7A15  [97A15]  cb              retf    

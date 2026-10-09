@@ -266,10 +266,10 @@
     "notes": null
   },
   "839D1": {
-    "name": "comm_call_main_rom",
+    "name": "redraw_option_status_icon",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": "comm_call_main_rom",
+    "functional_name": "redraw_option_status_icon",
     "notes": null
   },
   "850A2": {

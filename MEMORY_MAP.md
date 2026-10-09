@@ -812,6 +812,151 @@ sharper photo to confirm exactly.
   segment; the shared offset number is coincidental, not a collision).
   See `VARIABLES.md`'s updated Comm ROM section.
 
+  **DIP-switch-vs-menu precedence, mostly resolved 2026-10-09**:
+  checked the `TODO.md` item asking whether a runtime `COMM` menu
+  command (`STOP BITS`/`FLOW`/baud/parity/terminator/printer-plotter)
+  can override the physical PARAMETERS switch's power-on setting.
+
+  - **`STOP BITS` and `FLOW` have no DIP switch counterpart at all.**
+    `docs/options.md`'s own menu tree (`COMM` -> `DATA`/`STOP BITS`/
+    `FLOW`, Option 12 only) and functional descriptions list them as
+    independent top-level `COMM` submenu items - no switch section is
+    ever described as controlling either one. Half of this item's
+    original premise (an apparent conflict) doesn't exist for these
+    two settings; there's nothing to reconcile.
+  - **For the settings the switch really does decode** (baud,
+    parity, line terminator, printer/plotter - switches 1-10 above):
+    grepped every reference to `[0x4EC]`/`[0x4ED]`/`[0x4EF]`/`[0x461]`
+    in both ROMs. `read_dip_switches_serial_config` is the *only*
+    writer found anywhere - no separate "menu override" write site
+    exists for baud/parity/terminator. This matches the manual's own
+    wording: baud/parity/terminator are described as selected "using
+    the RS-232-C PARAMETER switch" with no software alternative
+    mentioned (`docs/options.md` line 492), while printer/plotter
+    (switches 9-10) gets an *explicit* extra sentence promising it
+    "may be changed after power-up using Option commands, or by using
+    the MENU" (lines 209/247) - a claim made for that setting only.
+    The actual code implementing that printer/plotter override was
+    **not found** (no second writer to `[0x461]` turned up) - a
+    genuine open thread for a future session; `STRINGS.md`'s
+    `EPS7`/`EPS8`/`HPGL`/`TJET` format-name strings are the likely
+    entry point.
+  - **The four variables are consumed live, at the point of use, not
+    cached into a separate "effective settings" copy** -
+    `enqueue_comm_char` (`0x974E1`) checks `[0x4ED]` per character
+    enqueued (masking bit 7 for 7-bit/space-parity framing);
+    `send_serial_newline` (`0x96CB5`) checks `[0x4EF]` per line to
+    choose CR vs. CR+LF; a printer/plotter-format dispatch block
+    (`0x96815`-`0x96857`) checks `[0x461]` per invocation; and
+    `poll_dip_switch_change` itself applies `[0x4EC]`/`[0x4ED]`
+    immediately via `reinit_comm_channel` right after decoding them.
+    So *if* a menu-override writer is ever found, no extra
+    "precedence" logic would be needed to explain how it'd win - it
+    would simply overwrite the same live variable the serial-I/O code
+    already reads every time, exactly like the switch-set boot value
+    does, until the next power cycle re-applies the switch.
+  - **Also found while tracing this: the switch is read from a single,
+    non-reentrant boot-time path.** `read_dip_switches_serial_config`'s
+    only caller is `poll_dip_switch_change`, whose only caller is
+    `comm_rom_boot_init`, which is itself only reached via
+    `finish_boot_init_and_start_scheduler` - entered through exactly
+    one `ljmp` (`0xE5E4E`) and never called again afterward. No code
+    path re-reads the switch in response to anything (IFC or
+    otherwise) in this ROM pair, despite `docs/options.md` line 221
+    claiming the RS-232 PARAMETER switch is "read at power-up and when
+    interface clear messages are received." That IFC-rereading claim
+    may apply only to the separate *GPIB* PARAMETER switch decode path
+    (`read_dip_switches_gpib_config`), which wasn't traced here - worth
+    checking before treating this as a manual/firmware discrepancy.
+
+### GPIB option board
+
+The GPIB PARAMETERS switch (Table 7-6) is read by `read_dip_switches_
+gpib_config` (`0x96781`-`0x967FF`), the GPIB sibling of `read_dip_
+switches_serial_config` above - same two source bytes (`[0x6DE]`
+Parameter Buffer, `[0x6DA]` State Buffer), different decode. **Switch
+mapping traced 2026-10-09**, cross-referenced against `docs/
+options.md`'s Table 7-6 and the GPIB-side Table 7-35 ("GPIB Status
+Buffer Functions", the direct analog of RS-232's Table 7-36):
+
+- **Switches 1-5** (Parameter Buffer bits 0-4, inverted - same
+  inversion as the RS-232 side) -> 5-bit GPIB primary address (0-30) ->
+  `[0x4F0]`, direct binary weights 1/2/4/8/16, no bit reordering. This
+  one is **fully confirmed** - it's a direct, self-evident arithmetic
+  match to Table 7-6's address weighting.
+- **Switches 9-10** (State Buffer bits 4/5, matching Table 7-35's
+  switch-10/switch-9 swap - the same swap already confirmed for
+  RS-232's Table 7-36) -> printer/plotter select -> `[0x461]`. This
+  uses the **exact same formula and the exact same destination
+  variable** as the RS-232 decode (`not` the raw byte, shift right 4,
+  mask to 2 bits) - strong cross-consistency confirmation, and matches
+  Table 7-6's footnote, which is identical to Table 7-7's (HP-GL /
+  ThinkJet / Epson EPS7-EPS8).
+- **Switches 6-8** (terminator/LON/TON) -> `[0x4F1]`, assembled from
+  three tested bits: switch 6 (Parameter Buffer bit 5, inverted) ->
+  terminator (EOI-only vs. LF-or-EOI per Table 7-6), switch 7
+  (Parameter Buffer bit 6, inverted) -> LON (Listen Only), switch 8
+  (**State Buffer bit 3, tested RAW/non-inverted** - unlike every other
+  bit in this function) -> TON (Talk Only). The bit *positions* match
+  Table 7-6/7-35 exactly (switch8=state-buffer-bit3 per Table 7-35's
+  own row), but switch 8's physical ON/OFF-to-table-position
+  correspondence is **not independently confirmed** - this unit is
+  RS-232-equipped, not GPIB-equipped, so there's no live hardware photo
+  to check against the way there was for RS-232's switches 9-10
+  (Table 7-36). Flagging rather than guessing, per this project's
+  standing practice: don't treat the RS-232 side's inverted-everywhere
+  convention as something that necessarily transfers bit-for-bit to
+  a different physical buffer (State Buffer) read without the same
+  software `not`.
+
+**Bonus finding while tracing the caller, `poll_dip_switch_change`
+(`0x962C2`) - resolves `[0x629]`'s origin, 2026-10-09**: this function
+is not just "the RS-232 caller" - it's the **shared GPIB/RS-232
+option-board-type detector**. It reads the GPIB-config State Buffer
+(`[0x6DA]`) once, toggles the Option Interrupt Mask Latch's `3D`
+output (`[0x6E2]+3`, physical `0x406FB`) from 0 to 1, reads the State
+Buffer again, and XORs the two reads. It then branches on bits `0x40`
+(bit 6) and `0x80` (bit 7) of that XOR result: bit 6 toggled and bit 7
+didn't -> `[0x629]=0` (RS-232 selected); both bits toggled -> `[0x629]
+=0xFF` (GPIB selected); neither toggled -> a third, not-yet-
+characterized fallback path (`L_9633E`, clears a couple of fields at
+far ptr `[0x732]+0x95`/`+0x96` and continues). This lines up with
+Table 7-35 vs. Table 7-36: the `DIAG` status bit (driven by the same
+latch output `3D`) sits at **bit 6** for the RS-232 Status Buffer
+(Table 7-36) but at **bit 7** for the GPIB Status Buffer (Table 7-35) -
+so toggling `3D` and checking which bit position actually moves is a
+clean way to tell which option board is physically installed, without
+needing any dedicated "board present" line. Only `comm_rom_boot_init`
+calls `poll_dip_switch_change`, and only once (see the single
+non-reentrant boot path already established above) - so `[0x629]` is
+set exactly once, at boot, from this detection, not from any switch.
+This resolves `STILL_PENDING_DECODE.md`'s old "`[0x629]` ... still
+isn't confirmed as switch-sourced" item: it's now confirmed **not**
+switch-sourced at all.
+
+**Dead-code finding while searching for `[0x732]+0x95`'s other
+readers, 2026-10-09**: found two small, near-identical functions
+sitting right next to `comm_call_main_rom` in the comm ROM's own
+native listing - `test_gpib_lon_or_ton_active` (`0x8392B`) and
+`test_gpib_lon_active` (`0x8397E`). Both return `0xFFFF` only if (a)
+`[0x732]+0x95` AND `+0x96` are both nonzero, (b) `[0x4F1]` has bit
+`0xC0` (LON-or-TON) / `0x80` (LON) set respectively, and (c) `[0x4F0]`
+(the GPIB address) isn't the `0x1F` off-line sentinel; otherwise `0`.
+But `[0x732]+0x95` is written **exactly once** anywhere in either
+ROM's disassembly - by `poll_dip_switch_change`'s "neither bit
+toggled" fallback branch, setting it to `0` - and never to any other
+value, so these two functions always return `0` as currently shipped,
+regardless of the actual LON/TON switch state. No call site (direct
+`lcall` by label, or as a literal pointer-table entry) was found for
+either function anywhere in either ROM either - so even setting the
+always-false flag aside, reachability itself is unconfirmed, the same
+caveat already carried by `init_front_panel_cluster_defaults` and
+`selftest_sequence_enter`/`_exit` elsewhere in this project. Left as an
+open, flagged-not-guessed observation: possibly incomplete/abandoned
+GPIB LON/TON feature code, possibly reached by some mechanism not yet
+traced (e.g. a paged/banked comm-ROM region outside what's been
+disassembled) - not asserted as either.
+
 ## Resolved this session (2026-09-13, from the service manual)
 
 The `0x80000-0x97FFF` comm-ROM alias mystery, the `0xAA55`-pattern
