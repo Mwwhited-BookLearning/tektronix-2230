@@ -8750,7 +8750,7 @@ L_E77F0:
     pop bx                                   ; 77F3: pop bx
     pop bp                                   ; 77F4: pop bp
     retf 4                                   ; 77F5: retf 4
-sdiv32_unsigned_divisor:
+smod32:
     push bp                                  ; 77F8: push bp
     push bx                                  ; 77F9: push bx
     push cx                                  ; 77FA: push cx
@@ -8806,7 +8806,7 @@ udiv32:
     pop es                                   ; 7861: pop es
     pop bp                                   ; 7862: pop bp
     retf 4                                   ; 7863: retf 4
-SUB_E7866:
+umod32:
     push bp                                  ; 7866: push bp
     push es                                  ; 7867: push es
     push di                                  ; 7868: push di
@@ -8832,7 +8832,7 @@ udiv32_core:
     db 0x2b, 0xed  ; 7890: sub bp, bp (not byte-exact via NASM - see NOTES.md)
     jmp short 0x7899                         ; 7892: jmp 0x179
     db 0x90  ; 7894
-SUB_E7895:
+umod32_core:
     push bp                                  ; 7895: push bp
     mov bp, 1                                ; 7896: mov bp, 1
 L_E7899:
@@ -10070,7 +10070,7 @@ L_E94F8:
     db 0x46, 0x90, 0x83, 0xc6, 0x01, 0xa4, 0x83, 0xc6, 0x02, 0xe2, 0x03, 0xeb, 0x3a, 0x90, 0xa4, 0x83  ; 97B3
     db 0xc6, 0x03, 0xe2, 0xd3, 0xeb, 0x31, 0x90, 0xa5, 0x83, 0xc6, 0x06, 0xe2, 0x03, 0xeb, 0x28, 0x90  ; 97C3
     db 0x80, 0x7e, 0x13, 0x00, 0x75, 0xf1, 0x83, 0xc6, 0x02  ; 97D3
-SUB_E97DC:
+copy_words_stride4:
     movsw                                    ; 97DC: movsw word ptr es:[di], word ptr [si]
     add si, 4                                ; 97DD: add si, 4
     loop 0x97e5                              ; 97E0: loop 0x2d5

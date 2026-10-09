@@ -100,6 +100,23 @@ The single biggest cluster of open items - see
   for both the full negative-result writeup and the reusable technique
   (search `cmp ax, <id>` against each of the other ~37 known command
   IDs) for whoever picks this up next.
+  **Candidate found 2026-10-09, still not confirmed**: `FUNC_2998_5115`/
+  `FUNC_2998_519A` (`0x85115`/`0x8519A`, both directly `lcall`'d from
+  `comm_call_main_rom`'s own body) walk a 26-entry, first-letter-
+  bucketed, 6-byte-record table and resolve a match into `[0x604]` -
+  confirmed to land on this project's own `id=0x17`→`PLOt` value via a
+  later comparison inside `FUNC_2998_44D0`. Blocked on the same pattern
+  as `[0x732+0x1F]` above: neither candidate's table-base far pointer
+  (`[0x6EA]` for `5115`, `[0x6F6]` for `519A`) has a confirmed write
+  site - `[0x6EA]` has none found at all, and `[0x6F6]`'s only writes
+  are inside an apparently unrelated main-ROM routine
+  (`reset_all_channel_plot_caches`) setting it to a sentinel value,
+  which may be coincidental address reuse rather than this table's real
+  initialization. See `docs/comm-rom/command-parser-token-scan-and-
+  plot-handler.md` for the full writeup. Also ruled out this session:
+  `FUNC_2998_44D0` (walked looking for the `PLOt FORmat` write site
+  below) is a generic, multi-command argument-type validator, not a
+  PLOt-specific handler - it never writes `[0x461]` on any path.
 - **`[0x1B83]`'s exact bit semantics.** Confirmed as the general-
   purpose "Time Base Mode Register U4119" (not comm-specific), and
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm
@@ -200,6 +217,13 @@ The single biggest cluster of open items - see
   only the two switch-decode writers, nothing else. The handler most
   likely lives in the ~8-9% of ROM bytes neither disassembly pass has
   reached yet, rather than somewhere already-disassembled but missed.
+  **Further narrowed 2026-10-09**: traced the actual `PLOt` command's
+  argument-validation code (`FUNC_2998_44D0`, reached via `[0x604]==
+  0x17`) end-to-end and confirmed by full-body read that it never
+  writes `[0x461]` on any path (only sets an error code and resets
+  parser state) - ruling out this one remaining already-disassembled
+  candidate. See `docs/comm-rom/command-parser-token-scan-and-plot-
+  handler.md`.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
@@ -804,6 +828,13 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   brand-new standalone function (named `sdiv32_unsigned_divisor`, a
   sibling of `sdiv32` that treats the divisor as magnitude-only;
   caller still unresolved, same category as the `0xE956E` pair above).
+  **Renamed again, same day, after further tracing**: `smod32` - the
+  two other previously-unnamed proven functions it's structurally
+  adjacent to (`SUB_E7866`/`SUB_E7895`) turned out to be its own
+  unsigned-remainder core (`umod32`/`umod32_core`), which the original
+  name didn't yet know about. See `FUNCTIONS.md` for the corrected
+  mechanism (it's the real signed 32-bit modulo, not a division
+  variant).
   `160-3633` `0xE9180-0xE91EF` is the shared, no-own-frame tail of an
   existing switch/case dispatcher (falls through from 4 known case
   labels, converges into already-known `L_E924B`). `160-3633`
@@ -820,6 +851,47 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   See `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`'s
   "2026-10-09 follow-up" section (finding 11) for the full per-block
   evidence.
+  **New anomaly found investigating a separate pair, same day**:
+  `SUB_EA2D6` and its only caller's other far-call target `SUB_EA13B`
+  (`160-3633`) are NOT real code - both addresses land squarely inside
+  already-documented string-table text (`"...SELECT to Start a
+  PLOT\0Enable plotting of graticule..."` and `"...Points before
+  trigger, PRE or POST..."` respectively), confirmed by direct raw-
+  byte read against `disasm/strings_160-3633.json`'s recorded offsets.
+  Their shared caller, `SUB_F173E`, is one of the `gen_disasm_x86.
+  ENTRY_POINTS` "found via `init_far_pointer_table_sysrom`'s RAM-init
+  table" batch, whose comment claims "every one decodes as coherent,
+  non-garbage x86" - true for `SUB_F173E`'s own body by eyeball, but
+  this finding shows that claim doesn't extend to what it calls.
+  Left genuinely unresolved (3 live, unconfirmed explanations) rather
+  than guessed at - see `docs/decode-anomalies/unknown-data-deep-dive-
+  2026-09-15.md`'s new 2026-10-09 section for the full writeup. Not
+  nameable; not a hardware-content guess, just an open disassembly-
+  confidence question.
+  **A second, harder instance of the same pattern, same day**:
+  `SUB_EAC86`/`SUB_EADA0` (`160-3633`, ref_count 4/1) decode as a
+  repeating binary-record pattern (not text) that exactly bridges two
+  already-documented `UNKNOWN_DATA.md` gaps (block 16 ends the byte
+  before `SUB_EAC86` starts; block 17 starts the byte after its
+  decoded body ends in an `iret`) - strong evidence it's one
+  continuous, still-unexplained data table, not code. But unlike
+  `SUB_F173E`, `SUB_EAC86`'s 3 callers are inside `assemble_boot_
+  splash_logo_chunks` (renamed 2026-10-09 from `SUB_F5898`, its own
+  mechanism/entry-point oddity unrelated to this one), which is
+  called from the already-confirmed, already-named `draw_boot_splash_
+  and_option_icon` (the real boot-splash/logo routine) - a confirmed,
+  important, boot-critical caller pointing straight at what looks like
+  inert data, using the project's own established `0xFF7B` string-
+  table calling convention. Tried booting the real firmware in
+  `emulator/interactive.py` with a breakpoint at `0xEAC86` to settle it
+  empirically - inconclusive: the run halts on already-documented,
+  unrelated self-test failures (`ROMS`/`COMM_ROM`/`COMM_LB`/`MM_ACQ`/
+  `CDT`, all pre-existing known emulator gaps per `emulator/README.md`)
+  before ever reaching the breakpoint. Left unresolved (3 live
+  explanations, including the possibility this is a genuine EPROM dump
+  read error rather than a disassembly artifact) - see `docs/decode-
+  anomalies/unknown-data-deep-dive-2026-09-15.md`'s "2026-10-09
+  follow-up #2" section. Not nameable.
 - **New systematic instance found 2026-09-15**: a previously-unknown
   real ~100-entry jump table in `160-3532` (file offset `0x1A33`-
   `0x213A`) has 2 of its 4 real callers (from `FUNC_3633_E9FA`, a

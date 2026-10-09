@@ -7920,7 +7920,7 @@ FUNC_2998_5098:
     db 0x8b, 0xe5  ; 509E: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; 50A0: pop bp
     retf                                     ; 50A1: retf 
-FUNC_2998_50A2:
+reset_comm_token_length:
     push bp                                  ; 50A2: push bp
     db 0x8b, 0xec  ; 50A3: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; 50A5: sub sp, 6
@@ -23182,7 +23182,7 @@ L_8FAF8:
     db 0x8b, 0xe5  ; FAFD: mov sp, bp (not byte-exact via NASM - see NOTES.md)
     pop bp                                   ; FAFF: pop bp
     retf                                     ; FB00: retf 
-FUNC_2998_FB01:
+reinit_comm_channel:
     push bp                                  ; FB01: push bp
     db 0x8b, 0xec  ; FB02: mov bp, sp (not byte-exact via NASM - see NOTES.md)
     sub sp, 6                                ; FB04: sub sp, 6

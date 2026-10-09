@@ -224,3 +224,20 @@ genuinely open question - see below.
   likely also resolve the dispatch-table-coverage question above.
 - **The code that actually walks either table has still not been
   found** in the disassembly - see `STILL_PENDING_DECODE.md`.
+  **Candidate found 2026-10-09, not confirmed**: `FUNC_2998_5115`/
+  `FUNC_2998_519A` (comm ROM, physical `0x85115`/`0x8519A`, both
+  directly called from `comm_call_main_rom`) index a 26-entry,
+  6-byte-record, first-letter-bucketed table (`([4]-0x41)*6`) via far-
+  pointer bases `[0x6EA]`/`[0x6F6]` respectively, and resolve a match
+  into `[0x604]` - confirmed to be this table's own `id=0x17`→`PLOt`
+  value via a later comparison inside `FUNC_2998_44D0`. This is solid
+  evidence *some* letter-bucketed lookup is happening and lands on the
+  right IDs, but it's a different (letter-indexed) table shape than
+  either of the two already-decoded here, and neither `[0x6EA]` nor
+  `[0x6F6]`'s own write site/initialization has been found - `[0x6F6]`
+  only turns up written (to an `0x0800` sentinel) inside an apparently
+  unrelated main-ROM acquisition/plot-cache-reset routine
+  (`reset_all_channel_plot_caches`), which may be coincidental address
+  reuse rather than this table's real base. See `docs/comm-rom/
+  command-parser-token-scan-and-plot-handler.md` for the full writeup
+  and the open question this leaves.

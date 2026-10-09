@@ -7133,10 +7133,10 @@
     "notes": null
   },
   "850A2": {
-    "name": "FUNC_2998_50A2",
+    "name": "reset_comm_token_length",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "reset_comm_token_length",
     "notes": null
   },
   "850B2": {
@@ -18004,10 +18004,10 @@
     "notes": null
   },
   "8FB01": {
-    "name": "FUNC_2998_FB01",
+    "name": "reinit_comm_channel",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "reinit_comm_channel",
     "notes": null
   },
   "8FB2A": {

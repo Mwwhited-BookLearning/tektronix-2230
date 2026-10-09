@@ -66,7 +66,8 @@ verified expansion of the proven set, not speculation.
    text, matching `STRINGS.md`'s "on-screen help/description lines"
    section exactly).
    This is a **different call site, targeting a different address,
-   than the original `SUB_EAC86`/`SUB_F5898` mystery** - finding the
+   than the original `SUB_EAC86`/`assemble_boot_splash_logo_chunks`
+   (renamed 2026-10-09 from `SUB_F5898`) mystery** - finding the
    exact same "a real compiled LCALL lands on data, not code" shape
    twice, independently, is strong evidence for candidate explanation
    (b) from that original writeup (dead/never-actually-executed code

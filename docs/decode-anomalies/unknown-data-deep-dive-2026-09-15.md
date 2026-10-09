@@ -717,6 +717,15 @@ decreasing novelty:
   `ENTRY_POINTS` tuple in `gen_disasm_x86.py` (a `FUNCTIONAL_NAMES` entry
   alone doesn't make the walker visit an address it was never going to
   reach) - see `FUNCTIONS.md`.
+  **Renamed to `smod32` 2026-10-09**: finally traced the "secondary entry
+  into `udiv32`" mentioned above (`0xE7866`) and its own target
+  (`0xE7895`) - they're a previously-unnamed sibling pair (`umod32`/
+  `umod32_core`) sharing `udiv32_core`'s restoring-division loop body but
+  returning the remainder instead of the quotient. `sdiv32_unsigned_
+  divisor`'s actual operation is therefore signed 32-bit modulo (dividend-
+  sign-only, reapplied to an unsigned remainder - the standard truncating-
+  `%` rule), not a division variant - see `FUNCTIONS.md`'s `smod32`/
+  `umod32`/`umod32_core` entries for the full evidence.
 
 - **`160-3633` `0xE9180-0xE91EF` (112B) - the shared tail of an existing
   switch/case dispatcher, not a new function.** Falls through cleanly from
@@ -780,3 +789,224 @@ decreasing novelty:
   confidence tier as the `0xE9404` finding; full instruction-level walks
   of these 3 (and any resulting naming of `FUNC_3532_08CB`/`SUB_F0A4E`/
   `SUB_F6E05`) are left as a follow-up, not done this session.
+
+## 2026-10-09 follow-up: `SUB_EA13B`/`SUB_EA2D6` are NOT real functions - their only caller's far-call targets land inside known string-table text
+
+Picked up the two previously-flagged, never-investigated unnamed
+proven functions from `sysrom_3532_3633.symbols.json` (after
+correcting the earlier mislabeling of them as comm-ROM addresses - see
+`changes/2026-10-09.md`). One (`SUB_E7895`) turned out to be real
+(`umod32_core`, see above). The other, `SUB_EA2D6`, does not.
+
+`SUB_EA2D6`'s `.lst` body (physical `0xEA2D6` onward) decodes into a
+stream of individually-valid-looking but incoherent instructions -
+`popaw`, `and byte ptr [...]`, `push`/`pop`/`dec` of single registers,
+`bound`, `outsw`, `arpl`, `imul` with odd immediate operands - the
+classic signature of an x86 disassembler decoding plain ASCII text
+(many lowercase letters and punctuation alias to valid opcodes on an
+8086). Checked directly: physical `0xEA2D6` is file offset `0xA2D6` in
+`binary/160-3633-14.bin`, and `disasm/strings_160-3633.json` already
+documents a string at offset `0xa2b9`, `"Press CURSOR SELECT to Start
+a PLOT"` (36 chars + null terminator, ending exactly at `0xa2dd` where
+the next string, `"Enable plotting of graticule"`, begins). `0xA2D6`
+falls at character 29 of that string - squarely inside it, with no
+gap or boundary ambiguity. Reading the raw bytes directly confirms it:
+`SELECT to Start a PLOT\x00Enable plotting of graticule...`.
+
+`SUB_EA2D6`'s only confirmed caller, `SUB_F173E`, does the exact same
+thing with a **second** far call to `SUB_EA13B` (physical `0xEA13B` =
+file offset `0xA13B`), which likewise lands inside a different known
+string: `"Points before trigger, PRE or POST"` (offset `0xa120`,
+`0xA13B` is character 27 of 35). Both call targets are mid-string-
+literal, not function entries.
+
+This matters because `SUB_F173E` isn't a stray heuristic guess - it's
+one of the 15 addresses in `gen_disasm_x86.ENTRY_POINTS`' "found by
+fully decoding `init_far_pointer_table_sysrom`'s own embedded RAM-init
+table" batch (see that comment in `gen_disasm_x86.py`, just above the
+`sdiv32_unsigned_divisor`/`smod32` entry), whose blanket claim is
+*"every one of these decodes as coherent, non-garbage x86."*
+`SUB_F173E`'s own body (`push dx; lcall SUB_EA13B; add [0x6aa],ax; les
+di,[bp-0xc]; inc word ptr [bp-0xc]; mov dl,es:[di]; mov [bp-7],dl; cmp
+dl,0; jne +9; push [0x6aa]; push [0x678]; lcall SUB_EA2D6; ...`) does
+read as a plausible, self-consistent "copy a far string byte-by-byte
+until a null terminator, then call a completion handler" loop - the
+claim holds up for *this* function's own body by eyeball. But that
+claim evidently doesn't extend to verifying what its *call targets*
+actually are, and in this case both of `SUB_F173E`'s far-call targets
+turn out to be string-table bytes, not code.
+
+**Left unresolved, not forced to a conclusion** (per this project's
+"don't guess real hardware content" standard) - three live
+possibilities, none confirmed:
+
+1. `SUB_F173E`'s own decode is itself a desync artifact despite
+   looking superficially coherent (classic x86 disassembly risk: a
+   short, by-chance-valid instruction sequence that was never actually
+   executed) - which would mean `SUB_F173E` doesn't belong in the
+   "proven" set at all, and by extension neither do `SUB_EA13B`/
+   `SUB_EA2D6`, which exist in the symbol table *only* because
+   `SUB_F173E` calls them.
+2. `SUB_F173E` is real code, but its far-call operand bytes are being
+   misread somehow (segment/offset byte order, or a hardware-level
+   address-line/bank-select quirk not yet documented anywhere in
+   `MEMORY_MAP.md` or the emulator's "Findings and gotchas" - though
+   no evidence for this beyond the contradiction itself has been
+   found, and the CPU is a confirmed plain-real-mode 8088/8086 with no
+   documented reason physical address computation would differ from
+   `segment*0x10 + offset` here).
+3. The ROM genuinely contains a far call whose target is a string
+   literal, for some reason not yet understood (e.g. self-modifying
+   code that patches this call's operand at runtime before it's ever
+   executed - the two pushed values just before the `SUB_EA2D6` call,
+   `[0x6aa]`/`[0x678]`, are plain data words, not obviously code, so
+   this seems unlikely but hasn't been ruled out).
+
+**Conclusion for naming purposes**: `SUB_EA2D6` and `SUB_EA13B` are
+**not safely nameable** - there is no confirmed evidence either is
+real executable code, and strong direct evidence (readable English
+text at their exact target addresses) that they are not. Left
+unnamed; `TODO.md`'s renaming-progress item should treat both as
+"investigated, found to be non-code" rather than "not yet looked at."
+
+## 2026-10-09 follow-up #2: `SUB_EAC86`/`SUB_EADA0` are the same desync pattern, but with a much harder contradiction - a confirmed, named, important caller
+
+Picked up the highest-ref-count remaining unnamed proven function,
+`SUB_EAC86` (ref_count=4). Same desync signature as `SUB_EA2D6`, but a
+different flavor and a genuinely harder puzzle.
+
+**The data-table evidence is airtight.** `SUB_EAC86`'s body (physical
+`0xEAC86` onward) decodes as a repeating 16-byte-period record -
+`02 D8 F1 00 <2 bytes> 00 E8 E0 00 00 00 00 21 00 <incrementing byte>`
+- not readable text, but a structured binary pattern. Checked against
+`UNKNOWN_DATA.md`'s existing, independently-generated gap list: **block
+16** (file-offset-derived, phys `0x0EA730-0x0EAC85`) ends at the byte
+*immediately before* `SUB_EAC86` starts (`0xEAC86`), and the garbage
+decode runs in an unbroken stream - `add`/`or`/`int1`/`iret` chains,
+same `02/04 D8 F1` header repeating - until an `iret` at exactly
+`0xEACE5`, one byte before **block 17** (phys `0x0EACE6-0x0EAD07`)
+begins with the identical `02 D8 F1 00 ...` pattern. Zero-byte gap on
+both sides: `SUB_EAC86`'s "code" is precisely the missing link between
+two already-documented unexplained-data blocks, strongly suggesting
+one continuous data table that the garbage disassembly merely hid from
+`UNKNOWN_DATA.md`'s own gap detector (confirmed via raw byte reads of
+`binary/160-3633-14.bin`, not just the `.lst`). A byte-level scan for a
+`push bp` (`0x55`) prologue anywhere in the surrounding `0xEAC60`-
+`0xEACF0` range found none, ruling out a simple alignment-off-by-a-
+few-bytes explanation for a hidden real function nearby.
+
+`SUB_EAC86`'s one apparent internal `call` (line 13526, physical
+`0xEACBD`, `call SUB_EADA0 ; 0xa60`) is `SUB_EADA0`'s *only* reference
+anywhere in the disassembly - the same "proven only because its
+caller incidentally decodes a call instruction" inheritance pattern as
+`SUB_EA13B`/`SUB_EA2D6` inheriting from `SUB_F173E`. Read directly:
+`SUB_EADA0`'s own body (phys `0xEADA0` onward) is a long, repetitive
+run of nothing but `add`/`adc` with small immediate or register-pair
+operands (`add ax,[bp+si]`; `add al,1`; `add ax,0x600`; `adc al,7`...
+`adc al,0xf`) - exactly what a disassembler produces walking over a
+table of small sequential/incrementing byte values, since opcodes
+`0x00`-`0x15` are almost entirely `add`/`adc` variants. No plausible
+function shape at all. Both `SUB_EAC86` and `SUB_EADA0` read as pure
+data-table garbage individually, just as cleanly as `SUB_EA2D6`/
+`SUB_EA13B` did.
+
+**But unlike the `SUB_F173E` case, `SUB_EAC86`'s callers are not
+another shaky, same-batch entry point - they're already-confirmed,
+already-named, operationally important code.** Traced all 4 of
+`SUB_EAC86`'s callers:
+
+- Three far calls from `160-3532-14` (`SUB_F5898`, physical `0xF5898`,
+  at phys `0xF58B1`/`0xF58DA`/`0xF58F9`) - each preceded by a clean,
+  purposeful argument sequence: `push es; push <computed far ptr>; mov
+  bx,0xff7b; push bx; mov dx,<small constant>; push dx; lcall
+  SUB_EAC86`, with the small constant varying (`0x20f`/`0x221`/
+  `0x233`) across the three calls. `0xFF7B` is this project's
+  already-confirmed fixed string-table segment (see `CLAUDE.md`'s
+  "check what string it references" convention, and every prior
+  `self_test_dispatcher`-sibling identification) - this is the exact
+  calling shape of "resolve the string/record at `0xFF7B:offset`, copy
+  it to this destination far pointer," not a coincidence.
+- `SUB_F5898` itself is called exactly once, from `0xED7F1`, inside
+  `draw_boot_splash_and_option_icon` (phys `0xED7DF`, **already
+  renamed and documented** in `FUNCTIONS.md` - "calls `SUB_F5898` (the
+  'TEKTRONIX' boot-splash stroke-data builder) to draw the logo").
+  `draw_boot_splash_and_option_icon` is itself called once from the
+  comm ROM's boot sequence (phys `0x839E3`) - this is not a fringe or
+  speculative code path, it's the confirmed boot-splash/logo-drawing
+  routine.
+
+So the contradiction here is sharper than the `SUB_F173E` case: instead
+of "a shaky entry point calls into string data," it's "a previous
+session's already-confirmed, FUNCTIONS.md-documented, boot-critical
+routine (draw the TEKTRONIX splash logo) calls 3 times, with a clean
+and purposeful string-table-style argument convention, directly into
+bytes that independently and unambiguously look like an inert data
+table - one that's already catalogued as unexplained in
+`UNKNOWN_DATA.md` on both sides of `SUB_EAC86`."
+
+**Tried the emulator to settle it empirically, inconclusive.** Booted
+`emulator/interactive.py` from reset with a breakpoint at `0xEAC86`
+(both default and `--comm-installed` explicit). The breakpoint was
+never hit - the run halts via a real `hlt` instruction at phys
+`0xF1611` after ~5.2M instructions, having logged several self-test
+failures already documented as open/unstubbed gaps in `emulator/
+README.md` (`ROMS : MISMATCH,14,4C,14`, `COMM_ROM` checksum mismatch,
+`COMM_LB` failures, `MM_ACQ`/`CDT` - all pre-existing, known
+limitations, not something introduced by this check). This means the
+emulator currently can't confirm *or* refute whether `0xEAC86` is ever
+reached on a real, fully-passing boot - the self-test failure path it
+takes instead may itself skip the splash-drawing sequence entirely.
+Worth re-trying once those self-test stub gaps (`TODO.md`) are closed
+further.
+
+**One more wrinkle worth recording**: `SUB_F5898` itself has no
+prologue - its very first instruction (phys `0xF5898`, `les ax, ptr
+[si]`) immediately follows the label, and the function reads `[bp-0xc]`
+/`[bp-0xa]` right away without ever executing its own `push bp; mov
+bp, sp`. It ends with `mov sp, bp; pop bp; retf` - the shape of a
+*caller's* epilogue, not a normal callee's. That means `SUB_F5898`
+only works correctly if `bp` already points at a valid frame set up by
+whoever called it (here, `draw_boot_splash_and_option_icon`), and its
+own ending `pop bp; retf` looks like it would tear down and return
+through *that caller's* frame rather than just returning to the
+instruction after its own `lcall` site. This is in tension with
+`FUNCTIONS.md`'s existing description of `draw_boot_splash_and_option_
+icon` continuing to run *after* the `SUB_F5898` call (checking `[bp+
+0xA]` and drawing a second graphic) - a continuation that this
+prologue-less, caller-frame-reusing shape makes harder to explain under
+plain call/return semantics. Not chased further this session beyond
+noting it; it's additional evidence this call chain deserves a closer,
+dedicated look (ideally with the emulator, once it can boot far
+enough) rather than being taken at face value.
+
+**Left unresolved, not forced to a conclusion.** Live possibilities:
+
+1. The `02/04 D8 F1`-pattern region (`UNKNOWN_DATA.md` blocks 16-19)
+   is not what it looks like - maybe it's a sparse table whose entries
+   are read as *data* by other code (an index/offset table), and
+   `SUB_F5898`'s far call is itself based on a wrong/stale operand (an
+   editing mistake somewhere upstream in the real ROM, or a dead/
+   superseded code path never actually reached at runtime - note
+   `SUB_F5898` and `draw_boot_splash_and_option_icon` are each called
+   exactly once, so there's no redundant, independently-confirmed call
+   site to cross-check against).
+2. This exact byte range of `binary/160-3633-14.bin` is a genuine dump
+   error (a stuck bit or misread run during the original EPROM
+   extraction) rather than a disassembly artifact - no corroborating
+   evidence either way has been found (no second independent dump to
+   diff against, no ROM checksum/CRC verification exists in this
+   project yet), but it would cleanly explain why a clearly-purposeful,
+   already-trusted caller points at bytes that decode as neither code
+   nor any recognizable data shape.
+3. `draw_boot_splash_and_option_icon`/`SUB_F5898`'s own "mechanism
+   confirmed" status from the earlier session is itself not as solid
+   as documented - worth revisiting if this anomaly resurfaces
+   elsewhere.
+
+**Conclusion for naming purposes**: `SUB_EAC86` and `SUB_EADA0` are
+**not safely nameable** - same standard as `SUB_EA2D6`/`SUB_EA13B`.
+Left unnamed. This case is notable enough to flag distinctly in
+`STILL_PENDING_DECODE.md` rather than folding it into the earlier
+finding, since the caller-side evidence (a confirmed, boot-critical,
+already-named routine) is a materially different and stronger
+contradiction than `SUB_F173E`'s.

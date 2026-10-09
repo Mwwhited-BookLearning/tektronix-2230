@@ -7942,7 +7942,7 @@ FUNC_2998_5098:
     2998:509E  [8509E]  8be5            mov     sp, bp
     2998:50A0  [850A0]  5d              pop     bp
     2998:50A1  [850A1]  cb              retf    
-FUNC_2998_50A2:
+reset_comm_token_length:
     2998:50A2  [850A2]  55              push    bp
     2998:50A3  [850A3]  8bec            mov     bp, sp
     2998:50A5  [850A5]  83ec06          sub     sp, 6
@@ -22746,7 +22746,7 @@ L_8FAF8:
     2998:FAFD  [8FAFD]  8be5            mov     sp, bp
     2998:FAFF  [8FAFF]  5d              pop     bp
     2998:FB00  [8FB00]  cb              retf    
-FUNC_2998_FB01:
+reinit_comm_channel:
     2998:FB01  [8FB01]  55              push    bp
     2998:FB02  [8FB02]  8bec            mov     bp, sp
     2998:FB04  [8FB04]  83ec06          sub     sp, 6
@@ -22788,7 +22788,7 @@ L_8FB47:
     2998:FB77  [8FB77]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998:FB7C  [8FB7C]  803ea40516      cmp     byte ptr [0x5a4], 0x16
     2998:FB81  [8FB81]  7508            jne     L_8FB8B  ; 0xfb8b
-    2998:FB83  [8FB83]  9ab2169f83      lcall   FUNC_2998_50A2  ; 0x839f, 0x16b2
+    2998:FB83  [8FB83]  9ab2169f83      lcall   reset_comm_token_length  ; 0x839f, 0x16b2
     2998:FB88  [8FB88]  e90500          jmp     L_8FB90  ; 0xfb90
 L_8FB8B:
     2998:FB8B  [8FB8B]  c606a40500      mov     byte ptr [0x5a4], 0

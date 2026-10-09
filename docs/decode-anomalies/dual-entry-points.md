@@ -256,8 +256,22 @@ ambiguous-entry-point anomaly itself was never resolved, they were
 just named for *what they do* rather than *how they're entered*, same
 reasoning as `init_front_panel_cluster_defaults`'s heuristic-only
 rename elsewhere. `SUB_E8E03`/`SUB_E8E29`/`SUB_E97DC`/`SUB_F5898`
-remain genuinely unrenamed. Taken together with the boot-splash
-cluster, this now looks like a **project-wide convention** (values
+remain genuinely unrenamed. **Follow-up, 2026-10-09: `SUB_E97DC` and
+`SUB_F5898` since renamed too.** `SUB_E97DC` turned out not to need
+the same "named for what it does despite the entry mystery" treatment
+at all - its mechanism was already fully explained by the existing
+`extract_strided_channel_samples` entry (`FUNCTIONS.md`'s `0xE9744`
+row), just missing its own `FUNCTIONAL_NAMES` entry; renamed `copy_
+words_stride4`. `SUB_F5898` did get the "named for what it does"
+treatment: its body (always one `SUB_EAC86` call, 2 more gated by
+`[0x1bfb]` bit 0, then an unconditional tail call to `copy_words_
+stride4`) is fully coherent despite the missing prologue; renamed
+`assemble_boot_splash_logo_chunks`. `SUB_E8E03`/`SUB_E8E29` turned out
+to be **2 more confirmed instances of the exact landing-1-byte-early
+artifact class** (`SUB_E90A5`/`SUB_E92B0`/`L_EDA0A` above), not
+independent functions - see the dedicated subsection below. Taken
+together with the boot-splash cluster, this now looks like a
+**project-wide convention** (values
 passed in registers/`bp` across certain far calls, established by
 matching caller/callee code this tooling doesn't model) rather than a
 one-off anomaly - worth keeping in mind before assuming any remaining
@@ -426,3 +440,54 @@ callers, `SUB_EAD08`, `SUB_F173E`→`0xEA13B`, plus the still-uncertain
 `SUB_EADA0`) of the same shape - strong, repeated evidence for dead/
 stale call sites left in the shipped ROM rather than any kind of
 decode-tooling artifact.
+
+## `SUB_E8E03` and `SUB_E8E29`: 2 more confirmed landing-1-byte-early artifacts, with an unusually clean byte-level demonstration
+
+Picked up as the last 2 items on the "remaining unnamed proven
+functions" list (`TODO.md`). Raw-byte-dumped `binary/160-3633-14.bin`
+at `0xE8E00`-`0xE8E34` (confirmed both call targets land at their
+labeled addresses: `0xF0CD7`'s far-call operand `0xE8CA:0x163`
+computes to `0xE8E03` exactly; `0xE7E5D`'s `0xE8E2:9` computes to
+`0xE8E29` exactly - no ambiguity in the call-site arithmetic itself).
+
+**`SUB_E8E03`**: its first ~19 bytes decode as a nonsensical sequence
+(`adc ah,[bx+si+0x4e8]` / `sub ah,ah` / `and ax,0x80` / `cmp ax,0x80` /
+`jne +5` / a far call) that nonetheless ends by branching to a
+completely sane, already-confirmed target, `L_E8E16`. Checking the
+raw bytes **1 position earlier** (`0xE8E02`: `75 12`) shows this is no
+coincidence: `75 12` alone is a clean, complete 2-byte `jne +0x12`
+instruction whose target computes to the *exact same* `0xE8E16` -
+i.e. the real, intended instruction is `jne L_E8E16` sitting at
+`0xE8E02`-`0xE8E03`, and the external call from `0xF0CD7` lands 1 byte
+into its displacement operand (`0x12`, which is also small enough to
+decode as a plausible-looking opcode on its own), producing the
+19-byte "garbage limp home" before reconverging at the jump's own
+target. This is the same shape as `SUB_E90A5`/`SUB_E92B0`/`L_EDA0A`
+above, just with a longer reconvergence distance. The real `jne` at
+`0xE8E02` itself belongs to **some other, still-unidentified function**
+reached by fallthrough from earlier in the ROM (not traced further -
+out of scope for this pass) - `SUB_E8E03` is not that function's real
+name, it's purely an artifact of where the far call happens to land.
+
+**`SUB_E8E29`**: same shape, much shorter reconvergence. Its first
+instruction decodes as `add byte [si+0x15],dh` (`00 74 15`, 3 bytes,
+`0xE8E29`-`0xE8E2B`). But the genuine fallthrough path into this same
+neighborhood - from `SUB_E8E03`'s own body, via `L_E8E16`'s `cmp byte
+[0x1bf9],0` at `0xE8E25` (5 bytes, ending exactly at `0xE8E2A`) - lands
+at `0xE8E2A`, where the *same* 2 bytes `74 15` instead decode as a
+complete, clean `je +0x15` landing at `L_E8E41` (already a confirmed,
+coherent target: `scale_and_plot_point`/`SUB_EFB64` and more). The
+external call from `0xE7E5D` lands exactly 1 byte before this real
+`je`, producing the spurious 3-byte `add` decode as a pure artifact of
+where its displacement byte (`0x15`, shared with the real `je`'s own
+displacement) happens to fall.
+
+**Neither renamed**, correctly: both are confirmed artifacts of a call
+landing 1 byte before a real instruction, not independent routines.
+This brings the landing-1-byte-early class to 7 confirmed instances
+project-wide (`SUB_E90A5`, `SUB_E92B0`, `L_EDA0A`/`SUB_F1581``'s
+tail-jump, `SUB_E8E03`, `SUB_E8E29`, plus the 2 cited at the top of
+this section) - solidly established as a recurring, deliberate-looking
+pattern in this ROM rather than a one-off curiosity, though *why* the
+compiled call/jump targets are consistently 1 byte short remains
+unexplained.

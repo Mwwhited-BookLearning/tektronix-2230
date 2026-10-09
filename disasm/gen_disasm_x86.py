@@ -1839,6 +1839,70 @@ FUNCTIONAL_NAMES = {
                                                # comm channel
                                                # reinitialization
                                                # sequence in SUB_97B01
+    0x8FB01: "reinit_comm_channel",            # found 2026-10-09 while
+                                               # chasing an unnamed-
+                                               # function TODO item -
+                                               # this is "SUB_97B01" (its
+                                               # 0x90000-alias name,
+                                               # already referenced by
+                                               # reset_comm_parser_state's
+                                               # comment above) under its
+                                               # real physical address.
+                                               # Calls reinit_system_
+                                               # state, get/set_comm_
+                                               # config_flag, reset_comm_
+                                               # parser_state, init_comm_
+                                               # channel_state_a, init_
+                                               # comm_tx_queue_and_ready_
+                                               # flags, reset_gpib_addr_
+                                               # scratch, and set_ds_
+                                               # return_old in sequence,
+                                               # then checks [0x5A4]
+                                               # (comm_call_main_rom's
+                                               # parser-state byte): if
+                                               # it equals 0x16, calls
+                                               # reset_comm_token_length
+                                               # (clears [0x5F4]);
+                                               # otherwise just sets
+                                               # [0x5A4]=0. This function's
+                                               # own internal body/call
+                                               # graph is fully confirmed
+                                               # by direct trace, but NO
+                                               # caller of this function
+                                               # itself has been found
+                                               # (kind="entry", not
+                                               # "sub") - it's reached by
+                                               # some not-yet-identified
+                                               # mechanism (possibly an
+                                               # indirect dispatch table,
+                                               # like comm_call_main_rom's
+                                               # own [0x72A] table). See
+                                               # docs/comm-rom/command-
+                                               # parser-token-scan-and-
+                                               # plot-handler.md
+    0x850A2: "reset_comm_token_length",        # trivial 4-instruction
+                                               # body: zeroes word ptr
+                                               # [0x5F4]. Confirmed
+                                               # called (direct lcall)
+                                               # only from inside
+                                               # reinit_comm_channel's
+                                               # [0x5A4]==0x16 branch -
+                                               # see that function's own
+                                               # reachability caveat
+                                               # above. [0x5F4] is the
+                                               # same counter two nearby,
+                                               # still-unnamed sibling
+                                               # functions (physical
+                                               # 0x850C2/0x850E4, called
+                                               # directly from
+                                               # comm_call_main_rom)
+                                               # increment while bounds-
+                                               # checking a command
+                                               # token/argument being
+                                               # scanned - see docs/
+                                               # comm-rom/command-parser-
+                                               # token-scan-and-plot-
+                                               # handler.md
     0x82D01: "print_string_serial",            # (far_str_ptr) - loops
                                                # sending each byte via
                                                # serial_tx_buffer_put
@@ -2186,10 +2250,15 @@ FUNCTIONAL_NAMES = {
                                                # known to be called from
                                                # anywhere in the proven
                                                # set
-    0xE77F8: "sdiv32_unsigned_divisor",       # closes a real UNKNOWN_DATA.md
-                                               # gap (0xE77F8-0xE783C) that
-                                               # the mainrom heuristic push-
-                                               # bp scanner's "55 8b ec"
+    0xE77F8: "smod32",                        # RENAMED 2026-10-09 from
+                                               # "sdiv32_unsigned_divisor" -
+                                               # that name was a mechanism
+                                               # description, not the real
+                                               # operation. Closes a real
+                                               # UNKNOWN_DATA.md gap
+                                               # (0xE77F8-0xE783C) that the
+                                               # mainrom heuristic push-bp
+                                               # scanner's "55 8b ec"
                                                # signature structurally
                                                # cannot match here (this
                                                # entry is "push bp; push bx;
@@ -2205,30 +2274,33 @@ FUNCTIONAL_NAMES = {
                                                # exist anywhere in 3633/3532,
                                                # and 2 of the 3 are ashr32/
                                                # sdiv32 - this is the 3rd).
-                                               # Byte-for-byte structurally
-                                               # identical to sdiv32 (same
-                                               # abs-both-operands-then-call-
-                                               # unsigned-core shape) except
-                                               # for exactly one difference:
-                                               # it saves the DIVIDEND's own
-                                               # sign alone (plain `mov
+                                               # Structurally identical to
+                                               # sdiv32 (abs() both operands,
+                                               # call an unsigned core,
+                                               # reapply a saved sign) except
+                                               # it saves only the DIVIDEND's
+                                               # own sign (plain `mov
                                                # [bp-2],dx`), not sdiv32's
                                                # `xor bx,dx,[bp+0xc]` sign-
-                                               # XOR-of-both-operands, before
-                                               # deciding whether to negate
-                                               # the result - i.e. it forces
-                                               # the divisor to be treated as
-                                               # non-negative (magnitude
-                                               # only) rather than letting
-                                               # its sign flip the result.
-                                               # Also calls a different
-                                               # target than sdiv32's lcall
-                                               # (0xE7866, +0x29 into
-                                               # udiv32's body, a secondary
-                                               # entry point - not udiv32's
-                                               # own primary entry at
-                                               # 0xE783D that sdiv32 calls;
-                                               # not reconciled further).
+                                               # XOR-of-both-operands.
+                                               # RESOLVED 2026-10-09 (see
+                                               # umod32/umod32_core below):
+                                               # it calls umod32 (0xE7866),
+                                               # not udiv32 - umod32 returns
+                                               # the UNSIGNED 32-bit
+                                               # remainder, not a quotient.
+                                               # "Dividend's-sign-only, then
+                                               # reapply to an unsigned
+                                               # remainder" is exactly C's
+                                               # `%` truncating-remainder
+                                               # semantics (remainder takes
+                                               # the dividend's sign; the
+                                               # divisor's sign is
+                                               # irrelevant to a truncating
+                                               # remainder) - so this is the
+                                               # real signed 32-bit MODULO,
+                                               # a sibling of sdiv32, not a
+                                               # division variant at all.
                                                # Caller unresolved - no
                                                # literal far-pointer bytes
                                                # referencing 0xE77F8 exist
@@ -2239,8 +2311,66 @@ FUNCTIONAL_NAMES = {
                                                # SUB_E956E's pair. See
                                                # docs/decode-anomalies/
                                                # unknown-data-deep-dive-2026-
-                                               # 09-15.md's 2026-10-09
-                                               # follow-up.
+                                               # 09-15.md and docs/comm-rom/
+                                               # command-parser-token-scan-
+                                               # and-plot-handler.md's
+                                               # unrelated 2026-10-09 entry
+                                               # (coincidentally the same
+                                               # session).
+    0xE7866: "umod32",                        # found 2026-10-09 while
+                                               # finally investigating the
+                                               # two long-flagged-but-never-
+                                               # traced unnamed proven
+                                               # functions SUB_E7866/
+                                               # SUB_E7895. umod32 is the
+                                               # unsigned 32-bit remainder
+                                               # counterpart to udiv32
+                                               # (0xE783D) - byte-for-byte
+                                               # the same stack-overlay-
+                                               # frame-building wrapper
+                                               # shape, differing only in
+                                               # which core routine it calls
+                                               # (umod32_core, 0xE7895,
+                                               # entered with bp=1, instead
+                                               # of udiv32_core's bp=0 entry
+                                               # at 0xE788F) - see
+                                               # umod32_core below for the
+                                               # shared-core evidence. Only
+                                               # confirmed caller is smod32
+                                               # (0xE77F8) above, itself
+                                               # caller-unresolved.
+    0xE7895: "umod32_core",                   # the bp=1 entry stub into
+                                               # the SAME shift-subtract
+                                               # restoring-division loop
+                                               # udiv32_core (0xE788F) also
+                                               # enters (with bp=0) - the two
+                                               # entry stubs sit literally
+                                               # 6 bytes apart in ROM and
+                                               # both fall straight into one
+                                               # shared body at L_E7899.
+                                               # Traced the shared loop's
+                                               # epilogue to find what the
+                                               # entry bp value actually
+                                               # controls: after the
+                                               # restoring-division loop, the
+                                               # code does `pop bp; cmp
+                                               # bp,1; je <skip>` - only when
+                                               # entered via udiv32_core
+                                               # (bp=0, not 1) does it then
+                                               # overwrite the remainder
+                                               # (bx:ax) with the
+                                               # accumulated quotient bits
+                                               # (si:di) before returning.
+                                               # So udiv32_core's bp=0 path
+                                               # returns the QUOTIENT and
+                                               # umod32_core's bp=1 path
+                                               # returns the REMAINDER -
+                                               # confirmed by direct
+                                               # instruction-level trace of
+                                               # the shared epilogue, not
+                                               # inferred from naming
+                                               # symmetry alone. Called only
+                                               # from umod32 (0xE7866).
     0xE7F39: "plot_scaled_point",             # conditionally plots a
                                                # scaled acquisition point
                                                # via SUB_E90A5 (mode 0
@@ -3134,7 +3264,21 @@ FUNCTIONAL_NAMES = {
                                                # zero short-circuits to a
                                                # saturated 0xFFFFFFFF
                                                # result; called only from
-                                               # udiv32
+                                               # udiv32. CORRECTED 2026-10-
+                                               # 09: "called only from
+                                               # udiv32" describes this
+                                               # entry stub only - the loop
+                                               # BODY it jumps into
+                                               # (L_E7899) is shared with a
+                                               # second entry stub,
+                                               # umod32_core (0xE7895,
+                                               # entered with bp=1 instead
+                                               # of this stub's bp=0),
+                                               # which returns the
+                                               # remainder instead of the
+                                               # quotient - see umod32_core
+                                               # above for the full
+                                               # evidence.
     0xE7A0A: "print_string_serial_seg",       # (far_str_ptr) - loops
                                                # sending each byte via
                                                # putchar_serial_seg until
@@ -3367,6 +3511,57 @@ FUNCTIONAL_NAMES = {
                                                # fixed arg (4) - called
                                                # from tag_position_
                                                # marker_and_dispatch
+    0xF5898: "assemble_boot_splash_logo_chunks", # sole caller is
+                                               # draw_boot_splash_and_
+                                               # option_icon (0xED7F1) -
+                                               # confirmed 2026-10-09
+                                               # while re-reading this
+                                               # function's full body
+                                               # (see docs/decode-
+                                               # anomalies/dual-entry-
+                                               # points.md): no visible
+                                               # push bp/mov bp,sp
+                                               # prologue (same "shares
+                                               # caller's open frame"
+                                               # class as SUB_F750A/
+                                               # SUB_F7603/copy_words_
+                                               # stride4), but the body
+                                               # itself is completely
+                                               # coherent - it always
+                                               # calls SUB_EAC86 once
+                                               # (dest computed from
+                                               # [0x1c02]+[bp-0xc]+
+                                               # es:[bp-0xa], src =
+                                               # 0xFF7B:0x20F, the fixed
+                                               # stroke/string-table
+                                               # segment), then checks
+                                               # [0x1bfb] bit 0 - only if
+                                               # set does it advance
+                                               # [bp-0xc] by 0xE and call
+                                               # SUB_EAC86 twice more
+                                               # (src 0xFF7B:0x221 then
+                                               # 0x233, same computed
+                                               # dest both times, not
+                                               # independently
+                                               # explained), then
+                                               # unconditionally tail-
+                                               # calls copy_words_
+                                               # stride4(0x11, 0x29).
+                                               # [0x1bfb] bit 0 plausibly
+                                               # selects whether an
+                                               # installed-option icon's
+                                               # extra stroke chunks get
+                                               # appended, matching
+                                               # draw_boot_splash_and_
+                                               # option_icon's own
+                                               # documented 2nd-graphic/
+                                               # option-icon behavior -
+                                               # not independently
+                                               # confirmed, since SUB_
+                                               # EAC86 itself remains
+                                               # unresolved (lands on
+                                               # data, not code - see
+                                               # the same doc)
     0xF5D89: "tag_position_marker_and_dispatch", # called from
                                                # compute_and_draw_scale_
                                                # marker with (far ptr
@@ -3708,6 +3903,49 @@ FUNCTIONAL_NAMES = {
                                                # callers are all
                                                # per-channel measurement/
                                                # readout functions
+    0xE97DC: "copy_words_stride4",             # the 3rd of extract_
+                                               # strided_channel_
+                                               # samples's 3 copy-loop
+                                               # variants (byte/stride3
+                                               # at 0xE979A, word/
+                                               # stride6 at 0xE97CA,
+                                               # this one word/stride4)
+                                               # - unlike 0xE97CA, never
+                                               # reached by any internal
+                                               # branch in 0xE9744's own
+                                               # body, only by 2
+                                               # independent far calls
+                                               # from 160-3532 (found
+                                               # 2026-10-09 investigating
+                                               # this project's "proven,
+                                               # unnamed, ref_count=2"
+                                               # list). One caller
+                                               # (0xF4294) is inside the
+                                               # already-confirmed
+                                               # compute_and_format_
+                                               # sample_delta_readout,
+                                               # fitting the channel-
+                                               # sample framing; the
+                                               # other (0xF5909, inside
+                                               # SUB_F5898, the boot-
+                                               # splash stroke-data
+                                               # builder - see docs/
+                                               # decode-anomalies/
+                                               # unknown-data-deep-dive-
+                                               # 2026-09-15.md's
+                                               # 2026-10-09 follow-up
+                                               # #2) is NOT a channel-
+                                               # sample context at all -
+                                               # confirms this specific
+                                               # entry point is a
+                                               # generic "copy every Nth
+                                               # word" primitive reused
+                                               # outside the
+                                               # acquisition subsystem,
+                                               # named generically
+                                               # rather than reusing
+                                               # extract_strided_
+                                               # channel_samples's name
     0xE9472: "merge_record_flags_if_changed",  # compares a record's
                                                # byte 0 against 0
                                                # (unrelated jump table

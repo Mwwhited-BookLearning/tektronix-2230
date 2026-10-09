@@ -11868,7 +11868,7 @@ L_E77F0:
     3633:77F3  [E77F3]  5b              pop     bx
     3633:77F4  [E77F4]  5d              pop     bp
     3633:77F5  [E77F5]  ca0400          retf    4
-sdiv32_unsigned_divisor:
+smod32:
     3633:77F8  [E77F8]  55              push    bp
     3633:77F9  [E77F9]  53              push    bx
     3633:77FA  [E77FA]  51              push    cx
@@ -11891,7 +11891,7 @@ L_E780F:
 L_E7821:
     3633:7821  [E7821]  51              push    cx
     3633:7822  [E7822]  53              push    bx
-    3633:7823  [E7823]  9a460172e7      lcall   SUB_E7866  ; 0xe772, 0x146
+    3633:7823  [E7823]  9a460172e7      lcall   umod32  ; 0xe772, 0x146
     3633:7828  [E7828]  837efe00        cmp     word ptr [bp - 2], 0
     3633:782C  [E782C]  7d07            jge     L_E7835  ; 0x45
     3633:782E  [E782E]  f7da            neg     dx
@@ -11924,7 +11924,7 @@ udiv32:
     3633:7861  [E7861]  07              pop     es
     3633:7862  [E7862]  5d              pop     bp
     3633:7863  [E7863]  ca0400          retf    4
-SUB_E7866:
+umod32:
     3633:7866  [E7866]  55              push    bp
     3633:7867  [E7867]  06              push    es
     3633:7868  [E7868]  57              push    di
@@ -11937,7 +11937,7 @@ SUB_E7866:
     3633:7875  [E7875]  8ec7            mov     es, di
     3633:7877  [E7877]  8bfc            mov     di, sp
     3633:7879  [E7879]  83c708          add     di, 8
-    3633:787C  [E787C]  e81600          call    SUB_E7895  ; 0x175
+    3633:787C  [E787C]  e81600          call    umod32_core  ; 0x175
     3633:787F  [E787F]  268b45fe        mov     ax, word ptr es:[di - 2]
     3633:7883  [E7883]  268b55fc        mov     dx, word ptr es:[di - 4]
     3633:7887  [E7887]  8be5            mov     sp, bp
@@ -11950,7 +11950,7 @@ udiv32_core:
     3633:7890  [E7890]  2bed            sub     bp, bp
     3633:7892  [E7892]  eb05            jmp     L_E7899  ; 0x179
 
-SUB_E7895:
+umod32_core:
     3633:7895  [E7895]  55              push    bp
     3633:7896  [E7896]  bd0100          mov     bp, 1
 L_E7899:
@@ -14394,7 +14394,7 @@ L_E97CA:
     3633:97CE  [E97CE]  e203            loop    0x2c3
     3633:97D0  [E97D0]  eb28            jmp     L_E97FA  ; 0x2ea
 
-SUB_E97DC:
+copy_words_stride4:
     3633:97DC  [E97DC]  a5              movsw   word ptr es:[di], word ptr [si]
     3633:97DD  [E97DD]  83c604          add     si, 4
     3633:97E0  [E97E0]  e203            loop    0x2d5
@@ -20229,7 +20229,7 @@ L_ED7CD:
     3633:D7D6  [ED7D6]  c416e01c        les     dx, ptr [0x1ce0]
     3633:D7DA  [ED7DA]  06              push    es
     3633:D7DB  [ED7DB]  52              push    dx
-    3633:D7DC  [ED7DC]  9a780622f5      lcall   SUB_F5898  ; 0xf522, 0x678
+    3633:D7DC  [ED7DC]  9a780622f5      lcall   assemble_boot_splash_logo_chunks  ; 0xf522, 0x678
 
 draw_boot_splash_and_option_icon:
     3633:D7DF  [ED7DF]  22f5            and     dh, ch
@@ -20239,7 +20239,7 @@ draw_boot_splash_and_option_icon:
     3633:D7EB  [ED7EB]  c43ee41c        les     di, ptr [0x1ce4]
     3633:D7EF  [ED7EF]  06              push    es
     3633:D7F0  [ED7F0]  57              push    di
-    3633:D7F1  [ED7F1]  9a780622f5      lcall   SUB_F5898  ; 0xf522, 0x678
+    3633:D7F1  [ED7F1]  9a780622f5      lcall   assemble_boot_splash_logo_chunks  ; 0xf522, 0x678
     3633:D7F6  [ED7F6]  83c402          add     sp, 2
 L_ED7F9:
     3633:D7F9  [ED7F9]  c47e0a          les     di, ptr [bp + 0xa]
@@ -27583,7 +27583,7 @@ L_F24A6:
     3532:24AC  [F24AC]  57              push    di
     3532:24AD  [F24AD]  be1000          mov     si, 0x10
     3532:24B0  [F24B0]  56              push    si
-    3532:24B1  [F24B1]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:24B1  [F24B1]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:24B6  [F24B6]  83c402          add     sp, 2
     3532:24B9  [F24B9]  ff46f8          inc     word ptr [bp - 8]
 L_F24BC:
@@ -27593,19 +27593,19 @@ L_F24BC:
     3532:24C5  [F24C5]  57              push    di
     3532:24C6  [F24C6]  bf9000          mov     di, 0x90
     3532:24C9  [F24C9]  57              push    di
-    3532:24CA  [F24CA]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:24CA  [F24CA]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:24CF  [F24CF]  83c402          add     sp, 2
     3532:24D2  [F24D2]  bf3800          mov     di, 0x38
     3532:24D5  [F24D5]  57              push    di
     3532:24D6  [F24D6]  bf9300          mov     di, 0x93
     3532:24D9  [F24D9]  57              push    di
-    3532:24DA  [F24DA]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:24DA  [F24DA]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:24DF  [F24DF]  83c402          add     sp, 2
     3532:24E2  [F24E2]  bf3600          mov     di, 0x36
     3532:24E5  [F24E5]  57              push    di
     3532:24E6  [F24E6]  bf8000          mov     di, 0x80
     3532:24E9  [F24E9]  57              push    di
-    3532:24EA  [F24EA]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:24EA  [F24EA]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:24EF  [F24EF]  83c402          add     sp, 2
     3532:24F2  [F24F2]  c746f80000      mov     word ptr [bp - 8], 0
     3532:24F7  [F24F7]  e93900          jmp     L_F2533  ; 0x2533
@@ -28409,7 +28409,7 @@ L_F2D23:
     3532:2D26  [F2D26]  57              push    di
     3532:2D27  [F2D27]  ba9000          mov     dx, 0x90
     3532:2D2A  [F2D2A]  52              push    dx
-    3532:2D2B  [F2D2B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2D2B  [F2D2B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2D30  [F2D30]  83c402          add     sp, 2
 L_F2D33:
     3532:2D33  [F2D33]  803ef91b00      cmp     byte ptr [0x1bf9], 0
@@ -28479,7 +28479,7 @@ L_F2DB8:
     3532:2DEB  [F2DEB]  57              push    di
     3532:2DEC  [F2DEC]  bf1100          mov     di, 0x11
     3532:2DEF  [F2DEF]  57              push    di
-    3532:2DF0  [F2DF0]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2DF0  [F2DF0]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2DF5  [F2DF5]  83c402          add     sp, 2
     3532:2DF8  [F2DF8]  e91300          jmp     L_F2E0E  ; 0x2e0e
 L_F2DFB:
@@ -28489,7 +28489,7 @@ L_F2DFE:
     3532:2E01  [F2E01]  57              push    di
     3532:2E02  [F2E02]  bf1000          mov     di, 0x10
     3532:2E05  [F2E05]  57              push    di
-    3532:2E06  [F2E06]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2E06  [F2E06]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2E0B  [F2E0B]  83c402          add     sp, 2
 L_F2E0E:
     3532:2E0E  [F2E0E]  9a9626d0ea      lcall   SUB_ED396  ; 0xead0, 0x2696
@@ -28531,7 +28531,7 @@ L_F2E92:
     3532:2E98  [F2E98]  57              push    di
     3532:2E99  [F2E99]  ba1000          mov     dx, 0x10
     3532:2E9C  [F2E9C]  52              push    dx
-    3532:2E9D  [F2E9D]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2E9D  [F2E9D]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2EA2  [F2EA2]  83c402          add     sp, 2
     3532:2EA5  [F2EA5]  ff46f8          inc     word ptr [bp - 8]
 L_F2EA8:
@@ -28594,7 +28594,7 @@ L_F2F2C:
     3532:2F2F  [F2F2F]  57              push    di
     3532:2F30  [F2F30]  bf1000          mov     di, 0x10
     3532:2F33  [F2F33]  57              push    di
-    3532:2F34  [F2F34]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2F34  [F2F34]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2F39  [F2F39]  83c402          add     sp, 2
 L_F2F3C:
     3532:2F3C  [F2F3C]  a0751b          mov     al, byte ptr [0x1b75]
@@ -28642,7 +28642,7 @@ L_F2F9D:
     3532:2FA0  [F2FA0]  57              push    di
     3532:2FA1  [F2FA1]  bf1000          mov     di, 0x10
     3532:2FA4  [F2FA4]  57              push    di
-    3532:2FA5  [F2FA5]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:2FA5  [F2FA5]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:2FAA  [F2FAA]  83c402          add     sp, 2
 L_F2FAD:
     3532:2FAD  [F2FAD]  a17606          mov     ax, word ptr [0x676]
@@ -28685,7 +28685,7 @@ L_F3007:
     3532:300A  [F300A]  57              push    di
     3532:300B  [F300B]  ba1000          mov     dx, 0x10
     3532:300E  [F300E]  52              push    dx
-    3532:300F  [F300F]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:300F  [F300F]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3014  [F3014]  83c402          add     sp, 2
 L_F3017:
     3532:3017  [F3017]  9a6b0ed0ea      lcall   SUB_EBB6B  ; 0xead0, 0xe6b
@@ -28731,7 +28731,7 @@ L_F3079:
     3532:307C  [F307C]  57              push    di
     3532:307D  [F307D]  bf1000          mov     di, 0x10
     3532:3080  [F3080]  57              push    di
-    3532:3081  [F3081]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3081  [F3081]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3086  [F3086]  83c402          add     sp, 2
 L_F3089:
     3532:3089  [F3089]  a17606          mov     ax, word ptr [0x676]
@@ -28751,26 +28751,26 @@ L_F30A8:
     3532:30B7  [F30B7]  57              push    di
     3532:30B8  [F30B8]  bf1000          mov     di, 0x10
     3532:30BB  [F30BB]  57              push    di
-    3532:30BC  [F30BC]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:30BC  [F30BC]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:30C1  [F30C1]  83c402          add     sp, 2
     3532:30C4  [F30C4]  bf2c00          mov     di, 0x2c
     3532:30C7  [F30C7]  57              push    di
     3532:30C8  [F30C8]  bf1000          mov     di, 0x10
     3532:30CB  [F30CB]  57              push    di
-    3532:30CC  [F30CC]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:30CC  [F30CC]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:30D1  [F30D1]  83c402          add     sp, 2
     3532:30D4  [F30D4]  bf2d00          mov     di, 0x2d
     3532:30D7  [F30D7]  57              push    di
     3532:30D8  [F30D8]  bf1000          mov     di, 0x10
     3532:30DB  [F30DB]  57              push    di
-    3532:30DC  [F30DC]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:30DC  [F30DC]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:30E1  [F30E1]  83c402          add     sp, 2
 L_F30E4:
     3532:30E4  [F30E4]  bf2a00          mov     di, 0x2a
     3532:30E7  [F30E7]  57              push    di
     3532:30E8  [F30E8]  bf1100          mov     di, 0x11
     3532:30EB  [F30EB]  57              push    di
-    3532:30EC  [F30EC]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:30EC  [F30EC]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:30F1  [F30F1]  83c402          add     sp, 2
     3532:30F4  [F30F4]  803e781b00      cmp     byte ptr [0x1b78], 0
     3532:30F9  [F30F9]  7438            je      L_F3133  ; 0x3133
@@ -28791,7 +28791,7 @@ L_F311B:
     3532:3123  [F3123]  57              push    di
     3532:3124  [F3124]  bf1100          mov     di, 0x11
     3532:3127  [F3127]  57              push    di
-    3532:3128  [F3128]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3128  [F3128]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:312D  [F312D]  83c402          add     sp, 2
     3532:3130  [F3130]  e94000          jmp     L_F3173  ; 0x3173
 
@@ -28803,25 +28803,25 @@ L_F3133:
     3532:3136  [F3136]  57              push    di
     3532:3137  [F3137]  bf1000          mov     di, 0x10
     3532:313A  [F313A]  57              push    di
-    3532:313B  [F313B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:313B  [F313B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3140  [F3140]  83c402          add     sp, 2
     3532:3143  [F3143]  bf2f00          mov     di, 0x2f
     3532:3146  [F3146]  57              push    di
     3532:3147  [F3147]  bf1000          mov     di, 0x10
     3532:314A  [F314A]  57              push    di
-    3532:314B  [F314B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:314B  [F314B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3150  [F3150]  83c402          add     sp, 2
     3532:3153  [F3153]  bf3000          mov     di, 0x30
     3532:3156  [F3156]  57              push    di
     3532:3157  [F3157]  bf1000          mov     di, 0x10
     3532:315A  [F315A]  57              push    di
-    3532:315B  [F315B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:315B  [F315B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3160  [F3160]  83c402          add     sp, 2
     3532:3163  [F3163]  bf3100          mov     di, 0x31
     3532:3166  [F3166]  57              push    di
     3532:3167  [F3167]  bf1000          mov     di, 0x10
     3532:316A  [F316A]  57              push    di
-    3532:316B  [F316B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:316B  [F316B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3170  [F3170]  83c402          add     sp, 2
 L_F3173:
     3532:3173  [F3173]  a0721b          mov     al, byte ptr [0x1b72]
@@ -28851,7 +28851,7 @@ L_F31AD:
     3532:31B0  [F31B0]  57              push    di
     3532:31B1  [F31B1]  bf1000          mov     di, 0x10
     3532:31B4  [F31B4]  57              push    di
-    3532:31B5  [F31B5]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:31B5  [F31B5]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:31BA  [F31BA]  83c402          add     sp, 2
 L_F31BD:
     3532:31BD  [F31BD]  803e781b00      cmp     byte ptr [0x1b78], 0
@@ -28882,13 +28882,13 @@ L_F31F9:
     3532:31FC  [F31FC]  57              push    di
     3532:31FD  [F31FD]  ba1100          mov     dx, 0x11
     3532:3200  [F3200]  52              push    dx
-    3532:3201  [F3201]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3201  [F3201]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3206  [F3206]  83c402          add     sp, 2
     3532:3209  [F3209]  bf3300          mov     di, 0x33
     3532:320C  [F320C]  57              push    di
     3532:320D  [F320D]  bf1100          mov     di, 0x11
     3532:3210  [F3210]  57              push    di
-    3532:3211  [F3211]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3211  [F3211]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3216  [F3216]  83c402          add     sp, 2
     3532:3219  [F3219]  803e831b14      cmp     byte ptr [0x1b83], 0x14
     3532:321E  [F321E]  7428            je      L_F3248  ; 0x3248
@@ -28896,7 +28896,7 @@ L_F31F9:
     3532:3223  [F3223]  57              push    di
     3532:3224  [F3224]  bf1100          mov     di, 0x11
     3532:3227  [F3227]  57              push    di
-    3532:3228  [F3228]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3228  [F3228]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:322D  [F322D]  83c402          add     sp, 2
     3532:3230  [F3230]  bf3500          mov     di, 0x35
     3532:3233  [F3233]  57              push    di
@@ -28906,7 +28906,7 @@ L_F31F9:
 L_F323A:
     3532:323A  [F323A]  e96200          jmp     L_F329F  ; 0x329f
 L_F323D:
-    3532:323D  [F323D]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:323D  [F323D]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3242  [F3242]  83c402          add     sp, 2
     3532:3245  [F3245]  e92000          jmp     L_F3268  ; 0x3268
 L_F3248:
@@ -28914,13 +28914,13 @@ L_F3248:
     3532:324B  [F324B]  57              push    di
     3532:324C  [F324C]  bf1000          mov     di, 0x10
     3532:324F  [F324F]  57              push    di
-    3532:3250  [F3250]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3250  [F3250]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3255  [F3255]  83c402          add     sp, 2
     3532:3258  [F3258]  bf3500          mov     di, 0x35
     3532:325B  [F325B]  57              push    di
     3532:325C  [F325C]  bf1000          mov     di, 0x10
     3532:325F  [F325F]  57              push    di
-    3532:3260  [F3260]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3260  [F3260]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3265  [F3265]  83c402          add     sp, 2
 L_F3268:
     3532:3268  [F3268]  a17606          mov     ax, word ptr [0x676]
@@ -28948,31 +28948,31 @@ L_F329F:
     3532:32A2  [F32A2]  57              push    di
     3532:32A3  [F32A3]  bf1000          mov     di, 0x10
     3532:32A6  [F32A6]  57              push    di
-    3532:32A7  [F32A7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:32A7  [F32A7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:32AC  [F32AC]  83c402          add     sp, 2
     3532:32AF  [F32AF]  bf3300          mov     di, 0x33
     3532:32B2  [F32B2]  57              push    di
     3532:32B3  [F32B3]  bf1000          mov     di, 0x10
     3532:32B6  [F32B6]  57              push    di
-    3532:32B7  [F32B7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:32B7  [F32B7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:32BC  [F32BC]  83c402          add     sp, 2
     3532:32BF  [F32BF]  bf3600          mov     di, 0x36
     3532:32C2  [F32C2]  57              push    di
     3532:32C3  [F32C3]  bf9000          mov     di, 0x90
     3532:32C6  [F32C6]  57              push    di
-    3532:32C7  [F32C7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:32C7  [F32C7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:32CC  [F32CC]  83c402          add     sp, 2
     3532:32CF  [F32CF]  bf3400          mov     di, 0x34
     3532:32D2  [F32D2]  57              push    di
     3532:32D3  [F32D3]  bf1000          mov     di, 0x10
     3532:32D6  [F32D6]  57              push    di
-    3532:32D7  [F32D7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:32D7  [F32D7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:32DC  [F32DC]  83c402          add     sp, 2
     3532:32DF  [F32DF]  bf3500          mov     di, 0x35
     3532:32E2  [F32E2]  57              push    di
     3532:32E3  [F32E3]  bf1000          mov     di, 0x10
     3532:32E6  [F32E6]  57              push    di
-    3532:32E7  [F32E7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:32E7  [F32E7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
 SUB_F32EC:
     3532:32EC  [F32EC]  83c402          add     sp, 2
 L_F32EF:
@@ -28991,7 +28991,7 @@ L_F330B:
     3532:330E  [F330E]  57              push    di
     3532:330F  [F330F]  ba1000          mov     dx, 0x10
     3532:3312  [F3312]  52              push    dx
-    3532:3313  [F3313]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3313  [F3313]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3318  [F3318]  83c402          add     sp, 2
 L_F331B:
     3532:331B  [F331B]  c70676060000    mov     word ptr [0x676], 0
@@ -29215,7 +29215,7 @@ L_F3538:
     3532:353B  [F353B]  57              push    di
     3532:353C  [F353C]  ba1100          mov     dx, 0x11
     3532:353F  [F353F]  52              push    dx
-    3532:3540  [F3540]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3540  [F3540]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3545  [F3545]  83c402          add     sp, 2
     3532:3548  [F3548]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:354B  [F354B]  2af6            sub     dh, dh
@@ -29436,7 +29436,7 @@ L_F3761:
     3532:3764  [F3764]  57              push    di
     3532:3765  [F3765]  bf1100          mov     di, 0x11
     3532:3768  [F3768]  57              push    di
-    3532:3769  [F3769]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3769  [F3769]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:376E  [F376E]  83c402          add     sp, 2
     3532:3771  [F3771]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:3774  [F3774]  2af6            sub     dh, dh
@@ -29669,7 +29669,7 @@ L_F39DA:
     3532:39DD  [F39DD]  57              push    di
     3532:39DE  [F39DE]  bf1100          mov     di, 0x11
     3532:39E1  [F39E1]  57              push    di
-    3532:39E2  [F39E2]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:39E2  [F39E2]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:39E7  [F39E7]  83c402          add     sp, 2
     3532:39EA  [F39EA]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:39ED  [F39ED]  2af6            sub     dh, dh
@@ -29806,7 +29806,7 @@ L_F3B33:
     3532:3B36  [F3B36]  57              push    di
     3532:3B37  [F3B37]  bf1100          mov     di, 0x11
     3532:3B3A  [F3B3A]  57              push    di
-    3532:3B3B  [F3B3B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3B3B  [F3B3B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3B40  [F3B40]  83c402          add     sp, 2
     3532:3B43  [F3B43]  8a56f9          mov     dl, byte ptr [bp - 7]
     3532:3B46  [F3B46]  2af6            sub     dh, dh
@@ -30025,7 +30025,7 @@ L_F3D56:
     3532:3D60  [F3D60]  57              push    di
     3532:3D61  [F3D61]  bf1100          mov     di, 0x11
     3532:3D64  [F3D64]  57              push    di
-    3532:3D65  [F3D65]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:3D65  [F3D65]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:3D6A  [F3D6A]  83c402          add     sp, 2
     3532:3D6D  [F3D6D]  c70678061500    mov     word ptr [0x678], 0x15
     3532:3D73  [F3D73]  2bff            sub     di, di
@@ -30338,7 +30338,7 @@ SUB_F405D:
     3532:4076  [F4076]  57              push    di
     3532:4077  [F4077]  bf1100          mov     di, 0x11
     3532:407A  [F407A]  57              push    di
-    3532:407B  [F407B]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:407B  [F407B]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4080  [F4080]  83c402          add     sp, 2
     3532:4083  [F4083]  c70678061c00    mov     word ptr [0x678], 0x1c
     3532:4089  [F4089]  2bff            sub     di, di
@@ -30366,7 +30366,7 @@ L_F40B3:
     3532:40B6  [F40B6]  57              push    di
     3532:40B7  [F40B7]  bf1000          mov     di, 0x10
     3532:40BA  [F40BA]  57              push    di
-    3532:40BB  [F40BB]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:40BB  [F40BB]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:40C0  [F40C0]  83c402          add     sp, 2
     3532:40C3  [F40C3]  c7068206ffff    mov     word ptr [0x682], 0xffff
 L_F40C9:
@@ -30561,7 +30561,7 @@ L_F4267:
     3532:428F  [F428F]  57              push    di
     3532:4290  [F4290]  bf1100          mov     di, 0x11
     3532:4293  [F4293]  57              push    di
-    3532:4294  [F4294]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4294  [F4294]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4299  [F4299]  83c402          add     sp, 2
     3532:429C  [F429C]  c70678061c00    mov     word ptr [0x678], 0x1c
     3532:42A2  [F42A2]  2bff            sub     di, di
@@ -30585,7 +30585,7 @@ L_F42CC:
     3532:42CF  [F42CF]  57              push    di
     3532:42D0  [F42D0]  bf1000          mov     di, 0x10
     3532:42D3  [F42D3]  57              push    di
-    3532:42D4  [F42D4]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:42D4  [F42D4]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:42D9  [F42D9]  83c402          add     sp, 2
     3532:42DC  [F42DC]  c7068406ffff    mov     word ptr [0x684], 0xffff
 L_F42E2:
@@ -30665,7 +30665,7 @@ L_F4386:
     3532:4390  [F4390]  57              push    di
     3532:4391  [F4391]  ba1100          mov     dx, 0x11
     3532:4394  [F4394]  52              push    dx
-    3532:4395  [F4395]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4395  [F4395]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:439A  [F439A]  83c402          add     sp, 2
     3532:439D  [F439D]  c70678062300    mov     word ptr [0x678], 0x23
     3532:43A3  [F43A3]  a08c1b          mov     al, byte ptr [0x1b8c]
@@ -30784,7 +30784,7 @@ FUNC_3532_444F:
     3532:44BC  [F44BC]  52              push    dx
     3532:44BD  [F44BD]  ba9100          mov     dx, 0x91
     3532:44C0  [F44C0]  52              push    dx
-    3532:44C1  [F44C1]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:44C1  [F44C1]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:44C6  [F44C6]  83c402          add     sp, 2
 
 compute_and_print_cursor_position_readout:
@@ -30816,7 +30816,7 @@ L_F4500:
     3532:4503  [F4503]  57              push    di
     3532:4504  [F4504]  bf9000          mov     di, 0x90
     3532:4507  [F4507]  57              push    di
-    3532:4508  [F4508]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4508  [F4508]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:450D  [F450D]  83c402          add     sp, 2
 L_F4510:
     3532:4510  [F4510]  bf3400          mov     di, 0x34
@@ -31006,7 +31006,7 @@ L_F46EE:
     3532:46F4  [F46F4]  52              push    dx
     3532:46F5  [F46F5]  8b46f4          mov     ax, word ptr [bp - 0xc]
     3532:46F8  [F46F8]  8b56f6          mov     dx, word ptr [bp - 0xa]
-    3532:46FB  [F46FB]  9a460172e7      lcall   SUB_E7866  ; 0xe772, 0x146
+    3532:46FB  [F46FB]  9a460172e7      lcall   umod32  ; 0xe772, 0x146
     3532:4700  [F4700]  053000          add     ax, 0x30
     3532:4703  [F4703]  83d200          adc     dx, 0
     3532:4706  [F4706]  8ad0            mov     dl, al
@@ -31082,7 +31082,7 @@ SUB_F47AB:
 
     3532:47AE  [F47AE]  1100            adc     word ptr [bx + si], ax
     3532:47B0  [F47B0]  52              push    dx
-    3532:47B1  [F47B1]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:47B1  [F47B1]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:47B6  [F47B6]  83c402          add     sp, 2
     3532:47B9  [F47B9]  e9e000          jmp     L_F489C  ; 0x489c
 L_F47BC:
@@ -31159,7 +31159,7 @@ L_F4879:
     3532:487C  [F487C]  57              push    di
     3532:487D  [F487D]  bf1100          mov     di, 0x11
     3532:4880  [F4880]  57              push    di
-    3532:4881  [F4881]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4881  [F4881]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4886  [F4886]  83c402          add     sp, 2
     3532:4889  [F4889]  e91000          jmp     L_F489C  ; 0x489c
 L_F488C:
@@ -31167,7 +31167,7 @@ L_F488C:
     3532:488F  [F488F]  57              push    di
     3532:4890  [F4890]  ba1000          mov     dx, 0x10
     3532:4893  [F4893]  52              push    dx
-    3532:4894  [F4894]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4894  [F4894]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4899  [F4899]  83c402          add     sp, 2
 L_F489C:
     3532:489C  [F489C]  8be5            mov     sp, bp
@@ -31201,13 +31201,13 @@ FUNC_3532_48A0:
     3532:48E2  [F48E2]  57              push    di
     3532:48E3  [F48E3]  ba1100          mov     dx, 0x11
     3532:48E6  [F48E6]  52              push    dx
-    3532:48E7  [F48E7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:48E7  [F48E7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:48EC  [F48EC]  83c402          add     sp, 2
     3532:48EF  [F48EF]  bf2f00          mov     di, 0x2f
     3532:48F2  [F48F2]  57              push    di
     3532:48F3  [F48F3]  bf1000          mov     di, 0x10
     3532:48F6  [F48F6]  57              push    di
-    3532:48F7  [F48F7]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:48F7  [F48F7]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:48FC  [F48FC]  83c402          add     sp, 2
     3532:48FF  [F48FF]  83c402          add     sp, 2
     3532:4902  [F4902]  83c402          add     sp, 2
@@ -31228,13 +31228,13 @@ L_F4908:
     3532:492A  [F492A]  57              push    di
     3532:492B  [F492B]  ba1100          mov     dx, 0x11
     3532:492E  [F492E]  52              push    dx
-    3532:492F  [F492F]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:492F  [F492F]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4934  [F4934]  83c402          add     sp, 2
     3532:4937  [F4937]  bf3000          mov     di, 0x30
     3532:493A  [F493A]  57              push    di
     3532:493B  [F493B]  bf1000          mov     di, 0x10
     3532:493E  [F493E]  57              push    di
-    3532:493F  [F493F]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:493F  [F493F]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4944  [F4944]  83c402          add     sp, 2
     3532:4947  [F4947]  e99f03          jmp     L_F4CE9  ; 0x4ce9
 L_F494A:
@@ -31258,7 +31258,7 @@ L_F494A:
     3532:4975  [F4975]  57              push    di
     3532:4976  [F4976]  ba1100          mov     dx, 0x11
     3532:4979  [F4979]  52              push    dx
-    3532:497A  [F497A]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:497A  [F497A]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:497F  [F497F]  83c402          add     sp, 2
     3532:4982  [F4982]  bf3000          mov     di, 0x30
     3532:4985  [F4985]  eb03            jmp     L_F498A  ; 0x498a
@@ -31268,7 +31268,7 @@ L_F498A:
     3532:498A  [F498A]  57              push    di
     3532:498B  [F498B]  bf1000          mov     di, 0x10
     3532:498E  [F498E]  57              push    di
-    3532:498F  [F498F]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:498F  [F498F]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4994  [F4994]  83c402          add     sp, 2
     3532:4997  [F4997]  e9f600          jmp     L_F4A90  ; 0x4a90
 L_F499A:
@@ -31358,13 +31358,13 @@ L_F4A6A:
     3532:4A73  [F4A73]  57              push    di
     3532:4A74  [F4A74]  bf1100          mov     di, 0x11
     3532:4A77  [F4A77]  57              push    di
-    3532:4A78  [F4A78]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4A78  [F4A78]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4A7D  [F4A7D]  83c402          add     sp, 2
     3532:4A80  [F4A80]  bf3000          mov     di, 0x30
     3532:4A83  [F4A83]  57              push    di
     3532:4A84  [F4A84]  bf1000          mov     di, 0x10
     3532:4A87  [F4A87]  57              push    di
-    3532:4A88  [F4A88]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4A88  [F4A88]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4A8D  [F4A8D]  83c402          add     sp, 2
 L_F4A90:
     3532:4A90  [F4A90]  e95602          jmp     L_F4CE9  ; 0x4ce9
@@ -31563,13 +31563,13 @@ L_F4C62:
     3532:4C65  [F4C65]  57              push    di
     3532:4C66  [F4C66]  bf1100          mov     di, 0x11
     3532:4C69  [F4C69]  57              push    di
-    3532:4C6A  [F4C6A]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4C6A  [F4C6A]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4C6F  [F4C6F]  83c402          add     sp, 2
     3532:4C72  [F4C72]  bf2f00          mov     di, 0x2f
     3532:4C75  [F4C75]  57              push    di
     3532:4C76  [F4C76]  bf1000          mov     di, 0x10
     3532:4C79  [F4C79]  57              push    di
-    3532:4C7A  [F4C7A]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4C7A  [F4C7A]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4C7F  [F4C7F]  83c402          add     sp, 2
     3532:4C82  [F4C82]  e95e00          jmp     L_F4CE3  ; 0x4ce3
 L_F4C85:
@@ -31587,13 +31587,13 @@ L_F4C85:
     3532:4CA3  [F4CA3]  57              push    di
     3532:4CA4  [F4CA4]  bf1100          mov     di, 0x11
     3532:4CA7  [F4CA7]  57              push    di
-    3532:4CA8  [F4CA8]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4CA8  [F4CA8]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4CAD  [F4CAD]  83c402          add     sp, 2
     3532:4CB0  [F4CB0]  bf2f00          mov     di, 0x2f
     3532:4CB3  [F4CB3]  57              push    di
     3532:4CB4  [F4CB4]  bf1000          mov     di, 0x10
     3532:4CB7  [F4CB7]  57              push    di
-    3532:4CB8  [F4CB8]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4CB8  [F4CB8]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4CBD  [F4CBD]  83c402          add     sp, 2
     3532:4CC0  [F4CC0]  e92000          jmp     L_F4CE3  ; 0x4ce3
 L_F4CC3:
@@ -31601,13 +31601,13 @@ L_F4CC3:
     3532:4CC6  [F4CC6]  57              push    di
     3532:4CC7  [F4CC7]  bf1000          mov     di, 0x10
     3532:4CCA  [F4CCA]  57              push    di
-    3532:4CCB  [F4CCB]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4CCB  [F4CCB]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4CD0  [F4CD0]  83c402          add     sp, 2
     3532:4CD3  [F4CD3]  bf3000          mov     di, 0x30
     3532:4CD6  [F4CD6]  57              push    di
     3532:4CD7  [F4CD7]  bf1000          mov     di, 0x10
     3532:4CDA  [F4CDA]  57              push    di
-    3532:4CDB  [F4CDB]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:4CDB  [F4CDB]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:4CE0  [F4CE0]  83c402          add     sp, 2
 L_F4CE3:
     3532:4CE3  [F4CE3]  c70678060000    mov     word ptr [0x678], 0
@@ -32807,7 +32807,7 @@ L_F5875:
     3532:5892  [F5892]  9a460934ea      lcall   SUB_EAC86  ; 0xea34, 0x946
     3532:5897  [F5897]  83c404          add     sp, 4
 
-SUB_F5898:
+assemble_boot_splash_logo_chunks:
     3532:5898  [F5898]  c404            les     ax, ptr [si]
     3532:589A  [F589A]  a1021c          mov     ax, word ptr [0x1c02]
     3532:589D  [F589D]  0346f4          add     ax, word ptr [bp - 0xc]
@@ -32858,7 +32858,7 @@ L_F5901:
     3532:5904  [F5904]  57              push    di
     3532:5905  [F5905]  ba1100          mov     dx, 0x11
     3532:5908  [F5908]  52              push    dx
-    3532:5909  [F5909]  9acc0251e9      lcall   SUB_E97DC  ; 0xe951, 0x2cc
+    3532:5909  [F5909]  9acc0251e9      lcall   copy_words_stride4  ; 0xe951, 0x2cc
     3532:590E  [F590E]  83c402          add     sp, 2
 L_F5911:
     3532:5911  [F5911]  8be5            mov     sp, bp

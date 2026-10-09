@@ -783,17 +783,132 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       opportunistically** (standing request: "keep going, don't stop
       until everything is renamed"). Working through the proven-only
       set (`sysrom_3532_3633.symbols.json`) ordered by reference count,
-      highest first - 262/282 named. The remaining 20 have each been
-      individually investigated and have documented reasons they can't
-      be safely named (see `docs/` (start at `docs/README.md`) for the
-      dated session entries and `changes/` for the running list). The heuristic-only layer
+      highest first - 262/282 named as of the last count; **+2 more
+      named 2026-10-09** (`umod32`/`umod32_core`, `0xE7866`/`0xE7895` -
+      previously-flagged, never-investigated unnamed proven functions;
+      also corrected `sdiv32_unsigned_divisor` -> `smod32` in the same
+      pass once tracing these two revealed its real operation is
+      modulo, not division - see `FUNCTIONS.md` and `changes/2026-10-
+      09.md`). A fresh `kind=="sub"` count now shows 19 unnamed (284
+      total) - don't treat this as directly comparable to the 262/282
+      figure above without re-deriving the same filter; re-derive a
+      true like-for-like count before relying on either number. **Also
+      investigated 2026-10-09**: `SUB_EA2D6` (the other previously-
+      flagged, never-investigated unnamed proven function) and its
+      sibling call target `SUB_EA13B` - both turned out to be a
+      disassembly anomaly, not real code (their addresses land inside
+      known string-table text; their shared caller `SUB_F173E` is a
+      pre-existing manually-seeded entry point whose own body looks
+      coherent but whose call targets don't hold up - see `docs/
+      decode-anomalies/unknown-data-deep-dive-2026-09-15.md`'s
+      2026-10-09 section). Left unnamed, correctly, not just not-yet-
+      looked-at. **Also investigated 2026-10-09, same day**:
+      `SUB_EAC86` (ref_count=4, the highest-ref-count unnamed proven
+      function remaining) and its sole call target `SUB_EADA0` - same
+      disassembly-anomaly pattern as `SUB_EA2D6`/`SUB_EA13B` (both
+      decode as a structured-binary-record garbage pattern that
+      exactly bridges two already-documented `UNKNOWN_DATA.md` gaps),
+      but with a harder contradiction: `SUB_EAC86`'s 3 callers trace
+      through `assemble_boot_splash_logo_chunks` (`0xF5898`, renamed
+      later the same day - see below) back to the already-confirmed,
+      boot-critical `draw_boot_splash_and_option_icon` - not another
+      shaky entry point. Tried the emulator to settle it empirically;
+      inconclusive (boot halts on unrelated, already-documented self-
+      test failures before reaching it). Left unresolved and unnamed -
+      see `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`'s
+      "2026-10-09 follow-up #2" section. **`E97DC` resolved, same day**:
+      turned out not to be a new anomaly at all - it's a legitimate
+      secondary entry point into the already-confirmed `extract_
+      strided_channel_samples` (`0xE9744`), already documented in
+      `FUNCTIONS.md` but never given its own `FUNCTIONAL_NAMES` entry;
+      renamed `copy_words_stride4` (see `FUNCTIONS.md`'s `0xE97DC`
+      row). **`SUB_F5898` resolved, same day**: also not a new anomaly -
+      its full body (always one `SUB_EAC86` call, 2 more gated by
+      `[0x1bfb]` bit 0, then an unconditional tail call to `copy_words_
+      stride4`) is completely coherent even though its own entry lacks
+      a visible prologue (same "shares caller's open frame" class
+      already documented for `sync_shift_register_output`/`apply_
+      pending_position_delta`); renamed `assemble_boot_splash_logo_
+      chunks` (see `FUNCTIONS.md`'s `0xF5898` row). **Correction to this
+      note's own prior claim**: re-checking `docs/decode-anomalies/
+      dual-entry-points.md` shows `E90A5`, `E92B0`, `F156E`, `F1581`,
+      and `E99DF` were already investigated (by earlier sessions) and
+      correctly left unnamed as landing-artifacts/garbage-data targets,
+      not "not yet investigated" as this note previously claimed; `F5184`
+      and `EF346`/`EF393`/`EFB64`/`EFBA5` are likewise already
+      investigated and documented (see `docs/acquisition-and-plotting/
+      mode-dispatcher-and-formatting.md`) as correctly-unnamed for
+      their own separate reasons; and `E5D67` is not unnamed at all -
+      it's already renamed `INT2_HANDLER_EARLY` (`FUNCTIONS.md` line
+      315). **`E8E03`/`E8E29` resolved, same day**: unlike `SUB_F5898`,
+      these did *not* turn out to be nameable "for what they do" -
+      raw-byte-dumping `160-3633-14.bin` around both addresses showed
+      each call target lands exactly 1 byte before a real, clean
+      instruction (`jne L_E8E16` for `E8E03`'s case; `je L_E8E41` for
+      `E8E29`'s), with the intervening garbage bytes (`adc`/`sub`/`and`/
+      `cmp` nonsense, or a bogus `add`) merely an artifact of starting
+      mid-displacement-byte. Confirmed by checking the raw bytes 1
+      position earlier in each case and finding a complete, sensible
+      instruction whose own target is the exact same reconvergence
+      point the garbage decode eventually reaches anyway. This is 2
+      more confirmed instances of the already-documented landing-1-
+      byte-early artifact class (`SUB_E90A5`/`SUB_E92B0`/`L_EDA0A`),
+      now 7 instances total - see `docs/decode-anomalies/dual-entry-
+      points.md`'s new `SUB_E8E03`/`SUB_E8E29` subsection. Correctly
+      left unnamed, not just not-yet-looked-at; this closes out the
+      last 2 items from the original flagged list. **This means the
+      originally-flagged "not yet investigated" list is now fully
+      resolved** - everything on it has been either renamed
+      (`E97DC`/`F5898`) or confirmed as a correctly-unnamed anomaly/
+      landing-artifact (everything else). The next step for this
+      standing goal is to re-derive a fresh ref-count-ordered list of
+      remaining unnamed proven functions (the 19-vs-262/282 count
+      mismatch noted above still needs a proper like-for-like re-
+      derivation) rather than continuing to work off this list.
+      **Re-derived, same day**: queried `sysrom_3532_3633.symbols.json`
+      directly for `kind=="sub"` entries with no `functional_name` -
+      **17 unnamed out of 284 proven subs** (not 19; that figure must
+      have counted something else), sorted by `ref_count`:
+      `EAC86`(4), `E90A5`/`F156E`/`F1581`(2 each), then 13 more at 1
+      each (`E5D67`, `E8E03`, `E8E29`, `E92B0`, `E99DF`, `EA13B`,
+      `EA2D6`, `EADA0`, `EF346`, `EF393`, `EFB64`, `EFBA5`, `F5184`).
+      Cross-checked every single one against this session's work and
+      earlier docs: **all 17 are already accounted for** - either a
+      real rename that just lives in a different field (`E5D67` is
+      named `INT2_HANDLER_EARLY` via the `ENTRY_POINTS` mechanism, not
+      `FUNCTIONAL_NAMES`, so `functional_name` stays `None` by design,
+      not by omission - see `gen_disasm_x86.py` line 65) or a
+      documented landing-artifact/garbage-data anomaly (`EAC86`,
+      `E90A5`, `F156E`, `F1581`, `E8E03`, `E8E29`, `E92B0`, `E99DF`,
+      `EA13B`, `EA2D6`, `EADA0` - `docs/decode-anomalies/dual-entry-
+      points.md` and `docs/decode-anomalies/unknown-data-deep-dive-
+      2026-09-15.md`) or a separately-documented correctly-unnamed
+      function (`EF346`/`EF393`/`EFB64`/`EFBA5`/`F5184` - `docs/
+      acquisition-and-plotting/mode-dispatcher-and-formatting.md`).
+      **The "rename every identifiable proven routine" goal is now
+      substantively complete** for the proven-reachable set - nothing
+      left in it is simply unlooked-at. Future renaming work on this
+      codebase should look to the much larger heuristic-only layer
+      instead (see below), or wait for a newly-confirmed proven entry
+      point to surface (e.g. via the far-pointer-table technique in
+      `docs/acquisition-and-plotting/ram-far-pointer-table.md`).
+      See `docs/` (start at `docs/README.md`) for the
+      dated session entries and `changes/` for the running list. The heuristic-only layer
       (tens of thousands more, across all 3 ROMs) is a much lower-
       confidence, much larger tail - the realistic goal is "every
       proven-reachable routine named," not literally every heuristic
       placeholder. Mechanically: add `{address: "name"}` to `gen_
       disasm_x86.FUNCTIONAL_NAMES`, add the matching `FUNCTIONS.md`
-      entry, then regenerate everything: `gen_disasm_x86.py`, `gen_
-      disasm_mainrom_heuristic.py`, `gen_source.py <nasm>` (bare CLI
+      entry, then regenerate everything: `gen_disasm_x86.py`, **if the
+      renamed address is comm-ROM-local (`0x8xxxx`/`0x9xxxx`), also run
+      `gen_disasm_2998.py`** (a separate script that builds `160-
+      2998-14.symbols.json`/`.lst` on its own and consults `gen_
+      disasm_x86.FUNCTIONAL_NAMES` independently - skipping it leaves
+      `160-2998-14.symbols.json`'s `functional_name` field stale/`None`
+      for the new name even though every other pipeline step reports
+      success, since it isn't invoked by any of the other scripts below
+      - discovered the hard way 2026-10-09, see `changes/2026-10-09.md`),
+      `gen_disasm_mainrom_heuristic.py`, `gen_source.py <nasm>` (bare CLI
       default - proven-only entry points, correct for 160-3633/160-3532
       *and* for 160-2998's own `_readable.asm`), **then
       `gen_source_2998.py <nasm>` separately** to regenerate plain
@@ -812,6 +927,27 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       comm-ROM physical addresses. Re-verify byte-identical/length-
       matching (and a near-zero `git diff --stat` on files your rename
       shouldn't have touched) before committing.
+      **Progress 2026-10-09**: named `reinit_comm_channel` (`0x8FB01`,
+      comm ROM; reachability caveat - no confirmed caller found, see
+      `docs/comm-rom/command-parser-token-scan-and-plot-handler.md`)
+      and `reset_comm_token_length` (`0x850A2`, comm ROM). Also traced
+      (but left unnamed, pending further characterization)
+      `FUNC_2998_50C2`/`50E4`/`5115`/`519A`/`44D0` and ruled out
+      `FUNC_2998_44D0` as the still-missing `PLOt FORmat`/`[0x461]`
+      write site - see that same doc. **Follow-up, same day**: resolved
+      that doc's "blocking problem" (whether `FUNC_2998_5115`/`519A`'s
+      hypothesized letter-indexed keyword-table base pointers,
+      `[0x6EA]`/`[0x6F6]`, are ever legitimately initialized) by
+      searching every write site in both ROMs' full proven+heuristic
+      listings, not just proven code as the first pass had: both pairs
+      are written only by unrelated main-ROM HPGL/plot-cache code
+      (`FUNC_3633_7EBF`'s fixed `0x8000:0x4000` buffer-clear gated by
+      the HPGL pen-state variable `[0x6CA]`; the already-known `reset_
+      all_channel_plot_caches`), confirming genuine cross-subsystem
+      address reuse rather than an as-yet-undiscovered comm-ROM
+      initializer. This means the letter-indexed-table hypothesis is
+      reading from addresses that would get clobbered by ordinary
+      plot activity - evidence against it, not just "unconfirmed."
 - [ ] **RS-232 comm thread**: the original "live command silence"
       blocker is **resolved** (2026-09-14 - baud-rate reliability, not
       firmware; dropping to 1200 baud fixed it. See `docs/comm-rom/

@@ -273,10 +273,10 @@
     "notes": null
   },
   "850A2": {
-    "name": "SUB_850A2",
+    "name": "reset_comm_token_length",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "reset_comm_token_length",
     "notes": null
   },
   "85238": {
@@ -6643,10 +6643,10 @@
     "notes": null
   },
   "E77F8": {
-    "name": "sdiv32_unsigned_divisor",
+    "name": "smod32",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": "sdiv32_unsigned_divisor",
+    "functional_name": "smod32",
     "notes": null
   },
   "E780F": {
@@ -6678,10 +6678,10 @@
     "notes": null
   },
   "E7866": {
-    "name": "SUB_E7866",
+    "name": "umod32",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "umod32",
     "notes": null
   },
   "E788F": {
@@ -6692,10 +6692,10 @@
     "notes": null
   },
   "E7895": {
-    "name": "SUB_E7895",
+    "name": "umod32_core",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "umod32_core",
     "notes": null
   },
   "E7899": {
@@ -7448,10 +7448,10 @@
     "notes": null
   },
   "E97DC": {
-    "name": "SUB_E97DC",
+    "name": "copy_words_stride4",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "copy_words_stride4",
     "notes": null
   },
   "E97FA": {
@@ -9786,10 +9786,10 @@
     "notes": null
   },
   "F5898": {
-    "name": "SUB_F5898",
+    "name": "assemble_boot_splash_logo_chunks",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "assemble_boot_splash_logo_chunks",
     "notes": null
   },
   "F5901": {

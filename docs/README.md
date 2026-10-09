@@ -45,6 +45,7 @@ itself.
 - [RS-232: flow control and an open cross-ROM puzzle](comm-rom/rs232-flow-control-and-open-puzzle.md) - XON/XOFF software flow control, and an unresolved comm-ROM call into main-ROM plot-scaling code
 - [RS-232: live session - waveform formats and the command-keyword table](comm-rom/rs232-live-session-2026-09-14.md) - confirming binary/hex/ASCII waveform transfer and checksums live, and finding the real command-keyword table
 - [The full RS-232/GPIB command-keyword table](comm-rom/command-keyword-table.md) - every entry of the argument-keyword table, the dispatch/index table, and the top-level command-header table, extracted from the ROM
+- [Comm ROM: command-line token scanner, and a candidate keyword-table walker](comm-rom/command-parser-token-scan-and-plot-handler.md) - `comm_call_main_rom`'s real lexer/parser body, a strong-but-unconfirmed letter-indexed keyword-table-walker hypothesis blocked on an unfound table-base initializer, and `FUNC_2998_44D0`'s correct (non-`PLOt`-specific) characterization
 - [Comm ROM 160-2998-13 vs -14 byte diff](comm-rom/revision-13-vs-14-diff.md) - the two revisions' 133 differing bytes: a `-13`-only config-check routine replaced by a leftover copyright-string fragment, and a page-3 boot-stub jump that only exists in `-14`
 
 See also `hardware/manuals/2230_programming/` for the transcribed
