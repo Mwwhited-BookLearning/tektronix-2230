@@ -699,73 +699,24 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       based Mode/Command interface actually works. Further evidence
       against the UART theory, still doesn't identify what the block
       actually is - remains open.
-- [ ] **DIP-switch-vs-menu precedence, mostly resolved 2026-10-09** - see
-      `MEMORY_MAP.md`'s "RS-232 option board" section for the full
-      writeup. Summary: `STOP BITS`/`FLOW` turned out to have **no DIP
-      switch counterpart at all** (confirmed from the manual's own COMM
-      menu tree - they're separate top-level `COMM` submenu items,
-      Option-12-only, with zero switch bits ever decoding to either) -
-      dissolving that half of this item's original premise. For the
-      settings that genuinely are DIP-switch-decoded (baud/parity/
-      terminator/printer-plotter): traced every reference to
-      `[0x4EC]`/`[0x4ED]`/`[0x4EF]`/`[0x461]` in both ROMs and found
-      `read_dip_switches_serial_config` is the *only* writer anywhere -
-      consistent with the manual's own wording, which promises a
-      software/MENU override only for printer/plotter (switches 9-10),
-      not for baud/parity/terminator. The printer/plotter override's
-      actual write site was **not found** - still a genuine open thread
-      if picked up again (start from the `EPS7`/`EPS8`/`HPGL`/`TJET`
-      format-name strings in `STRINGS.md`).
-      **Re-checked 2026-10-09**: confirmed `docs/options.md`'s `PLOt`
-      command table really does document a settable `FORmat [XY],
-      HPGl, EPS7, EPS8, TJEt` option (not just a read-only status
-      query), so a software write site genuinely should exist
-      somewhere. Re-grepped both ROMs' full proven+heuristic listings
-      for every occurrence of `[0x461]` (not just the specific `mov
-      byte ptr [0x461], reg` encoding tried before) and confirmed its
-      only two writers anywhere are `read_dip_switches_serial_config`/
-      `read_dip_switches_gpib_config` themselves - nothing else
-      touches it, in either ROM's disassembly. The `FORmat` SET
-      command's handler is most likely sitting in the ~8-9% of each
-      ROM's byte range neither disassembly pass has reached yet - the
-      first lead in this item that points at *why* the write site is
-      missing, rather than just confirming it's missing. Also found: the switch is
-      reached through a single non-reentrant boot-time path (`finish_
-      boot_init_and_start_scheduler`, entered via one `ljmp`, never
-      called again) - no code path re-reads it on IFC, despite the
-      manual's claim that it's "read at power-up and when interface
-      clear messages are received" (that claim may only hold for the
-      *GPIB* PARAMETER switch, a separate decode path not traced here).
-      **Further checked 2026-10-09**: scanned the comm ROM's full
-      undisassembled gap (8 ranges, 5424 bytes) for the literal `[0x461]`
-      displacement bytes - zero hits (caveat: can't rule out an
-      indirect/computed-pointer write). The `EPS7`/`EPS8`/`FORmat`/
-      `HPGl`/`TJEt` strings themselves turned out to be part of the
-      already-documented table-1 keyword table
-      (`docs/comm-rom/command-keyword-table.md`), not a new lead - but
-      immediately before that table sits a distinct, not-yet-decoded
-      binary structure (`UNKNOWN_DATA.md`'s 2998 block 6,
-      `0x8824C`-`0x088728`). **Decoded (partially) same day**: its
-      first 6 records resolve to real functions
-      (`FUNC_2998_C411`/`C424`/`C437`/`C44A`/`C45D`/`C470`), each
-      feeding a shared helper (`FUNC_2998_C4D5`) that calls
-      `get_comm_config_flag` and returns a response-string pointer -
-      most likely a generic boolean/enum query-response stringifier
-      (`SMOoth`/`VECtors`/`GRAticule`/`AUTo`/`FLOw` candidates), **not**
-      the `FORmat`/`[0x461]` write site. Records past #6 don't keep a
-      fixed stride and remain undecoded. Also found, then resolved
-      same day, an apparent `[0x73A]` address conflict between
-      `get_comm_config_flag`/`set_comm_config_flag` and
-      `init_comm_dispatch_table`: not a real conflict - the comm ROM
-      standardly runs under `DS=0x8f80` (confirmed from the pervasive
-      `set_ds_return_old(0x8f80)` bootstrap idiom), so its `[0x73A]` is
-      physical `0x8FF3A`, a different byte than the sysrom's `DS=0`
-      `[0x73A]` that `init_comm_dispatch_table` writes - the project's
-      established cross-subsystem-address-reuse pattern again, this
-      time via a `DS` swap. See `docs/comm-rom/command-keyword-
-      table.md`'s "## 4." section and `STILL_PENDING_DECODE.md` for
-      full detail. The `FORmat`/`[0x461]` write site itself is still
-      not found.
+- [ ] **`PLOt FORmat [XY]` (HPGl/EPS7/EPS8/TJEt) software-override
+      write site still not found.** The rest of this item (DIP-switch-
+      vs-menu precedence for baud/parity/terminator/printer-plotter,
+      `STOP BITS`/`FLOW` having no DIP-switch counterpart at all) is
+      resolved - see `MEMORY_MAP.md`'s "RS-232 option board" section.
+      `[0x461]`'s only confirmed writers in either ROM's disassembled
+      bytes are the two DIP-switch readers themselves
+      (`read_dip_switches_serial_config`/`_gpib_config`); a literal-
+      displacement byte scan of the comm ROM's full undisassembled gap
+      also came up empty (caveat: can't rule out an indirect/computed-
+      pointer write). Most likely sitting in the ~8-9% of each ROM's
+      byte range neither disassembly pass has reached yet. The
+      adjacent `EPS7`/`EPS8`/`FORmat`/`HPGl`/`TJEt` strings and the
+      comm-ROM "block 6" dispatch table near them turned out to be
+      unrelated leads (now decoded/resolved - see
+      `docs/comm-rom/command-keyword-table.md`'s "## 4." section). Pick
+      up by targeting the remaining undisassembled gap directly if
+      revisited.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
@@ -978,11 +929,9 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       initializer. This means the letter-indexed-table hypothesis is
       reading from addresses that would get clobbered by ordinary
       plot activity - evidence against it, not just "unconfirmed."
-- [ ] **RS-232 comm thread**: the original "live command silence"
-      blocker is **resolved** (2026-09-14 - baud-rate reliability, not
-      firmware; dropping to 1200 baud fixed it. See `docs/comm-rom/
-      rs232-breakthrough.md` and `changes/2026-09-14.md`). Still
-      genuinely open, lower priority now:
+- [ ] **RS-232 comm thread, genuinely open parts** (the "live command
+      silence" blocker itself is resolved - baud-rate reliability, not
+      firmware; see `docs/comm-rom/rs232-breakthrough.md`):
       - Which `[0x1B83]` value (`0x1E` vs `0x14`) means "comm option
         installed" - write-probe address confirmed as general-purpose
         Time Base Mode Register U4119, not comm-specific; exact bit
@@ -995,23 +944,6 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
         walks it / assigns numeric command IDs from incoming bytes is
         not - a grep for the dispatch table's literal segment value
         found zero hits in already-disassembled code.
-      - `STAtus?` returning `STATUS 128;` once was never reproduced
-        (10/10 clean `STATUS 0;` on retry) and Table 7-34 hardcodes bit
-        7 to `0` in every documented category - likely a one-off
-        transient serial glitch, not a firmware defect. See
-        `docs/comm-rom/rs232-live-session-2026-09-14.md`.
-      - `FUNC_2998_39F5` is now named `comm_call_main_rom` (resolved
-        2026-10-09 - it's `init_comm_dispatch_table`'s `[0x73a]`/
-        `[0x738]` target, confirmed genuinely reached; see
-        `changes/2026-10-09.md` for the full story, including a
-        mislabeling that had attached this function's real body to the
-        wrong address, `0x839D1`, for several weeks). It's a `process_
-        gpib_command_byte`-calling state machine, GPIB-command-focused
-        rather than a general RS-232 byte-receive path - `poll_comm_
-        status_tick` is confirmed unrelated to byte reception (just an
-        icon-redraw/flag-sync poller, see its `FUNCTIONS.md` entry).
-        Still moot for practical purposes now that RS-232 works, but no
-        longer an open "which of these two" question.
       - Diffing/disassembling comm ROM revision `-13` remains a
         legitimate documentation gap, not a motivated investigation
         anymore.
@@ -1030,16 +962,6 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x759]`/`SWB1` once a literal-address read site for either is
       found. `[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern still
       isn't tied to a specific named `SWB1`/`SWB2` bit - remains open.
-- [ ] Comm option board DIP-switch mapping (`read_dip_switches_serial_
-      config`/`read_dip_switches_gpib_config`) - **resolved 2026-10-09**
-      for both RS-232 and GPIB, including `[0x629]`'s origin turning
-      out to be board-type auto-detection rather than a switch (see
-      `MEMORY_MAP.md`'s "RS-232 option board"/"GPIB option board"
-      sections and `changes/2026-10-09.md`). One narrow thread left
-      open: the GPIB switch 8 (TON) bit's physical ON/OFF polarity
-      isn't independently confirmed (no GPIB-equipped unit/schematic
-      available) - not worth its own TODO line unless GPIB hardware or
-      a schematic for that board turns up.
 
 ## Ongoing documentation goal
 
