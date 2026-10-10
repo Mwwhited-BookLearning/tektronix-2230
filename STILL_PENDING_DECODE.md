@@ -57,11 +57,36 @@ The single biggest cluster of open items - see
   (`comm_task4_default_handler`) - genuine tick-driven cooperative
   polling, not a byte-level hardware interrupt; see
   `docs/interrupts/task-scheduler.md`'s 2026-10-09 section for the full
-  trace and table dump. Two unconfirmed-caller candidates
-  (`FUNC_2998_56F8`/`FUNC_2998_5712`, copy `[0x590]`→`[6]`) and an
-  unexplored cross-ROM write to `[0x590]` from the main ROM
-  (`0xF63CE`) are the concrete next leads for the actual hardware
-  byte-read.
+  trace and table dump. **Both of the previously-flagged leads are now
+  ruled out (2026-10-09)**: all 5 main-ROM writes to `[0x590]`
+  (including `0xF63CE`) belong to one recurring buffer/record-
+  management code shape (`es:[di+2]`/`es:[di+4]` struct fields, gated
+  on `[0x1b83]==0x14`, setting overflow flags `[0x560]`/`[0x55c]`) that
+  has nothing to do with comm/serial - confirmed unrelated, not a lead.
+  `FUNC_2998_56F8`/`FUNC_2998_5712` were confirmed to have **zero**
+  callers anywhere: no far-pointer table entry in the whole comm ROM
+  binary points at either address (checked by raw byte scan, not just
+  listing grep), and `disasm/gen_disasm_2998.py` shows they're seeded
+  purely from a blind `55 8B EC` prologue-signature scan, not reached
+  via any proven call graph - demoted to "probably unreached/dead
+  heuristic matches," not a real lead. See
+  `docs/interrupts/task-scheduler.md`'s 2026-10-09 follow-up section
+  for the new candidate found while ruling these out: a
+  previously-undocumented 4-entry far-pointer sub-table at
+  `[0x1AD0]`-`[0x1ADE]` (written by `init_selftest_register_group`,
+  pointing at the confirmed UART register bank `0x406F0` plus
+  `0x4067C`/`0x406BC`/`0x406F8`) that is never read anywhere in the
+  currently-disassembled code - likely consumed by a generic
+  self-test/exerciser table-walk routine (matching the documented
+  `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` screen in `MEMORY_MAP.md`)
+  that hasn't been found yet. Also confirmed: the comm ROM's proven
+  listing has no genuine `in`/`out` port instruction at all (the one
+  apparent match at `0x84092` is a disassembler desync artifact in a
+  non-code byte region, not real code) - consistent with
+  `MEMORY_MAP.md`'s existing finding that the UART is memory-mapped,
+  not port-mapped, so the real receive read (if it exists in code
+  reached so far) must be a plain `mov`/`cmp` on `0x406F0`, not an
+  `in` instruction.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

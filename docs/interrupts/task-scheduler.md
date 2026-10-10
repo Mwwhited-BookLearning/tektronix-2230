@@ -380,3 +380,73 @@ register-copy write in the **main ROM** (`0xF63CE`, cross-ROM, not yet
 looked at) - no traced I/O-port read feeds it either. Worth picking up
 next: either find `0xF63CE`'s context (crosses into the main ROM,
 unexplored), or find what calls `FUNC_2998_56F8`/`5712`.
+
+## Follow-up, 2026-10-09: both candidate leads ruled out; new lead found instead
+
+Picked up the two leads flagged just above.
+
+**`0xF63CE` (and the main ROM's other 4 writes to `[0x590]`) are
+unrelated to comm/serial - ruled out.** All 5 sites in the main ROM
+that write `[0x590]` (`0xF5F31`, `0xF5FDE`, `0xF62FA`, `0xF63CE`,
+`0xF780B`) share one recurring code shape: a far-pointer struct
+accessed as `es:[di/bx + 2]`/`es:[di/bx + 4]`, gated on
+`byte [0x1b83] == 0x14`, writing `[0x5c8]` and setting flag bits in
+`[0x560]`/`[0x55c]` (or `and`-clearing bits in `es:[bx+0xc]` on the
+"close"/opposite side). This is a generic buffer/record read-or-write-
+cursor-advance routine (looks like trace/waveform-buffer bookkeeping,
+not serial I/O) that happens to reuse `[0x590]` as scratch; `[0x590]`
+being written here has nothing to do with the comm ROM. Not a lead.
+
+**`FUNC_2998_56F8`/`FUNC_2998_5712` have zero callers anywhere -
+ruled out.** Grepping the disassembly text for their labels only
+turned up their own definitions, so a byte-level check was done
+directly against the ROM binary: scanned the entire 64KB
+`160-2998-14.bin` for either address's offset word (`F8 56` /
+`12 57`) followed by any segment word at all (i.e. any far-pointer
+table entry anywhere in the file that could reach them) - zero
+matches for both. Checked why they were in the listing at all:
+`disasm/gen_disasm_2998.py`'s `build_entry_points()` seeds a
+low-confidence entry point at *every* occurrence of the `55 8B EC`
+(`push bp; mov bp,sp`) prologue byte signature across the whole ROM
+(398 of them) regardless of whether anything calls it - these two are
+just 2 of those 398 blind matches, with no evidence either is real,
+reachable code. Demoted from "candidate" to "probably noise."
+
+**New lead found while ruling the above out: an undocumented
+far-pointer sub-table at `[0x1AD0]`-`[0x1ADE]`.** Tracing the confirmed
+UART register bank address (`0x406F0`-`0x406F7`, `MEMORY_MAP.md`)
+turned up `init_selftest_register_group` (main ROM, body spanning
+physical `0xE4472`-`0xE44EE`) writing 4 far pointers:
+`[0x1AD0]=0x4000:0x6F0` (the UART data register itself),
+`[0x1AD8]=0x4000:0x6F8` (just past the 8-register UART/GPIB bank),
+`[0x1AD4]=0x4000:0x67C`, `[0x1ADC]=0x4000:0x6BC` (two status-type
+addresses already seen read in `selftest_comm_fget_flag`, masked
+against `4`/`0x80`). None of these 4 slots is ever read anywhere in
+the currently-disassembled code (checked both the proven and
+heuristic main-ROM listings, and the comm ROM listing) - the consumer
+is presumably a generic table-walk loop (indexing by `i*4` from a
+register, not a literal offset, which is why a literal-address grep
+finds no reader) that hasn't been traced yet. This plausibly matches
+the documented `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` self-test
+screen (`MEMORY_MAP.md`) generically reading and displaying hardware
+register values - if so, finding that table-walk routine would show a
+real `mov al, es:[bx]`-style read of the UART data register, which
+would be useful confirmation of the memory-mapped access pattern even
+though it's diagnostic-only, not the live production RX path.
+
+**Also confirmed: the comm ROM has no genuine `in`/`out` instruction
+at all.** A full scan of `160-2998-14.lst` for port instructions found
+exactly one apparent match, `in ax, 0x5d` at physical `0x84092` - but
+the surrounding bytes (`0x403E`-`0x4091`) decode as nonsensical
+instructions (`and byte ptr [bp+si+0x69], dh`, `push 0x606`, etc.),
+indicating a disassembler desync through a non-code byte region, not
+real code. So there is still no confirmed port-space I/O anywhere in
+this ROM, consistent with `MEMORY_MAP.md`'s existing finding that the
+UART/GPIB chip bank is memory-mapped (`0x406F0`-`0x406F7`) rather than
+port-mapped - meaning the real receive read, if it's in code reached
+so far, must be a plain `mov`/`cmp` on `0x406F0`, not an `in`.
+
+Net effect: the incoming-byte-reception mechanism is still unresolved,
+but both previously-open leads are now closed out rather than left
+dangling, and a concrete new one (the `[0x1AD0]` table's unfound
+reader) is in its place for next time.

@@ -618,11 +618,25 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       interrupt. **Still missing**: where a real incoming byte first
       lands in `[6]`/`[0x580]`/`[0x590]` from actual hardware -
       `comm_call_main_rom` itself only ever writes `[6]` with 2 fixed
-      literals, never from an I/O port read. Two unconfirmed-caller
-      candidates (`FUNC_2998_56F8`/`FUNC_2998_5712`, copy `[0x590]`
-      into `[6]`) and one unexplored cross-ROM write to `[0x590]` from
-      the main ROM (`0xF63CE`) are the next concrete leads - see the
-      task-scheduler doc's closing paragraph.
+      literals, never from an I/O port read. **Both previously-flagged
+      leads are now ruled out (2026-10-09)**: all 5 main-ROM
+      `[0x590]` writes (including `0xF63CE`) are one unrelated
+      buffer-bookkeeping code shape, and `FUNC_2998_56F8`/
+      `FUNC_2998_5712` have zero callers anywhere in the comm ROM
+      (confirmed by raw byte scan for far-pointer references, not just
+      listing grep) - they're blind prologue-scan artifacts from
+      `gen_disasm_2998.py`, not proven-reachable code. New lead found
+      instead: a previously-undocumented far-pointer sub-table at
+      `[0x1AD0]`-`[0x1ADE]` (written by `init_selftest_register_group`,
+      pointing at the UART register bank `0x406F0` and its neighbors
+      `0x4067C`/`0x406BC`/`0x406F8`) that's never read in any
+      currently-disassembled code - probably consumed by a not-yet-
+      found generic self-test/exerciser table-walk routine (matches
+      the documented `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` screen).
+      Also confirmed the comm ROM has no genuine `in`/`out` instruction
+      at all, consistent with the UART being memory-mapped only - see
+      `docs/interrupts/task-scheduler.md`'s 2026-10-09 follow-up
+      section for full detail.
 - [ ] **REVIEW LATER**: `binary/aligned/*.bin` (NOP-padded, fully-
       readable reconstructions - see `binary/aligned/README.md`) were
       adopted as the reference binary for future checks. Revisit this
