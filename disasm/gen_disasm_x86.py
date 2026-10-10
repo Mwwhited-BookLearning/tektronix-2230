@@ -151,6 +151,27 @@ ENTRY_POINTS = [
 # necessarily entry points themselves - just names for labels the
 # recursive descent already finds on its own.
 FUNCTIONAL_NAMES = {
+    0xE6C46: "comm_task4_default_handler",   # task slot 4's entry in the
+                                              # per-task default/idle-handler
+                                              # far-pointer table at physical
+                                              # 0xE628E (dumped directly from
+                                              # 160-3633-14.bin, ES=0xE628,
+                                              # offset 0xE, 4 bytes/task,
+                                              # confirmed by switch_to_next_
+                                              # task's `lcall es:[bx]` at
+                                              # 0xE61DC) - single-shot wrapper
+                                              # that does `lcall [0x738]`,
+                                              # reaching comm_call_main_rom.
+                                              # See docs/interrupts/
+                                              # task-scheduler.md.
+    0xE6C30: "comm_task5_default_handler",   # task slot 5's entry in the
+                                              # same table - infinite loop:
+                                              # `lcall [0x73c]` then
+                                              # create_task (yield), forever.
+                                              # [0x73c] is init_comm_dispatch_
+                                              # table's slot2 target. See
+                                              # docs/interrupts/
+                                              # task-scheduler.md.
     0xE00B1: "boot_init",                    # RESET's target: cli, clear
                                               # RAM, first stack setup
     0xE416F: "print_selftest_banner",        # CORRECTED (was misnamed

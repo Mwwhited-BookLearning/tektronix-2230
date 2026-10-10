@@ -5824,10 +5824,10 @@
     "notes": null
   },
   "E6C30": {
-    "name": "FUNC_3633_6C30",
+    "name": "comm_task5_default_handler",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "comm_task5_default_handler",
     "notes": null
   },
   "E6C36": {
@@ -5838,10 +5838,10 @@
     "notes": null
   },
   "E6C46": {
-    "name": "FUNC_3633_6C46",
+    "name": "comm_task4_default_handler",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "comm_task4_default_handler",
     "notes": null
   },
   "E6C54": {

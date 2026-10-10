@@ -45,12 +45,23 @@ The single biggest cluster of open items - see
 `docs/comm-rom/rs232-breakthrough.md`, and
 `docs/comm-rom/rs232-live-session-2026-09-14.md`.
 
-- **The genuine UART-receive entry point is still unfound.** Where an
-  incoming byte first lands (expected somewhere touching `[6]`/
-  `[0x580]`) has never been traced in the disassembly - live RS-232
-  communication works fine now (see `hardware/manuals/2230_
-  programming/PRACTICAL_GUIDE.md`), so this is purely a documentation
-  gap, not a functional blocker.
+- **The genuine UART-receive entry point is still unfound, though the
+  surrounding scheduling mechanism is now resolved (2026-10-09).**
+  Where an incoming byte first lands (expected somewhere touching
+  `[6]`/`[0x580]`/`[0x590]`) has never been traced in the disassembly -
+  live RS-232 communication works fine now (see `hardware/manuals/
+  2230_programming/PRACTICAL_GUIDE.md`), so this is purely a
+  documentation gap, not a functional blocker. **Now confirmed**: the
+  loop that reads `[6]` (`comm_call_main_rom`) is reached via a
+  dedicated per-task scheduler default-handler table entry
+  (`comm_task4_default_handler`) - genuine tick-driven cooperative
+  polling, not a byte-level hardware interrupt; see
+  `docs/interrupts/task-scheduler.md`'s 2026-10-09 section for the full
+  trace and table dump. Two unconfirmed-caller candidates
+  (`FUNC_2998_56F8`/`FUNC_2998_5712`, copy `[0x590]`→`[6]`) and an
+  unexplored cross-ROM write to `[0x590]` from the main ROM
+  (`0xF63CE`) are the concrete next leads for the actual hardware
+  byte-read.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

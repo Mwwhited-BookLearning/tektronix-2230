@@ -302,3 +302,81 @@ launch anything independent - it inserts a single deliberate
 scheduling yield (presumably to let a higher-priority tick, like the
 actual TX-servicing one, run) before continuing on with the same call
 chain, tagged with a marker for whatever reads `[idx+0x744]` later.
+
+## Found, 2026-10-09: the per-task default/idle-handler table, and how `comm_call_main_rom` actually gets invoked
+
+Direct follow-up to the same-day `[0x73A]` resolution (see
+`docs/comm-rom/command-keyword-table.md`), which confirmed
+`comm_call_main_rom` (`0x839F5`) is `init_comm_dispatch_table`'s
+`[0x738]`/`[0x73a]` slot1 target but left open *who actually calls
+through that slot* - the open question this section answers.
+
+**Found the call site**: `switch_to_next_task`'s "task not ready"
+branch (`L_E61A7`, physical `0xE61A7`-`0xE6274`) does more than load a
+default stack. After loading `SP`/`SS` from a per-task table (`ES=
+0xE628`, offset `0x3E + idx*4`), it builds a **second** far pointer
+from a table at the *same* `ES=0xE628` segment, **offset `0xE + idx*4`**
+(`mov bx,0xe; ...; shl ax,1; shl ax,1; add bx,ax`), and executes
+`sti; lcall es:[bx]; cli` directly inline (on that task's own default
+stack, with interrupts briefly re-enabled for the call) before
+continuing. In other words: whenever the scheduler finds the *current*
+task slot's ready-bit clear, it runs that slot's own fixed **default
+handler**, synchronously, once, right there in the tick path - a
+genuine per-task-slot "idle work" dispatch, not just a stack load.
+
+**Dumped all 12 entries directly from `binary/160-3633-14.bin`**
+(physical `0xE628E`-`0xE62BD`, 4 bytes/entry: word offset, word
+segment - table base confirmed by the `160-3633` ROM's `0xE0000`
+mapping, so physical = file offset directly):
+
+| Task idx | Target (phys) | Shape |
+|---|---|---|
+| 0 | `0xE766E` | not traced this session |
+| 1 | `0xE6BCA` | one-shot: calls `SUB_EAD08` once |
+| 2 | `0xE6BED` | loop: `SUB_F67BF`, then branches on `[0x761]`/`[0x1B8C]` into `mark_task_ready`+`create_task` or just `create_task` - a real little state machine, not traced further |
+| 3 | `0xE6C54` | one-shot: calls `SUB_F0EBC` once |
+| **4** | **`0xE6C46`** | **one-shot: `lcall [0x738]` - reaches `comm_call_main_rom` directly. Renamed `comm_task4_default_handler`** |
+| **5** | **`0xE6C30`** | **infinite loop: `lcall [0x73c]` then `create_task` (yield), forever. Renamed `comm_task5_default_handler`** |
+| 6 | `0xE6BD9` | one-shot: calls `SUB_E92BF`, sets `[0x78D]=1` |
+| 7 | `0xE6BB3` | loop: `FUNC_3532_8624` then `create_task`, forever |
+| 8 | `0xE6C63` | one-shot: calls `FUNC_3532_F704` once |
+| 9 | `0xE6C72` | one-shot: increments `[0x77A]`, calls `FUNC_3532_DC27` once |
+| 10 | `0xE7098` | not traced this session |
+| 11 | `0xE5D31` | **`delay_read_128w`** - the already-documented IVT-region read/delay primitive (see "the per-tick heartbeat" above) |
+
+**This resolves the open question directly and concretely**: task slot
+4's default handler *is* the trigger for `comm_call_main_rom`
+(confirmed by table dump, not inference), and task slot 5 has a
+parallel one for `init_comm_dispatch_table`'s slot2 target (`[0x73c]`,
+not yet traced). Both `comm_task4_default_handler` and
+`comm_task5_default_handler` were only ever reached by the heuristic
+disassembly pass, never the proven recursive-descent one - consistent
+with them being reachable *only* through this table, exactly like the
+4 interrupt-vector handlers documented in `docs/interrupts/ivt-and-
+int255.md`.
+
+**What this means for the comm ROM's incoming-data-path question**
+(`TODO.md`): `comm_call_main_rom`/`process_gpib_command_byte` run
+because task slot 4 is *continuously* serviced this way on every tick
+where it isn't separately marked ready (which, since nothing in the
+traced code ever sets slot 4's ready bit via `mark_task_ready`, is
+presumably *every* tick it's selected) - this is strong, direct
+evidence for the "pure cooperative/tick-driven polling, not a
+byte-level hardware interrupt" hypothesis raised in
+`docs/comm-rom/rs232-early-investigation.md`, not just a plausible
+guess anymore. It does **not** by itself explain how a byte from the
+physical RS-232/GPIB wire first lands in `[6]`/`[0x580]` - tracing
+`comm_call_main_rom`'s own body (`0x839F5`-`0x83A67`) shows `[6]` is
+only ever set there to 2 fixed literal bytes (`0x2D`/`0x2C`) under
+specific flag conditions, never freshly read from any I/O port in that
+function - so the actual hardware byte-read is still a separate,
+unresolved piece. Two more candidate injection sites were found in
+passing but not confirmed reachable: `FUNC_2998_56F8`/`FUNC_2998_5712`
+(physical `0x856F8`/`0x85712`, comm ROM) both copy `[0x590]` into `[6]`
+then call `process_gpib_command_byte` directly, gated by a `[0x61C]`
+flag - but neither has a confirmed caller, and `[0x590]` itself is
+only ever set via hardcoded literal `0x80` writes (3 sites) or one
+register-copy write in the **main ROM** (`0xF63CE`, cross-ROM, not yet
+looked at) - no traced I/O-port read feeds it either. Worth picking up
+next: either find `0xF63CE`'s context (crosses into the main ROM,
+unexplored), or find what calls `FUNC_2998_56F8`/`5712`.

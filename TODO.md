@@ -606,14 +606,23 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       using more captured samples, or finding the ROM's own plot-scale-
       for-readout-text constant directly instead of reverse-solving
       from output.
-- [ ] Find the comm ROM's actual **incoming**-data path. The ring
-      buffer at `[0x448]`/`[0x44C]` (base `0xAF`, size `0x384`) turned
-      out to be a TX queue (`serial_tx_buffer_put` producer,
-      `service_comm_tx_queue` consumer), not an RX buffer as first
-      assumed. No genuine incoming-byte ring buffer/interrupt handler
-      has been identified yet - worth tracing if a comm-module board
-      photo turns up a UART chip whose interrupt line can be followed
-      back into the IVT.
+- [ ] Find the comm ROM's actual **incoming**-data path - narrowed
+      2026-10-09, not yet closed. The ring buffer at `[0x448]`/`[0x44C]`
+      (base `0xAF`, size `0x384`) turned out to be a TX queue
+      (`serial_tx_buffer_put` producer, `service_comm_tx_queue`
+      consumer), not RX. **Now confirmed**: `comm_call_main_rom`/
+      `process_gpib_command_byte` run via a dedicated scheduler task
+      slot's default-handler table entry (`comm_task4_default_handler`,
+      see `docs/interrupts/task-scheduler.md`'s 2026-10-09 section) -
+      i.e. tick-driven cooperative polling, not a byte-level hardware
+      interrupt. **Still missing**: where a real incoming byte first
+      lands in `[6]`/`[0x580]`/`[0x590]` from actual hardware -
+      `comm_call_main_rom` itself only ever writes `[6]` with 2 fixed
+      literals, never from an I/O port read. Two unconfirmed-caller
+      candidates (`FUNC_2998_56F8`/`FUNC_2998_5712`, copy `[0x590]`
+      into `[6]`) and one unexplored cross-ROM write to `[0x590]` from
+      the main ROM (`0xF63CE`) are the next concrete leads - see the
+      task-scheduler doc's closing paragraph.
 - [ ] **REVIEW LATER**: `binary/aligned/*.bin` (NOP-padded, fully-
       readable reconstructions - see `binary/aligned/README.md`) were
       adopted as the reference binary for future checks. Revisit this

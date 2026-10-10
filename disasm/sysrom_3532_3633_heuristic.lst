@@ -10751,7 +10751,7 @@ L_E6C2C:
     3633:6C2C  [E6C2C]  8be5            mov     sp, bp
     3633:6C2E  [E6C2E]  5d              pop     bp
     3633:6C2F  [E6C2F]  cb              retf    
-FUNC_3633_6C30:
+comm_task5_default_handler:
     3633:6C30  [E6C30]  55              push    bp
     3633:6C31  [E6C31]  8bec            mov     bp, sp
     3633:6C33  [E6C33]  83ec06          sub     sp, 6
@@ -10760,7 +10760,7 @@ L_E6C36:
     3633:6C3A  [E6C3A]  9a74010be6      lcall   create_task  ; 0xe60b, 0x174
     3633:6C3F  [E6C3F]  e9f4ff          jmp     L_E6C36  ; 0x6c36
 
-FUNC_3633_6C46:
+comm_task4_default_handler:
     3633:6C46  [E6C46]  55              push    bp
     3633:6C47  [E6C47]  8bec            mov     bp, sp
     3633:6C49  [E6C49]  83ec06          sub     sp, 6
