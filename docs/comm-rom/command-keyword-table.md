@@ -224,20 +224,106 @@ genuinely open question - see below.
   likely also resolve the dispatch-table-coverage question above.
 - **The code that actually walks either table has still not been
   found** in the disassembly - see `STILL_PENDING_DECODE.md`.
-  **Candidate found 2026-10-09, not confirmed**: `FUNC_2998_5115`/
-  `FUNC_2998_519A` (comm ROM, physical `0x85115`/`0x8519A`, both
-  directly called from `comm_call_main_rom`) index a 26-entry,
-  6-byte-record, first-letter-bucketed table (`([4]-0x41)*6`) via far-
-  pointer bases `[0x6EA]`/`[0x6F6]` respectively, and resolve a match
-  into `[0x604]` - confirmed to be this table's own `id=0x17`→`PLOt`
-  value via a later comparison inside `FUNC_2998_44D0`. This is solid
-  evidence *some* letter-bucketed lookup is happening and lands on the
-  right IDs, but it's a different (letter-indexed) table shape than
-  either of the two already-decoded here, and neither `[0x6EA]` nor
-  `[0x6F6]`'s own write site/initialization has been found - `[0x6F6]`
-  only turns up written (to an `0x0800` sentinel) inside an apparently
-  unrelated main-ROM acquisition/plot-cache-reset routine
-  (`reset_all_channel_plot_caches`), which may be coincidental address
-  reuse rather than this table's real base. See `docs/comm-rom/
-  command-parser-token-scan-and-plot-handler.md` for the full writeup
-  and the open question this leaves.
+  **Candidate found 2026-10-09, resolved same day - NOT this table**:
+  `FUNC_2998_5115`/`FUNC_2998_519A` (comm ROM, physical `0x85115`/
+  `0x8519A`, both directly called from `comm_call_main_rom`) index a
+  26-entry, 6-byte-record, first-letter-bucketed table
+  (`([4]-0x41)*6`) via far-pointer bases `[0x6EA]`/`[0x6F6]`
+  respectively, and resolve a match into `[0x604]` - confirmed to be
+  this table's own `id=0x17`→`PLOt` value via a later comparison
+  inside `FUNC_2998_44D0`. This looked like solid evidence of a
+  letter-bucketed keyword table with a different shape than tables 1/2
+  above, but tracing every reference to `[0x6EA]`/`[0x6F6]` across both
+  ROMs found **zero comm-ROM writes to either address** - both pairs'
+  only writers are unrelated main-ROM HPGL/plot-cache code
+  (`FUNC_3633_7EBF`, `reset_all_channel_plot_caches`; see
+  `VARIABLES.md`'s `[0x6EA]`/`[0x6EC]` entry). This is genuine
+  cross-subsystem address reuse (the same pattern already documented
+  for `[0x712]`), not an undiscovered comm-ROM table initializer -
+  `FUNC_2998_5115`/`519A`'s real letter-table base is still unknown.
+  See `docs/comm-rom/command-parser-token-scan-and-plot-handler.md`
+  for the full writeup.
+
+## 4. New, partially-decoded structure immediately before table 1: a flag-value query/stringify dispatch (found 2026-10-09)
+
+While chasing an unrelated lead (the `PLOt FORmat` software-override
+write site, see `STILL_PENDING_DECODE.md`), found that the comm ROM's
+unidentified byte range immediately *before* table 1 (`UNKNOWN_DATA.
+md`'s "2998 block 6", file offset `0x0824C`-`0x08728`, physical
+`0x8824C`-`0x088728`) is not generic unlabeled data - it's a genuine
+dispatch table, previously uncharacterized.
+
+**Layout**: opens with two length-prefixed strings, `OFf` (3 bytes)
+and `ON` (2 bytes), followed by ~100 variable-length binary records.
+The first 6 records cleanly follow a fixed 12-byte stride - `[4-byte
+key/marker][4-byte far pointer A][4-byte far pointer B]` - verified by
+resolving far pointer B through the project's already-confirmed
+`0x90000`-`0x97FFF` comm-ROM code-segment alias (`physical =
+segment*16 + offset - 0x8000`) and finding it lands *exactly* on 6
+consecutive, already-disassembled (but previously unnamed) functions:
+
+| Record | Key bytes | Far ptr B (seg:off) | → resolves to |
+|---|---|---|---|
+| 1 | `3e ff 8f e3` | `907c:004c` | `FUNC_2998_C411` |
+| 2 | `2b ff af e3` | `907c:0022` | `FUNC_2998_C424` |
+| 3 | `2f ff af e4` | `907c:0034` | `FUNC_2998_C437` |
+| 4 | `45 ff af e4` | `907c:0076` | `FUNC_2998_C44A` |
+| 5 | `40 ff af e2` | `907c:005e` | `FUNC_2998_C45D` |
+| 6 | `15 ff 2f c5` | `907c:0004` | `FUNC_2998_C470` |
+
+Far pointer A (always segment `0x907c` in these 6 records) resolves
+into the *next* unidentified block (`UNKNOWN_DATA.md`'s block 7,
+`0x0872B`-`0x08A57`) - itself still packed binary data, not yet
+decoded. **Records past #6 do not keep the clean 12-byte stride** -
+some are only 8 bytes (key + far-pointer-B only, no far-pointer-A),
+and at least one apparent 4-byte far pointer (`f5 05 c9 82`, resolving
+to physical `0x82c9f5`... i.e. *outside* the comm ROM's own
+`0x80000`-`0x8FFFF` range, so almost certainly a shared/fallback
+pointer referenced by several neighboring short records rather than a
+record of its own) recurs multiple times. The exact variable-length
+packing rule isn't decoded - treat the table as a confirmed structure
+whose *first 6 entries* are solid, not a fully-walked table.
+
+**What the 6 confirmed handlers do**: `FUNC_2998_C411`/`C424`/`C437`/
+`C44A`/`C45D` each push one small constant (`0x3a`, `0x41`, `0x48`,
+`0x50`, `0x58` respectively) and `lcall` a shared, not-yet-named
+helper (`FUNC_2998_C4D5`); `FUNC_2998_C470` instead calls `SUB_94559`
+first to compute a value, then pushes *that* and calls the same
+helper. `FUNC_2998_C4D5` itself calls the already-named
+`get_comm_config_flag(index)` (`FUNCTIONS.md`'s `0x94488`/`(index)` -
+"reads a byte from a config/flag array at far ptr `[0x73A]`"), then
+maps the returned value (`1`/`2`/`3`/anything else) to one of 4 far
+pointers read from a table based at `[0x6F2]` and returns that
+pointer - i.e. it turns a stored flag's raw value into a *response
+string pointer*.
+
+**Working hypothesis (not yet proven)**: given the leading `OFf`/`ON`
+strings and that `get_comm_config_flag`'s backing array is written by
+`set_comm_config_flag` (`0x944A2`, `(index, value)`), this table is
+most likely the comm port's generic **query-response stringifier**
+for several boolean/small-enum settings - each of the 6 confirmed
+handlers backs one specific setting's `?` query (candidates, since all
+are listed as table-1 argument/value keywords: `SMOoth`, `VECtors`,
+`GRAticule`, `AUTo`, `FLOw`), translating its raw stored flag value
+into the right `OFf`/`ON`-style text for the response. **This is a
+different mechanism from `FORmat`'s write site** (which stays
+unresolved, see `STILL_PENDING_DECODE.md`) - no record found so far
+ties back to `[0x461]` or any `FORmat`-specific handling. Not yet
+confirmed which keyword maps to which of the 5 flag-index constants
+(`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`); doing so would need tracing the
+4-byte "key" field's indexing scheme, which doesn't match either of
+tables 2/3's `id`-byte scheme above (those top out at `0x2c`, these
+keys use a different byte in the 0x15-0x57 range as the first byte,
+with a near-constant `0xFF` second byte whose role isn't decoded).
+
+**Loose end found in passing, not resolved**: `get_comm_config_flag`/
+`set_comm_config_flag`'s documented `(les di, ptr [0x73a])` far
+pointer and `init_comm_dispatch_table`'s documented `[0x738]/[0x73a]`
+far-pointer dispatch slot (`sysrom_3532_3633.lst:10745`, which stores
+things like `5:0x839f` or `0x96f5:0x1db` there) overlap by one word -
+`[0x73a]` can't simultaneously be the *segment* half of one far
+pointer and the *offset* start of a different one, as both
+`FUNCTIONS.md` entries ("Confirmed") currently claim. One of the two
+addresses is probably slightly misrecorded; worth re-deriving both
+from their raw instruction bytes in a future session rather than
+trusting either blind.

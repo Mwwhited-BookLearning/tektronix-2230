@@ -745,14 +745,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       (`docs/comm-rom/command-keyword-table.md`), not a new lead - but
       immediately before that table sits a distinct, not-yet-decoded
       binary structure (`UNKNOWN_DATA.md`'s 2998 block 6,
-      `0x8824C`-`0x088728`): two length-prefixed strings `OFf`/`ON`
-      followed by ~100 records containing what look like far-pointer
-      segment values in the comm ROM's confirmed `0x90000`-`0x97FFF`
-      code-segment-alias range (capstone force-disassembly of the
-      range produces garbage, arguing it's data, not code). Plausibly
-      an ON/OFF-style dispatch table - worth decoding in a future
-      session; see `STILL_PENDING_DECODE.md` for the full byte-level
-      evidence. Not yet connected to `[0x461]` specifically.
+      `0x8824C`-`0x088728`). **Decoded (partially) same day**: its
+      first 6 records resolve to real functions
+      (`FUNC_2998_C411`/`C424`/`C437`/`C44A`/`C45D`/`C470`), each
+      feeding a shared helper (`FUNC_2998_C4D5`) that calls
+      `get_comm_config_flag` and returns a response-string pointer -
+      most likely a generic boolean/enum query-response stringifier
+      (`SMOoth`/`VECtors`/`GRAticule`/`AUTo`/`FLOw` candidates), **not**
+      the `FORmat`/`[0x461]` write site. Records past #6 don't keep a
+      fixed stride and remain undecoded. Also surfaced a `[0x73A]`
+      address-documentation conflict between `get_comm_config_flag`/
+      `set_comm_config_flag` and `init_comm_dispatch_table` - unresolved.
+      See `docs/comm-rom/command-keyword-table.md`'s "## 4." section
+      and `STILL_PENDING_DECODE.md` for full detail. The `FORmat`/
+      `[0x461]` write site itself is still not found.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
