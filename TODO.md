@@ -736,6 +736,23 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       manual's claim that it's "read at power-up and when interface
       clear messages are received" (that claim may only hold for the
       *GPIB* PARAMETER switch, a separate decode path not traced here).
+      **Further checked 2026-10-09**: scanned the comm ROM's full
+      undisassembled gap (8 ranges, 5424 bytes) for the literal `[0x461]`
+      displacement bytes - zero hits (caveat: can't rule out an
+      indirect/computed-pointer write). The `EPS7`/`EPS8`/`FORmat`/
+      `HPGl`/`TJEt` strings themselves turned out to be part of the
+      already-documented table-1 keyword table
+      (`docs/comm-rom/command-keyword-table.md`), not a new lead - but
+      immediately before that table sits a distinct, not-yet-decoded
+      binary structure (`UNKNOWN_DATA.md`'s 2998 block 6,
+      `0x8824C`-`0x088728`): two length-prefixed strings `OFf`/`ON`
+      followed by ~100 records containing what look like far-pointer
+      segment values in the comm ROM's confirmed `0x90000`-`0x97FFF`
+      code-segment-alias range (capstone force-disassembly of the
+      range produces garbage, arguing it's data, not code). Plausibly
+      an ON/OFF-style dispatch table - worth decoding in a future
+      session; see `STILL_PENDING_DECODE.md` for the full byte-level
+      evidence. Not yet connected to `[0x461]` specifically.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

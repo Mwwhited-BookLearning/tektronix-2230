@@ -224,6 +224,34 @@ The single biggest cluster of open items - see
   parser state) - ruling out this one remaining already-disassembled
   candidate. See `docs/comm-rom/command-parser-token-scan-and-plot-
   handler.md`.
+  **Further checked 2026-10-09**: scanned the comm ROM's entire
+  undisassembled byte range (8 gaps, 5424 bytes total, computed via a
+  one-off extension of `disasm/compute_coverage.py`) for the literal
+  little-endian displacement bytes `61 04` (i.e. any direct or
+  base+disp16 instruction writing `[0x461]`) - **zero hits anywhere**.
+  Caveat: this cannot rule out a write via a computed/indirect pointer
+  that doesn't embed the offset as an immediate. Also checked where
+  the `EPS7`/`EPS8`/`FORmat`/`HPGl`/`TJEt` strings themselves live
+  (`disasm/strings_160-2998.json`): they're already part of the fully-
+  documented table-1 argument/value keyword table in
+  `docs/comm-rom/command-keyword-table.md` (`0x88a58`-range) - not a
+  new lead, and not near any hidden code. However, immediately
+  *before* that documented table (file offsets `0x08005`-`0x08A57`,
+  physical `0x88005`-`0x88A57`, already flagged as unidentified in
+  `UNKNOWN_DATA.md` blocks 4-7) sits a distinct, previously-
+  uncharacterized binary structure: block 6 (`0x8824C`-`0x088728`)
+  opens with two length-prefixed strings `OFf`/`ON` followed by ~100
+  repeating multi-byte records containing 16-bit values that look like
+  segment registers in the `0x90xx`-`0x9Fxx` range (e.g. `0x907c`,
+  `0x941f`, `0x93cc`, `0x9199`) - i.e. plausible far-pointer segments
+  within the project's already-confirmed `0x90000`-`0x97FFF` comm-ROM
+  code-segment alias. Force-disassembling this range with capstone
+  (16-bit mode) produces incoherent garbage, which argues *against*
+  this being ordinary code and *for* it being a structured data table
+  (plausibly an ON/OFF-style boolean dispatch table, given the leading
+  strings) - but the exact record layout, and whether it resolves to
+  `[0x461]`'s writer, is **not yet decoded**. Worth a dedicated pass in
+  a future session rather than guessing further here.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
