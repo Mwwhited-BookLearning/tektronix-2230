@@ -862,9 +862,30 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   bytes get cleaned between the caller and the nearest enclosing
   function's own exit (`retf 2`) - concrete evidence this is *not* a
   `write_hw_shift_register`-style secondary entry point into that
-  function. Real identity unresolved; `0xF4CE8` (also 6 callers) not
-  yet looked at. See `docs/decode-anomalies/landing-artifacts-and-
-  jump-tables.md`'s "Follow-up, 2026-10-09" section.
+  function. Real identity unresolved. See `docs/decode-anomalies/
+  landing-artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-09"
+  section.
+- **2026-10-09: traced the other 6-caller candidate, `0xF4CE8` - this
+  one DID turn out structurally clean**, byte-exact reconvergence on
+  every path (no branch dependency, unlike `0xE951A`) and all 6 real
+  callers push/clean zero bytes, consistent with a genuine `write_hw_
+  shift_register`-style secondary entry point. Surfaced a new,
+  previously-undocumented variable cluster along the way: a
+  single-byte self-test-step code at `[0x3E2]` (written only ever as
+  `'s'/'u'/'d'/'l'/'r'/'x'`, always immediately paired with this same
+  `SUB_F4CE8`+`SUB_F5F56` call pair) and a `0x63`-bitmask check on
+  `[0x4E7]`/`[0x4E8]`/`[0x4E9]`/`[0x542]` feeding the `u`/`d`/`l`/`r`
+  branch selection - `0x63` is the same mask already confirmed for
+  `SWB2`'s 4 menu-navigation buttons in `docs/self-test/front-panel-
+  switches.md`, but applied to a different variable and with no clean
+  bit-to-letter correspondence, so the connection is flagged, not
+  claimed. **What `SUB_F4CE8` actually writes (`add byte ptr
+  [bp+di+0x5de5],cl`) and what `SUB_F5F56` reads (`[bp+6]`/`[bp+0xa]`/
+  `[bp+0xc]`, never pushed by any real caller) both depend on runtime
+  register/stack state that static reading can't resolve further -
+  needs emulator tracing.** See `docs/decode-anomalies/landing-
+  artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-09" section
+  (second half, `0xF4CE8`).
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

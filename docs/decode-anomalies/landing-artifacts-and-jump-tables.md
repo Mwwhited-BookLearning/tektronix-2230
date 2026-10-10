@@ -312,5 +312,95 @@ session**: what function is actually meant to receive `(word
 [bp+0xa]-equivalent scalar, far ptr DS:0x674, far ptr <dynamic
 source>)` - `0x674` is a fixed buffer address worth checking against
 `VARIABLES.md` (currently undocumented) if this thread gets picked up
-again. `0xF4CE8` (the other 6-caller candidate) has not been looked at
-yet.
+again.
+
+## Follow-up, 2026-10-09: traced the other 6-caller candidate (`0xF4CE8`) - clean byte-exact reconvergence (unlike `0xE951A`), uncovered a new self-test-step character-code variable cluster, but the write target itself needs the emulator to pin down
+
+`0xF4CE8` lands 1 byte short of `0xF4CE9`, same dominant root-cause
+case as every other candidate (the byte at `0xF4CE8` is the `0x00`
+high byte of a real `mov word ptr [0x678], 0` instruction's
+immediate). Read fresh, it decodes as a 4-byte `add byte ptr [bp + di
++ 0x5de5], cl` (`0xF4CE8`-`0xF4CEB`) landing on `0xF4CEC` - **and
+unlike `0xE951A`, this reconverges byte-exactly with the real tail on
+every path, not just one side of a branch**: the real stream at
+`0xF4CE9` is `mov sp, bp` (2 bytes) / `pop bp` (1 byte) = exactly the
+3 bytes (`8b e5 5d`) the fake instruction's own ModRM+disp16 bytes
+reuse, landing both readings on the identical `retf` at `0xF4CEC`.
+This is the same unconditional-reconvergence shape `write_hw_shift_
+register` has, not `0xE951A`'s weaker branch-dependent one.
+
+All 6 real `lcall SUB_F4CE8` sites (physical `0xF7BF2`, `0xF7D00`,
+`0xF7D1B`, `0xF7D36`, `0xF7D51`, `0xF7D7F`, all in `160-3532`) push
+**zero** arguments and clean up **zero** bytes afterward - consistent
+with `SUB_F4CE8`'s own landing-artifact tail (`retf` with no
+immediate, cleans 0 bytes). No stack-accounting mismatch this time,
+unlike `0xE951A`.
+
+**New lead, not what was being looked for**: every one of the 6 call
+sites is immediately preceded by `mov byte ptr [0x3e2], <literal>` and
+immediately followed by `lcall SUB_F5F56` (`0xF5F56` - itself 1 byte
+into `FUNC_3532_5F50`'s own body, right after that function's `push
+bp`/`mov bp,sp`/`sub sp,0xa` preamble, and `FUNC_3532_5F50` itself has
+**zero** callers anywhere in the corpus - the same "only ever reached
+1 byte past its own prologue" shape already seen in `extract_strided_
+channel_samples`). The 6 literals written to `[0x3e2]` right before
+each pair of calls: `0x73`('s'), `0x75`('u'), `0x64`('d'), `0x6c`('l'),
+`0x72`('r'), `0x78`('x') - a previously-undocumented single-byte
+variable, written only ever as one of these 6 ASCII characters, right
+before this same `SUB_F4CE8`+`SUB_F5F56` pair. **Not claiming what the
+letters mean** (no "up/down/left/right" story fits cleanly - see
+below) - just recording the raw fact.
+
+All 6 call sites sit in the heuristic-reachability-only region already
+documented as `selftest_sequence_enter` (`0xF7BA5`)/`selftest_sequence_
+exit` (`0xF7D99`) in `FUNCTIONS.md` - the `'s'` write is the last thing
+`selftest_sequence_enter` does before its own `retf` at `0xF7BFF`; the
+other 5 (`u`/`d`/`l`/`r`/`x`) are in a previously-unlabeled function in
+between the two (`FUNC_3532_7C00`-`0xF7D98`, immediately before
+`selftest_sequence_exit` starts at `0xF7D99` - also zero callers found,
+same heuristic-only caveat as its neighbors). That function computes a
+bit value into `[bp-8]` as `([0x4E8] & [0x4E7]) & 0x63` (after an
+earlier, separate `0x63`-masked check of `[0x4E9]` against `[0x542]`
+gates whether this logic runs at all), then tests individual bits of
+it - `0x20`->`'u'`, `1`->`'d'`, `2`->`'l'`, `0x40`->`'r'` - with `'x'`
+reached by a separate, unrelated condition (`[0x532]`/`[0x466]&0x20`/
+`[0x468]`). **Possibly related to the already-confirmed `SWB2` mask**:
+`0x63` is the exact bitmask `docs/self-test/front-panel-switches.md`
+confirmed as `SWB2`'s 4 menu-navigation buttons (`MEM3`+`MEM1`+`MEM2`+
+`MENU ADV`) - but applied here to a different variable cluster
+(`[0x4E7]`/`[0x4E8]`/`[0x4E9]`/`[0x542]`, not `[0x758]`/`SWB2` itself),
+and the bit-to-letter mapping (`0x20`->`u`, `1`->`d`, `2`->`l`,
+`0x40`->`r`) doesn't line up with those buttons' initials in any
+obvious way - flagging the mask coincidence, not claiming the
+connection is proven.
+
+**What `SUB_F4CE8` actually does with this is still not pinned down**:
+at the `'d'`/`'l'`/`'r'` call sites, `di` is reloaded from `[bp-8]`
+and then masked in place right before the call, so `di` equals the
+matching bit value (`1`, `2`, or `0x40`) at the moment `add byte ptr
+[bp+di+0x5de5], cl` executes; at the `'s'`/`'u'` sites `dx` (not `di`)
+carries the relevant value, so `di` is unaccounted for there. `cl` is
+never set anywhere in this code - fully inherited/unknown at every
+site. `bp` is whichever enclosing function's own valid frame pointer
+(`selftest_sequence_enter`'s for `'s'`, `FUNC_3532_7C00`'s for the
+rest) - so `bp+di+0x5de5` is a real, computable-in-principle but
+data-dependent far-from-the-frame address (0x5de5 is large enough that
+mod-0x10000 stack-segment wraparound is almost certainly the intended
+mechanism, the same kind of trick already flagged as unresolved for
+`0x88729`'s `ljmp [bp+di]` in the first section of this file) - **not
+resolvable further by static reading; would need the emulator to
+observe the actual `SS`/`bp` value at one of these 6 call sites and
+compute the real target address**. `SUB_F5F56`'s own body (reached the
+same zero-argument way, 1 byte past its home function's prologue) uses
+`[bp+6]`/`[bp+0xa]`/`[bp+0xc]` as if given 3 real pushed parameters,
+which none of the 6 real callers provide - whatever it reads there is
+either stale stack content or genuinely irrelevant to why it's called
+this way, also unresolved.
+
+**Net assessment**: structurally this is a second clean `write_hw_
+shift_register`-class dual-entry point (unlike `0xE951A`, which wasn't)
+, and along the way it surfaced a real, new, previously undocumented
+variable cluster (`[0x3E2]`, `[0x4E7]`-`[0x4E9]`, `[0x542]`) worth
+adding to `VARIABLES.md` - but the actual payload (what byte gets
+written where, and why a 1-character mnemonic matters) needs dynamic
+tracing, not more static reading, to go further.

@@ -770,7 +770,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       secondary-entry-point explanation via a stack-accounting
       mismatch (14 bytes pushed by every caller, only 12 cleaned
       between caller+callee), but its real identity is still
-      unresolved; `0xF4CE8` (also 6 callers) hasn't been looked at yet.
+      unresolved. Also traced the other 6-caller candidate (`0xF4CE8`)
+      - this one IS structurally a clean secondary entry point (byte-
+      exact reconvergence, zero-argument calls balance exactly), but
+      surfaced a new open thread instead of closing: a `[0x3E2]`
+      self-test-step character code and a `0x63`-masked `[0x4E7]`/
+      `[0x4E8]`/`[0x4E9]`/`[0x542]` cluster possibly (unproven)
+      related to the confirmed `SWB2` front-panel mask - see "Ongoing
+      documentation goal" below and `docs/decode-anomalies/landing-
+      artifacts-and-jump-tables.md`. All >=6-caller candidates are now
+      traced; remaining untraced ones drop to <=5 callers each.
       See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
       "Follow-up, 2026-10-09" section for `0xE951A`'s full writeup.
       The remaining candidates (mostly single-caller) weren't
