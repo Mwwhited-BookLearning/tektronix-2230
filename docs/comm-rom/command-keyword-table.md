@@ -316,14 +316,35 @@ tables 2/3's `id`-byte scheme above (those top out at `0x2c`, these
 keys use a different byte in the 0x15-0x57 range as the first byte,
 with a near-constant `0xFF` second byte whose role isn't decoded).
 
-**Loose end found in passing, not resolved**: `get_comm_config_flag`/
-`set_comm_config_flag`'s documented `(les di, ptr [0x73a])` far
-pointer and `init_comm_dispatch_table`'s documented `[0x738]/[0x73a]`
-far-pointer dispatch slot (`sysrom_3532_3633.lst:10745`, which stores
-things like `5:0x839f` or `0x96f5:0x1db` there) overlap by one word -
-`[0x73a]` can't simultaneously be the *segment* half of one far
-pointer and the *offset* start of a different one, as both
-`FUNCTIONS.md` entries ("Confirmed") currently claim. One of the two
-addresses is probably slightly misrecorded; worth re-deriving both
-from their raw instruction bytes in a future session rather than
-trusting either blind.
+**Loose end found in passing, now resolved**: `get_comm_config_flag`/
+`set_comm_config_flag`'s `les di, ptr [0x73a]` and
+`init_comm_dispatch_table`'s `[0x738]/[0x73a]` dispatch-slot write
+(`sysrom_3532_3633.lst:10745`) looked like they overlapped by one
+word - `[0x73a]` couldn't simultaneously be the *segment* half of one
+far pointer and the *offset* start of another. Re-derived from raw
+instruction bytes: it's not a real conflict, both readings are
+correct, they just aren't the same physical byte. `init_comm_dispatch_
+table` runs in the **main ROM** with the ordinary `DS=0`, so its
+`[0x73a]` is literal physical `0x0073A`. `get_comm_config_flag`/
+`set_comm_config_flag` run in the **comm ROM**, which (per the
+pervasive `mov di, 0x8f80 / push di / lcall set_ds_return_old`
+bootstrap idiom seen throughout `160-2998-14.lst`, e.g. at the very
+start of `comm_rom_boot_init` physical `0x8E28C`, confirmed from
+`set_ds_return_old`'s own body at `0x8C70E` doing
+`push ds / mov ds, [bp+6] / pop ax` - i.e. literally "set DS to the
+argument, return the old DS") standardly runs under `DS=0x8f80`, not
+0. So their `[0x73a]` is physical `0x8f800 + 0x73a = 0x8FF3A` - a
+separate byte in what's almost certainly the comm board's own private
+RAM window near the top of its 64KB address space (`0x8F800`-`0x8FFFF`
+ish), not the sysrom's global variable at raw `0x73A`. This is the
+same **cross-subsystem address reuse** pattern already established
+elsewhere in this project (e.g. `[0x712]`), just via a `DS` swap
+instead of a different physical subsystem. Not independently
+confirmed at runtime (would need the emulator to trace the actual `DS`
+register live through this exact call chain) but strongly evidenced
+statically: no other code sets any other `DS` value anywhere near this
+call path, and `compute_parity_mode_code` (`0x96800`) independently
+corroborates the same `es:[0x73A+0x20]`-style indexing into this same
+array. Both `FUNCTIONS.md` entries can stand as written; they just
+need a note that their `[0x73A]` is `DS`-relative (`DS=0x8f80` in
+comm-ROM context), not the bare physical address.

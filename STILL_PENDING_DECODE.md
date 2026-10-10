@@ -248,11 +248,15 @@ The single biggest cluster of open items - see
   response-string pointer - most likely a query-response stringifier
   for boolean settings like `SMOoth`/`VECtors`/`GRAticule`/`AUTo`/
   `FLOw`, **not** related to `FORmat`/`[0x461]`'s write site. Records
-  past #6 don't keep a fixed stride and aren't fully decoded. Full
-  writeup, including a newly-found `[0x73A]`-address documentation
-  conflict between `get_comm_config_flag`/`set_comm_config_flag` and
-  `init_comm_dispatch_table` surfaced while tracing this, in
-  `docs/comm-rom/command-keyword-table.md`'s new "## 4." section.
+  past #6 don't keep a fixed stride and aren't fully decoded. An
+  apparent `[0x73A]`-address conflict surfaced while tracing this
+  (between `get_comm_config_flag`/`set_comm_config_flag` and
+  `init_comm_dispatch_table`) was found and resolved the same day: the
+  comm ROM standardly runs under `DS=0x8f80`, so its `[0x73A]` is
+  physical `0x8FF3A`, not the sysrom's `DS=0` `[0x73A]` - cross-
+  subsystem address reuse via a `DS` swap, not a real conflict. Full
+  writeup in `docs/comm-rom/command-keyword-table.md`'s new "## 4."
+  section.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

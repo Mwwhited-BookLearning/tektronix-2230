@@ -753,12 +753,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       most likely a generic boolean/enum query-response stringifier
       (`SMOoth`/`VECtors`/`GRAticule`/`AUTo`/`FLOw` candidates), **not**
       the `FORmat`/`[0x461]` write site. Records past #6 don't keep a
-      fixed stride and remain undecoded. Also surfaced a `[0x73A]`
-      address-documentation conflict between `get_comm_config_flag`/
-      `set_comm_config_flag` and `init_comm_dispatch_table` - unresolved.
-      See `docs/comm-rom/command-keyword-table.md`'s "## 4." section
-      and `STILL_PENDING_DECODE.md` for full detail. The `FORmat`/
-      `[0x461]` write site itself is still not found.
+      fixed stride and remain undecoded. Also found, then resolved
+      same day, an apparent `[0x73A]` address conflict between
+      `get_comm_config_flag`/`set_comm_config_flag` and
+      `init_comm_dispatch_table`: not a real conflict - the comm ROM
+      standardly runs under `DS=0x8f80` (confirmed from the pervasive
+      `set_ds_return_old(0x8f80)` bootstrap idiom), so its `[0x73A]` is
+      physical `0x8FF3A`, a different byte than the sysrom's `DS=0`
+      `[0x73A]` that `init_comm_dispatch_table` writes - the project's
+      established cross-subsystem-address-reuse pattern again, this
+      time via a `DS` swap. See `docs/comm-rom/command-keyword-
+      table.md`'s "## 4." section and `STILL_PENDING_DECODE.md` for
+      full detail. The `FORmat`/`[0x461]` write site itself is still
+      not found.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
