@@ -879,13 +879,17 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   `SWB2`'s 4 menu-navigation buttons in `docs/self-test/front-panel-
   switches.md`, but applied to a different variable and with no clean
   bit-to-letter correspondence, so the connection is flagged, not
-  claimed. **What `SUB_F4CE8` actually writes (`add byte ptr
-  [bp+di+0x5de5],cl`) and what `SUB_F5F56` reads (`[bp+6]`/`[bp+0xa]`/
-  `[bp+0xc]`, never pushed by any real caller) both depend on runtime
-  register/stack state that static reading can't resolve further -
-  needs emulator tracing.** See `docs/decode-anomalies/landing-
-  artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-09" section
-  (second half, `0xF4CE8`).
+  claimed. **Mechanism clarified same day**: both `SUB_F4CE8` and
+  `SUB_F5F56` skip their own prologue, so `bp` (and thus `[bp+6]`/
+  `[bp+0xa]`/`[bp+0xc]`) is inherited from the *enclosing* function's
+  frame - the same shared-frame mechanism `0x88729`'s `ljmp [bp+di]`
+  already established, not a missing-argument mystery. The remaining
+  open piece is only that the enclosing functions (`selftest_sequence_
+  enter`/`FUNC_3532_7C00`) have no confirmed real caller yet, so the
+  actual parameter/`cl` *values* still need emulator tracing to pin
+  down. See `docs/decode-anomalies/landing-artifacts-and-jump-
+  tables.md`'s "Follow-up, 2026-10-09" section and its same-day
+  correction subsection.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

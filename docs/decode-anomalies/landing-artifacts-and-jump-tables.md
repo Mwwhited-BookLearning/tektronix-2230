@@ -404,3 +404,34 @@ variable cluster (`[0x3E2]`, `[0x4E7]`-`[0x4E9]`, `[0x542]`) worth
 adding to `VARIABLES.md` - but the actual payload (what byte gets
 written where, and why a 1-character mnemonic matters) needs dynamic
 tracing, not more static reading, to go further.
+
+### Correction, same day: `SUB_F5F56`'s "unexplained" parameter reads aren't unexplained - same shared-frame mechanism as `0x88729` above, not a separate mystery
+
+Re-examined `SUB_F5F56` (`0xF5F56`) itself, not just its 6 call sites.
+It is 6 bytes into `FUNC_3532_5F50` (`push bp`/`mov bp,sp`/`sub sp,
+0xa` - exactly 6 bytes), i.e. it **skips that function's own prologue
+entirely** - meaning it never establishes its own `bp`. Its body reads
+`[bp+6]` (a far pointer, used as a struct with fields at `+0`/`+2`/`+4`
+/`+0xc`), `[bp+0xa]`, and `[bp+0xc]` - which, with no `push bp; mov
+bp,sp` of its own, resolve against *whatever `bp` the caller already
+had*, exactly the same "inherits the caller's frame instead of reading
+stale stack garbage" mechanism already documented for `0x88729`'s
+`ljmp [bp+di]` at the top of this file. Confirmed directly: all 6 real
+`lcall SUB_F5F56` sites push zero bytes (re-verified reading the raw
+bytes immediately before each, `0xF7BF7`/`0xF7D05`/`0xF7D20`/`0xF7D3B`
+/`0xF7D56`/`0xF7D84` - no `push` anywhere between the preceding
+`SUB_F4CE8` call and each of these), so there is no missing-argument
+mystery: `[bp+6]`/`[bp+0xa]`/`[bp+0xc]` are simply the *enclosing*
+function's own incoming parameters (`selftest_sequence_enter`'s or
+`FUNC_3532_7C00`'s, whichever is live at the call site), reused
+directly. Both of those enclosing functions are themselves heuristic-
+reachability-only with no confirmed real caller yet (same pre-existing
+caveat `FUNCTIONS.md` already carries for `selftest_sequence_enter`/
+`_exit`), so the actual parameter *values* remain unresolved - but the
+mechanism itself is now understood, correcting the previous framing
+("reads 3 parameters none of the 6 callers provide") as a false
+mystery. The same logic resolves `SUB_F4CE8`'s inherited `bp` the same
+way (it also has no prologue of its own); only its `cl` input stays
+genuinely unresolved, and for the identical reason - it's whatever `cl`
+held when the *enclosing* function was itself entered, which traces
+back to the same unconfirmed top-level caller, not a separate puzzle.
