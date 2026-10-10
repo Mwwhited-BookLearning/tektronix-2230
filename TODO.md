@@ -782,9 +782,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       traced; remaining untraced ones drop to <=5 callers each.
       See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
       "Follow-up, 2026-10-09" section for `0xE951A`'s full writeup.
-      The remaining candidates (mostly single-caller) weren't
-      individually chased - worth a look only if one stands out (many
-      independent call sites is the best tell).
+      2026-10-10: traced the next candidate down (`0xECE82`, 5 callers)
+      - a third clean instance of the shared-frame secondary-entry
+      mechanism (`FUNC_3633_CE5B`'s real entry has zero confirmed
+      callers; only the landing-artifact offset is ever reached), but
+      its exit's `mov sp,bp` means the push-vs-retf stack-accounting
+      check that worked for `write_hw_shift_register`/`0xF4CE8` doesn't
+      mechanically apply - worth remembering before trusting that check
+      on the remaining candidates. See "Follow-up, 2026-10-10" in the
+      same doc.
+      The remaining candidates (mostly single-caller, plus `0xEDDE2`
+      at 4 callers and `0xEFD99` at 3) weren't individually chased -
+      worth a look only if one stands out (many independent call sites
+      is the best tell).
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

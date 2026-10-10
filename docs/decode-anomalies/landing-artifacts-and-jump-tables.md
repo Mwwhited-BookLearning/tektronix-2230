@@ -435,3 +435,91 @@ way (it also has no prologue of its own); only its `cl` input stays
 genuinely unresolved, and for the identical reason - it's whatever `cl`
 held when the *enclosing* function was itself entered, which traces
 back to the same unconfirmed top-level caller, not a separate puzzle.
+
+## Follow-up, 2026-10-10: traced the 5-caller candidate (`0xECE82`) - a third instance of the `0x88729`/`SUB_F5F56` shared-frame mechanism, and a reminder that the simple push-vs-retf stack check doesn't apply once the exit uses `mov sp,bp`
+
+`0xECE82` is the next entry down the caller-count ranking after the
+`>=6`-caller tier closed out above. It sits inside `FUNC_3633_CE5B`
+(real entry `0xECE5B`), 1 byte into a local `je L_ECE9C` instruction
+(`0xECE81`-`0xECE82`, opcode `74 19`): read fresh from the displacement
+byte `0x19` onward, it decodes as a 4-byte `sbb word ptr [bp+si+2], di`
+(`0xECE82`-`0xECE85`), landing on `0xECE86` - **exactly the same
+address the real "branch not taken" path reaches** via its own 3-byte
+`mov dx, 2` at `0xECE83`. Since the fake decode is literally made of
+the real `je`'s own displacement byte plus the 3 bytes after it, an
+external call to `SUB_ECE82` never evaluates the branch at all and
+always reconverges - the same unconditional-reconvergence shape as
+`write_hw_shift_register`/`0xF4CE8`, not `0xE951A`'s weaker
+branch-dependent one.
+
+All 5 real `lcall SUB_ECE82` sites (`0xF3C1E`, `0xF4D44`, `0xF54C9`,
+`0xF5581`, `0xF562E`, all in `160-3532`) push exactly two far pointers
+(8 bytes: `push <seg>`/`push <reg>` twice) and clean up only 4 of them
+afterward via `add sp, 4`. In 4 of the 5 sites the first far pointer is
+`ds:bx` where `bx` is an offset into the `[0x638]` table and the second
+is either the fixed `ds:0x65e` or `ds:[0x65e + <per-item offset>]`; the
+remaining site (`0xF4D44`) instead pushes `es:[di+2]` (from `[bp-0xa]`)
+and the caller's own incoming far-pointer parameter `es:[bp+6]`. Every
+site stores the returned `ax` into a destination tied to that same
+`[0x638]`-ish table (`[0x650]`, `[0x638]`, `[0x63e]`, `[0x644]`, or
+`es:[di]`), consistent with a lookup/format operation parameterized by
+a per-item record rather than a fixed pair of arguments.
+
+**`FUNC_3633_CE5B`'s true, fully-prologued entry point (`0xECE5B`) has
+zero confirmed real callers anywhere in the corpus** - every real
+reference reaches this code through the `SUB_ECE82` landing-artifact
+offset instead (confirmed via `grep -n "ECE5B\|CE5B" disasm/
+sysrom_3532_3633_heuristic.lst`, which returns only the function's own
+definition line). The same "only ever reached past its own prologue"
+shape already seen for `extract_strided_channel_samples` and
+`FUNC_3532_5F50`/`SUB_F5F56` above.
+
+**Why the simple stack-accounting check doesn't resolve this one the
+way it did for `0xE951A`/`0xF4CE8`**: `SUB_ECE82` never executes its
+own `push bp`/`mov bp,sp` (that's the 2 bytes of `FUNC_3633_CE5B`'s
+real prologue it skips), and the function's single shared exit
+(`L_ECF15`: `mov sp,bp` / `pop bp` / `retf`, no immediate) resets `SP`
+from `BP` before popping and returning. Because `SUB_ECE82` never set
+`BP` itself, that `mov sp,bp` resyncs the stack against whatever `BP`
+the *enclosing* function already had - the same inherited-frame
+mechanism documented for `0x88729` and `SUB_F5F56` above, not a fixed,
+statically-computable `retf`-immediate. That means the straightforward
+"sum pushed bytes vs. sum cleaned bytes" arithmetic that cleanly
+confirmed `write_hw_shift_register`/`0xF4CE8` and cleanly ruled out
+`0xE951A` **doesn't mechanically apply here**: the real `SP` delta
+depends on the numeric relationship between the caller's `SP` and the
+inherited `BP` at the moment of the call, which is a runtime quantity,
+not something this static reading can pin down further. The 5 callers'
+uniform `add sp, 4` is consistent with - but not independently proof
+of - this mechanism; confirming the exact arithmetic would need the
+emulator to observe a real `BP`/`SP` pair at one of these 5 call sites.
+
+No `[bp+N]` read appears anywhere in `SUB_ECE82`'s body, so the
+inherited, stale `BP` is never actually dereferenced for data - only
+used by the final `mov sp,bp` to collapse the frame. The 2 pushed far
+pointers are likewise never read via `[bp+N]`; they just sit on the
+stack until the `mov sp,bp` reset discards them.
+
+**Bonus, not yet connected to anything conclusive**: right before the
+indirect per-item dispatch (`les di,[0x1d10]` / `lcall es:[bx+di+6]`,
+indexed by `[0x464]`), `SUB_ECE82` does `mov dx,2` / `push dx` - i.e.
+it calls the exact same table-slot handler (`[+6]`, table `[0x1d10]`,
+index `[0x464]`) that `dispatch_item_handler_if_enabled` (`0xEDFFD`)
+already uses, but with a literal argument of `2` where `dispatch_item_
+handler_if_enabled` uses `4`. That handler is reached as a true far
+call right after `SUB_ECE82`'s only push, with no other pending stack
+content from this function's own body - suggestive of a shared,
+generic per-item-action entry point keyed by a small integer command
+code, not of the 2 far pointers being forwarded to it. Not confirmed
+further; flagging the parallel for whoever picks up `[0x1d10]`'s
+handler table next.
+
+**Net assessment**: a third confirmed instance of the `0x88729`-style
+shared-frame secondary entry mechanism (clean, unconditional
+reconvergence; true entry unused; no own prologue) - not a repeat of
+`0xE951A`'s genuine negative. The useful general lesson for the rest of
+this candidate list: **check whether the shared exit does `mov sp,bp`
+before trusting a push-vs-retf-immediate stack-accounting comparison**
+- `write_hw_shift_register`/`0xF4CE8` both have exits that don't rely
+on an inherited `BP` this way, which is why the simple arithmetic
+worked cleanly for them.

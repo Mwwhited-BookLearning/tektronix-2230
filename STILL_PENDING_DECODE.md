@@ -890,6 +890,26 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   down. See `docs/decode-anomalies/landing-artifacts-and-jump-
   tables.md`'s "Follow-up, 2026-10-09" section and its same-day
   correction subsection.
+- **2026-10-10: traced the next candidate down, `0xECE82` (5 callers)
+  - a third instance of the shared-frame mechanism, not a new
+  mystery.** Byte-exact unconditional reconvergence (it's literally the
+  displacement byte of a local `je`, so an external call never
+  evaluates the branch). `FUNC_3633_CE5B`'s real, fully-prologued entry
+  (`0xECE5B`) has zero confirmed callers anywhere - only the
+  landing-artifact offset is ever reached, same shape as `extract_
+  strided_channel_samples`/`SUB_F5F56`. All 5 real callers push 8 bytes
+  (2 far pointers) and clean only 4 via `add sp,4`, but this is **not**
+  a repeat of `0xE951A`'s genuine mismatch: the function's shared exit
+  does `mov sp,bp` before `pop bp`/`retf`, and since `SUB_ECE82` never
+  sets its own `bp`, that reset collapses the frame against the
+  *inherited* `bp` from the enclosing function - a runtime quantity the
+  simple push-vs-retf-immediate arithmetic can't account for statically
+  (confirming the exact byte count would need the emulator to observe a
+  real `bp`/`sp` pair at a call site). General lesson for the rest of
+  this candidate list: check for `mov sp,bp` in the shared exit before
+  trusting that stack-accounting check. See `docs/decode-anomalies/
+  landing-artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-10"
+  section.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
