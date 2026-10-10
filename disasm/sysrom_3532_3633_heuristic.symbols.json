@@ -12999,17 +12999,17 @@
     "notes": null
   },
   "ECE5B": {
-    "name": "FUNC_3633_CE5B",
+    "name": "step_item_subvalue_back_guarded",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "step_item_subvalue_back_guarded",
     "notes": null
   },
   "ECE82": {
-    "name": "SUB_ECE82",
+    "name": "step_item_subvalue_back",
     "kind": "sub",
     "ref_count": 5,
-    "functional_name": null,
+    "functional_name": "step_item_subvalue_back",
     "notes": null
   },
   "ECE9C": {
@@ -13062,10 +13062,10 @@
     "notes": null
   },
   "ECF19": {
-    "name": "FUNC_3633_CF19",
+    "name": "step_item_subvalue_fwd",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "step_item_subvalue_fwd",
     "notes": null
   },
   "ECF5A": {

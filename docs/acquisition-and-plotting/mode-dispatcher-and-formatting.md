@@ -164,3 +164,49 @@ relaxed precedent**; this needs the `[bp-0x12]`/first-`memcpy_far`
 relationship traced further, not just the preamble's clamp math. Left
 unrenamed; recording the deeper shape so the next pass doesn't have to
 re-derive it from scratch.
+
+## Found, 2026-10-10: a "previous/next alternate value" stepper pair for multi-value menu items (`step_item_subvalue_back`/`_fwd`)
+
+While naming the `0xECE82` landing-artifact candidate (see `docs/
+decode-anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
+2026-10-10"), identified what its host function (`FUNC_3633_CE5B`,
+real entry `0xECE5B`) actually does from its behavior, independent of
+its 5 messy external callers - per the project's "name from what it
+does, not from who calls it" convention.
+
+`0xECE5B` checks the current item's alt-value count `[0x3D6]`: if
+`<= 0`, jumps to a tail that dispatches the item's `[0x1D10]` handler
+with arg `3` (if present) and exits - no formatting. Otherwise, it
+dispatches the same handler with arg `2` (if present), then
+**decrements** a per-item alt-value step byte (`[0x3E3 + item index]`,
+the index being a cached copy of `[0x464]` at `[0x46C]`), wraps the
+result modulo `[0x3D6]` with proper negative-wraparound handling (a
+signed `idiv`, not a simple mask), writes it back, and reformats it via
+the already-documented decimal formatter (`SUB_F5184`). **This is a
+"show the previous alternate value" step** for a menu item that cycles
+through several related readouts (plausibly something like a cursor
+readout offering `ΔV`/`ΔT`/frequency variants, though no specific
+on-screen item has been tied to it yet).
+
+Immediately following it in ROM, `FUNC_3633_CF19` (real entry
+`0xECF19`) is a near-exact structural twin - identical guard, same
+`[0x1D10]` lookup, same arg-`2`/arg-`3` dispatch split - except it does
+`inc` instead of `dec` on the step byte: the "next alternate value"
+counterpart. No direct caller was found for `0xECF19` by its exact
+`lcall` encoding (unlike `0xECE5B`, which at least has the landing-
+artifact bypass `0xECE82` reached 5 times) - named from the shape/
+pairing alone, per the same precedent already used for `init_front_
+panel_cluster_defaults` and the `compute_and_draw_scale_marker`
+cluster.
+
+Renamed (see `FUNCTIONS.md` and `VARIABLES.md`'s new "Per-item handler
+dispatch table" section for the full variable writeup):
+`0xECE5B`→`step_item_subvalue_back_guarded`, `0xECE82`→`step_item_
+subvalue_back`, `0xECF19`→`step_item_subvalue_fwd`. Also noteworthy:
+the handler dispatched through `[0x1D10]+6` is now confirmed called
+with at least 3 different literal command codes across different
+callers (`2`, `3`, `4` - the last from the already-named `dispatch_
+item_handler_if_enabled`) - a small integer message-dispatch
+convention for a shared per-item handler, not type-specific argument
+passing. Not pursued further: what the handler actually does with each
+code, and which on-screen item(s) ever have a nonzero `[0x3D6]`.

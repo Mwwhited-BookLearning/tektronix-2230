@@ -19311,7 +19311,7 @@ L_ECE57:
     3633:CE57  [ECE57]  8be5            mov     sp, bp
     3633:CE59  [ECE59]  5d              pop     bp
     3633:CE5A  [ECE5A]  cb              retf    
-FUNC_3633_CE5B:
+step_item_subvalue_back_guarded:
     3633:CE5B  [ECE5B]  55              push    bp
     3633:CE5C  [ECE5C]  8bec            mov     bp, sp
     3633:CE5E  [ECE5E]  83ec06          sub     sp, 6
@@ -19328,7 +19328,7 @@ FUNC_3633_CE5B:
     3633:CE7D  [ECE7D]  260b5108        or      dx, word ptr es:[bx + di + 8]
     3633:CE81  [ECE81]  7419            je      L_ECE9C  ; 0xce9c
 
-SUB_ECE82:
+step_item_subvalue_back:
     3633:CE82  [ECE82]  19ba0200        sbb     word ptr [bp + si + 2], di
 
     3633:CE83  [ECE83]  ba0200          mov     dx, 2
@@ -19399,7 +19399,7 @@ L_ECF15:
     3633:CF15  [ECF15]  8be5            mov     sp, bp
     3633:CF17  [ECF17]  5d              pop     bp
     3633:CF18  [ECF18]  cb              retf    
-FUNC_3633_CF19:
+step_item_subvalue_fwd:
     3633:CF19  [ECF19]  55              push    bp
     3633:CF1A  [ECF1A]  8bec            mov     bp, sp
     3633:CF1C  [ECF1C]  83ec06          sub     sp, 6
@@ -29890,7 +29890,7 @@ L_F3C00:
     3532:3C1A  [F3C1A]  03f8            add     di, ax
     3532:3C1C  [F3C1C]  1e              push    ds
     3532:3C1D  [F3C1D]  57              push    di
-    3532:3C1E  [F3C1E]  9a8221d0ea      lcall   SUB_ECE82  ; 0xead0, 0x2182
+    3532:3C1E  [F3C1E]  9a8221d0ea      lcall   step_item_subvalue_back  ; 0xead0, 0x2182
     3532:3C23  [F3C23]  83c404          add     sp, 4
     3532:3C26  [F3C26]  a35006          mov     word ptr [0x650], ax
     3532:3C29  [F3C29]  a0721b          mov     al, byte ptr [0x1b72]
@@ -31655,7 +31655,7 @@ L_F4D37:
     3532:4D3F  [F4D3F]  c45e06          les     bx, ptr [bp + 6]
     3532:4D42  [F4D42]  06              push    es
     3532:4D43  [F4D43]  53              push    bx
-    3532:4D44  [F4D44]  9a8221d0ea      lcall   SUB_ECE82  ; 0xead0, 0x2182
+    3532:4D44  [F4D44]  9a8221d0ea      lcall   step_item_subvalue_back  ; 0xead0, 0x2182
     3532:4D49  [F4D49]  83c404          add     sp, 4
     3532:4D4C  [F4D4C]  c47ef6          les     di, ptr [bp - 0xa]
     3532:4D4F  [F4D4F]  268905          mov     word ptr es:[di], ax
@@ -32436,7 +32436,7 @@ L_F54B0:
     3532:54C4  [F54C4]  1e              push    ds
     3532:54C5  [F54C5]  b85e06          mov     ax, 0x65e
     3532:54C8  [F54C8]  50              push    ax
-    3532:54C9  [F54C9]  9a8221d0ea      lcall   SUB_ECE82  ; 0xead0, 0x2182
+    3532:54C9  [F54C9]  9a8221d0ea      lcall   step_item_subvalue_back  ; 0xead0, 0x2182
     3532:54CE  [F54CE]  83c404          add     sp, 4
     3532:54D1  [F54D1]  a33806          mov     word ptr [0x638], ax
 L_F54D4:
@@ -32501,7 +32501,7 @@ L_F5568:
     3532:557C  [F557C]  1e              push    ds
     3532:557D  [F557D]  b85e06          mov     ax, 0x65e
     3532:5580  [F5580]  50              push    ax
-    3532:5581  [F5581]  9a8221d0ea      lcall   SUB_ECE82  ; 0xead0, 0x2182
+    3532:5581  [F5581]  9a8221d0ea      lcall   step_item_subvalue_back  ; 0xead0, 0x2182
     3532:5586  [F5586]  83c404          add     sp, 4
     3532:5589  [F5589]  a33e06          mov     word ptr [0x63e], ax
 L_F558C:
@@ -32561,7 +32561,7 @@ L_F5615:
     3532:5629  [F5629]  1e              push    ds
     3532:562A  [F562A]  b85e06          mov     ax, 0x65e
     3532:562D  [F562D]  50              push    ax
-    3532:562E  [F562E]  9a8221d0ea      lcall   SUB_ECE82  ; 0xead0, 0x2182
+    3532:562E  [F562E]  9a8221d0ea      lcall   step_item_subvalue_back  ; 0xead0, 0x2182
     3532:5633  [F5633]  83c404          add     sp, 4
     3532:5636  [F5636]  a34406          mov     word ptr [0x644], ax
     3532:5639  [F5639]  bf0300          mov     di, 3

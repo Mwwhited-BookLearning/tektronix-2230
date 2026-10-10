@@ -3804,6 +3804,58 @@ FUNCTIONAL_NAMES = {
                                                # writeup); called from
                                                # compute_and_format_
                                                # sample_delta_readout
+    0xECE5B: "step_item_subvalue_back_guarded", # real, fully-prologued
+                                               # entry of a function
+                                               # whose actual landing-
+                                               # artifact bypass
+                                               # (0xECE82 below) is the
+                                               # only way anything ever
+                                               # reaches this code -
+                                               # zero confirmed direct
+                                               # callers to 0xECE5B
+                                               # itself. Guards on
+                                               # [0x3D6] (alt-value
+                                               # count) <= 0 and on the
+                                               # [0x1D10]+[0x464]*0x10
+                                               # handler record being
+                                               # present before doing
+                                               # anything; found 2026-
+                                               # 10-10 while naming the
+                                               # landing-artifact
+                                               # candidate below.
+    0xECE82: "step_item_subvalue_back", # the 5-caller landing-artifact
+                                               # entry (1 byte into
+                                               # 0xECE5B's own je,
+                                               # unconditionally
+                                               # reconverges) - see
+                                               # docs/decode-anomalies/
+                                               # landing-artifacts-and-
+                                               # jump-tables.md "Follow-
+                                               # up, 2026-10-10".
+                                               # Dispatches the current
+                                               # item's handler
+                                               # ([0x1D10]+[0x464]*0x10,
+                                               # +6) with arg 2, then
+                                               # decrements the per-item
+                                               # sub-value step byte
+                                               # ([0x3E3]+item index,
+                                               # wrapped mod [0x3D6])
+                                               # and reformats it via
+                                               # SUB_F5184 - a "previous
+                                               # alternate value" step
+                                               # for a multi-value menu
+                                               # item.
+    0xECF19: "step_item_subvalue_fwd", # structural twin of
+                                               # step_item_subvalue_back
+                                               # (inc instead of dec,
+                                               # same guards/table/
+                                               # dispatch-arg-2 shape) -
+                                               # no confirmed caller
+                                               # found via direct lcall
+                                               # encoding; named from
+                                               # shape alongside its
+                                               # sibling, not from a
+                                               # confirmed call site.
     0xEF440: "copy_char_cell_template_and_sync", # (dest_idx=[bp+6],
                                                # src_idx=[bp+8]) -
                                                # checks a per-channel

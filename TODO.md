@@ -790,7 +790,10 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       check that worked for `write_hw_shift_register`/`0xF4CE8` doesn't
       mechanically apply - worth remembering before trusting that check
       on the remaining candidates. See "Follow-up, 2026-10-10" in the
-      same doc.
+      same doc. Also named it and its structural twin from behavior
+      (`step_item_subvalue_back_guarded`/`step_item_subvalue_back`/
+      `step_item_subvalue_fwd` - see `FUNCTIONS.md` and `docs/
+      acquisition-and-plotting/mode-dispatcher-and-formatting.md`).
       The remaining candidates (mostly single-caller, plus `0xEDDE2`
       at 4 callers and `0xEFD99` at 3) weren't individually chased -
       worth a look only if one stands out (many independent call sites
