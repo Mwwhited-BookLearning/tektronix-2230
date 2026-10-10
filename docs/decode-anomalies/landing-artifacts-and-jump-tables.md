@@ -248,3 +248,69 @@ sub-stream to extract. Given every one of its 3 known callers is a
 per-channel measurement/readout function, the strong working
 hypothesis is that this pulls one channel's samples out of interleaved
 dual-channel acquisition memory - plausible, not proven.
+
+## Follow-up, 2026-10-09: traced the next-highest-caller-count untraced candidate (`0xE951A`, 6 callers) - ruled out the `write_hw_shift_register`-style explanation, real identity still unresolved
+
+Re-ran `find_landing_artifacts.py` after the renames above and re-ranked
+the remainder by caller count. Two stood out from the single-caller
+majority: `0xE951A` (6 callers) and `0xF4CE8` (6 callers, not yet
+looked at). Traced `0xE951A` first.
+
+`0xE951A` lands 1 byte short of `0xE951B`, exactly the dominant
+root-cause case from the statistics above: the byte at `0xE951A` is
+`0x00` (the high byte of the real, enclosing `cmp word ptr [bp+6],
+0xff` instruction's `0x00FF` immediate), which is also a valid `ADD
+r/m8,r8` opcode. Read as a fresh instruction stream from there, it
+decodes as `add byte ptr [si+7], bh` (3 bytes, `0xE951A`-`0xE951C`),
+landing on `0xE951D` - which is where the real `cmp word ptr [bp+6],
+0x300` instruction begins regardless of whether the real `jl` at
+`0xE951B` (1 byte into the real stream) is taken. **This is a weaker
+reconvergence than `write_hw_shift_register`'s**: the fake 3-byte path
+only lands back on the shared stream for the *not-taken* side of the
+real `jl` - if the real branch is taken (jump to `L_E9524`), the fake
+path silently diverges and never rejoins. `write_hw_shift_register`'s
+two readings reconverged byte-exactly on *every* path; this one only
+reconverges on one of two.
+
+The address `0xE951A` sits inside the byte range of a heuristically-
+recognized function, `FUNC_3633_9500` (`0xE9500`-`0xE956B`, a single
+`push bp`/`mov bp,sp` entry with exactly one exit, `retf 2` at
+`0xE956B`). All 6 real `lcall SUB_E951A` sites (`160-3532` physical
+`0xF19F7`, `0xF1A1E`, `0xF259D`, `0xF25CE`, `0xF2778`, `0xF4774`) use
+an **identical argument-pushing idiom**: `push word ptr [bp+0xa]`;
+`push ds`; `mov di,0x674` / `push di`; then a far pointer (`push
+es`/`push <reg>`) sourced either from the caller's own `[bp+6]`
+parameter or a fixed global (e.g. `[0x6ae]`) via `les`. That's **7
+pushes (14 bytes)** before every call, and every site cleans up
+identically afterward with `add sp, 0xa` (10 bytes) right after the
+`lcall` returns.
+
+**Stack-accounting mismatch found**: 14 bytes pushed, but only
+`0xa`=10 (caller's `add sp`) + `2` (`FUNC_3633_9500`'s own `retf 2`)
+= 12 bytes get cleaned between the two of them - 2 bytes (1 word)
+unaccounted for. If `0xE951A` really were a `write_hw_shift_register`-
+style secondary entry point into `FUNC_3633_9500` (skipping its
+`push bp`/comparison preamble the way the hardware-shift-register
+case skips its bit-building preamble), the *shared exit* should still
+balance the stack exactly the way it does for every other caller of
+that function - it doesn't. **This is concrete evidence against the
+"secondary entry into a known function" explanation for this specific
+candidate**, unlike `write_hw_shift_register` and `extract_strided_
+channel_samples` above. Two readings remain open, not resolved:
+either this really is an ordinary single-byte-filler landing artifact
+(consistent with the root-cause statistics, and with the real logic
+living somewhere else that correctly accounts for all 14 bytes - i.e.
+my attribution of the call target to `FUNC_3633_9500` is the wrong
+function to look at, not that the call target address itself is wrong),
+or all 6 call sites share a single stale/off-by-one call target
+inherited from one common source-level macro or inlined helper (which
+would explain why an "accidental" bug shows up identically 6 times -
+one bug in a shared expansion, not 6 independent ones).
+
+**Not resolved, and not worth guessing further without a dedicated
+session**: what function is actually meant to receive `(word
+[bp+0xa]-equivalent scalar, far ptr DS:0x674, far ptr <dynamic
+source>)` - `0x674` is a fixed buffer address worth checking against
+`VARIABLES.md` (currently undocumented) if this thread gets picked up
+again. `0xF4CE8` (the other 6-caller candidate) has not been looked at
+yet.

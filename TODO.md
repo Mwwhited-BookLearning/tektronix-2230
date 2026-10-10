@@ -760,13 +760,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       actually resumes): root cause confirmed statistically (`disasm/
       find_landing_artifacts.py` found 49 candidates; the majority land
       on an `ADD`-family opcode, far above chance - a common filler
-      byte coincidentally decoding as a valid opcode). Only 2 of the 49
-      were individually traced in depth (`write_hw_shift_register`,
-      `SUB_EAC86`/`SUB_EAD08`), both turning into real findings rather
-      than near-misses. The remaining ~47 weren't individually chased -
-      worth a look only if one stands out (many independent call sites
-      is the best tell). See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s "Systematic landing-
-      artifact sweep" section.
+      byte coincidentally decoding as a valid opcode). By caller count,
+      every candidate with >15 independent callers has now been traced
+      (`write_hw_shift_register`, `SUB_EAC86`/`SUB_EAD08`,
+      `compute_and_print_item_delta_readout`, `decimate_peakdet_
+      samples`, `compute_and_print_cursor_position_readout`,
+      `extract_strided_channel_samples`). 2026-10-09: traced the next
+      candidate down (`0xE951A`, 6 callers) - ruled out the same
+      secondary-entry-point explanation via a stack-accounting
+      mismatch (14 bytes pushed by every caller, only 12 cleaned
+      between caller+callee), but its real identity is still
+      unresolved; `0xF4CE8` (also 6 callers) hasn't been looked at yet.
+      See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+      "Follow-up, 2026-10-09" section for `0xE951A`'s full writeup.
+      The remaining candidates (mostly single-caller) weren't
+      individually chased - worth a look only if one stands out (many
+      independent call sites is the best tell).
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

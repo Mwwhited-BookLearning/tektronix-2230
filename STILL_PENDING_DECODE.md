@@ -851,6 +851,20 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   byte/word decimation routine) turned out to be a heuristic-only
   orphan with zero confirmed callers - not worth naming without more
   context. This specific sub-thread is now exhausted.
+- **2026-10-09: traced the next candidate down the caller-count
+  ranking, `0xE951A` (6 callers) - this one did NOT turn into another
+  real finding.** Unlike the 5 above, its fake 3-byte decode only
+  reconverges with real code on one side of the real branch it lands
+  short of (not byte-exact on every path), and a stack-accounting
+  check across all 6 real call sites (each pushes 7 words/14 bytes in
+  an identical `(word, far ptr DS:0x674, far ptr <dynamic>)` idiom,
+  cleaned via `add sp,0xa` after return) found only 12 of those 14
+  bytes get cleaned between the caller and the nearest enclosing
+  function's own exit (`retf 2`) - concrete evidence this is *not* a
+  `write_hw_shift_register`-style secondary entry point into that
+  function. Real identity unresolved; `0xF4CE8` (also 6 callers) not
+  yet looked at. See `docs/decode-anomalies/landing-artifacts-and-
+  jump-tables.md`'s "Follow-up, 2026-10-09" section.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
