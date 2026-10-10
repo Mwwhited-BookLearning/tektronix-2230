@@ -299,6 +299,50 @@ together at runtime") - this specific menu is not the table's
 consumer. Recorded here so a future session doesn't re-chase this
 exact connection; the real consumer, if any, is still unfound.
 
+**Follow-up, 2026-10-09: rendered all 14 shapes at both Y-orientations
+(previously only shapes 5-7 had been checked both ways) - no new
+letterform candidates turned up.** Rasterized `decode_vector_icons.py`'s
+`catalog.svg` output (both with the tool's default Y-flip and with
+`--no-flip-y`) via headless Edge
+(`msedge --headless=new --screenshot=... --window-size=2400,1400
+file:///...svg` - no `cairosvg`/`rsvg-convert`/Inkscape/ImageMagick
+available in this environment, but `msedge.exe` is) and inspected both
+renders directly. Result, shape by shape:
+
+- Shapes 1/9 (the 40-pt circle) and shape 4 (the octagon) are
+  symmetric enough that the flip is visually indistinguishable - still
+  just a circle/octagon either way.
+- Shape 3 (the line) is unaffected by the flip, as expected.
+- Shape 0 (already known non-vector-data, the countdown-ramp prefix)
+  renders as a simple right-angle corner either way (corner-at-top
+  "Γ"-like vs. corner-at-bottom "L"-like) - doesn't read as a
+  deliberate letterform in either orientation, consistent with its
+  already-documented "meaningless" status.
+- Shapes 2/11 (the two large open arcs) stay irregular open
+  crescent/arc shapes in both orientations, never resolving into a
+  clean letterform - still most consistent with the dial/knob-icon
+  reading (their bounding boxes roughly share the same canvas/center
+  as the two big circles) rather than a font glyph.
+- Shapes 8/10/12 (1-2 point tick marks) are too short to read as
+  letters either way.
+- Shape 13 (already-identified unrelated tail index-table junk) stays
+  a meaningless zigzag in both orientations.
+
+Shapes 5/6/7 remain the only letter-like shapes, and the original
+finding holds unchanged: shape 5 reads as "C" in *both* orientations
+(open shape with enough symmetry that the flip barely matters); shape
+6 flips "U" (Y-flip on) / "n" (Y-flip off); shape 7 flips "P" (Y-flip
+on) / "b" (Y-flip off) - no single orientation makes all three read as
+one consistent alphabet.
+
+**This was a real test of the font hypothesis, and it came back
+negative**: if several of the other 11 shapes had also turned into
+clean letterforms under one consistent orientation, that would have
+been real evidence for "rough font." None did - the font-vs-icon
+question and the correct-orientation question are exactly as open as
+before, but now backed by having actually looked at all 14 shapes both
+ways rather than extrapolating from 3 of them.
+
 ## 4. `160-3532` file `0xBEE6`-`0xC263`: only the first ~44 bytes are near a known string block; the other ~850 bytes are unrelated (revised, partially resolved)
 
 894 bytes of clean 4-byte records: `(small count, 16-bit value)`. A

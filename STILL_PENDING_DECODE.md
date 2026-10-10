@@ -1031,9 +1031,13 @@ photographed menu tree this maps to.
   don't confirm as a clean, orientation-independent alphabet. Distinct
   either way from the stroke font (different encoding, different
   address range) and from any previously-ruled-out candidate region.
-  What draws these or where they're used on screen is not found. See
-  `docs/decode-anomalies/unknown-data-deep-dive-2026-09-15.md`
-  finding 3.
+  What draws these or where they're used on screen is not found.
+  **2026-10-09**: confirmed no sibling table exists anywhere else in
+  any of the 3 ROMs (`scan_chip_for_shape_clusters`), and rendered all
+  14 shapes (not just the 3 letter-like ones) at both Y-axis
+  orientations - no further letterform candidates found, ambiguity
+  unchanged. See `docs/decode-anomalies/unknown-data-deep-dive-
+  2026-09-15.md` finding 3.
 
 ## The tick-driven task scheduler
 

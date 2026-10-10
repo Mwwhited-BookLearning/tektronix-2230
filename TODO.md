@@ -452,12 +452,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       **The "sandwiched unknown code" sub-thread (findings 7-11) is now
       fully closed** - every block `find_unknown_data.py` ever flagged
       has either a confirmed explanation or an explicitly-tracked open
-      question. **Still open**: the vector-icon-vs-font sub-thread
-      (finding 3) - render more of the surrounding `160-3633` ROM with
-      `disasm/decode_vector_icons.py` to check for a fuller alphabet or
-      more icon variants nearby, and compare flipped/un-flipped Y-axis
-      renders for every shape (only shapes 5-7 checked both ways so
-      far).
+      question. **Still open, but both of this item's own follow-up
+      checks are now done (2026-10-09)**: the vector-icon-vs-font
+      sub-thread (finding 3) - `scan_chip_for_shape_clusters` found no
+      sibling table anywhere in any of the 3 ROMs (this one 509-byte
+      island is it), and all 14 shapes (not just 5-7) are now rendered
+      at both Y-axis orientations - no new letterform candidates beyond
+      the already-found shapes 5/6/7 ("C" in both orientations; "U"/"n"
+      and "P"/"b" depending on flip). The icon-vs-font question itself,
+      the correct Y-axis orientation, and this table's consumer/caller
+      all remain genuinely unresolved - this was a negative check, not
+      a resolution. No further rendering angle is currently identified;
+      picking this back up needs either a real caller turning up
+      elsewhere in disassembly, or outside reference material (a
+      service-manual screen this could match).
 - [ ] **User request**: decode the readout's stroke/vector font glyph
       table into SVG files + a catalog. **2026-09-16: closed for this
       project's real hardware** - `draw_readout_char` opens with
