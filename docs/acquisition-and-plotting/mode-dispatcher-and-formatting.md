@@ -274,3 +274,64 @@ code `4` is now tied to "item changed/position re-clamped" rather than
 a specific stepping direction, consistent with codes `2`/`3` (stepping)
 being distinct from `4` (general refresh notification) - a plausible
 but not confirmed reading.
+
+## Follow-up, 2026-10-10: fully traced and named `0xEE0F7` -> `render_item_list_row`
+
+Picked up the "good next candidate" flagged just above. `0xEE0F7`'s
+complete body (through its own `retf 2` at `0xEE35B`) is coherent as a
+single per-visible-row item-list rendering function, now named
+`render_item_list_row(item_index=[bp+6], row_index=[bp+8],
+running_screen_position=[bp+0xa])`.
+
+It walks the `[0x1D10]` table's `+4`/`+5` fields as a **linked-record
+chain** - `+4` is the index of *another* record in the same table
+(re-multiplied by `0x10` and re-applied to the `0x1D10` base), not a
+count as the shape originally suggested; `+5` of that linked record
+supplies the updated value fed into `write_hw_shift_register`'s
+`[bp-0xa]` on the next iteration. The loop runs for
+`[0x3E3+item_index]` iterations (the same per-item alt-value-step byte
+array `step_item_subvalue_back`/`_fwd` maintain), calling
+`write_hw_shift_register` once per step - this is the real enclosing
+function `write_hw_shift_register` is a shared-frame secondary entry
+into, finally identified and traced (see `FUNCTIONS.md`/`MEMORY_MAP.md`
+for the corrected reachability writeup).
+
+Along the way it also calls `compute_and_format_sample_delta_readout`
+and `clamp_position_counter_across_records` with small integer
+constants (`1`, `0xb`, `8`, `0xc`) - **these belong to those functions'
+own argument conventions and are unrelated to the `[0x1D10]+6`
+handler's command codes (`2`/`3`/`4`)**; `render_item_list_row` never
+dispatches that handler at all, so this trace does not resolve what
+those codes mean on the handler side. That question (what the handler
+itself, the far pointer stored in `[0x1D10]+6`, actually does for each
+code) remains open - the handler's own code has never been located.
+
+`render_item_list_row` has distinct "last row" and "past the end of
+the item list" branches, selected by comparing `row_index` against
+`[0x462]` (now also tied to `reset_current_item_to_table_default`'s
+`[0x462]=1` reset, strengthening the "item count" reading for this
+variable - see `VARIABLES.md`), that draw marker-box icons via
+`draw_marker_box_and_update_position` at far-pointer screen coordinates
+`[0x1cf4]`/`[0x1cf8]`, gated by `[0x1D10]+0xE` bits `0x8`/`0x10` (the
+same `+0xE` field `reset_current_item_to_table_default` reloads
+wholesale into `[0x466]`). A second flag pair, `+0xA`/`+0xC`, gates a
+call to the still-unnamed `SUB_F43CC` with a fixed arg `0x57` -
+purpose not confirmed.
+
+`SUB_EE15C` and `L_EE161`, which appear as separate labels in the
+heuristic listing inside `render_item_list_row`'s own span, are
+byte-overlap scanner artifacts (literally the tail bytes of this
+function's own real `mov dl,[bx+0x3e3]` at `0xEE15A` and `cmp di,dx` at
+`0xEE160`), not real control-flow targets - the same noise pattern
+documented generally in `docs/decode-anomalies/`.
+
+Net: the cluster's rendering/write path is now fully named end to end
+(`render_item_list_row` -> `write_hw_shift_register` per row, driven by
+the `+4`/`+5` chain walk). What's still open: the `[0x1D10]+6`
+handler's own code and what codes `2`/`3`/`4` do inside it; `SUB_F43CC`/
+`SUB_F408E`/`SUB_F45A4`/`SUB_F47AB`, all still unnamed; and `FUNC_3633_
+E35E`/`FUNC_3633_E382` (the 2 functions found immediately after
+`render_item_list_row` while correcting the "giant function" framing -
+see that section above/`docs/display/vector-display-and-stroke-font
+.md` - not yet analyzed, unclear if they belong to this cluster at
+all).

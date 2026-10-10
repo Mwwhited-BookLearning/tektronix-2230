@@ -14399,10 +14399,10 @@
     "notes": null
   },
   "EE0F7": {
-    "name": "FUNC_3633_E0F7",
+    "name": "render_item_list_row",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "render_item_list_row",
     "notes": null
   },
   "EE123": {

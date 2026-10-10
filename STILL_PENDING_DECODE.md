@@ -428,7 +428,8 @@ top item.
   function** - `0xEDF56`-`0xEE705` is actually a sequence of several
   separately-prologued, cleanly-`retf`-bounded functions (now
   `dispatch_item_change_notification`/`reset_current_item_to_table_
-  default` plus 3 more still-unnamed ones) that merely share an
+  default`/`render_item_list_row` plus 2 more still-unnamed ones
+  (`FUNC_3633_E35E`/`FUNC_3633_E382`)) that merely share an
   unreached, heuristic-only ROM neighborhood - see `docs/display/
   vector-display-and-stroke-font.md`'s "Correction, 2026-10-10". **Still
   neither has a confirmed caller** - both are `ref_count: 0` in the

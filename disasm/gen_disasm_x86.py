@@ -3939,6 +3939,61 @@ FUNCTIONAL_NAMES = {
                                                # first/default item and
                                                # reload its flags"
                                                # initializer.
+    0xEE0F7: "render_item_list_row", # (item_index=[bp+6],
+                                               # row_index=[bp+8],
+                                               # running_screen_position=
+                                               # [bp+0xa]) - traced
+                                               # 2026-10-10. Walks the
+                                               # [0x1D10] table's +4/+5
+                                               # linked-record chain
+                                               # (+4 is the index of
+                                               # another record, not a
+                                               # count; +5 of that
+                                               # linked record supplies
+                                               # the updated loop value)
+                                               # for [0x3E3+item_index]
+                                               # iterations, driving
+                                               # write_hw_shift_register
+                                               # once per step - this is
+                                               # the real enclosing
+                                               # function previously
+                                               # mis-attributed to
+                                               # dispatch_item_handler_
+                                               # if_enabled (see that
+                                               # entry's note and the
+                                               # 2026-10-10 MEMORY_MAP.md
+                                               # correction). Also calls
+                                               # compute_and_format_
+                                               # sample_delta_readout and
+                                               # clamp_position_counter_
+                                               # across_records, and has
+                                               # distinct "last row" /
+                                               # "past the end of the
+                                               # item list" branches that
+                                               # draw marker-box icons
+                                               # via draw_marker_box_and_
+                                               # update_position at
+                                               # far-pointer screen
+                                               # coordinates [0x1cf4]/
+                                               # [0x1cf8], gated by
+                                               # [0x1D10]+0xE bits 0x8/
+                                               # 0x10. Does NOT dispatch
+                                               # the [0x1D10]+6 handler
+                                               # itself - its own small
+                                               # integer constants (1,
+                                               # 0xb, 8, 0xc) are
+                                               # compute_and_format_
+                                               # sample_delta_readout's
+                                               # argument, unrelated to
+                                               # that handler's command
+                                               # codes (2/3/4). SUB_EE15C
+                                               # and L_EE161 in the
+                                               # heuristic listing are
+                                               # byte-overlap scanner
+                                               # artifacts inside this
+                                               # function's own real
+                                               # instructions, not real
+                                               # control-flow targets.
     0xEF440: "copy_char_cell_template_and_sync", # (dest_idx=[bp+6],
                                                # src_idx=[bp+8]) -
                                                # checks a per-channel
@@ -4822,6 +4877,14 @@ PARAMETER_NAMES = {
     # putchar_serial (comm ROM, 0x83241): single byte argument, same
     # shape as the confirmed print_char.
     0x83241: {6: "char"},
+    # render_item_list_row (0xEE0F7): traced 2026-10-10 - bp+6 is the
+    # [0x1D10]-table item index (indexes [0x3E3+item_index] as the loop
+    # bound and the +4/+5 record chain), bp+8 is the on-screen row
+    # being rendered (compared against [0x462] for the "last row"/
+    # "past the end" branches), bp+0xa is a running screen-position
+    # value threaded through write_hw_shift_register/draw_marker_box_
+    # and_update_position calls.
+    0xEE0F7: {6: "item_index", 8: "row_index", 0xA: "running_screen_position"},
 }
 
 # Byte-vs-word size overrides for PARAMETER_NAMES entries whose access

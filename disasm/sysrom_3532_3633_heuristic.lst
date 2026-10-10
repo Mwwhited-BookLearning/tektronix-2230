@@ -21199,7 +21199,7 @@ reset_current_item_to_table_default:
     3633:E0F3  [EE0F3]  8be5            mov     sp, bp
     3633:E0F5  [EE0F5]  5d              pop     bp
     3633:E0F6  [EE0F6]  cb              retf    
-FUNC_3633_E0F7:
+render_item_list_row:
     3633:E0F7  [EE0F7]  55              push    bp
     3633:E0F8  [EE0F8]  8bec            mov     bp, sp
     3633:E0FA  [EE0FA]  83ec10          sub     sp, 0x10

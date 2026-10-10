@@ -521,8 +521,14 @@ unrelated concerns inside one function, they're unrelated concerns in
 *different, adjacent* functions that happen to share an unreached,
 heuristic-only ROM neighborhood. See `FUNCTIONS.md` for the newly
 named `0xEDF56`/`0xEE0BB` entries (`dispatch_item_change_notification`/
-`reset_current_item_to_table_default`); `0xEE0F7`, `0xEE35E`, `0xEE382`
-remain unnamed.
+`reset_current_item_to_table_default`). **Update, 2026-10-10**:
+`0xEE0F7` has since been fully traced and named `render_item_list_row`
+(see `docs/acquisition-and-plotting/mode-dispatcher-and-formatting.md`'s
+second "Follow-up, 2026-10-10" section) - it's the real enclosing
+function for `write_hw_shift_register`, part of the `[0x1D10]`
+item-dispatch cluster, not the stroke-font reading. `0xEE35E`/`0xEE382`
+remain unnamed and unanalyzed; unclear if they belong to either
+subsystem.
 
 ## Follow-up, 2026-09-15: a full-alphabet HPGL capture confirms the "9 levels" puzzle is universal, not sample noise
 

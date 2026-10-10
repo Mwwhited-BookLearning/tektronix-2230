@@ -806,14 +806,31 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       corrected a standing error in `MEMORY_MAP.md`/`FUNCTIONS.md`:
       `write_hw_shift_register` is *not* reached via that dispatch
       function's fallback tail (it `retf`s first) but is a shared-frame
-      secondary entry into a separate, large, not-yet-named item-list
-      loop at `0xEE0F7` (calls `compute_and_format_sample_delta_
-      readout`/`clamp_position_counter_across_records` repeatedly) -
-      see "Follow-up, 2026-10-10" in `docs/acquisition-and-plotting/
-      mode-dispatcher-and-formatting.md`. **`0xEE0F7` is the best next
-      candidate** in this cluster: a full trace would likely explain
-      both `write_hw_shift_register`'s 8 external callers and what
-      command codes `2`/`3`/`4` collectively mean.
+      secondary entry into a separate item-list loop at `0xEE0F7`
+      (calls `compute_and_format_sample_delta_readout`/`clamp_position_
+      counter_across_records` repeatedly) - see "Follow-up, 2026-10-10"
+      in `docs/acquisition-and-plotting/mode-dispatcher-and-
+      formatting.md`.
+      2026-10-10: fully traced and named `0xEE0F7` -> `render_item_
+      list_row` - walks the `[0x1D10]` table's `+4`/`+5` fields as a
+      linked-record chain (`+4` = index of another record, not a count;
+      `+5` of that linked record feeds the loop) for `[0x3E3+item_
+      index]` iterations, driving `write_hw_shift_register` once per
+      step. Explains `write_hw_shift_register`'s 8 external callers.
+      Does **not** resolve what `[0x1D10]+6` handler command codes
+      `2`/`3`/`4` do - this function never dispatches that handler; its
+      own small-integer constants belong to `compute_and_format_sample_
+      delta_readout`'s argument convention instead. See the second
+      "Follow-up, 2026-10-10" section in `docs/acquisition-and-
+      plotting/mode-dispatcher-and-formatting.md`, `FUNCTIONS.md`, and
+      `VARIABLES.md`'s "Per-item handler dispatch table" section
+      (now documents the `+4`/`+5`/`+0xA`/`+0xC`/`+0xE` fields and
+      `[0x462]`). **Still open in this cluster**: the `[0x1D10]+6`
+      handler's own code (never located), `SUB_F43CC`/`SUB_F408E`/
+      `SUB_F45A4`/`SUB_F47AB` (still unnamed), and whether `FUNC_3633_
+      E35E`/`FUNC_3633_E382` (found immediately after `render_item_
+      list_row`, see the "giant function" correction above) belong to
+      this cluster at all - not yet analyzed.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately
