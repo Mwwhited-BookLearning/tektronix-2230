@@ -210,3 +210,67 @@ item_handler_if_enabled`) - a small integer message-dispatch
 convention for a shared per-item handler, not type-specific argument
 passing. Not pursued further: what the handler actually does with each
 code, and which on-screen item(s) ever have a nonzero `[0x3D6]`.
+
+## Follow-up, 2026-10-10: traced the dispatcher behind command code `4`, found 2 more functions in the cluster
+
+Picked up the open thread above - what the `[0x1D10]+6` handler's
+command codes (`2`/`3`/`4`) actually drive - by re-reading `dispatch_
+item_handler_if_enabled`'s (`0xEDFFD`) full body instead of just its
+previously-documented arg-`4`-dispatch-and-exit summary.
+
+**`dispatch_item_handler_if_enabled` is itself a secondary entry
+point.** The real, fully-prologued function is `0xEDF56`, now named
+`dispatch_item_change_notification`: it branches on the current item's
+behavior-flag byte `[0x466]` (bits `0x4`/`0x1`/`0x40`, each gated by a
+`[0x3E2]==0x78`/`[0x468]` guard pair seen elsewhere in this ROM as a
+"comm option installed" check, not confirmed here) to conditionally
+call one of 3 not-yet-analyzed helpers (`SUB_F408E`, `SUB_F45A4`,
+`SUB_F47AB`), and/or dispatch the current item's handler with code `4`.
+Two different internal paths through this flag logic both funnel into
+the same dispatch-arg-`4`-then-exit tail that `dispatch_item_handler_
+if_enabled`'s own externally-confirmed entry (`tag_position_marker_
+and_dispatch` calling it by exact far address `0xEDA2:0x5DD`) also
+reaches - so the existing, narrower `dispatch_item_handler_if_enabled`
+writeup was correct for that one call site, just incomplete about the
+rest of the function it turned out to be embedded in. A second,
+richer block in the same body (calls `clamp_position_counter_across_
+records(1,1,0)`, then re-dispatches the handler a second time with
+code `4`) is reachable only via `dispatch_item_change_notification`'s
+own internal flow, never from the `tag_position_marker_and_dispatch`
+call site - why the handler would need notifying twice around a
+position-counter re-clamp is unresolved.
+
+**Found and named a second function in the same ROM region,
+`reset_current_item_to_table_default` (`0xEE0BB`)**: reads the
+`[0x1D10]` table's own record-0 field at `+4` into `[0x464]` (sets the
+current item index from the table's own designated default entry, not
+a caller argument), zeros `[0x46C]`, sets `[0x462]=1`, then reloads
+`[0x466]` from the new current item's `+0xE` field - a "jump back to
+the table's first item and reload its flags" initializer. No caller
+confirmed yet.
+
+**Corrected `write_hw_shift_register`'s reachability** (see
+`MEMORY_MAP.md` and `FUNCTIONS.md`): it is *not* reached as a fallback
+tail of `dispatch_item_handler_if_enabled`/`dispatch_item_change_
+notification` as previously written - that function `retf`s well
+before `write_hw_shift_register`'s address. The real enclosing function
+is a large, not-yet-named item-list loop (`0xEE0F7`) that calls
+`compute_and_format_sample_delta_readout` and `clamp_position_counter_
+across_records` repeatedly and uses `write_hw_shift_register` as a
+shared-frame secondary entry inside that loop - the same mechanism
+already documented for `0x88729`/`SUB_F5F56`/`step_item_subvalue_back`.
+This function was only partially traced (its body runs well past
+`0xEE358`) - a good next candidate for a full trace, since pinning it
+down would likely explain why `write_hw_shift_register` has 8 real
+external callers distinct from this internal one.
+
+Net: the `[0x1D10]`-table cluster is bigger than previously mapped -
+at least 5 distinct functions now (`dispatch_item_change_notification`/
+`dispatch_item_handler_if_enabled`, `reset_current_item_to_table_
+default`, the unnamed `0xEE0F7` loop containing `write_hw_shift_
+register`, plus `step_item_subvalue_back`/`_fwd` from the prior
+session) all reading or driving the same per-item record array. Command
+code `4` is now tied to "item changed/position re-clamped" rather than
+a specific stepping direction, consistent with codes `2`/`3` (stepping)
+being distinct from `4` (general refresh notification) - a plausible
+but not confirmed reading.

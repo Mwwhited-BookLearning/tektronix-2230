@@ -798,6 +798,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       at 4 callers and `0xEFD99` at 3) weren't individually chased -
       worth a look only if one stands out (many independent call sites
       is the best tell).
+      2026-10-10: followed up on the `[0x1D10]` command-code thread
+      instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
+      itself a secondary entry into a larger real function
+      (`dispatch_item_change_notification`, `0xEDF56`), named a new
+      sibling (`reset_current_item_to_table_default`, `0xEE0BB`), and
+      corrected a standing error in `MEMORY_MAP.md`/`FUNCTIONS.md`:
+      `write_hw_shift_register` is *not* reached via that dispatch
+      function's fallback tail (it `retf`s first) but is a shared-frame
+      secondary entry into a separate, large, not-yet-named item-list
+      loop at `0xEE0F7` (calls `compute_and_format_sample_delta_
+      readout`/`clamp_position_counter_across_records` repeatedly) -
+      see "Follow-up, 2026-10-10" in `docs/acquisition-and-plotting/
+      mode-dispatcher-and-formatting.md`. **`0xEE0F7` is the best next
+      candidate** in this cluster: a full trace would likely explain
+      both `write_hw_shift_register`'s 8 external callers and what
+      command codes `2`/`3`/`4` collectively mean.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

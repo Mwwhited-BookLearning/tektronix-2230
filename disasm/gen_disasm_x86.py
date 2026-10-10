@@ -3856,6 +3856,89 @@ FUNCTIONAL_NAMES = {
                                                # shape alongside its
                                                # sibling, not from a
                                                # confirmed call site.
+    0xEDF56: "dispatch_item_change_notification", # real, fully-
+                                               # prologued entry
+                                               # (push bp/mov bp,sp/sub
+                                               # sp,0xa) of the function
+                                               # that dispatch_item_
+                                               # handler_if_enabled
+                                               # (0xEDFFD below) turned
+                                               # out to be a secondary
+                                               # entry into - found
+                                               # 2026-10-10 while
+                                               # chasing what the
+                                               # [0x1D10]+6 handler's
+                                               # command codes mean.
+                                               # Branches on the
+                                               # current item's
+                                               # behavior-flag byte
+                                               # [0x466] (bits 0x4/0x1/
+                                               # 0x40, each gated by a
+                                               # [0x3E2]==0x78/[0x468]
+                                               # guard pair seen
+                                               # elsewhere as a "comm
+                                               # option installed"
+                                               # check - not confirmed
+                                               # here) to conditionally
+                                               # call SUB_F408E,
+                                               # SUB_F45A4, or
+                                               # SUB_F47AB(0,1), and/or
+                                               # dispatch the current
+                                               # item's [0x1D10]+6
+                                               # handler with command
+                                               # code 4 - 2 separate
+                                               # internal paths both
+                                               # funnel into the same
+                                               # dispatch-arg-4 tail
+                                               # (0xEDFFD/0xEE004) that
+                                               # dispatch_item_handler_
+                                               # if_enabled's own
+                                               # externally-called
+                                               # entry also reaches, so
+                                               # the 2 names describe
+                                               # the same physical tail
+                                               # reached 2 different
+                                               # ways. No confirmed
+                                               # direct caller found
+                                               # for 0xEDF56 itself via
+                                               # address-literal grep -
+                                               # possibly only ever
+                                               # reached as one of the
+                                               # [0x1D10] table's own
+                                               # stored per-item
+                                               # handler far pointers
+                                               # (undecoded table data,
+                                               # same table step_item_
+                                               # subvalue_back/_fwd
+                                               # dispatch into), not
+                                               # confirmed.
+    0xEE0BB: "reset_current_item_to_table_default", # real, fully-
+                                               # prologued function
+                                               # found 2026-10-10
+                                               # immediately after
+                                               # dispatch_item_handler_
+                                               # if_enabled's retf
+                                               # (0xEE0BA). Reads the
+                                               # [0x1D10] table's own
+                                               # record-0 field at +4
+                                               # into [0x464] (sets the
+                                               # current item index
+                                               # from the table's own
+                                               # designated default
+                                               # entry, not a caller
+                                               # argument), zeros
+                                               # [0x46C] (cached/last
+                                               # index), sets [0x462]=1
+                                               # (item count/depth -
+                                               # not confirmed), then
+                                               # reloads [0x466] (item
+                                               # behavior flags) from
+                                               # the new current item's
+                                               # +0xE field. A "jump
+                                               # back to the table's
+                                               # first/default item and
+                                               # reload its flags"
+                                               # initializer.
     0xEF440: "copy_char_cell_template_and_sync", # (dest_idx=[bp+6],
                                                # src_idx=[bp+8]) -
                                                # checks a per-channel

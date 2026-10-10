@@ -21025,7 +21025,7 @@ L_EDF52:
     3633:DF52  [EDF52]  8be5            mov     sp, bp
     3633:DF54  [EDF54]  5d              pop     bp
     3633:DF55  [EDF55]  cb              retf    
-FUNC_3633_DF56:
+dispatch_item_change_notification:
     3633:DF56  [EDF56]  55              push    bp
     3633:DF57  [EDF57]  8bec            mov     bp, sp
     3633:DF59  [EDF59]  83ec0a          sub     sp, 0xa
@@ -21177,7 +21177,7 @@ L_EE0B7:
     3633:E0B7  [EE0B7]  8be5            mov     sp, bp
     3633:E0B9  [EE0B9]  5d              pop     bp
     3633:E0BA  [EE0BA]  cb              retf    
-FUNC_3633_E0BB:
+reset_current_item_to_table_default:
     3633:E0BB  [EE0BB]  55              push    bp
     3633:E0BC  [EE0BC]  8bec            mov     bp, sp
     3633:E0BE  [EE0BE]  83ec06          sub     sp, 6

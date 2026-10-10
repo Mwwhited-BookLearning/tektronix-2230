@@ -1020,11 +1020,18 @@ write.** `write_hw_shift_register` (`0xEE13B`) writes `ax` to port
 `0xD1` three times in a row (each preceded by `shl di,1`) then once to
 port `0xC4` - the classic shape of clocking a value out to a
 shift-register-based DAC/latch (`0xD1` = data/clock, `0xC4` = strobe/
-latch, roles not confirmed). It's reached from a larger dispatch
-function (starting around `0xEE004`) that indexes a table at
-`[0x1D10]` by a value from `[0x464]` (`*16`) and either calls a
-specific handler indirectly or falls through to this default hardware
-write - consistent with a **front-panel setting (e.g. an attenuator,
+latch, roles not confirmed). **Correction, 2026-10-10**: it's a
+shared-frame secondary entry point inside a large, not-yet-fully-named
+item-list function (real prologue `0xEE0F7`, see `FUNCTIONS.md`) that
+also calls `compute_and_format_sample_delta_readout` and
+`clamp_position_counter_across_records` in what looks like a
+per-visible-item redraw loop - **not**, as previously written here,
+reached as a fallback from the `[0x1D10]`-table dispatch function
+starting at `0xEE004` (that function, now named `dispatch_item_
+change_notification`/`dispatch_item_handler_if_enabled`, is a
+completely separate function that `retf`s at `0xEE0BA`, well before
+`write_hw_shift_register` at `0xEE13B` - the two are ROM-adjacent, not
+caller/callee). Still consistent with a **front-panel setting (e.g. an attenuator,
 gain, or offset calibration value) being pushed out to analog hardware
 whenever it changes**. Peripheral identity still not confirmed against
 a schematic, but the *mechanism* (serial shift-register write) now is.

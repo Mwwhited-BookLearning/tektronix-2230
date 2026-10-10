@@ -14266,10 +14266,10 @@
     "notes": null
   },
   "EDF56": {
-    "name": "FUNC_3633_DF56",
+    "name": "dispatch_item_change_notification",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "dispatch_item_change_notification",
     "notes": null
   },
   "EDF6A": {
@@ -14392,10 +14392,10 @@
     "notes": null
   },
   "EE0BB": {
-    "name": "FUNC_3633_E0BB",
+    "name": "reset_current_item_to_table_default",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "reset_current_item_to_table_default",
     "notes": null
   },
   "EE0F7": {

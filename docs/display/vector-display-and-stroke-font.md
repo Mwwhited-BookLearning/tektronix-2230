@@ -498,6 +498,32 @@ find_landing_artifacts.py-style caller-count ranking on far calls into
 this whole address neighborhood (`0xEDF56`-`0xEE705`) to see if
 anything real reaches it despite the heuristic scanner's `ref_count: 0`.
 
+**Correction, 2026-10-10**: "`FUNC_3633_DF56` (`0xEDF56`-`0xEE705`)"
+is **not actually one giant function** - re-tracing `0xEDF56`'s own
+body (while chasing an unrelated `[0x1D10]` command-code question, see
+`docs/acquisition-and-plotting/mode-dispatcher-and-formatting.md`'s
+"Follow-up, 2026-10-10") found a clean `retf` at `0xEE0BA`, immediately
+followed by a separately-prologued function at `0xEE0BB` (own `retf`
+at `0xEE0F6`), then another at `0xEE0F7` (own `retf 2` at `0xEE35B`),
+then `FUNC_3633_E35E` (`retf` at `0xEE381`), then `FUNC_3633_E382`
+(`retf 4` at `0xEE3B9`), and presumably more before reaching
+`draw_readout_char_dup2` at `0xEE60C` (not individually traced further
+this pass). So the `0xEDF56`-`0xEE705` span is a **sequence of several
+distinct, cleanly-bounded functions**, not one monolithic body - the
+"giant function" framing likely came from the heuristic symbol table's
+`FUNC_3633_DF56` label getting attributed across this whole stretch
+because none of these functions have a *confirmed* external caller
+either (same `ref_count: 0` status noted above), not because they're
+actually one function. This doesn't change the "don't confuse
+`dispatch_item_handler_if_enabled` with the stroke-font reading here"
+warning above - if anything it reinforces it: they're not just
+unrelated concerns inside one function, they're unrelated concerns in
+*different, adjacent* functions that happen to share an unreached,
+heuristic-only ROM neighborhood. See `FUNCTIONS.md` for the newly
+named `0xEDF56`/`0xEE0BB` entries (`dispatch_item_change_notification`/
+`reset_current_item_to_table_default`); `0xEE0F7`, `0xEE35E`, `0xEE382`
+remain unnamed.
+
 ## Follow-up, 2026-09-15: a full-alphabet HPGL capture confirms the "9 levels" puzzle is universal, not sample noise
 
 User captured (via `MESsage`) and plotted the **entire character set** -

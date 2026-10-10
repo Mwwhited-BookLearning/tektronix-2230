@@ -423,16 +423,23 @@ top item.
   consumer, not a landing-artifact coincidence. It writes into a
   different target (`[0x45E]`, with `coarse` added to a running
   accumulator `[0x46E]` instead of a fixed per-character baseline) and
-  is embedded in a giant, currently-unnamed function (`FUNC_3633_DF56`,
-  `0xEDF56`). **Neither has a confirmed caller** - both are
-  `ref_count: 0` in the heuristic symbol table, so this doesn't prove
-  reachability, but it's real code worth someone naming and tracing
-  forward from. Don't confuse this with the nearby, already-documented
-  `dispatch_item_handler_if_enabled`/`[0x1D10]` item-table mechanism
-  (a landing artifact of the same neighborhood, unrelated to the
-  stroke font) - full detail and the exact disassembly in
-  `docs/display/vector-display-and-stroke-font.md`'s "Found a second,
-  independent reader of `[0x1DB0]`" section. **Correction, checked
+  was originally described as embedded in one giant function starting
+  at `0xEDF56`. **2026-10-10 correction: that's not one giant
+  function** - `0xEDF56`-`0xEE705` is actually a sequence of several
+  separately-prologued, cleanly-`retf`-bounded functions (now
+  `dispatch_item_change_notification`/`reset_current_item_to_table_
+  default` plus 3 more still-unnamed ones) that merely share an
+  unreached, heuristic-only ROM neighborhood - see `docs/display/
+  vector-display-and-stroke-font.md`'s "Correction, 2026-10-10". **Still
+  neither has a confirmed caller** - both are `ref_count: 0` in the
+  heuristic symbol table, so this doesn't prove reachability, but it's
+  real code worth someone naming and tracing forward from. Don't
+  confuse this with the nearby, already-documented `dispatch_item_
+  handler_if_enabled`/`[0x1D10]` item-table mechanism (a landing
+  artifact of the same neighborhood, unrelated to the stroke font) -
+  full detail and the exact disassembly in `docs/display/vector-
+  display-and-stroke-font.md`'s "Found a second, independent reader of
+  `[0x1DB0]`" section. **Correction, checked
   right after finding this**: `[0x46E]`'s accumulator is fed by a call
   to `0xF6510`, which was first guessed to be a character-width lookup
   - it isn't; its actual body is a bounding-box min/max clamp against
