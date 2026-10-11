@@ -1247,3 +1247,77 @@ caller relationship for), and this conclusion rests on the absence of
 evidence rather than a positive confirmation, which is inherently
 weaker. `SUB_E962C` (the hardware shift-register-write helper inside
 `FUNC_3633_9611`'s `ax`==2,3,4 branch) remains untouched and unnamed.
+
+## Follow-up, 2026-10-11 (later still): audited every project-wide near-jump that crosses the `160-3633`/`160-3532` 64 KB chip boundary - found a second landing artifact (`SUB_F1581`), and the audit itself narrows (doesn't settle) the open jump-arithmetic question above
+
+The `SUB_EFFEE` section above flagged a worthwhile next step: "worth
+auditing other `L_F0xxx`-labeled near-jump targets project-wide,"
+since a near `jmp`/conditional jump whose resolved label lands in the
+*other* ROM chip (`3633:` source physically in `0xE*`, resolving to an
+`L_F*`/`SUB_F*` label physically in `0xF*`, or vice versa) can never be
+a real compiled instruction - the CPU's 16-bit IP can't change
+segments on a plain near jump. Grepped
+`disasm/sysrom_3532_3633_heuristic.lst` for every such crossing,
+project-wide, in both directions. Exactly 2 exist in the entire
+disassembly:
+
+1. `0xEFF96` -> `L_F0019` - the already-resolved `SUB_EFFEE` instance
+   above. Not new.
+2. **`0xF1584` -> `L_EDA0A`** (comment `; 0xffffc48a`) - not previously
+   found or documented anywhere in this project.
+
+Traced the new one (`0xF1584`) fully by hand. At physical `0xF1580`
+there's a real, ordinary instruction: `lcall SUB_E9778` (bytes `9a 68
+02 51 e9`, far pointer `E951:0268` -> physical `0xE9778`). A function
+label `SUB_F1581` is defined exactly 1 byte into that `lcall`'s own
+operand bytes, where the heuristic scanner reads the remaining operand
+bytes as a fresh instruction stream: `68 02 51` decodes as `push
+0x5102`, then `e9 83 c4` decodes as `jmp` with Capstone's own computed
+operand string `0xffffc48a`, which the scanner's physical-address math
+resolves to `L_EDA0A` (`0xEDA0A`) - the cross-chip-boundary symptom.
+This is the same "operand byte of a real instruction coincidentally
+decodes as a valid opcode" mechanism already cataloged for
+`write_hw_shift_register`, `compute_and_print_item_delta_readout`, and
+others in this file: `0x68` (the high byte of the `lcall`'s segment
+word `0x5102`... no - the first operand byte `0x68`, the low byte of
+offset `0x0268`) happens to be `push imm16`'s opcode, and the decode
+runs away from there. The "body" under `SUB_F1581` is garbage, not
+real code.
+
+Unlike several prior landing-artifact candidates (zero confirmed
+callers, left as open questions), `SUB_F1581` has **2 real, confirmed
+external callers**, both genuine `lcall SUB_F1581` instructions
+encoding far pointer `F158:0001` (bytes `9a 01 00 58 f1`, which
+decodes to physical `0xF1581` exactly - matching the label, not a
+coincidental byte overlap):
+
+- `0xE6443`: gated on `byte ptr [0x75b]`; the call's return value in
+  `ax` is tested immediately after (`cmp ax, 0` / `je`), consistent
+  with a real function call whose return value matters to the caller.
+- `0xE65C3`: same `[0x75b]` gate, same `cmp ax, 0` pattern after the
+  call. This call site lives inside the already-documented
+  `scheduler_tick_service`/front-panel-poll routine (the same function
+  that captures `SWB2`/`SWB1` - `VARIABLES.md`'s `[0x758]`/`[0x759]`
+  entries - into `[0x758]`/`[0x759]` a few instructions earlier in the
+  same routine); nothing new surfaced there about `SWB1`'s bit map,
+  since that capture site and its neighboring `[0x7B4]` XOR are already
+  fully documented and confirmed by live hardware test.
+
+Both callers' far-pointer encodings land on `SUB_F1581` exactly, so
+these are genuine, intentional calls by the compiled firmware - not
+another coincidental byte match. Net result: `SUB_F1581` joins the
+established landing-artifact category, with the strongest caller
+evidence of any instance found so far (2 real callers, both with a
+tested return value). This closes the `SUB_EFFEE` section's "worth
+auditing" item with a clean, complete result for the whole project:
+**every near-jump that crosses the `160-3633`/`160-3532` chip boundary
+turns out to be inside a landing artifact** (2 found, 2 confirmed
+garbage) - evidence against a deeper systemic bug in the heuristic
+scanner's jump-target math for *genuine* compiled code, though it
+doesn't fully resolve the underlying curiosity from the `SUB_EFFEE`
+section (why Capstone's own operand string for this kind of
+misdecoded jump comes out numerically odd in the first place) since
+the bytes being decoded are garbage either way and don't need a
+coherent target. Left `SUB_F1581` unnamed - it isn't a real function,
+so no rename is appropriate; its 2 real callers remain unnamed too
+pending their own identification.

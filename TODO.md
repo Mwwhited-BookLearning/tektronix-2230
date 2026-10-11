@@ -1054,6 +1054,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       new material to resolve it); whether any of these 4 functions is
       ever really reached (same emulator-only question as `FUNC_3633_
       9611`). No renames.
+      2026-10-11 (later still): followed up on `SUB_EFFEE`'s own
+      "worth auditing other `L_F0xxx`-labeled near-jump targets
+      project-wide" suggestion - grepped every near-jump crossing the
+      `160-3633`/`160-3532` chip boundary project-wide. Exactly 2
+      exist: the already-resolved `SUB_EFFEE` one, and a newly-found
+      second instance, `SUB_F1581` (`0xF1584`), traced fully by hand.
+      Both are confirmed landing artifacts (misdecoded operand-byte
+      garbage), not real compiled jumps - narrows, but doesn't fully
+      settle, the open question about the scanner's cross-64 KB jump-
+      target arithmetic. `SUB_F1581` has 2 real confirmed callers
+      (`0xE6443`/`0xE65C3`), the strongest caller evidence of any
+      landing artifact found so far. See `docs/decode-anomalies/
+      landing-artifacts-and-jump-tables.md`'s matching 2026-10-11
+      (later still) follow-up. No renames.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

@@ -1057,7 +1057,17 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   a good candidate for the emulator to settle by single-stepping real
   execution rather than static reasoning. See `docs/decode-anomalies/
   landing-artifacts-and-jump-tables.md`'s matching 2026-10-11
-  follow-up.
+  follow-up. **Partially addressed, same day (later still)**: audited
+  every project-wide near-jump crossing the `160-3633`/`160-3532` chip
+  boundary - only 2 exist total (this one, plus a newly-found second
+  instance, `SUB_F1581`/`0xF1584`), and both are confirmed landing
+  artifacts decoding garbage operand bytes, not real compiled jumps.
+  Narrows the "possible systemic bug" framing (no evidence found of a
+  real compiled jump being mis-targeted by the scanner) but doesn't
+  resolve the underlying curiosity about Capstone's own odd operand-
+  string arithmetic for these misdecodes, since the bytes are garbage
+  either way. See the matching 2026-10-11 (later still) follow-up in
+  the same doc.
 - **2026-10-11 (same session, later still): resolved what `FUNC_3532_
   B529` (called twice by `FUNC_3633_FC94`, flagged above) does -
   renamed `compute_sample_position_value`.** Packs an 11-bit value from
@@ -1157,6 +1167,21 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   `FUNC_3633_9611` - a second, independent instance of the same open
   pattern, not a one-off. See `docs/acquisition-and-plotting/mode-
   dispatcher-and-formatting.md`'s 2026-10-11 follow-up. No renames.
+- **2026-10-11 (same session, later still): found and resolved a
+  second cross-64 KB-chip-boundary landing artifact, `SUB_F1581`
+  (`0xF1584`), with 2 confirmed real callers.** Lands 1 byte into the
+  operand bytes of the real `lcall SUB_E9778` at `0xF1580`; its
+  misdecoded body (`push`/`jmp`) is garbage, but 2 genuine external
+  `lcall SUB_F1581` sites (`0xE6443`, `0xE65C3`) confirm it's a real,
+  called landing point, not dead bytes. One caller (`0xE65C3`) sits
+  inside the already-documented `scheduler_tick_service`-style poll
+  routine that captures `SWB2`/`SWB1` into `[0x758]`/`[0x759]` -
+  checked this against `VARIABLES.md`'s existing entries for both and
+  confirmed it adds nothing new (the capture site and its `[0x7B4]`
+  XOR companion are already fully documented/confirmed there by live
+  hardware test). See `docs/decode-anomalies/landing-artifacts-and-
+  jump-tables.md`'s matching 2026-10-11 (later still) follow-up. No
+  renames - `SUB_F1581` isn't a real function.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
