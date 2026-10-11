@@ -1007,6 +1007,29 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   own) is a real function at all. Left unnamed. See `docs/decode-
   anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
   2026-10-11" section.
+- **2026-10-11 (same session, later): cross-checked `SUB_EFDC2`/
+  `SUB_EFFEE`/`FUNC_3633_9611` against Ghidra's own independent
+  analysis.** Used `CreateFunctionCmd` (the project's established
+  authoritative boundary test, see `docs/architecture/ghidra-
+  project.md`) plus a query of Ghidra's existing, already-committed
+  auto-analysis function boundaries. Results converge with the manual
+  finding above: Ghidra's own auto-analysis independently folds both
+  `SUB_EFDC2` and `SUB_EFD99` into the *same* function as
+  `FUNC_3633_FC94` (`FUN_000e_fc94`, body `0xEFC94`-`0xEFE29`) -
+  ending at exactly the last byte of the `retf 2` traced by hand as
+  `SUB_EFDC2`'s real shared exit. Second, independent confirmation
+  that it's a clean mid-function landing point, not a byte-overlap
+  artifact (doesn't speak to the frame-collapse/dead-code conclusion,
+  which is a dataflow fact outside what boundary analysis checks).
+  `FUNC_3633_9611` already has a genuine Ghidra function
+  (`0xE9611`-`0xE9731`) - consistent with clean code, independent of
+  whether anything calls it. New lead: forcing `CreateFunctionCmd` at
+  `SUB_EFFEE` returns a **degenerate zero-length body**
+  (`0xEFFEE`-`0xEFFEE`, start==end) - Ghidra's disassembler can't form
+  a coherent instruction stream there at all, corroborating the
+  "confusing region crossing into 160-3532" observation and pointing
+  toward `SUB_EFFEE` being dead/incoherent garbage rather than a clean
+  landing point. `SUB_EFFEE`'s real mechanics still not pinned down.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

@@ -996,3 +996,63 @@ re-converging with any real code, and wasn't pinned down. Whether
 just heuristic-scanner noise - it has **zero confirmed callers of its
 own** (`ref_count: 0` in `symbols.json`) - is left unnamed and
 unresolved rather than guessed at.
+
+## Follow-up, 2026-10-11 (same day): cross-checked against Ghidra's own independent analysis
+
+Prompted by a direct question ("can't you have Ghidra help you") about
+whether this project's second analysis tool (`decompile/`, a local
+Ghidra project; see `docs/architecture/ghidra-project.md`) could
+independently corroborate or refute the `SUB_EFDC2`/`SUB_EFFEE`/
+`FUNC_3633_9611` findings above, rather than relying solely on manual
+byte-decode and stack-arithmetic tracing.
+
+Wrote two small, deliberately non-mutating scripts (`decompile/
+check_function_boundary.py`, `decompile/check_fc94_body.py` - both
+read-only probes against the live project; the first wraps its one
+`CreateFunctionCmd` call per address in a transaction that is always
+rolled back and never calls `project.save()`, so no persistent change
+was made to the shared Ghidra database):
+
+- **`SUB_EFDC2`/`SUB_EFD99`**: queried which function Ghidra's
+  existing, already-committed auto-analysis considers these addresses
+  part of. Both come back as part of `FUN_000e_fc94` - the same
+  Ghidra function as `FUNC_3633_FC94` - with that function's body
+  ending at exactly `0xEFE29`, the last byte of the `retf 2`
+  instruction identified by hand as `SUB_EFDC2`'s real shared exit.
+  This is independent confirmation, via a completely different
+  analysis path (Ghidra's own disassembler + CFG-following, not
+  manual stack arithmetic), of the same boundary: `SUB_EFDC2` is a
+  clean mid-function landing point inside `FUNC_3633_FC94`, not a
+  byte-overlap artifact and not a separate function. It does not,
+  however, speak to the frame-collapse/dead-code conclusion from the
+  earlier follow-up above - that's a dataflow fact about register
+  provenance across a far call, which a generic function-boundary
+  command isn't designed to catch, and Ghidra's own decompiled-C
+  export for the caller (`FUN_000e_9611`) shows the call returning
+  normally, which is exactly the kind of inferred-control-flow claim
+  `docs/architecture/ghidra-project.md` already warns not to trust at
+  face value.
+- **`FUNC_3633_9611`**: already has a real, Ghidra-formed function
+  (`0xE9611`-`0xE9731`), independent of this project's own
+  `ref_count: 0`. These are different claims - "syntactically
+  well-formed code" vs. "something calls it" - and shouldn't be
+  conflated. Still no confirmed caller found by either tool.
+- **`SUB_EFFEE`**: new lead. Forcing `CreateFunctionCmd` at this
+  address technically reports success but returns a **degenerate,
+  zero-length body** (`0xEFFEE`-`0xEFFEE`, start equals end) - Ghidra's
+  own disassembler cannot form a coherent instruction stream starting
+  there. This corroborates, independently, the earlier observation
+  that `SUB_EFFEE`'s byte decode looks like it crosses into
+  `160-3532`'s address space in a way that doesn't reconverge cleanly.
+  Tentatively points toward `SUB_EFFEE` belonging to the dead/
+  incoherent-garbage category (like `SUB_ECEDA`/`SUB_F63BC`) rather
+  than the clean-landing-point category (like `SUB_EFDC2`) - not yet
+  confirmed by manually tracing the actual bytes there.
+
+Net effect: Ghidra corroborated the two boundary claims that mattered
+and supplied a genuinely new lead on `SUB_EFFEE`, but - as expected
+given its own documented limits on inferred control flow - did not
+and could not independently confirm the frame-collapse mechanism
+itself. Kept both probe scripts in `decompile/` as reusable,
+non-mutating diagnostics (matching the existing `apply_*`/`export_*`
+naming) rather than treating them as throwaway one-offs.
