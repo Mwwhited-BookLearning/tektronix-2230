@@ -830,6 +830,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       E35E`/`FUNC_3633_E382` (found immediately after `render_item_
       list_row`, see the "giant function" correction above) belong to
       this cluster at all - not yet analyzed.
+      2026-10-10 (same session): resolved the `SUB_ECEDA` `hlt`-opening
+      anomaly flagged earlier this session - it's not a separate
+      function, just where the heuristic scanner's external-call-target
+      label landed inside `step_item_subvalue_back_guarded`/`_back`'s
+      own shared "push command code 3" tail (the real entry to that
+      tail is 4 bytes later, `L_ECEDE`, reached internally via a genuine
+      `jle`). The 14-17 external `lcall` sites (confirmed coherent, real
+      code, not scanner noise) target `0xECEDA` itself, which decodes
+      as `hlt` + an unconditional `jmp` straight to the exit - closes
+      the "possible 4th sibling" question from this session's earlier
+      summary (there isn't one) but leaves open *why* real code would
+      call an address that halts. See `docs/decode-anomalies/landing-
+      artifacts-and-jump-tables.md`'s matching follow-up section and
+      `STILL_PENDING_DECODE.md`.
       2026-10-10: resolved `SUB_F43CC`/`SUB_F408E`/`SUB_F45A4`/
       `SUB_F47AB` - none is a separate function; all 4 are landing
       artifacts. `SUB_F408E` lands inside the already-named `compute_

@@ -608,3 +608,69 @@ flag semantics aren't traced) isn't high enough to commit a name per
 flagged in `STILL_PENDING_DECODE.md`/`TODO.md` as 3 good next full-
 trace candidates, now that their landing-artifact confusion is cleared
 away.
+
+## Follow-up, 2026-10-10 (same session): `SUB_ECEDA`'s `hlt` opening explained - it's not a separate function, and its 14-17 external callers land 4 bytes before the real code
+
+Picked back up the `SUB_ECEDA` (`0xECEDA`) anomaly flagged earlier this
+session (its labeled entry decodes as `hlt` followed by a `jmp`,
+bizarre for something with 14-17 heuristic-only external callers) by
+reading its full body in context, rather than just the opening bytes.
+
+**The real story**: `0xECEDA` is not a separate function at all - it's
+simply where the heuristic scanner's "external call target" label
+landed inside the already-documented `step_item_subvalue_back_guarded`/
+`step_item_subvalue_back` (`0xECE5B`/`0xECE82`, see the 2026-10-10
+section above and `FUNCTIONS.md`). That function's own body has a real,
+internal `jle L_ECEDE` branch at `0xECE66` ("nothing to step" case) that
+lands exactly on `0xECEDE` - 4 bytes *after* `0xECEDA` - which falls
+through to the real shared dispatch tail: read `[0x464]`, index into
+`[0x1D10]*0x10]`, check `+6`/`+8` for a handler, push command code `3`,
+`lcall es:[bx+di+6]`, then exit (`mov sp,bp`/`pop bp`/`retf`). This is
+exactly the "push command code 3 when there's nothing to step" case
+`changes/2026-10-10.md`'s `0xECE82` write-up already describes - not a
+new, previously-undocumented 4th sibling function as briefly suspected
+before this was traced through.
+
+**The `hlt` is real, and real external callers really do target it**:
+all 14-17 `lcall` sites encoding segment:offset `ead0:21da` (= physical
+`0xECEDA` exactly, not `0xECEDE`) were checked against their own
+surrounding bytes at 2 sample sites (one same-chip, `0xEB879`; one
+cross-chip from `160-3532`, `0xF33E8`) - both decode as clean, coherent
+calling-convention code (computing/pushing a far-pointer buffer
+argument plus a byte value, cleaning the stack after, and consuming an
+`ES:BX` return value afterward) - not heuristic-scanner noise. So these
+calls are deliberately encoded by the compiled program to target
+`0xECEDA`, 4 bytes *before* the real dispatch tail at `0xECEDE`. At that
+address the real ROM bytes decode as `hlt` (`0xf4`) immediately followed
+by an unconditional `jmp` straight to the function's own exit
+(`L_ECF15`, bypassing the dispatch body entirely - the `L_ECEDE`/
+`L_ECEE1` block in between is therefore dead code when reached this
+way, only live via the genuine internal `jle`).
+
+Per standard 8086 `HLT` semantics (halt until `RESET`/`NMI`/an unmasked
+`INTR`, then resume at the *next* instruction), a real call to this
+address would freeze the CPU until the next interrupt fires, then
+immediately `retf` without ever touching `[0x1D10]`'s dispatch table or
+doing anything with the arguments just pushed - functionally close to a
+no-op (modulo the pause) from the caller's perspective, since whatever
+`ES:BX` already held when the call was made is just handed back
+unchanged.
+
+**Not resolved - two competing hypotheses, no evidence yet to pick
+between them**: (a) this is a deliberate "block until the next timer
+tick" synchronization idiom reused as a side effect of calling what was
+*originally* a real dispatch entry point, or (b) this specific call
+path was patched out/disabled in this ROM revision (the `-14` dumps)
+while the *internal* fallthrough via `jle L_ECEDE` continues to work
+normally since it bypasses the patched byte. Resolving which (if
+either) is correct would need either a live emulator trace hitting one
+of these call sites, or comparing against an earlier ROM revision dump
+if one ever turns up - out of scope for static analysis alone.
+
+**Net**: no rename (confidence too low per `CLAUDE.md`'s "state only
+what's directly supported" convention, and "`SUB_ECEDA`" isn't really a
+distinct function to name), but this closes the "possible undocumented
+4th sibling" question flagged earlier this session - there isn't one,
+just the same shared tail reached two ways, one of which is dead by
+construction. See `STILL_PENDING_DECODE.md` and `TODO.md` for the
+cross-reference.

@@ -1107,6 +1107,26 @@ See `docs/acquisition-and-plotting/ram-far-pointer-table.md`.
   certainly the same incidental-overlap situation as `[0x1D10]`'s
   `0x90`/`0x94` entries above, not a real init. These 2 pointers'
   actual runtime values remain unconfirmed.
+- **2026-10-10, same session: explained `SUB_ECEDA`'s `hlt` opening -
+  not a new function, and its 14-17 external callers are mechanically
+  dead on arrival.** `0xECEDA` is just where the heuristic scanner's
+  external-call-target label landed inside the already-documented
+  `step_item_subvalue_back_guarded`/`_back`'s own shared dispatch tail
+  (reached for real via a genuine internal `jle L_ECEDE` 4 bytes
+  later, pushing command code `3`). The 14-17 external `lcall` sites
+  (checked at 2 sample sites, both clean/coherent surrounding code, not
+  scanner noise) all target `0xECEDA` itself, not `0xECEDE` - and the
+  real ROM byte there is `hlt` followed by an unconditional `jmp`
+  straight to the function's exit, skipping the dispatch body
+  entirely. Per 8086 `HLT` semantics this would freeze the CPU until
+  the next interrupt, then return without using the dispatch table or
+  the just-pushed arguments - closes the "possible undocumented 4th
+  `[0x1D10]`-dispatch sibling" question (there isn't one) but leaves
+  open *why* real compiled code would deliberately target an address
+  that halts (deliberate tick-wait idiom vs. a path patched out in this
+  ROM revision - no evidence yet to choose). See `docs/decode-
+  anomalies/landing-artifacts-and-jump-tables.md`'s matching 2026-10-10
+  follow-up section for the full byte-level trace.
 
 ## Menu/UI rendering
 
