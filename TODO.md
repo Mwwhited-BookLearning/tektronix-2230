@@ -1032,6 +1032,28 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       follow-up. **New next candidates**: identify what each settings
       byte (`[0x4e0]`-`[0x4fc]`) controls, and `FUNC_3532_4629`'s
       `[0x1bf0]` fixed-point value.
+      2026-10-11 (later still): picked the settings-byte-translator
+      family back up directly (actual labels `FUNC_3532_6E7C`/
+      `FUNC_3532_7045`/`FUNC_3532_7273`, not the informal `SUB_F*`
+      names used above). Corrected/expanded their byte/field coverage
+      (`FUNC_3532_6E7C` alone spans 4 raw bytes into 7 staged fields,
+      bigger than previously described) and confirmed all 3, plus
+      `commit_pending_settings_and_refresh_display` itself, share
+      `FUNC_3633_9611`'s exact `ref_count: 0` signature. Ran the same
+      exhaustive literal-reference search against all 4 addresses -
+      zero genuine hits (one false positive, "Epson" ASCII text,
+      correctly discarded). Tested and ruled out a specific lead: the
+      dispatcher's `[0x1D58]` table-base far pointer is not set by
+      `init_far_pointer_table_sysrom`'s boot-init table after all -
+      its one matching entry (`dest_offset=0xD8`) lands on already-
+      traced real code (`0xF07F4`), the same incidental-overlap
+      pattern as several other entries in that table. See `docs/
+      acquisition-and-plotting/mode-dispatcher-and-formatting.md`'s
+      2026-10-11 follow-up and `STILL_PENDING_DECODE.md`. Still open:
+      physical bit-level meaning of each settings byte (unchanged, no
+      new material to resolve it); whether any of these 4 functions is
+      ever really reached (same emulator-only question as `FUNC_3633_
+      9611`). No renames.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

@@ -497,3 +497,80 @@ This confirms the `[0x1b70]`-`[0x1b8c]`/`[0x53a]` convention is a
 unrelated subsystems (display, GPIB, plotting), not specific to any
 one of them - consistent with the broad grep hit range (`0xE6682`-
 `0xFF70A`, well over 100 references) found while tracing this.
+
+## Follow-up, 2026-10-11: corrected the translator family's naming/scope, and ruled out a lead on where their (still-missing) call sites are
+
+Picked up this section's own open thread ("none of `[0x4e0]`-`[0x4fc]`
+is documented/identified yet... what each settings byte actually
+controls is still open"). Two corrections, one ruled-out lead:
+
+**Naming/scope correction**: the "`SUB_F6E7C`/`SUB_F7045`/`SUB_F7273`"
+labels above are informal - the actual disassembly labels (`disasm/
+sysrom_3532_3633_heuristic.lst`) are `FUNC_3532_6E7C`/`FUNC_3532_7045`/
+`FUNC_3532_7273`. More substantively, "each decomposing one raw
+settings byte" undersells it: re-reading each function's full body
+(`0xF6E7C`-`0xF7044`, `0xF7045`-`0xF7044`... correction, `0xF7045`-
+`0xF7340`ish bounded by the next function label, and `0xF7273`-
+`0xF7338`) shows **`FUNC_3532_6E7C` alone decomposes 4 raw bytes**
+(`[0x4e7]`, `[0x4e8]`, `[0x4eb]`, `[0x4ec]`) into 7 different staged
+fields (`[0x1b72]`, `[0x1b82]`, `[0x1b7b]`, `[0x1b79]`, `[0x1b78]`,
+`[0x1b70]`, `[0x1b77]`), each via independent bit-test-and-remap logic
+(e.g. `[0x4eb]` bits `0x04`/`0x08`/`0x01`/`0x40` each map to a distinct
+output bit of the byte written to `[0x1b72]`) - not a clean 1:1
+byte-to-field mapping. `FUNC_3532_7273` similarly spans `[0x4ef]`,
+`[0x4f0]`, `[0x4f3]` into `[0x1b72]`/`[0x543]`/`[0x1b6c]`/`[0x1b73]`.
+This is consistent with the already-documented "generic settings-
+stage/commit" framing above, just with a wider byte/field fan-out than
+originally described. Still unconfirmed: the physical/hardware meaning
+of any individual bit (this would need a `HARDWARE.md`/service-manual
+cross-reference like the already-inconclusive `SWB1`/`SWB2` attempt
+for `[0x4E7]`/`[0x4E8]` in `VARIABLES.md`).
+
+**New observation**: all 3 translator functions show `ref_count: 0` in
+`disasm/sysrom_3532_3633_heuristic.symbols.json`, same as `commit_
+pending_settings_and_refresh_display` itself (already noted above -
+"no static caller found, same as `FUNC_3532_42E6`/... below it") - so
+this entire settings-commit subsystem (1 dispatcher + 3 translators)
+has no confirmed caller anywhere in the static scan, the same signature
+as `FUNC_3633_9611` (see `docs/decode-anomalies/landing-artifacts-and-
+jump-tables.md`'s matching 2026-10-11 follow-up). Ran the same
+exhaustive literal-reference search developed for that case against
+all 4 addresses (`0x8D64`/`0x6E7C`/`0x7045`/`0x7273`): grepped the full
+disassembly for each literal hex value (no hits beyond each one's own
+label) and byte-pattern-searched both raw ROMs for a bare 2-byte
+near-offset encoding of each (one coincidental false-positive hit for
+`0x7045` inside the ASCII text "...port, Epson..." in the comm ROM -
+confirmed by inspecting the surrounding bytes, not a real reference;
+zero genuine hits otherwise). No static reference to any of the 4
+exists in either ROM outside each one's own definition.
+
+**Lead tested and ruled out**: `commit_pending_settings_and_refresh_
+display`'s own `[0x1D58]` is itself a far-pointer *variable* (read via
+`les di, ptr [0x1d58]` at its own entry, `0xE8D6A`) pointing at a
+separate 10-byte-stride record array (`+0`/`+2` test far-pointer,
+`+4` mask byte, `+6` handler far-pointer) - not an inline array at
+`ds:0x1D58` itself, a detail this section's original write-up glossed
+over. Checked whether `init_far_pointer_table_sysrom`'s already-fully-
+decoded 80-entry table (`docs/acquisition-and-plotting/ram-far-
+pointer-table.md`) sets `[0x1D58]`'s own boot value, hoping its target
+would be a record array with one of its `+6` handler fields pointing
+at one of the 3 translator functions. It does have an entry
+(`dest_offset=0xD8` -> `ds:[0x1D58]`, far pointer `F07F:0004`, physical
+`0xF07F4`) - but reading the raw bytes there shows this is **real,
+already-traced code** (`L_F07F4: mov word ptr [0x6d8], 1`, inside an
+existing function, 2 confirmed jump targets into it from `0xF08B0`/
+`0xF08BD`), not a flat record array - the same "incidental overlap
+with the bulk table's unrelated destination range" signature already
+established for several other entries in this same table (`[0x1D10]`'s
+`0x90`/`0x94`, `[0x1D5C]`/`[0x1D60]`'s `0xDC`/`0xE0`, all above). Ruled
+out, not a real lead: `[0x1D58]`'s true runtime value (if any) isn't
+set by this table either, and the record array it should point to
+(wherever it really lives) hasn't been located.
+
+**Net effect**: the translator-family naming/scope is now accurate and
+the "boot-table initializes `[0x1D58]`'s handler array" lead is closed
+off (negative, not just unexplored) - but *how* (or whether) any of
+these 4 functions is ever actually reached remains as open as `FUNC_
+3633_9611`'s own case, under the same hedged "most likely genuinely
+unreferenced in this ROM revision, can't rule out a dynamically-
+computed call target" framing. No renames.

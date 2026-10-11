@@ -1123,6 +1123,40 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   in this ROM revision. No renames; `SUB_E962C` remains untouched. See
   `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
   matching 2026-10-11 (later still) follow-up.
+- **2026-10-11 (same session, later still): the settings-byte-
+  translator family (`FUNC_3532_6E7C`/`FUNC_3532_7045`/`FUNC_3532_
+  7273`, formerly informally called `SUB_F6E7C`/`SUB_F7045`/
+  `SUB_F7273`) shares `FUNC_3633_9611`'s exact "zero confirmed caller"
+  signature, and the same exhaustive static-reference search comes
+  back negative for all 3 of them too, plus their consumer `commit_
+  pending_settings_and_refresh_display`.** Re-traced all 3 translators'
+  actual byte/field coverage (bigger than previously documented:
+  `FUNC_3532_6E7C` alone decomposes 4 raw bytes - `[0x4e7]`, `[0x4e8]`,
+  `[0x4eb]`, `[0x4ec]` - into 7 staged fields, not the smaller 2-3-byte
+  description from 2026-10-10). All 3 show `ref_count: 0` in `disasm/
+  sysrom_3532_3633_heuristic.symbols.json`, same as `commit_pending_
+  settings_and_refresh_display` itself. Ran the literal-value-grep +
+  bare-2-byte-near-offset-scan technique (developed for `FUNC_3633_
+  9611` above) against all 4 addresses (`0x6E7C`/`0x7045`/`0x7273`/
+  `0x8D64`): zero genuine hits (one false positive for `0x7045` - 2
+  bytes of the ASCII string "...Epson..." in printer-config text,
+  confirmed by reading surrounding bytes and discarded). Also tested
+  and ruled out a specific lead: whether `commit_pending_settings_and_
+  refresh_display`'s own `[0x1D58]` far-pointer variable (base of its
+  internal 10-byte-stride handler-record table) is boot-initialized by
+  `init_far_pointer_table_sysrom`'s 80-entry table - it does have an
+  entry (`dest_offset=0xD8` -> far pointer `F07F:0004`, physical
+  `0xF07F4`) but that address is already-traced real code (`L_F07F4:
+  mov word ptr [0x6d8], 1`, 2 confirmed jump-target references), the
+  same "incidental overlap, not real init" pattern already flagged for
+  other entries in this exact table (`[0x1D10]`'s `0x90`/`0x94`,
+  `[0x1D5C]`/`[0x1D60]`'s `0xDC`/`0xE0`). Net: this whole settings-
+  commit subsystem (1 dispatcher + 3 translators) now carries the
+  identical "most likely genuinely unreferenced in this ROM revision,
+  can't rule out a dynamically-computed call target" hedge as
+  `FUNC_3633_9611` - a second, independent instance of the same open
+  pattern, not a one-off. See `docs/acquisition-and-plotting/mode-
+  dispatcher-and-formatting.md`'s 2026-10-11 follow-up. No renames.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
