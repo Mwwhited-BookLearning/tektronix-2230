@@ -874,6 +874,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       and a good candidate for the emulator to settle by single-
       stepping real execution. See `docs/decode-anomalies/landing-
       artifacts-and-jump-tables.md`'s matching follow-up.
+      2026-10-11 (later still): identified and named `FUNC_3532_B529` -
+      it's `compute_sample_position_value` (reads 2 bytes of a far
+      source record, packs an 11-bit value, then either rescales it via
+      a new sibling `scale_offset_by_code` (`0xFAA08`, a selectable-
+      fraction shift-add multiply helper) or adds a linear offset, and
+      writes the result into a far destination record via the existing
+      `set_position_record_3532`). Confirmed its `sample` parameter is
+      genuinely acquisition data - the one call site with a nearby
+      self-describing prologue (`0xFB2EE`) feeds it straight from
+      `read_acq_sample_with_wrap`. 10 callers total share the identical
+      push shape. See `changes/2026-10-11.md`'s matching entry for the
+      full writeup, including what's still unconfirmed (the exact
+      per-code fraction in `scale_offset_by_code`, and the other 9 call
+      sites' specific record identities). **Could not regenerate
+      `_readable.asm`/`binary/aligned/` this round - `nasm` isn't on
+      `PATH` in this environment; needs a re-run once it is.**
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

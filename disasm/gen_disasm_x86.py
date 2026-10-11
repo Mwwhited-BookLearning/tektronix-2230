@@ -2830,6 +2830,40 @@ FUNCTIONAL_NAMES = {
                                                # set_position_record
                                                # (0xE36A5) but in
                                                # 160-3532
+    0xFAA08: "scale_offset_by_code",          # (base, offset, code) -
+                                               # code&0x1f selects one of
+                                               # several shr/add chains
+                                               # that sum shifted copies
+                                               # of (offset-0x14, clamped
+                                               # >=0) into a fixed-point
+                                               # fraction, adds it to
+                                               # base, clamps result >=0 -
+                                               # a multiply-by-selectable-
+                                               # fraction helper done via
+                                               # shift/add since no single
+                                               # constant fits; called
+                                               # only by FUNC_3532_B529
+    0xFB529: "compute_sample_position_value", # (mode, sample, src_rec,
+                                               # dest_rec) - packs an
+                                               # 11-bit value from 2 bytes
+                                               # of src_rec (bits [7:5] of
+                                               # byte0 | byte1<<3), then
+                                               # either overrides it via
+                                               # scale_offset_by_code(
+                                               # byte0, sample, packed) if
+                                               # mode!=0, or adds
+                                               # (sample-0x14) to it if
+                                               # mode==0, and writes the
+                                               # result into dest_rec via
+                                               # set_position_record_3532;
+                                               # sample is read via
+                                               # read_acq_sample_with_wrap
+                                               # at nearly every call site
+                                               # (confirmed at 0xFB2EE,
+                                               # among 10 total callers) -
+                                               # a channel-trace display-
+                                               # position-from-acquired-
+                                               # sample helper
     0xE0C3D: "format_selftest_result_string", # (status_bits) - builds a
                                                # PASSED/FAILED/UNTESTED/
                                                # "Not installed" text
@@ -5126,6 +5160,22 @@ PARAMETER_NAMES = {
     # record, bp+0xa is the single coordinate encoded (>>3 scaling,
     # unlike set_position_record's sibling which takes two).
     0xFBC84: {6: "record_off", 8: "record_seg", 0xA: "coord"},
+    # scale_offset_by_code (0xFAA08): confirmed from its own body - bp+6
+    # is used directly as the base added to the final shift/add sum,
+    # bp+8 is clamped (>=0, else 0) before being repeatedly shr'd, bp+0xa
+    # is masked &0x1f to select which shr/add chain runs.
+    0xFAA08: {6: "base", 8: "offset", 0xA: "code"},
+    # compute_sample_position_value (0xFB529): confirmed from the
+    # caller at 0xFB2B0-0xFB309 (the only call site with a self-
+    # describing prologue nearby) - bp+6 is the byte that gates the
+    # scale_offset_by_code-vs-linear-offset branch, bp+8 is the sample
+    # value (read via read_acq_sample_with_wrap just before the call at
+    # 0xFB2EE), bp+0xa/0xc is the source record far pointer (its bytes
+    # 0/1 get packed into the 11-bit value), bp+0xe/0x10 is the
+    # destination record far pointer passed straight through to
+    # set_position_record_3532.
+    0xFB529: {6: "mode", 8: "sample", 0xA: "src_rec_off", 0xC: "src_rec_seg",
+               0xE: "dest_rec_off", 0x10: "dest_rec_seg"},
     # plot_line_to (0xE7E0D): confirmed (x, y) - each shl'd twice (*4)
     # early on, the same HPGL coordinate-scaling shape as
     # update_plot_position.

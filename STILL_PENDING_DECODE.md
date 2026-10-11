@@ -976,7 +976,8 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   own space-padding fill is never copied by its output path; the
   inconsistent stack-parameter push counts across `0xEDDE2`'s 4
   callers; what `FUNC_3532_B529` (called twice by `FUNC_3633_FC94`)
-  does. A third case, `SUB_EFDC2` (3 callers, all from a separate
+  does **(resolved 2026-10-11, see below - now `compute_sample_
+  position_value`)**. A third case, `SUB_EFDC2` (3 callers, all from a separate
   dispatcher `FUNC_3633_9611`), was flagged as an open third category.
   See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
   matching 2026-10-10 follow-up and `FUNCTIONS.md`'s new
@@ -1057,6 +1058,28 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   execution rather than static reasoning. See `docs/decode-anomalies/
   landing-artifacts-and-jump-tables.md`'s matching 2026-10-11
   follow-up.
+- **2026-10-11 (same session, later still): resolved what `FUNC_3532_
+  B529` (called twice by `FUNC_3633_FC94`, flagged above) does -
+  renamed `compute_sample_position_value`.** Packs an 11-bit value from
+  2 bytes of a far source record, then either rescales it via a new
+  sibling helper (`scale_offset_by_code`, `0xFAA08` - a selectable-
+  fraction shift-add multiply, 5-bit code picks the shift chain) or
+  adds a linear offset, and writes the result into a far destination
+  record via the already-named `set_position_record_3532`. Confirmed
+  the `sample` parameter is genuine acquisition data (not a coincidence
+  of naming) by checking the one of its 10 call sites with a nearby
+  self-describing prologue (`0xFB2EE`), where it's fed straight from
+  `read_acq_sample_with_wrap`. Open/unresolved: the exact fraction each
+  `scale_offset_by_code` code value (1/2/4/8/9/other) encodes, and the
+  specific source/destination record identities at the other 9 call
+  sites. See `changes/2026-10-11.md`'s matching entry and `FUNCTIONS.md`.
+  **Also surfaced a separate environment gap while regenerating**:
+  `nasm` is not installed/on `PATH` in this session, so `disasm/
+  gen_source_readable.py` could not run and `disasm/*_readable.asm`/
+  `binary/aligned/*_aligned.bin` were NOT updated with these two new
+  names (confirmed via `git status` - those tracked files are
+  unchanged, not partially regenerated) - needs a re-run once `nasm` is
+  available again.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

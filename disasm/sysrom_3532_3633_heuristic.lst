@@ -24229,7 +24229,7 @@ L_EFD41:
     3633:FD4E  [EFD4E]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3633:FD51  [EFD51]  2af6            sub     dh, dh
     3633:FD53  [EFD53]  52              push    dx
-    3633:FD54  [EFD54]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3633:FD54  [EFD54]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3633:FD59  [EFD59]  83c40a          add     sp, 0xa
     3633:FD5C  [EFD5C]  807eee00        cmp     byte ptr [bp - 0x12], 0
     3633:FD60  [EFD60]  745d            je      L_EFDBF  ; 0xfdbf
@@ -24287,7 +24287,7 @@ SUB_EFD99:
     3633:FDB1  [EFDB1]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3633:FDB4  [EFDB4]  2af6            sub     dh, dh
     3633:FDB6  [EFDB6]  52              push    dx
-    3633:FDB7  [EFDB7]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3633:FDB7  [EFDB7]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3633:FDBC  [EFDBC]  83c40a          add     sp, 0xa
 L_EFDBF:
     3633:FDBF  [EFDBF]  ff46f2          inc     word ptr [bp - 0xe]
@@ -24327,7 +24327,7 @@ SUB_EFDC2:
     3633:FE16  [EFE16]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3633:FE19  [EFE19]  2af6            sub     dh, dh
     3633:FE1B  [EFE1B]  52              push    dx
-    3633:FE1C  [EFE1C]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3633:FE1C  [EFE1C]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3633:FE21  [EFE21]  83c40a          add     sp, 0xa
 L_EFE24:
     3633:FE24  [EFE24]  8be5            mov     sp, bp
@@ -36722,7 +36722,7 @@ FUNC_3532_802B:
     3532:8091  [F8091]  ff76f8          push    word ptr [bp - 8]
     3532:8094  [F8094]  2bff            sub     di, di
     3532:8096  [F8096]  57              push    di
-    3532:8097  [F8097]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:8097  [F8097]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:809C  [F809C]  83c40a          add     sp, 0xa
     3532:809F  [F809F]  8be5            mov     sp, bp
     3532:80A1  [F80A1]  5d              pop     bp
@@ -40807,7 +40807,7 @@ L_FAA03:
     3532:AA05  [FAA05]  5d              pop     bp
     3532:AA06  [FAA06]  cb              retf    
 
-FUNC_3532_AA08:
+scale_offset_by_code:
     3532:AA08  [FAA08]  55              push    bp
     3532:AA09  [FAA09]  8bec            mov     bp, sp
     3532:AA0B  [FAA0B]  2bdb            sub     bx, bx
@@ -41728,7 +41728,7 @@ L_FB2F9:
     3532:B312  [FB312]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3532:B315  [FB315]  2af6            sub     dh, dh
     3532:B317  [FB317]  52              push    dx
-    3532:B318  [FB318]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B318  [FB318]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B31D  [FB31D]  83c40a          add     sp, 0xa
     3532:B320  [FB320]  837ef000        cmp     word ptr [bp - 0x10], 0
     3532:B324  [FB324]  744b            je      L_FB371  ; 0xb371
@@ -41761,7 +41761,7 @@ L_FB342:
     3532:B35F  [FB35F]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3532:B362  [FB362]  2af6            sub     dh, dh
     3532:B364  [FB364]  52              push    dx
-    3532:B365  [FB365]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B365  [FB365]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B36A  [FB36A]  83c40a          add     sp, 0xa
     3532:B36D  [FB36D]  8346eafe        add     word ptr [bp - 0x16], -2
 L_FB371:
@@ -41802,7 +41802,7 @@ L_FB3B1:
     3532:B3CA  [FB3CA]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3532:B3CD  [FB3CD]  2af6            sub     dh, dh
     3532:B3CF  [FB3CF]  52              push    dx
-    3532:B3D0  [FB3D0]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B3D0  [FB3D0]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B3D5  [FB3D5]  83c40a          add     sp, 0xa
     3532:B3D8  [FB3D8]  837ef000        cmp     word ptr [bp - 0x10], 0
     3532:B3DC  [FB3DC]  744b            je      L_FB429  ; 0xb429
@@ -41835,7 +41835,7 @@ L_FB3FA:
     3532:B417  [FB417]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3532:B41A  [FB41A]  2af6            sub     dh, dh
     3532:B41C  [FB41C]  52              push    dx
-    3532:B41D  [FB41D]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B41D  [FB41D]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B422  [FB422]  83c40a          add     sp, 0xa
     3532:B425  [FB425]  8346eafe        add     word ptr [bp - 0x16], -2
 L_FB429:
@@ -41892,7 +41892,7 @@ L_FB495:
     3532:B4AE  [FB4AE]  8a56ef          mov     dl, byte ptr [bp - 0x11]
     3532:B4B1  [FB4B1]  2af6            sub     dh, dh
     3532:B4B3  [FB4B3]  52              push    dx
-    3532:B4B4  [FB4B4]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B4B4  [FB4B4]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B4B9  [FB4B9]  83c40a          add     sp, 0xa
 L_FB4BC:
     3532:B4BC  [FB4BC]  8346de09        add     word ptr [bp - 0x22], 9
@@ -41932,13 +41932,13 @@ L_FB4FC:
     3532:B515  [FB515]  8a5eef          mov     bl, byte ptr [bp - 0x11]
     3532:B518  [FB518]  2aff            sub     bh, bh
     3532:B51A  [FB51A]  53              push    bx
-    3532:B51B  [FB51B]  9a6905fcfa      lcall   FUNC_3532_B529  ; 0xfafc, 0x569
+    3532:B51B  [FB51B]  9a6905fcfa      lcall   compute_sample_position_value  ; 0xfafc, 0x569
     3532:B520  [FB520]  83c40a          add     sp, 0xa
 L_FB523:
     3532:B523  [FB523]  8be5            mov     sp, bp
     3532:B525  [FB525]  5d              pop     bp
     3532:B526  [FB526]  ca0200          retf    2
-FUNC_3532_B529:
+compute_sample_position_value:
     3532:B529  [FB529]  55              push    bp
     3532:B52A  [FB52A]  8bec            mov     bp, sp
     3532:B52C  [FB52C]  83ec08          sub     sp, 8
@@ -41965,7 +41965,7 @@ FUNC_3532_B529:
     3532:B561  [FB561]  52              push    dx
     3532:B562  [FB562]  ff7608          push    word ptr [bp + 8]
     3532:B565  [FB565]  53              push    bx
-    3532:B566  [FB566]  9a0800a0fa      lcall   FUNC_3532_AA08  ; 0xfaa0, 8
+    3532:B566  [FB566]  9a0800a0fa      lcall   scale_offset_by_code  ; 0xfaa0, 8
     3532:B56B  [FB56B]  83c404          add     sp, 4
     3532:B56E  [FB56E]  8946f8          mov     word ptr [bp - 8], ax
     3532:B571  [FB571]  e90900          jmp     L_FB57D  ; 0xb57d

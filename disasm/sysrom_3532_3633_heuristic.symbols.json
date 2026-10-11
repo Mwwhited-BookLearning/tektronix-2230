@@ -27440,10 +27440,10 @@
     "notes": null
   },
   "FAA08": {
-    "name": "FUNC_3532_AA08",
+    "name": "scale_offset_by_code",
     "kind": "sub",
     "ref_count": 1,
-    "functional_name": null,
+    "functional_name": "scale_offset_by_code",
     "notes": null
   },
   "FAA20": {
@@ -28168,10 +28168,10 @@
     "notes": null
   },
   "FB529": {
-    "name": "FUNC_3532_B529",
+    "name": "compute_sample_position_value",
     "kind": "sub",
     "ref_count": 10,
-    "functional_name": null,
+    "functional_name": "compute_sample_position_value",
     "notes": null
   },
   "FB574": {
