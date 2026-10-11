@@ -2202,6 +2202,88 @@ FUNCTIONAL_NAMES = {
                                                # mode_flags, reset_plot_
                                                # home_or_acq per which
                                                # bit(s) fired
+    0xE8D64: "commit_pending_settings_and_refresh_display", # walks a
+                                               # handler table at
+                                               # [0x1D58] (10-byte
+                                               # records: test-ptr,
+                                               # mask, far-ptr handler),
+                                               # calling each handler
+                                               # via lcall [bp-0x16]
+                                               # when *testptr & mask
+                                               # != 0; then commits
+                                               # individually-flagged
+                                               # staged values ([0x512]
+                                               # -> [0x50e] -> [0x1b84];
+                                               # [0x51a] -> [0x516] ->
+                                               # [0x1b86]; [0x522] ->
+                                               # [0x51e] -> [0x1b88]
+                                               # plus [0x53a] |= 0x40;
+                                               # [0x52a] plus [0x4e7]/
+                                               # [0x4e8] bits guard
+                                               # calls to copy_char_
+                                               # cell_template_and_sync,
+                                               # SUB_EF346, SUB_EF393,
+                                               # clear_readout_attrs_
+                                               # for_item, conditionally
+                                               # cross-ROM handle_gpib_
+                                               # device_clear, scale_
+                                               # and_plot_point,
+                                               # SUB_EFB64); resets 5
+                                               # word accumulators,
+                                               # zeroes 4 byte fields,
+                                               # and zeroes the +4 byte
+                                               # field of 16 records in
+                                               # a separate [0x1D1C]
+                                               # table (stride 6); no
+                                               # static caller found -
+                                               # the generic "apply all
+                                               # staged settings
+                                               # changes" master
+                                               # dispatcher that the
+                                               # [0x4e0]-[0x4fc]
+                                               # settings-byte
+                                               # translator functions
+                                               # (SUB_F6E7C/F7045/
+                                               # F7273) feed into via
+                                               # the [0x1b70]-[0x1b8c]/
+                                               # [0x53a] flag
+                                               # convention; see docs/
+                                               # acquisition-and-
+                                               # plotting/mode-
+                                               # dispatcher-and-
+                                               # formatting.md
+    0xF4542: "select_channel_acq_preview_source", # computes di =
+                                               # [0x570]*16, reads dl =
+                                               # [di+0x18d] & 0xf (a
+                                               # per-channel item flag,
+                                               # [0x570] = selected-
+                                               # channel/item index),
+                                               # branches: 0 -> a
+                                               # computed [0x1cc4]-
+                                               # relative live-buffer
+                                               # pointer; 1 -> far ptr
+                                               # [0x68e]; 2 -> far ptr
+                                               # [0x692]; default (incl
+                                               # 3+) -> far ptr [0x68a]
+                                               # - each then feeds
+                                               # decimate_peakdet_
+                                               # samples; [0x68a]/
+                                               # [0x68e]/[0x692]/[0x696]
+                                               # are a 4-entry far-
+                                               # pointer array of per-
+                                               # acquisition-mode
+                                               # preview buffers
+                                               # (SAMPLE/AVERAGE/
+                                               # PEAKDET/ACCPEAK, per
+                                               # the 0xFF7B string
+                                               # table) populated by
+                                               # the dispatcher at
+                                               # 0xF28F0-0xF2C7F - NOT
+                                               # SREF-related despite
+                                               # being grouped with
+                                               # SUB_F42E6/F4629 in
+                                               # earlier notes; no
+                                               # static caller found
     0xF1001: "convert_sample_value",          # starts with a real x87
                                                # `fmul` (entered via
                                                # fallthrough, no own

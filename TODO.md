@@ -911,6 +911,33 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       and-plotting/mode-dispatcher-and-formatting.md`, `FUNCTIONS.md`,
       `VARIABLES.md`, and `STILL_PENDING_DECODE.md`. `find_item_table_
       indices` has no confirmed caller - named from mechanism alone.
+      2026-10-10 (same session): picked up the "3 good next full-trace
+      candidates" item above (`FUNC_3532_42E6`/`FUNC_3532_4542`/
+      `FUNC_3532_4629`) - the "one SREF cluster" framing was wrong.
+      `[0x1b70]`-`[0x1b8c]`/`[0x53a]` are a generic settings-commit/
+      change-notification convention (>100 grep hits across both
+      ROMs), written by a newly-found settings-byte-translator family
+      (`SUB_F6E7C`/`SUB_F7045`/`SUB_F7273`, each decomposing one raw
+      settings byte from `[0x4e0]`-`[0x4fc]`, none yet identified) and
+      consumed by a newly-found master commit dispatcher (`0xE8D64`,
+      named `commit_pending_settings_and_refresh_display`, no static
+      caller found). `FUNC_3532_4542` (`0xF4542`) is specifically an
+      **acquisition-mode preview-icon selector**, not SREF - confirmed
+      via the `0xFF7B` string-table decode (SAMPLE/AVERAGE/PEAKDET/
+      ACCPEAK labels at the dispatcher `0xF28F0`-`0xF2C7F` that
+      populates the `[0x68a]`/`[0x68e]`/`[0x692]`/`[0x696]` far-pointer
+      array it reads from); renamed `select_channel_acq_preview_
+      source`. `FUNC_3532_4629` remains the only one of the 3 still
+      plausibly SREF-specific (via its internal `SUB_F47AB` string
+      proximity) - left unnamed, confidence still too low. `FUNC_3532_
+      42E6` is now known to format a generically-committed staged
+      value (`[0x1b88]`, from staging word `[0x51e]`) - also left
+      unnamed. See `docs/decode-anomalies/landing-artifacts-and-jump-
+      tables.md`'s second 2026-10-10 follow-up and `docs/acquisition-
+      and-plotting/mode-dispatcher-and-formatting.md`'s matching
+      follow-up. **New next candidates**: identify what each settings
+      byte (`[0x4e0]`-`[0x4fc]`) controls, and `FUNC_3532_4629`'s
+      `[0x1bf0]` fixed-point value.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

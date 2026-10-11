@@ -13494,7 +13494,7 @@ L_E8D5A:
     3633:8D60  [E8D60]  8be5            mov     sp, bp
     3633:8D62  [E8D62]  5d              pop     bp
     3633:8D63  [E8D63]  cb              retf    
-FUNC_3633_8D64:
+commit_pending_settings_and_refresh_display:
     3633:8D64  [E8D64]  55              push    bp
     3633:8D65  [E8D65]  8bec            mov     bp, sp
     3633:8D67  [E8D67]  83ec16          sub     sp, 0x16
@@ -30836,7 +30836,7 @@ L_F4510:
     3532:453E  [F453E]  8be5            mov     sp, bp
     3532:4540  [F4540]  5d              pop     bp
     3532:4541  [F4541]  cb              retf    
-FUNC_3532_4542:
+select_channel_acq_preview_source:
     3532:4542  [F4542]  55              push    bp
     3532:4543  [F4543]  8bec            mov     bp, sp
     3532:4545  [F4545]  83ec08          sub     sp, 8

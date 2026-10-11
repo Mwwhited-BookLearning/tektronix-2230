@@ -609,6 +609,76 @@ flagged in `STILL_PENDING_DECODE.md`/`TODO.md` as 3 good next full-
 trace candidates, now that their landing-artifact confusion is cleared
 away.
 
+## Follow-up, 2026-10-10 (same session): the "SREF cluster" framing was wrong for `FUNC_3532_4542` - it's an acquisition-mode preview-icon selector, not SREF; named 2 of the 3 siblings
+
+Picked up the "3 good next full-trace candidates" thread above. Traced
+the `[0x1b70]`-`[0x1b8c]` flag range broadly first (grep across both
+ROMs): it's referenced in well over 100 locations spanning `0xE6682`-
+`0xFF70A` - far too pervasive to be SREF-specific. Same for `[0x53a]`:
+it's a generic word-sized "dirty/pending-change" bitmask, OR'd with
+distinct per-field bits (`0x8`/`0x20`/`0x30`/`0x100`/`0x1000`/`0x2000`/
+`0x4000`) by a newly-found settings-byte-translator function family -
+`SUB_F6E7C` (reads `[0x4eb]`/`[0x4e7]`/`[0x4e8]`), `SUB_F7045` (reads
+`[0x4fb]`/`[0x4fc]`/`[0x4f7]`/`[0x4f8]`), `SUB_F7273` (reads `[0x4ef]`/
+`[0x4f0]`) - each decomposes one raw "settings byte" from the
+`[0x4e0]`-`[0x4fc]` range into the `[0x1b6x]`-`[0x1b8x]` flag block,
+OR'ing its own per-field bit into `[0x53a]` only when the committed
+value actually changes. This is a **generic settings-commit/change-
+notification convention**, not an SREF-specific flag block - the same
+"ROM-adjacent != same subsystem" lesson already documented above for
+`0xEE35E`/`0xEE382`/`0xEE3BC`.
+
+Found the consumer side of that convention too: `0xE8D64` (now named
+`commit_pending_settings_and_refresh_display`) walks a handler table
+at `[0x1D58]` (10-byte records: test-pointer, mask, far-pointer
+handler), calling each handler via `lcall [bp-0x16]` when
+`*testptr & mask != 0`, then commits individually-flagged staged
+values (`[0x512]`->`[0x50e]`->`[0x1b84]`; `[0x51a]`->`[0x516]`->
+`[0x1b86]`; `[0x522]`->`[0x51e]`->`[0x1b88]` plus `[0x53a] |= 0x40`;
+`[0x52a]` plus `[0x4e7]`/`[0x4e8]` bits guard calls to `copy_char_
+cell_template_and_sync`, `SUB_EF346`, `SUB_EF393`, `clear_readout_
+attrs_for_item`, conditionally cross-ROM `handle_gpib_device_clear`,
+`scale_and_plot_point`, `SUB_EFB64`), then resets accumulator state
+(5 word fields, 4 byte fields, and the `+4` byte field of 16 records
+in a *separate* `[0x1D1C]` table, stride 6 - distinct from the
+already-documented `[0x1D10]` table's stride-0x10 records). No static
+caller found, same as the 3 siblings below.
+
+This re-traces `FUNC_3532_4542` (`0xF4542`) specifically: it's **not**
+SREF-related. It computes `di = [0x570]*16`, reads `dl = [di+0x18d] &
+0xf` (a per-channel/per-item flag - `[0x570]` is a selected-channel or
+selected-item index also used by `FUNC_3532_43EE`/`FUNC_3532_444F`/
+`compute_and_print_cursor_position_readout` to index separate tables
+at bases `0x578`/`0x576`/`0x192`), then branches: `0` -> a computed
+`[0x1cc4]`-relative live-buffer pointer; `1` -> far pointer `[0x68e]`;
+`2` -> far pointer `[0x692]`; default (incl. `3`+) -> far pointer
+`[0x68a]` - each feeds `decimate_peakdet_samples`. Confirmed via the
+string cross-reference technique (per `CLAUDE.md`) that `[0x68a]`/
+`[0x68e]`/`[0x692]`/`[0x696]` are a 4-entry far-pointer array of
+**per-acquisition-mode preview buffers**, not SREF icon slots: the
+dispatcher that populates them (`0xF28F0`-`0xF2C7F`) prints strings
+decoded directly from `binary/160-3532-14.bin` at the `0xFF7B0 +
+offset` physical addresses it loads - `" SAMPLE"`, `" AVERAGE"`,
+`" PEAKDET"` (x2), `" ACCPEAK"` (x2), `" SAVE"`, `" LIMIT"` -
+acquisition-mode menu labels. Renamed `FUNC_3532_4542` to `select_
+channel_acq_preview_source`.
+
+**Net**: of the 3 siblings, only `FUNC_3532_4629` (`0xF4629`) still
+plausibly belongs to SREF specifically - its internal `SUB_F47AB`
+landing point sits immediately before the confirmed "SREF LOCKED"/
+"SREF " string loads, and its `[0x1bf0]` fixed-point value/`[0x1b76]`
+bit-2 branch toward that string path is unique to it among the 3.
+Left unnamed for now (confidence in its exact role still isn't high
+enough per `CLAUDE.md`'s bar, and `[0x1bf0]`'s own identity isn't
+confirmed). `FUNC_3532_42E6` (`0xF42E6`) is now known to format
+`[0x1b88]` - a **generically**-committed staged value (copied from
+staging word `[0x51e]` by `commit_pending_settings_and_refresh_
+display` only when flag `[0x522]` fires), not confirmed SREF-specific
+either - also left unnamed. The settings-byte-translator family
+(`SUB_F6E7C`/`SUB_F7045`/`SUB_F7273`) and what each raw settings byte
+(`[0x4e0]`-`[0x4fc]`) actually controls remain unidentified; flagged in
+`STILL_PENDING_DECODE.md`/`TODO.md` as the new next candidates.
+
 ## Follow-up, 2026-10-10 (same session): `SUB_ECEDA`'s `hlt` opening explained - it's not a separate function, and its 14-17 external callers land 4 bytes before the real code
 
 Picked back up the `SUB_ECEDA` (`0xECEDA`) anomaly flagged earlier this

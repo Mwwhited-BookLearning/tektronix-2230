@@ -338,11 +338,14 @@ cluster at all). `SUB_F43CC`/`SUB_F408E`/`SUB_F45A4`/`SUB_F47AB` are
 artifacts-and-jump-tables.md`'s 2026-10-10 follow-up: none is a
 separate function; all 4 are landing artifacts into `compute_and_
 print_item_delta_readout` (already named) or 3 real sibling functions
-(`FUNC_3532_42E6`/`FUNC_3532_4542`/`FUNC_3532_4629`, not yet named -
-confidence too low to commit a name, see that doc) in an adjacent
-SREF-readout-formatting cluster, unrelated to this `[0x1D10]`
-item-dispatch cluster beyond sharing the `render_item_list_row`
-caller.
+(`FUNC_3532_42E6`/`select_channel_acq_preview_source`/`FUNC_3532_4629`)
+in an adjacent cluster, unrelated to this `[0x1D10]` item-dispatch
+cluster beyond sharing the `render_item_list_row` caller. **Correction,
+same day**: that cluster is not uniformly SREF-specific as first
+framed - see `landing-artifacts-and-jump-tables.md`'s later 2026-10-10
+follow-up ("the 'SREF cluster' framing was wrong for `FUNC_3532_4542`")
+for the acquisition-mode-preview-icon reading of `select_channel_acq_
+preview_source` and the corrected, hedged status of the other two.
 
 ## Follow-up, 2026-10-10: decoded `init_far_pointer_table_sysrom`'s embedded table fully - resolves `[0x1D1C]`'s boot init, does NOT resolve the `[0x1D10]+6` handler
 
@@ -455,3 +458,42 @@ pointers. Their actual runtime boot values remain unconfirmed.
 `find_item_table_indices` itself has no confirmed caller (checked by
 address, none found) - named from mechanism alone, same precedent as
 `step_item_subvalue_fwd`/`init_front_panel_cluster_defaults`.
+
+## Follow-up, 2026-10-10: found the settings-commit consumer, `commit_pending_settings_and_refresh_display` (`0xE8D64`), and the staged-settings-byte translator family
+
+While re-tracing the "SREF cluster" (see `docs/decode-anomalies/
+landing-artifacts-and-jump-tables.md`'s later 2026-10-10 follow-up for
+the full correction), found the general mechanism behind the
+`[0x1b70]`-`[0x1b8c]` flag range and the `[0x53a]` "dirty" word that
+several formatting routines in this file read: they're written by a
+**settings-byte translator function family** - `SUB_F6E7C` (reads
+`[0x4eb]`/`[0x4e7]`/`[0x4e8]`), `SUB_F7045` (reads `[0x4fb]`/`[0x4fc]`/
+`[0x4f7]`/`[0x4f8]`), `SUB_F7273` (reads `[0x4ef]`/`[0x4f0]`) - each
+decomposing one raw "settings byte" from the `[0x4e0]`-`[0x4fc]` range
+into the `[0x1b6x]`-`[0x1b8x]` flag block, OR'ing a per-field bit into
+`[0x53a]` only when the committed value actually changes. None of
+`[0x4e0]`-`[0x4fc]` is documented/identified yet - what each settings
+byte actually controls is still open (flagged in `STILL_PENDING_
+DECODE.md`/`TODO.md`).
+
+The consumer side is `0xE8D64`, renamed `commit_pending_settings_and_
+refresh_display`: it walks a handler table at `[0x1D58]` (10-byte
+records: test-pointer, mask, far-pointer handler), calling each
+handler via `lcall [bp-0x16]` when `*testptr & mask != 0`; then commits
+individually-flagged staged values (`[0x512]`->`[0x50e]`->`[0x1b84]`;
+`[0x51a]`->`[0x516]`->`[0x1b86]`; `[0x522]`->`[0x51e]`->`[0x1b88]` plus
+`[0x53a] |= 0x40`; `[0x52a]` plus `[0x4e7]`/`[0x4e8]` bits guard calls
+to `copy_char_cell_template_and_sync`, `SUB_EF346`, `SUB_EF393`,
+`clear_readout_attrs_for_item`, conditionally cross-ROM `handle_gpib_
+device_clear`, `scale_and_plot_point`, `SUB_EFB64`); then resets 5
+word accumulator fields, zeroes 4 byte fields, and zeroes the `+4`
+byte field of 16 records in a *separate* `[0x1D1C]` table (stride 6 -
+distinct from this file's `[0x1D10]` table, which is stride 0x10). No
+static caller found, same as `FUNC_3532_42E6`/`select_channel_acq_
+preview_source`/`FUNC_3532_4629` below it in the ROM.
+
+This confirms the `[0x1b70]`-`[0x1b8c]`/`[0x53a]` convention is a
+**generic settings-stage/commit/redraw mechanism** used across many
+unrelated subsystems (display, GPIB, plotting), not specific to any
+one of them - consistent with the broad grep hit range (`0xE6682`-
+`0xFF70A`, well over 100 references) found while tracing this.

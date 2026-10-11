@@ -8050,10 +8050,10 @@
     "notes": null
   },
   "E8D64": {
-    "name": "FUNC_3633_8D64",
+    "name": "commit_pending_settings_and_refresh_display",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "commit_pending_settings_and_refresh_display",
     "notes": null
   },
   "E8D74": {
@@ -20524,10 +20524,10 @@
     "notes": null
   },
   "F4542": {
-    "name": "FUNC_3532_4542",
+    "name": "select_channel_acq_preview_source",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "select_channel_acq_preview_source",
     "notes": null
   },
   "F459E": {

@@ -946,14 +946,23 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   item_delta_readout` (`0xF3EA3`) - simply one of its own previously-
   unwalked internal branches. The other 3 land inside 3 real,
   cleanly-prologued sibling functions (`FUNC_3532_42E6`/`FUNC_3532_
-  4542`/`FUNC_3532_4629`) that form an adjacent, unrelated ROM cluster
-  (`0xF3EA3`-`0xF48FF`) formatting/printing the SREF reference-waveform
-  numeric readout and "SREF LOCKED" status, sharing buffer `[0x65e]`
-  and flags `[0x1b70]`-`[0x1b8c]`/`[0x1be4]`-`[0x1be9]`/`[0x54a]`-
-  `[0x54e]`. Not named yet (flag semantics not traced well enough for
-  confident names) - 3 good next full-trace candidates. See `docs/
-  decode-anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
-  2026-10-10" (second one) section.
+  4542`/`FUNC_3532_4629`), originally framed as one adjacent SREF
+  reference-waveform readout cluster. **Correction, same day**: that
+  framing was wrong for `FUNC_3532_4542`, renamed `select_channel_acq_
+  preview_source` - it's an acquisition-mode preview-icon selector
+  (SAMPLE/AVERAGE/PEAKDET/ACCPEAK, confirmed via the `0xFF7B` string
+  table), not SREF. Also found the generic settings-commit mechanism
+  behind the shared `[0x1b70]`-`[0x1b8c]`/`[0x53a]` flags: a settings-
+  byte-translator family (`SUB_F6E7C`/`SUB_F7045`/`SUB_F7273`, reading
+  raw settings bytes `[0x4e0]`-`[0x4fc]`, none yet identified) feeding
+  a master commit dispatcher (`0xE8D64`, now `commit_pending_settings_
+  and_refresh_display`) - a generic mechanism used well outside SREF
+  (>100 grep hits across both ROMs). `FUNC_3532_42E6`/`FUNC_3532_4629`
+  remain unnamed (only `4629`, via its `SUB_F47AB` string proximity,
+  still plausibly SREF-specific). See `docs/decode-anomalies/landing-
+  artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-10" sections
+  (second and third) and `docs/acquisition-and-plotting/mode-
+  dispatcher-and-formatting.md`'s matching follow-up.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
