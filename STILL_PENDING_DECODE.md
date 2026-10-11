@@ -1221,6 +1221,16 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   control-flow hazard - can't be settled from static reading alone.
   See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
   matching 2026-10-11 (later still) follow-up. No renames.
+  **Checked with the emulator, same day**: ran a full 80M-instruction
+  boot-to-self-test-complete trace with watchpoints on `SUB_F6DC9`'s 4
+  callers and itself - zero hits on all 5. None of the 4 callers
+  execute during boot/self-test; they're plausibly only reached from a
+  specific on-screen readout mode selected via the front panel, which
+  the emulator's current build doesn't simulate (front-panel input is
+  stubbed, not live-interactive - see `emulator/docs/design.md`).
+  Whether `loopne` is ever taken remains unresolved, but the reason is
+  now a known capability gap (needs scripted front-panel/menu
+  navigation), not an unlooked-at question.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

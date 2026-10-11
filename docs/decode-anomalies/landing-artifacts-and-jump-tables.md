@@ -1425,3 +1425,36 @@ the rest of the class) or an actual latent control-flow hazard. Not
 renaming `SUB_F6DC9`; `find_item_table_indices` already has its real
 name and this is just where an external call happens to land inside
 it.
+
+## Follow-up, 2026-10-11 (later still): ran the emulator on `SUB_F6DC9`'s 4 call sites - none execute during boot/self-test; genuinely needs live front-panel interaction, confirming this is outside the emulator's current scope
+
+Wrote a one-off script (`emulator/`-local, scratch only, not committed)
+reusing `emu.py`'s own boot setup (`memory_map`/`timer`/`io_stubs`,
+`--comm-installed`/`--stub-registers` equivalents) with `UC_HOOK_CODE`
+watchpoints on `0xEE718`, `0xFD144`, `0xFD35D`, `0xFF10A` (the 4 real
+callers) and `0xF6DC9` itself, printing `cx`/`ZF` on every hit. Ran a
+full 80,000,000-instruction trace from the real reset vector - the
+same scale the project's emulator README reports as reaching "the
+entire power-up self-test sequence... completes" with these same
+stub settings.
+
+**Result: zero hits on all 5 watched addresses.** None of
+`SUB_F6DC9`'s 4 callers execute anywhere during boot or the full
+self-test sequence. Consistent with what each caller's own surrounding
+code suggests (readout/cursor-position-style formatting gated on
+`[0x20]`/`[0x1b8b]` flag bytes, the same family as the already-
+documented SREF/cursor-readout cluster above) - these are plausibly
+only reached once a specific on-screen readout mode is selected via
+the front panel, and `emulator/docs/design.md` explicitly scopes "real
+front-panel input (knobs, buttons...)" as out of scope for the current
+tracer (front-panel registers are stubbed with fixed values, not
+scripted live interaction).
+
+**Net**: this doesn't resolve whether `loopne` is ever taken - it
+narrows *why* it's unresolved. This isn't a question the current
+emulator build can answer without first adding scripted front-panel/
+menu-navigation input (a capability it doesn't have yet), and isn't
+resolvable by any further static reading either (already established
+above: none of the 4 callers' enclosing functions ever write `cx`).
+Genuinely blocked on a real capability gap, not just unlooked-at. No
+renames.

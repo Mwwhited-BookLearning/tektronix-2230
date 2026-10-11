@@ -1099,6 +1099,18 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       single-caller majority (lowest-value per the project's own
       caller-count heuristic) plus the emulator-only open questions
       already flagged above.
+      2026-10-11 (later still): ran the emulator on `SUB_F6DC9`'s open
+      `loopne`-taken question - a full 80M-instruction boot-to-self-
+      test-complete trace with watchpoints on all 4 callers plus
+      `SUB_F6DC9` itself got zero hits. None of the 4 callers execute
+      during boot/self-test; they're plausibly readout-mode-gated code
+      only reached via live front-panel navigation, which the
+      emulator's current build explicitly doesn't simulate (stubbed
+      front-panel registers, not scripted interaction - see
+      `emulator/docs/design.md`). Reclassified from "needs the
+      emulator" to "needs scripted front-panel input, a capability the
+      emulator doesn't have yet" - see `docs/decode-anomalies/landing-
+      artifacts-and-jump-tables.md`'s matching follow-up.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately
