@@ -856,6 +856,24 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       unnamed; its `ax=5..14`/`SUB_EFFEE` path wasn't pinned down. See
       `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
       "Follow-up, 2026-10-11" section.
+      2026-10-11 (later): cross-checked all 3 open cases against
+      Ghidra's own independent analysis, then resolved `SUB_EFFEE` by
+      hand. `SUB_EFDC2`/`SUB_EFD99` are independently confirmed (by
+      Ghidra's own auto-analysis, not just manual tracing) as part of
+      `FUNC_3633_FC94`'s own function body. `SUB_EFFEE` is NOT dead
+      garbage (a Ghidra-probe-based guess that turned out wrong) - it
+      lands 2 bytes into a real `jmp rel16 +0x27` at `0xEFFEC`, inside
+      an untraced tail of `FUNC_3633_FF72` that neither tool's normal
+      flow analysis reaches. New, higher-priority candidate: that
+      `jmp`'s own target doesn't resolve sensibly under either
+      interpretation of the 16-bit-offset-overflow (carry into
+      `160-3532`, or wraparound landing inside `160-3633`'s own
+      copyright string) - possible systemic bug in the heuristic
+      disassembler's cross-64 KB jump-target arithmetic, worth
+      checking against other `L_F0xxx` near-jump targets project-wide
+      and a good candidate for the emulator to settle by single-
+      stepping real execution. See `docs/decode-anomalies/landing-
+      artifacts-and-jump-tables.md`'s matching follow-up.
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

@@ -1056,3 +1056,76 @@ and could not independently confirm the frame-collapse mechanism
 itself. Kept both probe scripts in `decompile/` as reusable,
 non-mutating diagnostics (matching the existing `apply_*`/`export_*`
 naming) rather than treating them as throwaway one-offs.
+
+## Follow-up, 2026-10-11 (same day, later): resolved SUB_EFFEE by hand - it's a landing artifact into previously-undiscovered code, not dead garbage (correcting the Ghidra-probe-based guess above)
+
+The Ghidra cross-check above reported a degenerate zero-length
+`CreateFunctionCmd` body for `SUB_EFFEE`, which was read as pointing
+toward the dead/incoherent-garbage category. Manually decoding the
+actual bytes shows that guess was wrong - re-tracing this one by hand
+instead of trusting the tool's summary verdict.
+
+`SUB_EFFEE`'s only external caller is `FUNC_3633_9611`'s `L_E963C`
+branch (`0xE9642`, far call to `0xEFFE:0x000E`, physical `0xEFFEE`).
+Decoding raw bytes from `binary/160-3633-14.bin` starting well before
+that landing point (`0xEFF99` onward) shows this region is real,
+coherent code - register moves, `shl`/`imul` index math, and the same
+`[x + 0x57c]` per-channel-settings-table read seen in the neighboring,
+fully-traced `FUNC_3633_FE2A` - **not** random bytes. It is, in fact,
+the untraced tail of `FUNC_3633_FF72` (`0xEFF72`): that function's
+labeled body stops at its own `jmp L_F0019` (`0xEFF96`, 3 bytes), and
+neither this project's heuristic scanner nor Ghidra's own
+auto-analysis ever disassembles anything past that point (confirmed
+directly: a read-only query of Ghidra's existing function/instruction
+tables at `0xEFF99`/`0xEFFEC`/`0xEFFEE` returns "no function, no
+instruction" for all three - the same emptiness as the heuristic
+scanner's own listing). Both tools' normal flow-tracing simply never
+reaches this stretch; `CreateFunctionCmd`'s degenerate zero-length
+result at exactly `0xEFFEE` is consistent with this (nothing nearby
+for Ghidra's own linear disassembler to anchor on either, since the
+instruction before `SUB_EFFEE`'s landing point was never decoded by
+it in the first place) - not evidence the bytes are garbage.
+
+Continuing the manual decode lands `SUB_EFFEE`'s landing point
+(`0xEFFEE`) exactly 2 bytes into the real instruction immediately
+before it: `jmp rel16 +0x27` (`e9 27 00`, 3 bytes, `0xEFFEC`-`0xEFFEE`
+inclusive). The landing byte is literally the jump's own displacement
+high byte (`0x00`), reinterpreted as a fresh opcode (`add byte ptr
+[bp+di-0xfba], cl`). This is the same mechanism as `SUB_EDDE2`
+(landed 2 bytes into a real `cmp`) and `SUB_EFD99` (landed 1 byte into
+a real `les` tail) - landing mid-instruction inside genuinely-real
+code, not a byte-overlap coincidence and not dead/unreachable garbage.
+
+**New open question surfaced by this trace** (not resolved): the real
+`jmp rel16 +0x27` at `0xEFFEC` that `SUB_EFFEE` lands inside doesn't
+have a settled target. Its displacement arithmetic, taken at face
+value, pushes the 16-bit offset past `0xFFFF` (same for
+`FUNC_3633_FF72`'s own `jmp L_F0019` a few bytes earlier, offset
+arithmetic `0xFF99 + 0x80 = 0x10019`). The heuristic scanner's
+convention treats this overflow as carrying into the *next* 64 KB of
+physical address space (landing in `160-3532` ROM, e.g. `L_F0019` at
+physical `0xF0019`) - but a real 8086/8088 near jump cannot change
+segments, so that interpretation requires `CS` to already cover both
+ROMs, which isn't how this project's segment convention works
+elsewhere. The alternative - truncating the overflow to a true 16-bit
+IP wraparound within the current code segment - lands at `0xE0019`,
+which was checked directly and falls inside the ROM header's
+copyright string (`"...ektronix, Inc., 1985, 86, 87, ..."`), not code
+either. Neither interpretation produces a sensible target. This may
+point to a genuine bug in the heuristic disassembler's cross-64 KB-
+boundary jump-target computation (flat physical-address carry instead
+of real 16-bit IP wraparound) - worth flagging project-wide, since any
+other `L_F0xxx`-labeled "boundary-crossing" near-jump target elsewhere
+in the disassembly could be similarly mislabeled. Not audited further
+this round; the emulator (`emulator/`) is the right tool to settle
+this definitively by single-stepping a real execution through this
+jump, rather than reasoning about it statically.
+
+Net result: `SUB_EFFEE` is now a resolved instance of the established
+landing-into-real-instruction category (not garbage, and not a fourth
+mechanism). `FUNC_3633_FF72`'s true full extent is larger than
+currently labeled (it continues past its own `jmp` into further
+per-channel settings-table code), and its real exit target is an open
+question with project-wide implications for the disassembler's own
+jump-arithmetic convention. Left `FUNC_3633_FF72`/`SUB_EFFEE` unnamed;
+no renames this round.

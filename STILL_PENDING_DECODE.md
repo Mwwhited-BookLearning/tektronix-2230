@@ -1030,6 +1030,33 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   "confusing region crossing into 160-3532" observation and pointing
   toward `SUB_EFFEE` being dead/incoherent garbage rather than a clean
   landing point. `SUB_EFFEE`'s real mechanics still not pinned down.
+- **2026-10-11 (same session, later): resolved `SUB_EFFEE` by hand -
+  the Ghidra-probe-based "dead garbage" guess directly above was
+  wrong.** Manually decoding raw bytes from `0xEFF99` onward (well
+  before the landing point) shows real, coherent code - a
+  `[x+0x57c]`-table read matching the neighboring `FUNC_3633_FE2A`'s
+  pattern, not noise. It's the untraced tail of `FUNC_3633_FF72`
+  (`0xEFF72`): neither the heuristic scanner nor Ghidra's own
+  auto-analysis ever disassembles anything past `FUNC_3633_FF72`'s own
+  `jmp` at `0xEFF96` (confirmed directly against Ghidra's live
+  function/instruction tables - both empty there), which is why
+  `CreateFunctionCmd` returned a degenerate body rather than evidence
+  of garbage. `SUB_EFFEE`'s landing point (`0xEFFEE`) sits exactly 2
+  bytes into the real `jmp rel16 +0x27` instruction at `0xEFFEC`,
+  reinterpreting its displacement high byte as a fresh opcode - the
+  same mechanism as `SUB_EDDE2`/`SUB_EFD99`, not a new case. **New
+  open question surfaced**: that `jmp`'s own target isn't settled -
+  the displacement arithmetic overflows 16-bit IP, and neither
+  resolution convention (carry into the next 64 KB, landing in
+  `160-3532`; or true wraparound within the segment, landing inside
+  `160-3633`'s own copyright-string header) produces a sensible
+  target. Flagged as a possible systemic bug in the heuristic
+  disassembler's cross-64 KB jump-target computation, worth checking
+  against other `L_F0xxx`-labeled near-jump targets project-wide, and
+  a good candidate for the emulator to settle by single-stepping real
+  execution rather than static reasoning. See `docs/decode-anomalies/
+  landing-artifacts-and-jump-tables.md`'s matching 2026-10-11
+  follow-up.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
