@@ -903,6 +903,21 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       confirmed instance of this mechanism. See `docs/decode-anomalies/
       landing-artifacts-and-jump-tables.md`'s matching follow-up. Left
       `FUNC_3633_9500`/`SUB_E951A` unnamed.
+      2026-10-11 (later still): exhausted the static-reference search
+      for `FUNC_3633_9611` itself. Beyond the already-found "no caller
+      in Ghidra either" and "no `[0x1D10]`-table boot-init entry at the
+      needed offset" results, grepped the full disassembly for the
+      literal value `9611` (only hit: its own label) and byte-pattern-
+      searched both raw ROMs for every plausible far-pointer encoding
+      (256 segment candidates) and a bare near-offset encoding - zero
+      hits anywhere in either case. No static reference to `0xE9611`
+      exists in either ROM outside its own definition, under every
+      encoding this project knows how to search for. Hedged working
+      conclusion: most likely genuinely unreferenced in this ROM
+      revision (can't rule out a dynamically-computed call target,
+      which only the emulator could settle). No renames; `SUB_E962C`
+      still untouched. See `docs/decode-anomalies/landing-artifacts-
+      and-jump-tables.md`'s matching follow-up.
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

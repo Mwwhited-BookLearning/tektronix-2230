@@ -1179,3 +1179,71 @@ coincidentally-decodable byte offset, the same "one shared source-level
 expansion" theory from 2026-10-09, now better supported since the
 *mechanism*, not just the byte pattern, is identical across all 6).
 Left `FUNC_3633_9500`/`SUB_E951A` unnamed; no renames this round.
+
+## Follow-up, 2026-10-11 (later still): exhausted the static-reference search for `FUNC_3633_9611` - no literal reference to it exists anywhere in either ROM
+
+Picked up the oldest open question about `FUNC_3633_9611` itself (as
+opposed to its `SUB_EFDC2`/`SUB_EFFEE` sub-labels, both now resolved
+above): whether it's genuinely dead/unreachable code, or reached
+indirectly through some table this project hasn't connected to it yet
+- most plausibly the neighboring `[0x1D10]` per-item handler table
+(`VARIABLES.md`'s "Per-item handler dispatch table" section), whose
+`[+6]` field is documented as a far-pointer handler called with a
+small command-code argument - superficially a plausible match for
+`FUNC_3633_9611`'s own shape (a dispatcher taking a small integer code
+in `[bp+8]`).
+
+Four independent checks, all negative:
+
+1. **Direct call references**: grepped the full heuristic disassembly
+   (`disasm/sysrom_3532_3633_heuristic.lst`, both ROMs) for `9611` in
+   any form - the only hit is the label's own definition line
+   (`FUNC_3633_9611:`, `0xE9611`). No `lcall`/`call` anywhere
+   references this address, and no `mov`-immediate anywhere loads this
+   value either (ruling out a runtime-constructed pointer built from a
+   literal immediate, the kind of code that would be needed to
+   populate a table entry at init time without a static data-table
+   reference).
+2. **Far-pointer table-entry encoding**: byte-pattern-searched both
+   raw ROM binaries (`binary/160-3532-14.bin`, `binary/160-3633-14.bin`)
+   for a stored 4-byte far pointer (offset word `0x9611` + any of 256
+   plausible segment words, `0xE000`-`0xE970`) - zero hits in either
+   ROM (this repeats and extends the search already summarized in the
+   session's own notes; recorded here for completeness since this is
+   where the rest of the investigation lives).
+3. **Bare near-offset table-entry encoding**: in case a table (like
+   `[0x1D10]`, or some other dispatch table) stores only a 2-byte near
+   offset under one shared/implicit segment rather than a full far
+   pointer, searched both raw ROM binaries for the bare 2-byte pattern
+   `0x9611` (little-endian) on its own, with no segment-word
+   constraint at all - still zero hits in either ROM.
+4. **The `[0x1D10]` table's own boot-init record, specifically**:
+   `STILL_PENDING_DECODE.md`'s 2026-10-10 entry already established
+   that `init_far_pointer_table_sysrom`'s embedded RAM-init table has
+   *no* entry at `dest_offset=0x96` (the slot that would correspond to
+   `[0x1D10]`'s record-0 `[+6]` handler field) - so this specific,
+   most-plausible table doesn't even get a boot-time far-pointer value
+   from ROM data at all, let alone one matching `0xE9611`. Whatever
+   sets any record's `[+6]` handler (if anything ever does), it isn't
+   done via that table's static ROM data.
+
+Between the existing Ghidra cross-check (2026-10-11, above - "still no
+confirmed caller found by either tool") and these four additional
+checks, `0xE9611` does not appear anywhere in either ROM binary except
+at its own definition, under every static-reference encoding this
+project knows how to construct (direct call, bare immediate, far
+pointer, near offset). This doesn't - and can't - rule out a
+dynamically-computed call target (e.g. an address built at runtime
+from a base register plus a computed index, rather than loaded from a
+literal constant or ROM table), which no static byte-pattern search
+can find; settling that definitively would need the emulator
+(`emulator/`) tracing real execution rather than more static search.
+But given the exhaustive negative result across every static mechanism
+tried, the working conclusion is that `FUNC_3633_9611` is most likely
+genuinely unreferenced in this ROM revision - real, well-formed,
+Ghidra-confirmed code that nothing in either ROM actually calls.
+**Hedged, not certain**: no renames made (nothing to name a confirmed
+caller relationship for), and this conclusion rests on the absence of
+evidence rather than a positive confirmation, which is inherently
+weaker. `SUB_E962C` (the hardware shift-register-write helper inside
+`FUNC_3633_9611`'s `ax`==2,3,4 branch) remains untouched and unnamed.

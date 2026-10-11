@@ -1100,6 +1100,29 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   now better supported). See `docs/decode-anomalies/landing-artifacts-
   and-jump-tables.md`'s matching 2026-10-11 follow-up. Left
   `FUNC_3633_9500`/`SUB_E951A` unnamed.
+- **2026-10-11 (same session, later still): exhausted the static-
+  reference search for `FUNC_3633_9611` itself (`ref_count: 0`) -
+  still no confirmed caller, now via 4 independent checks instead of
+  1.** Beyond the already-documented Ghidra cross-check (no caller
+  found by either tool) and the already-documented absence of a
+  `[0x1D10]`-table boot-init entry at the needed `dest_offset=0x96`
+  (2026-10-10, above), grepped the full heuristic disassembly for the
+  literal value `9611` in any form (only hit: the label's own
+  definition - no `lcall`/`call`/`mov`-immediate anywhere references
+  it), then byte-pattern-searched both raw ROM binaries for every
+  plausible stored far-pointer encoding (256 segment-word candidates)
+  and for a bare 2-byte near-offset encoding with no segment
+  constraint at all - zero hits in either ROM for any of these. No
+  static reference to `0xE9611` exists anywhere in either ROM except
+  its own definition, under every encoding this project knows how to
+  search for. **Hedged conclusion, not certain**: can't rule out a
+  dynamically-computed call target (built at runtime from a register
+  plus computed index rather than a literal/table constant), which no
+  static search can find - the emulator would be needed to settle that
+  definitively. Working assessment: most likely genuinely unreferenced
+  in this ROM revision. No renames; `SUB_E962C` remains untouched. See
+  `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+  matching 2026-10-11 (later still) follow-up.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
