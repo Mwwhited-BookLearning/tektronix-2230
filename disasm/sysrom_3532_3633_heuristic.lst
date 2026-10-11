@@ -34783,7 +34783,7 @@ L_F6CE4:
     3532:6CE4  [F6CE4]  8be5            mov     sp, bp
     3532:6CE6  [F6CE6]  5d              pop     bp
     3532:6CE7  [F6CE7]  ca0200          retf    2
-FUNC_3532_6CEA:
+find_item_table_indices:
     3532:6CEA  [F6CEA]  55              push    bp
     3532:6CEB  [F6CEB]  8bec            mov     bp, sp
     3532:6CED  [F6CED]  83ec24          sub     sp, 0x24

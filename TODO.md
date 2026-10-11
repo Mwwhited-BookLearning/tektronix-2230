@@ -854,6 +854,23 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       and-formatting.md`'s 2026-10-10 follow-up. **Still open**: the
       `[0x1D10]+6` handler's own init/code, still never located by any
       mechanism tried so far.
+      2026-10-10 (same session): tracing `[0x1D1C]`'s further usage
+      found a new, previously-unnamed function, `find_item_table_
+      indices` (`0xF6CEA`) - scans two new 23-entry far-pointer arrays
+      (`[0x1D5C]`/`[0x1D60]`) against 2 more `[0x1D1C]` record-0 field
+      pairs (`+0x42`/`+0x48`, `+0x4E`/`+0x54`), storing the matching
+      index to `[0x1B64]`/`[0x1B67]` - which 10+ other sites then feed
+      into the heavily-called readout-label builder `SUB_ECEDA`
+      (itself not yet analyzed). Checked whether the same boot-init
+      table also sets `[0x1D5C]`/`[0x1D60]` - entries exist
+      (`dest_offset=0xDC`/`0xE0`) but both resulting far pointers
+      decode as plausible *code*, not the flat data arrays the scan
+      loop expects - most likely the same incidental-overlap situation
+      as `[0x1D10]`'s own `0x90`/`0x94` entries, not a real init. See
+      the third "Follow-up, 2026-10-10" section in `docs/acquisition-
+      and-plotting/mode-dispatcher-and-formatting.md`, `FUNCTIONS.md`,
+      `VARIABLES.md`, and `STILL_PENDING_DECODE.md`. `find_item_table_
+      indices` has no confirmed caller - named from mechanism alone.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

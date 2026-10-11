@@ -1097,6 +1097,16 @@ See `docs/acquisition-and-plotting/ram-far-pointer-table.md`.
   flagged in `docs/acquisition-and-plotting/ram-far-pointer-table.md`).
   See `docs/acquisition-and-plotting/mode-dispatcher-and-formatting
   .md`'s 2026-10-10 follow-up for the full trace.
+- **2026-10-10, same session: 2 more entries (`dest_offset=0xDC`/
+  `0xE0`) land on `[0x1D5C]`/`[0x1D60]`** - two new far-pointer table
+  bases found while tracing `[0x1D1C]`'s further usage (via the new
+  `find_item_table_indices`, `0xF6CEA` - see `FUNCTIONS.md`/
+  `VARIABLES.md`). Both resulting far pointers (`F076:000A`/
+  `F070:000E`) decode as plausible x86 *code*, not the flat data
+  arrays the consuming function's scan loop expects - almost
+  certainly the same incidental-overlap situation as `[0x1D10]`'s
+  `0x90`/`0x94` entries above, not a real init. These 2 pointers'
+  actual runtime values remain unconfirmed.
 
 ## Menu/UI rendering
 

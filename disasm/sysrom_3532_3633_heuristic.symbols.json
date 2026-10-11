@@ -23401,10 +23401,10 @@
     "notes": null
   },
   "F6CEA": {
-    "name": "FUNC_3532_6CEA",
+    "name": "find_item_table_indices",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "find_item_table_indices",
     "notes": null
   },
   "F6D19": {

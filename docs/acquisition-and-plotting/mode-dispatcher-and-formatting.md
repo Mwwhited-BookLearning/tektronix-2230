@@ -405,3 +405,53 @@ many records the table at physical `0x388` actually holds and what its
 full per-record layout is (offsets `+0x20`/+0x26`/+0x3E`/+0x46`/+0x4C`
 are referenced across the sites found so far, but not a complete
 record map).
+
+## Follow-up, 2026-10-10 (same session): 2 more record-0 fields of `[0x1D1C]`, and a new sibling function (`find_item_table_indices`) - plus the init table's `[0x1D5C]`/`[0x1D60]` entries look like incidental overlap too
+
+Continued tracing `[0x1D1C]`'s usage past `update_indexed_value_if_
+changed` by reading the next functions in ROM order
+(`sysrom_3532_3633_heuristic.lst` around physical `0xF6CEA`). Found a
+new, previously-unnamed function - now `find_item_table_indices`
+(`0xF6CEA`, see `FUNCTIONS.md`) - that reads `[0x1D1C]` record 0's
+`+0x42`/`+0x48` (a word pair) and `+0x4E`/`+0x54` (another word pair),
+then linearly scans two small far-pointer-addressed arrays for a
+record matching each pair:
+
+- `[0x1D5C]`: 23 entries, 6-byte records (word, word, byte, byte) -
+  matched against `+0x42`/`+0x48` plus 2 more byte-sized values; the
+  found index (or `0x17`=23 if no match after the full scan) is stored
+  to `[0x1B64]`.
+- `[0x1D60]`: 23 entries, 4-byte records (word, word) - matched
+  against `+0x4E`/`+0x54`; found index stored to `[0x1B67]`.
+
+Both writes also set a display-dirty bit in `[0x53A]` (`0x10` for
+`[0x1B64]`, `0x20` for `[0x1B67]`) when the index actually changes -
+the same "changed flag + redraw request" idiom used throughout this
+area. `[0x1B64]`/`[0x1B67]` are then read back at ~10 other sites
+(`0xF3827` through `0xF3BBB`, `0xF8594`) as arguments - alongside
+`[0x1B72]` - into the heavily-called (14 sites) readout-label builder
+`SUB_ECEDA` (not yet analyzed/named). This is consistent with "which
+step/detent value does the current item match" feeding a displayed
+label/unit string, but *which* item field this concerns (vertical
+scale? position? something else) is not confirmed - flagging the
+plausible reading, not asserting it.
+
+**Checked whether `init_far_pointer_table_sysrom`'s table also
+initializes `[0x1D5C]`/`[0x1D60]`** (the same technique used for
+`[0x1D1C]` above): their `ds_offset`s correspond to `dest_offset=0xDC`
+and `0xE0`, and both *are* present in the table - `0xDC` ->
+`F076:000A` (phys `0xF076A`), `0xE0` -> `F070:000E` (phys `0xF070E`).
+But reading the raw bytes at those two physical addresses (`binary/
+160-3532-14.bin`) shows byte patterns that disassemble as plausible
+x86 instructions, not the flat `(word, word, byte, byte)`/`(word,
+word)` data arrays `find_item_table_indices`'s scan loop expects.
+Given the table's destination range (`0x2090`-`0x21F0`) already showed
+exactly this kind of implausible incidental overlap for `[0x1D10]`'s
+`0x90`/`0x94` entries above, the same reading applies here: most
+likely coincidental overlap with the bulk table's unrelated
+destination range, not a real, intentional initialization of these 2
+pointers. Their actual runtime boot values remain unconfirmed.
+
+`find_item_table_indices` itself has no confirmed caller (checked by
+address, none found) - named from mechanism alone, same precedent as
+`step_item_subvalue_fwd`/`init_front_panel_cluster_defaults`.

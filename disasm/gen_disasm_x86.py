@@ -4548,6 +4548,41 @@ FUNCTIONAL_NAMES = {
                                                # exact visual role (ruler?
                                                # dashes?) not confirmed.
                                                # ref_count: 0
+    0xF6CEA: "find_item_table_indices",       # 2026-10-10: found while
+                                               # tracing [0x1D1C]'s usage
+                                               # further. Reads the
+                                               # current item's record at
+                                               # [0x1D1C] (fields +0x42/
+                                               # +0x48 and +0x4E/+0x54),
+                                               # then scans two 23-entry
+                                               # far-pointer-addressed
+                                               # arrays - one at [0x1D5C]
+                                               # (6-byte records: word,
+                                               # word, byte, byte) and one
+                                               # at [0x1D60] (4-byte
+                                               # records: word, word) -
+                                               # for a matching record,
+                                               # storing the found index
+                                               # into [0x1B64]/[0x1B67]
+                                               # respectively and setting
+                                               # the display-dirty mask
+                                               # [0x53A] bits 0x10/0x20 if
+                                               # the index changed. The
+                                               # found indices are later
+                                               # used (10+ other sites)
+                                               # as arguments into the
+                                               # heavily-called readout-
+                                               # label builder SUB_ECEDA -
+                                               # consistent with a
+                                               # "which step/detent does
+                                               # this value currently
+                                               # match" lookup, but which
+                                               # item field this concerns
+                                               # (scale? position?) is not
+                                               # confirmed. Named from
+                                               # mechanism only. ref_count:
+                                               # 0, no confirmed caller
+                                               # found.
 }
 
 # Semantic names for a function's own incoming stack parameters
