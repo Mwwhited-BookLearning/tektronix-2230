@@ -890,6 +890,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       sites' specific record identities). **Could not regenerate
       `_readable.asm`/`binary/aligned/` this round - `nasm` isn't on
       `PATH` in this environment; needs a re-run once it is.**
+      2026-10-11 (later still): resolved `0xE951A`'s "14 pushed/12
+      cleaned" stack mismatch flagged above - applied the inherited-
+      `bp`/`mov sp,bp` frame-collapse check developed for `SUB_EFDC2`/
+      `SUB_ECE82` and it fits exactly. All 6 callers `lcall` past
+      `FUNC_3633_9500`'s real prologue straight into `SUB_E951A`, so
+      its shared exit collapses to the *calling* function's own
+      inherited frame and returns via `retf 2` where that caller's own
+      exit would have used `retf 4` - the missing 2 bytes, confirmed
+      against 2 of the 6 call sites. A real silent stack-corruption bug
+      in the original firmware, not a disassembly artifact - 3rd
+      confirmed instance of this mechanism. See `docs/decode-anomalies/
+      landing-artifacts-and-jump-tables.md`'s matching follow-up. Left
+      `FUNC_3633_9500`/`SUB_E951A` unnamed.
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

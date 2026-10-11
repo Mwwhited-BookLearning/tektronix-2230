@@ -1080,6 +1080,26 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   names (confirmed via `git status` - those tracked files are
   unchanged, not partially regenerated) - needs a re-run once `nasm` is
   available again.
+- **2026-10-11 (same session, later still): resolved `0xE951A`'s "14
+  pushed/12 cleaned" stack mismatch from 2026-10-09 above - it's the
+  same inherited-`bp`/`mov sp,bp` frame-collapse mechanism as
+  `SUB_EFDC2`/`SUB_ECE82`, not a new/unexplained bug.** All 6 real
+  callers `lcall` straight into `SUB_E951A` (`0xE951A`), well past
+  `FUNC_3633_9500`'s real prologue, so its shared exit's `mov sp,bp`
+  uses the *calling* function's own inherited `bp`, collapsing straight
+  to that caller's frame and returning 2 bytes (1 word) short of what
+  that caller's own `retf 4` would have cleaned (confirmed against 2 of
+  the 6 call sites, `FUNC_3532_19DF`/`FUNC_3532_1A05`, both with the
+  identical `lcall`/`add sp,0xa`/`mov sp,bp`/`pop bp`/`retf 4` shape).
+  This is a real, silent stack-corruption bug in the original firmware,
+  not a disassembly artifact - the 3rd confirmed instance of this exact
+  mechanism. Still unresolved: what the intended call target actually
+  was, if any (plausibly there wasn't a distinct one - all 6 sites may
+  share one coincidentally-decodable byte offset from a common
+  source-level expansion, per the 2026-10-09 entry's original theory,
+  now better supported). See `docs/decode-anomalies/landing-artifacts-
+  and-jump-tables.md`'s matching 2026-10-11 follow-up. Left
+  `FUNC_3633_9500`/`SUB_E951A` unnamed.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

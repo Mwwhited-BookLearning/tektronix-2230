@@ -1129,3 +1129,53 @@ per-channel settings-table code), and its real exit target is an open
 question with project-wide implications for the disassembler's own
 jump-arithmetic convention. Left `FUNC_3633_FF72`/`SUB_EFFEE` unnamed;
 no renames this round.
+
+## Follow-up, 2026-10-11: resolved `0xE951A`'s "14 pushed/12 cleaned" stack mismatch - it's the same inherited-`bp`/`mov sp,bp` frame-collapse mechanism as `SUB_EFDC2`/`SUB_ECE82`, not a new bug
+
+Went back to `0xE951A` (the 2026-10-09 follow-up above) per its own
+flagged lead: the frame-collapse check developed afterward for
+`SUB_EFDC2`/`SUB_ECE82` hadn't been tried on it yet.
+
+Read `FUNC_3633_9500`'s full body (`disasm/sysrom_3532_3633_heuristic.
+lst` lines 14110-14153) and one representative caller,
+`FUNC_3532_19DF` (`0xF19DF`-`0xF1A02`). `FUNC_3633_9500`'s real,
+fully-prologued entry is `push bp`/`mov bp,sp`/`sub sp,6`, but every
+one of the 6 real callers `lcall`s straight to `SUB_E951A`
+(`0xE951A`), 0x1A bytes *into* that body - well past the prologue.
+Both of `SUB_E951A`'s internal branches (taken or not, regardless of
+the landing artifact's own garbage 3-byte decode noted in the
+2026-10-09 entry above) converge on the same shared tail at
+`L_E955A`, which exits via `mov sp,bp`/`pop bp`/`retf 2`.
+
+Because the call landed past the prologue, `bp` at that exit is never
+`FUNC_3633_9500`'s own - it's whatever `bp` the *calling* function
+(`FUNC_3532_19DF` in the traced example) was using. `FUNC_3532_19DF`'s
+own un-taken exit, immediately following its `lcall`+`add sp,0xa`, is
+itself `mov sp,bp`/`pop bp`/`retf 4` - so `SUB_E951A`'s borrowed exit
+collapses `FUNC_3532_19DF`'s stack to exactly the same point
+`FUNC_3532_19DF`'s own exit would have, and skips straight past its
+`add sp,0xa`/`mov sp,bp`/`pop bp` entirely, returning to
+*`FUNC_3532_19DF`'s own caller* - **except via `retf 2` instead of
+`FUNC_3532_19DF`'s own `retf 4`, a 2-byte (1-word) shortfall**. That 2
+bytes is exactly the previously "unaccounted for" difference between
+14 bytes pushed and 12 bytes cleaned (`0xa` caller cleanup + `2` from
+`SUB_E951A`'s own `retf`) - fully explained now, not a new mystery,
+and not evidence of a stale/off-by-one shared call target as the
+2026-10-09 entry speculated. Confirmed the same caller-side shape
+(`lcall` immediately followed by `add sp,0xa`/`mov sp,bp`/`pop bp`/
+`retf 4`) at a second call site (`FUNC_3532_1A05`) as well.
+
+Net effect project-wide: any of the 6 callers of `SUB_E951A` leaves
+its own caller's stack 2 bytes short of what that caller expects after
+the call returns - a real, silent stack-corruption bug in the original
+firmware (not a disassembly artifact), consistent with the broader
+"landing artifact lands inside real code but its exit doesn't honor
+the calling convention" pattern this project has now found 3 separate
+times (`SUB_EFDC2`, `SUB_ECE82`, `SUB_E951A`). Not resolved: what the
+*intended* call target actually was (if any - it's equally possible
+there never was a distinct intended callee, and this is simply 6
+independent call sites that all happen to reference the same
+coincidentally-decodable byte offset, the same "one shared source-level
+expansion" theory from 2026-10-09, now better supported since the
+*mechanism*, not just the byte pattern, is identical across all 6).
+Left `FUNC_3633_9500`/`SUB_E951A` unnamed; no renames this round.
