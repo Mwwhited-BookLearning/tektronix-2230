@@ -130,3 +130,35 @@ some (like this one) are a genuine mix of hardware-register pointers,
 RAM-forwarding pointers, and what look like stale/non-code entries.
 Worth the same "decode and check" treatment on any newly-found table,
 but don't expect every one to pay off the way the sysrom table did.
+
+**Follow-up, 2026-10-10**: re-decoded the sysrom table's full 80-entry
+list by destination offset (not file order) while chasing an unrelated
+`[0x1D10]` item-dispatch-table question (see `docs/acquisition-and-
+plotting/mode-dispatcher-and-formatting.md`'s matching follow-up for
+the full writeup). One correction to this write-up's own mechanism
+description: the table's `ES` segment value (`0x209`) is **not**
+hardcoded in the driver loop - the driver reads it from the table's own
+first word (`mov ax, word ptr [si]` at `0xE5EB7`, before the loop
+starts), so strictly speaking the table is `(header_es_word, then 80x
+(dest_offset:word, far_ptr:dword))` - 1 header word + 80*6 data bytes +
+1 terminator word (`0xFFFF`) = 484 bytes, spanning `0xE5ECD`-`0xE60B0`
+inclusive (verified byte-for-byte against the raw ROM), not
+`0xE5ECD`-`0xE60B4`/488 bytes as this write-up originally stated - the
+extra few bytes belong to a short unlabeled stub immediately preceding
+`INT255_HANDLER_LATE` (`0xE60B5`), not the table itself. Practical
+effect on everything else in this write-up is nil either way, since
+`ES=0x209` is what every entry already assumed and the entry count
+(80) and decoded values are unaffected.
+
+New result from the full re-decode: entry `dest_offset=0x9C` resolves
+`[0x1D1C]`'s (a *different* per-item table's base pointer, unrelated to
+this doc's clusters - see the cross-referenced follow-up) own
+previously-untraced boot initialization, to far pointer `0038:0008`
+(physical `0x00388`, inside the IVT/low-RAM region). Also found: entry
+`dest_offset=0x90` (`ds:[0x1D10]`, far_ptr `F1D8:0865`, phys `0xF25E5`)
+is the *same* table entry already discussed above under "two
+independent far-pointer tables... agreeing on this one specific byte" -
+this write-up had identified the target address and the coincidental
+match with the comm ROM's table, but hadn't yet connected `dest_offset=
+0x90` to `[0x1D10]`'s own address specifically; done now in the
+cross-referenced follow-up.

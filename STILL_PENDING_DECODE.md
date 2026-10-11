@@ -1082,6 +1082,21 @@ See `docs/acquisition-and-plotting/ram-far-pointer-table.md`.
   actually get invoked in practice at runtime is still unproven -
   they're only reachable in the disassembly by *assuming* that
   segment gets loaded somehow.
+- **2026-10-10: decoded the full 80-entry table by destination
+  address, resolving `[0x1D1C]`'s boot init but not the `[0x1D10]+6`
+  handler.** `[0x1D1C]` (a separate per-item table's base pointer,
+  read 46x via `les` but never written anywhere else in either `.lst`
+  - see `VARIABLES.md`) gets boot value `0038:0008` (physical
+  `0x00388`, inside the IVT/low-RAM region) from `dest_offset=0x9C`,
+  proven-reachable. Checked whether the same table also initializes
+  the long-open `[0x1D10]+6` item-dispatch handler far pointer - it
+  doesn't (no entry at the needed `dest_offset=0x96`); 2 entries
+  (`0x90`/`0x94`) do land inside `[0x1D10]`'s own record 0 but look
+  like incidental destination-range overlap, not a targeted init (one
+  of them is the same mid-instruction-landing far pointer already
+  flagged in `docs/acquisition-and-plotting/ram-far-pointer-table.md`).
+  See `docs/acquisition-and-plotting/mode-dispatcher-and-formatting
+  .md`'s 2026-10-10 follow-up for the full trace.
 
 ## Menu/UI rendering
 

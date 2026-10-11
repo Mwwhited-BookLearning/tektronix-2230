@@ -343,3 +343,65 @@ confidence too low to commit a name, see that doc) in an adjacent
 SREF-readout-formatting cluster, unrelated to this `[0x1D10]`
 item-dispatch cluster beyond sharing the `render_item_list_row`
 caller.
+
+## Follow-up, 2026-10-10: decoded `init_far_pointer_table_sysrom`'s embedded table fully - resolves `[0x1D1C]`'s boot init, does NOT resolve the `[0x1D10]+6` handler
+
+Picked up the long-standing "no write site for `[0x1D10]`'s handler
+ever found" thread by checking whether `init_far_pointer_table_sysrom`
+(`0xE5EAE`, see `docs/acquisition-and-plotting/ram-far-pointer-table.md`)
+- already known to initialize `[0x1DD4]`/`[0x1DD8]`/`[0x1DB4]`/`[0x1DB8]`/
+`[0x1DBC]` - also touches this neighborhood. Decoded its full 80-entry
+table directly from `160-3633-14.bin` (bytes `0xE5ECD`-`0xE60AF`; the
+table's own first word is the `ES` segment value, `0x209`, read by the
+driver loop itself rather than hardcoded - a detail the original
+write-up didn't spell out). Every `(dest_offset, far_ptr_dword)` entry
+was cross-checked against `physical = 0x209*16+dest_offset` and against
+the flat `DS=0x41` convention (`ds_offset = physical-0x410`) used
+everywhere else in this project.
+
+**Two destinations land inside the `[0x1D10]` item-dispatch table's
+record 0**: `dest_offset=0x90` -> `ds:[0x1D10]` (record 0's bytes
+`+0`-`+3`), value `F1D8:0865` (phys `0xF25E5`) - this is the exact same
+far pointer already flagged in `ram-far-pointer-table.md`'s "Follow-up"
+section as landing mid-instruction inside existing code (`mov byte ptr
+[0x65F],0x54`), independently also pointed to by the comm ROM's own
+far-pointer table - now additionally tied to this address for the first
+time. And `dest_offset=0x94` -> `ds:[0x1D14]` (record 0's bytes
+`+4`-`+7`), value `F1D8:1015` (phys `0xF2D95`, not independently
+cross-referenced elsewhere). **This does not resolve the `+6` handler
+question**: the `+4`-`+7` dword write only reaches as far as record 0's
+byte `+7`; there is no table entry at `dest_offset=0x96` (`ds:[0x1D16]`,
+where the real `+6`/`+8` handler far-pointer fields would need an entry
+to be initialized this way) - checked directly against the full decoded
+entry list, absent. Given both of these are also "garbage/mid-
+instruction" far pointers by the `ram-far-pointer-table.md` analysis,
+the more likely reading is that this is incidental - the bulk table's
+destination range (`0x2090`-`0x21F0`) happens to physically overlap
+record 0 of the `[0x1D10]` table, not a targeted initialization of it -
+but flagging rather than asserting either way.
+
+**Separately, a clean, fully-resolved finding**: `dest_offset=0x9C` ->
+`ds:[0x1D1C]` - this is the *other*, already-documented per-item table
+base pointer (the one `update_indexed_value_if_changed`/`SUB_E8E29`/
+`init_front_panel_cluster_defaults` read via `les bx/di/dx, ptr
+[0x1D1C]`, discussed above and in `docs/comm-rom/option-detection.md`'s
+"`[0x4E0]`-`[0x4FC]` cluster" section - a different table from `[0x1D10]`
+despite the similar "per-item far-pointer table" shape and nearby
+address). Grepping every reference to `[0x1d1c]` in the heuristic
+listing (46 sites, all `les` loads, 3 of them proven-reachable) found
+**zero write sites anywhere in either `.lst`** - this pointer's own
+initialization had never been traced. `init_far_pointer_table_sysrom`'s
+entry for `dest_offset=0x9C` resolves it: boot value `0038:0008`
+(physical `0x00388`) - inside the IVT/low-RAM region (`0x000-0x3FF`),
+consistent with `MEMORY_MAP.md`'s Table-3-1-sourced description of
+`0x00000-0x07FFF` as "8-bit display RAM - waveforms, interrupt vectors,
+**miscellaneous**" - i.e. this table's actual record data appears to
+live in spare, unused interrupt-vector slots (vector `0xE2` onward)
+rather than the main `DS=0x41` variable pool. This call site
+(`0xE5E32`) and `init_far_pointer_table_sysrom` itself are both in the
+*proven*-reachability listing, so this is confirmed, unconditional
+boot-time initialization, not a heuristic-only guess. Still open: how
+many records the table at physical `0x388` actually holds and what its
+full per-record layout is (offsets `+0x20`/+0x26`/+0x3E`/+0x46`/+0x4C`
+are referenced across the sites found so far, but not a complete
+record map).

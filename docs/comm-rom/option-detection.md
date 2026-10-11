@@ -141,3 +141,11 @@ found), and what physical significance the specific bit patterns
 (`0x10`, `0xBF`, `0xFF`, `|=0x10`) have. Left as an open, documented
 thread rather than guessed at - see `VARIABLES.md`'s `[0x4E7]`/`[0x4E8]`
 entry for the cross-reference.
+
+**Follow-up, 2026-10-10**: the `[0x1D1C]` table base pointer referenced
+here *is* now confirmed boot-initialized (proven-reachable, unlike
+`init_front_panel_cluster_defaults` itself) - to far pointer `0038:0008`
+(physical `0x00388`, inside the IVT/low-RAM region), via `init_far_
+pointer_table_sysrom`'s embedded RAM-init table. See `VARIABLES.md`'s
+new `[0x1D1C]` entry and `docs/acquisition-and-plotting/mode-
+dispatcher-and-formatting.md`'s matching follow-up for the full trace.

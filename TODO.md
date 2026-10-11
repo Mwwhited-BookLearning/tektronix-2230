@@ -842,6 +842,18 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       naming candidates (behavior roughly understood - format/print
       SREF value and lock status - but not confident enough to name
       yet; flag semantics `[0x1b70]`-`[0x1b8c]` not traced).
+      2026-10-10: checked whether `init_far_pointer_table_sysrom`'s
+      embedded table (see bullet below) initializes the `[0x1D10]+6`
+      handler - it doesn't (no entry at the needed `dest_offset=0x96`,
+      checked directly against the full decoded table) - but decoding
+      the full table by destination address did resolve a different,
+      previously-untraced pointer in the same neighborhood: `[0x1D1C]`
+      (a separate per-item table's base pointer, see `VARIABLES.md`)
+      gets boot value `0038:0008` from `dest_offset=0x9C`, proven-
+      reachable. See `docs/acquisition-and-plotting/mode-dispatcher-
+      and-formatting.md`'s 2026-10-10 follow-up. **Still open**: the
+      `[0x1D10]+6` handler's own init/code, still never located by any
+      mechanism tried so far.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately
