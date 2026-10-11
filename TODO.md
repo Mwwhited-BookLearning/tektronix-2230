@@ -1068,6 +1068,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       landing artifact found so far. See `docs/decode-anomalies/
       landing-artifacts-and-jump-tables.md`'s matching 2026-10-11
       (later still) follow-up. No renames.
+      Correction, same day immediately after: `SUB_F1581` wasn't
+      actually new - `docs/decode-anomalies/dual-entry-points.md`
+      already traced it (lands 2 bytes into `compute_and_draw_scale_
+      marker`, reconverges onto real code there, already left
+      unnamed). Real new contribution: the 2 confirmed callers
+      (previously untraced); "garbage, not real code" overstated,
+      corrected to match the earlier doc's "executed, cleanly
+      reconverging" framing. The 2/2-landing-artifacts audit result
+      still stands.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

@@ -1321,3 +1321,52 @@ the bytes being decoded are garbage either way and don't need a
 coherent target. Left `SUB_F1581` unnamed - it isn't a real function,
 so no rename is appropriate; its 2 real callers remain unnamed too
 pending their own identification.
+
+## Correction, 2026-10-11 (same day, immediately after): the section above re-discovered an already-identified landing artifact and overstated "garbage, not real code" - `docs/decode-anomalies/dual-entry-points.md` got here first
+
+The section above presented `SUB_F1581`/`L_EDA0A` as a new find. It
+isn't: `docs/decode-anomalies/dual-entry-points.md` already identified
+and traced this exact address, in its "A third instance, found via
+`analyze_loops_vs_functions.py`'s long-jump lens" section. That
+earlier work already established: `SUB_F1581` (`push 0x5102; jmp` a
+huge displacement) lands **2 bytes into** `compute_and_draw_scale_
+marker`'s (`0xED9BC`, renamed) own `mov word [0x1BEC], 0x20`
+instruction at `0xEDA0A`, and decoding from there reconverges cleanly
+onto that function's real next instruction (`jmp L_EDA28`) a few bytes
+later - the same "landing mid-instruction, then cleanly reconverging"
+shape as `SUB_E90A5`/`SUB_E92B0`/`SUB_E8E03`/`SUB_E8E29`, explicitly
+**not** `SUB_EAC86`'s outright-incoherent-garbage class. That section
+also already closed the exact old `TODO.md` thread about `SUB_F156E`/
+`SUB_F1581` "suggesting cross-ROM code sharing" (it isn't cross-ROM
+sharing, it's this landing-artifact class) and already declined to
+rename either label.
+
+So "the body under `SUB_F1581` is garbage, not real code" above is an
+overstatement in the wrong direction: the decoded `push 0x5102; jmp`
+bytes are mechanically just the preceding `lcall SUB_E9778`
+instruction's own far-pointer operand bytes (`68 02 51 e9`)
+reinterpreted as a fresh instruction stream starting 1 byte in - but
+with 2 confirmed real external callers now traced (this session's
+actual new contribution, not previously in `dual-entry-points.md`:
+`0xE6443`/`0xE65C3`, both testing the call's return value), those
+bytes really are executed, landing exactly where the earlier section
+already showed they reconverge onto real, coherent code 2 bytes later
+- "cleanly reconverging," not "garbage." The earlier section's own
+open question stands unresolved and is the more precise framing:
+*why* the compiled program's real call sites target an address 2
+bytes short of where the reused code actually becomes meaningful is
+still not explained (self-modifying code, deliberate byte-level reuse
+of the preceding `lcall`'s operand bytes as a shared trampoline, or
+pure coincidence between two independently-placed pieces of compiled
+code are all unconfirmed guesses) - not resolved by this correction,
+just not mischaracterized as simple garbage anymore either.
+
+Net effect of today's two sections combined: no new landing-artifact
+*identity* was found (it was already `dual-entry-points.md`'s), but
+the cross-64 KB-chip-boundary audit's "2/2 found are landing
+artifacts, not a scanner bug" conclusion still holds, and this
+specific instance now has its first confirmed caller-side trace
+(`0xE6443`/`0xE65C3`) added to the existing identification. Still not
+renaming `SUB_F1581`/`SUB_F156E`, per `dual-entry-points.md`'s own
+explicit prior decision, now reaffirmed with slightly more context
+rather than overturned.

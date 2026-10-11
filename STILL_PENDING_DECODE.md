@@ -1181,7 +1181,17 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   XOR companion are already fully documented/confirmed there by live
   hardware test). See `docs/decode-anomalies/landing-artifacts-and-
   jump-tables.md`'s matching 2026-10-11 (later still) follow-up. No
-  renames - `SUB_F1581` isn't a real function.
+  renames - `SUB_F1581` isn't a real function. **Correction, same day
+  immediately after**: this wasn't a new identification -
+  `docs/decode-anomalies/dual-entry-points.md` already found and
+  traced this exact address (lands 2 bytes into `compute_and_draw_
+  scale_marker`, reconverges cleanly onto real code, already declined
+  to rename). The actual new contribution this pass was tracing the 2
+  confirmed real callers (not previously documented), and "garbage,
+  not real code" was an overstatement - corrected to "mechanically the
+  preceding `lcall`'s own operand bytes, but genuinely executed and
+  cleanly reconverging," matching the earlier doc's own framing. See
+  the matching 2026-10-11 correction in the same doc.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth
