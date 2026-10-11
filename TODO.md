@@ -826,11 +826,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `VARIABLES.md`'s "Per-item handler dispatch table" section
       (now documents the `+4`/`+5`/`+0xA`/`+0xC`/`+0xE` fields and
       `[0x462]`). **Still open in this cluster**: the `[0x1D10]+6`
-      handler's own code (never located), `SUB_F43CC`/`SUB_F408E`/
-      `SUB_F45A4`/`SUB_F47AB` (still unnamed), and whether `FUNC_3633_
+      handler's own code (never located), and whether `FUNC_3633_
       E35E`/`FUNC_3633_E382` (found immediately after `render_item_
       list_row`, see the "giant function" correction above) belong to
       this cluster at all - not yet analyzed.
+      2026-10-10: resolved `SUB_F43CC`/`SUB_F408E`/`SUB_F45A4`/
+      `SUB_F47AB` - none is a separate function; all 4 are landing
+      artifacts. `SUB_F408E` lands inside the already-named `compute_
+      and_print_item_delta_readout`; the other 3 land inside 3 real
+      sibling functions (`FUNC_3532_42E6`/`FUNC_3532_4542`/
+      `FUNC_3532_4629`) in an unrelated, adjacent SREF-readout-
+      formatting cluster (`0xF3EA3`-`0xF48FF`) - see `docs/decode-
+      anomalies/landing-artifacts-and-jump-tables.md`'s 2026-10-10
+      follow-up. Those 3 sibling functions are good next full-trace/
+      naming candidates (behavior roughly understood - format/print
+      SREF value and lock status - but not confident enough to name
+      yet; flag semantics `[0x1b70]`-`[0x1b8c]` not traced).
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately

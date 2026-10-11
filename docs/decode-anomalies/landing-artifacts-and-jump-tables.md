@@ -523,3 +523,88 @@ before trusting a push-vs-retf-immediate stack-accounting comparison**
 - `write_hw_shift_register`/`0xF4CE8` both have exits that don't rely
 on an inherited `BP` this way, which is why the simple arithmetic
 worked cleanly for them.
+
+## Follow-up, 2026-10-10: resolved the 4 flagged `SUB_F43CC`/`SUB_F408E`/`SUB_F45A4`/`SUB_F47AB` helpers - all 4 are landing artifacts, none is a separate function
+
+Picked up the thread flagged in `docs/acquisition-and-plotting/mode-
+dispatcher-and-formatting.md` ("`render_item_list_row` also calls the
+still-unnamed `SUB_F43CC(0x57)`"; `dispatch_item_change_notification`
+conditionally calls `SUB_F408E`/`SUB_F45A4`/`SUB_F47AB`). Applied the
+string cross-reference technique first (per `CLAUDE.md`): `SUB_F47AB`
+has 3 `mov dx, 0xff7b` string-table loads at physical call sites
+`0xF48CF`/`0xF499D`/`0xF4ABD` (offsets `0x18a`/`0x197`/`0x19d`,
+decoding to `"SREF  LOCKED"`/`"SREF "`/`"SREF "` - already catalogued
+in `STRINGS.md` lines 141/196). That lead - plus checking each of the
+4 addresses' own entry bytes and immediate predecessor instruction -
+led to the real finding: **none of these 4 addresses is a genuine
+separate function.** Each is a byte-overlap landing artifact (this
+codebase's established class, see the sections above) landing inside
+the body of a real, cleanly-prologued neighbor:
+
+- **`SUB_F408E`** lands 2 bytes into a 4-byte `les dx, ptr [0x69e]` at
+  `0xF408C`, decoding `9e 06` as `sahf; push es` before rejoining the
+  normal instruction stream exactly at `0xF4090` (the push `es` that
+  `les` itself was heading toward either way) - a 2-byte "sidestep"
+  that re-synchronizes with the shared tail, same shape as `0xE951A`/
+  `0xF4CE8`'s reconvergence but mid-instruction rather than at a clean
+  boundary. Walking back from there past 2 more unlabeled `SUB_`
+  placeholders (`SUB_F405D`, `SUB_F3F4C`) lands inside the **already-
+  named** `compute_and_print_item_delta_readout` (`0xF3EA3`,
+  `FUNCTIONS.md`'s own highest-caller-count landing-artifact entry,
+  33 callers) - whose entry already says "most of its internal
+  branches were not individually walked." `SUB_F408E` is simply one of
+  those unwalked internal branches, not a new function.
+- **`SUB_F43CC`** lands at a clean instruction boundary (no byte
+  overlap) immediately after a `push di` inside `FUNC_3532_42E6`
+  (`0xF42E6`, real `push bp`/`mov bp,sp` prologue, `retf` exit via
+  `mov sp,bp`/`pop bp` with no positive `[bp+N]` reads anywhere in the
+  landed-into body - the same shared-frame mechanism as `0x88729`/
+  `step_item_subvalue_back`). `FUNC_3532_42E6` formats a value read
+  from `[0x1b88]` (3 rounding variants selected by `[0x1b72]`/
+  `[0x1b70]`/`[0x1b78]`) into buffer `[0x65e]` via the already-named
+  `snapshot_index_and_format_number`, then conditionally copies
+  `[0x28]`->`[0x11]` via `copy_words_stride4` and calls `build_comm_
+  status_message(3)`.
+- **`SUB_F45A4`** is the `jne`-not-taken fallthrough target of a
+  `cmp byte ptr [bp-7], 1` inside `FUNC_3532_4542` (`0xF4542`, real
+  prologue/epilogue) - a `[0x570]`-indexed flag-byte dispatch (values
+  `0`/`1`/`2`/...) that each select a different far-pointer source
+  (`[0x68e]`/`[0x690]`/`[0x692]`/...) for a `decimate_peakdet_samples`
+  call, i.e. "copy this channel's peak-detect preview data into the
+  SREF icon slot" with the channel selected by the flag byte.
+- **`SUB_F47AB`** lands 1 byte into a 3-byte `mov di, 0x31` at
+  `0xF47A9` inside `FUNC_3532_4629` (`0xF4629`, real prologue/epilogue,
+  no positive `[bp+N]` reads anywhere in its body either), decoding
+  `00 57 ba` as `add [bx-0x46],dl; adc [bx+si],ax` (2 harmless-looking
+  ops on whatever `bx`/`dx` the caller left live) before rejoining the
+  shared `push dx; lcall copy_words_stride4; ...; jmp L_F489C` tail.
+  `FUNC_3532_4629` reads the fixed-point value at `[0x1bf0]` (integer
+  part = value >> 4, decimal-point position = value & 0xf), scales it
+  by `10^(value & 0xf)` via a `mul32` loop, then either (if `[0x1b76]`
+  bit `2` is set) branches toward the "SREF LOCKED"/"SREF " string-
+  print path (the `SUB_F47AB`-labeled block, gated further by `[0x54a]`/
+  `[0x54c]`/`[0x19c]` bit `1`/`[0x1be4]`-`[0x1be9]`) or extracts decimal
+  digits one at a time via `umod32`/`udiv32` into ASCII buffer
+  `[0x65e]`-`[0x664]`, terminates it, and prints it via `SUB_E951A`
+  before updating the SREF preview icon via `copy_words_stride4`/
+  `decimate_peakdet_samples`.
+
+**Net**: this closes the open "4 unnamed helpers" question from
+`docs/acquisition-and-plotting/mode-dispatcher-and-formatting.md` -
+there were never 4 separate functions to name. `compute_and_print_
+item_delta_readout` already covers `SUB_F408E`'s case. The other 3
+landing points resolve to 3 real sibling functions (`FUNC_3532_42E6`,
+`FUNC_3532_4542`, `FUNC_3532_4629`) that, together with `compute_and_
+print_item_delta_readout`, form a dense ROM cluster (`0xF3EA3`-
+`0xF48FF`) of SREF reference-waveform value-formatting/status-printing
+routines sharing buffer `[0x65e]`, flags `[0x1b70]`-`[0x1b8c]`/
+`[0x1be4]`-`[0x1be9]`/`[0x54a]`-`[0x54e]`, and the same formatting
+helpers (`snapshot_index_and_format_number`, `copy_words_stride4`,
+`decimate_peakdet_samples`, `SUB_E951A`, `SUB_E9A05`, `build_comm_
+status_message`, `umod32`/`udiv32`/`mul32`, `FUNC_3633_7753`). Not
+named yet - confidence in the exact role of each (`[0x1b70]`-`[0x1b8c]`
+flag semantics aren't traced) isn't high enough to commit a name per
+`CLAUDE.md`'s "state only what's directly supported" convention - but
+flagged in `STILL_PENDING_DECODE.md`/`TODO.md` as 3 good next full-
+trace candidates, now that their landing-artifact confusion is cleared
+away.

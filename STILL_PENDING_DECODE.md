@@ -918,6 +918,22 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   trusting that stack-accounting check. See `docs/decode-anomalies/
   landing-artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-10"
   section.
+- **2026-10-10: resolved the 4 helpers flagged from `dispatch_item_
+  change_notification`/`render_item_list_row` (`SUB_F43CC`/`SUB_F408E`/
+  `SUB_F45A4`/`SUB_F47AB`) - all 4 are landing artifacts, none is a
+  separate function.** `SUB_F408E` lands inside the already-named,
+  highest-caller-count landing-artifact function `compute_and_print_
+  item_delta_readout` (`0xF3EA3`) - simply one of its own previously-
+  unwalked internal branches. The other 3 land inside 3 real,
+  cleanly-prologued sibling functions (`FUNC_3532_42E6`/`FUNC_3532_
+  4542`/`FUNC_3532_4629`) that form an adjacent, unrelated ROM cluster
+  (`0xF3EA3`-`0xF48FF`) formatting/printing the SREF reference-waveform
+  numeric readout and "SREF LOCKED" status, sharing buffer `[0x65e]`
+  and flags `[0x1b70]`-`[0x1b8c]`/`[0x1be4]`-`[0x1be9]`/`[0x54a]`-
+  `[0x54e]`. Not named yet (flag semantics not traced well enough for
+  confident names) - 3 good next full-trace candidates. See `docs/
+  decode-anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
+  2026-10-10" (second one) section.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

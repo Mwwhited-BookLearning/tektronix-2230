@@ -328,10 +328,18 @@ documented generally in `docs/decode-anomalies/`.
 Net: the cluster's rendering/write path is now fully named end to end
 (`render_item_list_row` -> `write_hw_shift_register` per row, driven by
 the `+4`/`+5` chain walk). What's still open: the `[0x1D10]+6`
-handler's own code and what codes `2`/`3`/`4` do inside it; `SUB_F43CC`/
-`SUB_F408E`/`SUB_F45A4`/`SUB_F47AB`, all still unnamed; and `FUNC_3633_
-E35E`/`FUNC_3633_E382` (the 2 functions found immediately after
-`render_item_list_row` while correcting the "giant function" framing -
-see that section above/`docs/display/vector-display-and-stroke-font
-.md` - not yet analyzed, unclear if they belong to this cluster at
-all).
+handler's own code and what codes `2`/`3`/`4` do inside it; and
+`FUNC_3633_E35E`/`FUNC_3633_E382` (the 2 functions found immediately
+after `render_item_list_row` while correcting the "giant function"
+framing - see that section above/`docs/display/vector-display-and-
+stroke-font.md` - not yet analyzed, unclear if they belong to this
+cluster at all). `SUB_F43CC`/`SUB_F408E`/`SUB_F45A4`/`SUB_F47AB` are
+**resolved, not just named** - see `docs/decode-anomalies/landing-
+artifacts-and-jump-tables.md`'s 2026-10-10 follow-up: none is a
+separate function; all 4 are landing artifacts into `compute_and_
+print_item_delta_readout` (already named) or 3 real sibling functions
+(`FUNC_3532_42E6`/`FUNC_3532_4542`/`FUNC_3532_4629`, not yet named -
+confidence too low to commit a name, see that doc) in an adjacent
+SREF-readout-formatting cluster, unrelated to this `[0x1D10]`
+item-dispatch cluster beyond sharing the `render_item_list_row`
+caller.
