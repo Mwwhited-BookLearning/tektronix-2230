@@ -1204,6 +1204,23 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   preceding `lcall`'s own operand bytes, but genuinely executed and
   cleanly reconverging," matching the earlier doc's own framing. See
   the matching 2026-10-11 correction in the same doc.
+- **2026-10-11 (later still): traced the last untraced multi-caller
+  landing-artifact candidate, `SUB_F6DC9` (4 callers) - resolved the
+  identity, but left a genuine open question needing the emulator.**
+  Re-ran `find_landing_artifacts.py`; every candidate with 3+ callers
+  was already resolved in the docs except this one. It lands 1 byte
+  into the real `mov word ptr [bp-0x20], di` tail inside the
+  already-confirmed `find_item_table_indices` (`0xF6CEA`), the usual
+  clean-reconvergence shape on the not-taken path - but the misdecoded
+  tail byte (`0xe0`) happens to be `LOOPNE`, a genuinely conditional
+  branch on `cx`/`ZF`, unlike every other instance of this class.
+  None of the 4 real callers, nor their enclosing functions back to
+  each one's own entry, ever write `cx` before the call, so whether
+  the branch is ever actually taken at runtime - and therefore whether
+  this is cosmetic-only like the rest of the class, or a latent
+  control-flow hazard - can't be settled from static reading alone.
+  See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+  matching 2026-10-11 (later still) follow-up. No renames.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

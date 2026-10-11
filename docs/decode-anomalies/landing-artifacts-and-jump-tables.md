@@ -1370,3 +1370,58 @@ specific instance now has its first confirmed caller-side trace
 renaming `SUB_F1581`/`SUB_F156E`, per `dual-entry-points.md`'s own
 explicit prior decision, now reaffirmed with slightly more context
 rather than overturned.
+
+## Follow-up, 2026-10-11 (later still): traced the one remaining untraced multi-caller candidate (`0xF6DC9`, 4 callers) - same landing-1-byte-early mechanism, but the misdecoded tail is itself a conditional branch, not an always-reconverging fallthrough
+
+Re-ran `find_landing_artifacts.py` from scratch and cross-checked every
+candidate with 3+ callers against this doc, `dual-entry-points.md`,
+`STILL_PENDING_DECODE.md`, and `TODO.md`. All of them were already
+resolved (`0xE951A`, `0xF4CE8`, `0xE92B0`, `0xE8E03`, `0xEDDE2`,
+`0xEFD99` per the sections above) except one: `SUB_F6DC9` (4 callers),
+never mentioned anywhere in the project's docs.
+
+`SUB_F6DC9` (`0xF6DC9`) lands exactly 1 byte short of `0xF6DCA`, the
+dominant root-cause case again: the byte at `0xF6DC9` is `0xe0`, the
+disp8 tail of the real, enclosing instruction `mov word ptr [bp -
+0x20], di` (`897ee0`, `0xF6DC7`-`0xF6DC9`) belonging to the
+already-confirmed `find_item_table_indices` (`0xF6CEA`). `0xe0` is
+also a valid opcode on its own (`LOOPNE`/`LOOPNZ rel8`), so read fresh
+it decodes as `loopne 0x657` (`e08c`, 2 bytes, `0xF6DC9`-`0xF6DCA`),
+and - on the not-taken path - lands exactly on `0xF6DCB`, where the
+real next instruction (`mov word ptr [bp - 0x1e], es`, `8c46e2`)
+genuinely begins. That half is the usual clean-reconvergence shape
+(now an 8th/9th confirmed instance of the class catalogued in
+`dual-entry-points.md`).
+
+**The wrinkle**: unlike every previous instance in this class (whose
+misdecoded garbage was unconditional, or whose branches all
+reconverged regardless of which side was taken), `loopne`'s own
+*taken* path is genuinely data-dependent - it decrements `cx` and
+branches if `cx != 0` and `ZF = 0`. All 4 real callers (`0xEE718`,
+`0xFD144`, `0xFD35D`, `0xFF10A`) reach `SUB_F6DC9` via a plain `lcall`
+(not as part of any loop of their own), and none of them - nor their
+enclosing functions back to each function's own entry - ever writes
+`cx` first (`FUNC_3532_F067`'s `push cx` at `0xFF06D` is the
+stack-locals-via-push idiom seen elsewhere in this ROM, not a load;
+it's never followed by a `pop cx` or `mov cx,`). So `cx`'s value at
+each call site is whatever the *caller's caller* left in it - not
+resolvable from static reading alone without walking further up 4
+separate call chains, and ultimately a runtime question the emulator
+would have to answer.
+
+If `loopne` is ever taken, the computed target (`rel8 = 0x8c = -0x74`,
+from post-fetch IP `0x6DCB`) is `0x6D57` (physical `0xF6D57`) - itself
+not an instruction boundary: it's the second byte (the `0x30` rel8
+operand) of the real `jne L_F6D88` instruction inside
+`find_item_table_indices`'s own comparison loop, so taking the branch
+would trigger a *second* layer of garbage decoding rather than landing
+on anything coherent. Not chasing that second layer further here -
+flagging it only to note that "benign if taken" cannot be assumed.
+
+**Left unresolved, needs the emulator**: whether `loopne` is ever
+actually taken at runtime for any of the 4 call sites, and therefore
+whether this instance is purely a disassembly-visible curiosity (like
+the rest of the class) or an actual latent control-flow hazard. Not
+renaming `SUB_F6DC9`; `find_item_table_indices` already has its real
+name and this is just where an external call happens to land inside
+it.

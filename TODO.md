@@ -1077,6 +1077,28 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       corrected to match the earlier doc's "executed, cleanly
       reconverging" framing. The 2/2-landing-artifacts audit result
       still stands.
+      2026-10-11 (later still): re-ran `find_landing_artifacts.py` and
+      checked every 3+-caller candidate against the docs - all were
+      already resolved except one never previously mentioned,
+      `SUB_F6DC9` (4 callers). Traced it: same landing-1-byte-early
+      mechanism, into the already-confirmed `find_item_table_indices`
+      (`0xF6CEA`), with clean fallthrough reconvergence - but the
+      misdecoded tail byte happens to be `LOOPNE` (conditional on
+      `cx`/`ZF`), unlike every prior instance's unconditional garbage.
+      None of the 4 callers (or their enclosing functions, back to
+      each one's own entry) ever write `cx` before the call, so
+      whether the branch is ever actually taken - and therefore
+      whether this is purely cosmetic like the rest of the class -
+      isn't resolvable statically; needs the emulator. No renames. See
+      `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+      matching 2026-10-11 (later still) follow-up. This appears to
+      exhaust the statically-tractable part of this TODO item: every
+      multi-caller candidate from `find_landing_artifacts.py`'s list
+      has now been traced to either a resolved identity or an
+      explicit "needs the emulator" dead end; what remains is the
+      single-caller majority (lowest-value per the project's own
+      caller-count heuristic) plus the emulator-only open questions
+      already flagged above.
 - [ ] `init_far_pointer_table_sysrom`'s embedded RAM-init table (`ES=
       0x209`, physical `0x2090-0x21F0`) led to 15 new proven entry
       points, mostly a plot-scale-computation preamble immediately
