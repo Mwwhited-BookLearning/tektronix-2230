@@ -21491,7 +21491,7 @@ L_EE358:
     3633:E358  [EE358]  8be5            mov     sp, bp
     3633:E35A  [EE35A]  5d              pop     bp
     3633:E35B  [EE35B]  ca0200          retf    2
-FUNC_3633_E35E:
+scale_and_plot_point_chained:
     3633:E35E  [EE35E]  55              push    bp
     3633:E35F  [EE35F]  8bec            mov     bp, sp
     3633:E361  [EE361]  83ec08          sub     sp, 8
@@ -21532,7 +21532,7 @@ FUNC_3633_E382:
     3633:E3B6  [EE3B6]  8be5            mov     sp, bp
     3633:E3B8  [EE3B8]  5d              pop     bp
     3633:E3B9  [EE3B9]  ca0400          retf    4
-FUNC_3633_E3BC:
+plot_readout_point_list:
     3633:E3BC  [EE3BC]  55              push    bp
     3633:E3BD  [EE3BD]  8bec            mov     bp, sp
     3633:E3BF  [EE3BF]  83ec12          sub     sp, 0x12

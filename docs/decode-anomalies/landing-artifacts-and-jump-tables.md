@@ -674,3 +674,57 @@ distinct function to name), but this closes the "possible undocumented
 just the same shared tail reached two ways, one of which is dead by
 construction. See `STILL_PENDING_DECODE.md` and `TODO.md` for the
 cross-reference.
+
+## Follow-up, 2026-10-10 (same session): second confirmed instance of the pattern - `SUB_F63BC`, called from `FUNC_3633_E382`
+
+While resolving `docs/display/vector-display-and-stroke-font.md`'s
+flagged `0xEE35E`/`0xEE382` open question (see that file's matching
+2026-10-10 follow-up and `FUNCTIONS.md`'s new entries), found a second,
+independent instance of the exact same landing-artifact shape as
+`SUB_ECEDA` above: `SUB_F63BC` (`0xF63BC` in `160-3532`), called once
+via `lcall` from `0xEE382` in `160-3633` (`0xEE3AE`).
+
+`SUB_F63BC`'s labeled entry is 1 byte short of a real continuation
+inside `draw_marker_box_and_update_position`/`draw_wide_marker_box`'s
+own shared tail (`FUNCTIONS.md` `0xF6382`/`0xF635E`): the real internal
+flow reaches this exact point via a genuine `jne`-falls-through branch
+at `0xF63BA` (`cmp dx,ax` against `[0x576]`, no jump taken), then
+executes 6 instructions (`mov dx,es:[di+2]` / store to `[0x5c8]` /
+or `[0x560],0x100` / repeat for `[0x590]`/`[0x55c]`) before falling
+into the shared tail `L_F63D8`. `0xF63BC` itself **is** present in the
+proven-reachable listing (`sysrom_3532_3633.lst`) via that internal
+path - but `0xEE382`, its external `lcall` site, and the `SUB_F63BC`
+label itself as a callable entry are all absent from it, confirming
+the external call is heuristic-only, same as every `SUB_ECEDA` caller.
+
+Unlike `SUB_ECEDA` (dead via `hlt`), this one is dead/incoherent for a
+different mechanical reason: `0xEE382` makes the call **without ever
+pushing its own stack frame** (no `push bp`/`mov bp,sp`), so the
+landing code's `[bp-0xa]`/`[bp+6]` references resolve against
+`0xEE382`'s *own* locals, not `draw_marker_box_and_update_position`'s
+intended ones. Traced exactly what `[bp-0xa]` holds at that point:
+it's the `es` segment value `0xEE382` pushed earlier from its own
+`[0x1ddc]+0x29a` far-pointer computation - a segment number, not a
+clamped drawing coordinate the real function would have put there.
+So the write `mov es:[bx+4], di` (`di` loaded from that slot) stores a
+segment value into a record field that's supposed to hold geometry -
+mechanically well-defined (no crash), but semantically meaningless
+relative to the real function's intent. Live `es:di` *does* happen to
+match the real function's expectation (both are loaded from `0xEE382`'s
+own `[bp+6]`, via `les di, ptr [bp+6]` immediately before the call, in
+the exact same way the real function uses it) - so this isn't 100%
+garbage, just inconsistent: one input lines up by construction, the
+rest don't.
+
+**Net**: `SUB_F63BC` gets the same treatment as `SUB_ECEDA` - no
+rename, not a real function, and its one external caller's behavior is
+mechanically incoherent/probable heuristic noise. Two independent
+instances of this exact pattern (heuristic scanner labeling a landing
+point 1 byte into an existing function's internal tail as a separate
+`SUB_` entry, with external callers producing nonsensical results due
+to frame mismatch) is good evidence this is a general artifact class
+of the scanning approach itself, not a one-off coincidence - worth
+treating any future single-caller, no-"real"-callers `SUB_` label with
+suspicion of the same thing, especially when that label's address also
+appears in the proven-reachable listing via a *different* path (a
+strong tell that it's a mid-function landing point, not a true entry).

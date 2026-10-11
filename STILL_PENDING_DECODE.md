@@ -507,6 +507,26 @@ top item.
   since the mechanism is confidently understood even though
   reachability still isn't. Full detail: `docs/display/vector-display-
   and-stroke-font.md`'s "Follow-up, 2026-10-08" section.
+- **2026-10-10, same session: resolved the `0xEE35E`/`0xEE382`
+  "unclear which subsystem" open item - 3 unrelated functions, none of
+  them item-dispatch.** `0xEE35E` (renamed `scale_and_plot_point_
+  chained`) chains 2 calls to the acquisition/scale-and-plot pipeline
+  `scale_and_plot_point_default` - belongs to that subsystem, not
+  stroke-font. `0xEE382` (left unnamed) computes a confirmed in-bounds
+  offset into `plot_readout_point`'s own `[0x1CC4]` display-list buffer
+  but its only other action is a call to `SUB_F63BC`, a **second**
+  confirmed instance of the `SUB_ECEDA`-style landing-artifact pattern
+  (lands inside `draw_marker_box_and_update_position`'s shared tail,
+  frame-mismatched, probable noise). Its ROM neighbor `0xEE3BC`
+  (renamed `plot_readout_point_list`) is a genuine, confirmed bulk
+  point-list appender into that same `[0x1CC4]` display-list buffer,
+  reusing `plot_readout_point`'s exact second-plane-offset/delimiter-
+  attribute/bounds-check mechanism - plausibly a whole-glyph-outline
+  appender for the stroke font, though no caller found yet. See
+  `docs/display/vector-display-and-stroke-font.md`'s matching
+  2026-10-10 follow-up and `docs/decode-anomalies/landing-artifacts-
+  and-jump-tables.md`'s "second confirmed instance" follow-up for the
+  `SUB_F63BC` landing-artifact detail.
 
 ## Front-panel switches
 

@@ -14651,10 +14651,10 @@
     "notes": null
   },
   "EE35E": {
-    "name": "FUNC_3633_E35E",
+    "name": "scale_and_plot_point_chained",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "scale_and_plot_point_chained",
     "notes": null
   },
   "EE382": {
@@ -14665,10 +14665,10 @@
     "notes": null
   },
   "EE3BC": {
-    "name": "FUNC_3633_E3BC",
+    "name": "plot_readout_point_list",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "plot_readout_point_list",
     "notes": null
   },
   "EE3CE": {

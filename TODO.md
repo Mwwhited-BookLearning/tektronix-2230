@@ -552,6 +552,32 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       Ghidra, but `_readable.asm`/`binary/aligned/*.bin` are now stale
       with respect to them until that's rerun somewhere `nasm` exists.
 
+      **2026-10-10 (same session): resolved the `0xEE35E`/`0xEE382`
+      "unclear which subsystem" open item flagged in that file's
+      "Follow-up, 2026-10-08" section** - turns out to be 3 unrelated
+      functions, not one cluster. `0xEE35E` (renamed `scale_and_plot_
+      point_chained`) belongs to the acquisition/scale-and-plot
+      pipeline, not stroke-font. `0xEE382` (left unnamed) computes a
+      confirmed in-bounds offset into the `[0x1CC4]` readout
+      display-list buffer `plot_readout_point` itself uses, but its
+      only other action is a call into `SUB_F63BC` - a **second**
+      confirmed instance of the `SUB_ECEDA` landing-artifact pattern
+      (see below), probable noise. Its ROM neighbor `0xEE3BC` (renamed
+      `plot_readout_point_list`) is a genuine, confirmed bulk
+      point-list appender into that same buffer, reusing `plot_readout_
+      point`'s exact mechanism - plausibly a whole-glyph-outline
+      appender, no caller found yet. Found `nasm` this session at
+      `C:\Users\mwwhi\AppData\Local\bin\NASM\nasm.exe` (not on `PATH`,
+      but present) and reran `gen_source_readable.py`/`gen_disasm_
+      mainrom_heuristic.py` with it, so `.lst`/`.symbols.json`/
+      `_readable.asm`/`binary/aligned/*.bin` are all current with these
+      2 new names (the staleness note above no longer applies to them
+      specifically, though `nasm` still isn't on `PATH` itself). Full
+      detail: `docs/display/vector-display-and-stroke-font.md`'s
+      matching 2026-10-10 follow-up, `FUNCTIONS.md`'s new entries, and
+      `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+      "second confirmed instance" follow-up.
+
       Below is the original investigation history, preserved as-is.
 
       Mechanism is fully understood

@@ -530,6 +530,87 @@ item-dispatch cluster, not the stroke-font reading. `0xEE35E`/`0xEE382`
 remain unnamed and unanalyzed; unclear if they belong to either
 subsystem.
 
+## Follow-up, 2026-10-10 (same session): resolved `0xEE35E`/`0xEE382`/`0xEE3BC` - three unrelated functions, none of them item-dispatch, one a confirmed stroke/point-list appender
+
+Traced all three. They turn out to be a case of "physically adjacent
+in ROM, functionally unrelated" rather than one cluster - closing the
+open question above, but not the way it was framed (it's not "which
+one subsystem do these belong to", it's "these are 3 different
+things"):
+
+- **`0xEE35E`, renamed `scale_and_plot_point_chained`.** Calls the
+  already-confirmed acquisition-to-plotter pipeline
+  `scale_and_plot_point_default`/`scale_and_plot_point` (see
+  `FUNCTIONS.md` `0xF0078`/`0xF0086`) twice - once with literal
+  reciprocal argument `0x41`, then again using the *first* call's own
+  return value as the *second* call's reciprocal argument - and writes
+  `1` to `[0x467]` between the two calls. This ties it to the
+  acquisition/scale-and-plot subsystem (the same pipeline
+  `compute_and_draw_scale_marker` uses), **not** stroke-font rendering
+  and **not** the `[0x1D10]` item-dispatch cluster. `[0x467]` sits
+  immediately after the item-dispatch cluster's confirmed `[0x466]`
+  enable byte, but that's mere address adjacency - no evidence ties the
+  two together, and this function's own confirmed behavior (chained
+  scale-and-plot calls) has nothing to do with item dispatch.
+
+- **`0xEE382`, left unnamed.** Computes two far pointers -
+  `[0x1ddc]+0x29a` and, more significantly, **`[0x1cc4]+0x12f2`** -
+  then pushes them plus 3 of its own stack args and `lcall`s
+  `SUB_F63BC`. `[0x1cc4]` is the confirmed base of the readout vector
+  display-list buffer (`plot_readout_point`'s own buffer, `0xE3930` in
+  `FUNCTIONS.md`); `0x12f2` (4850) is a real in-bounds offset into that
+  buffer's confirmed `0x1400`-byte (5120-byte) extent. So this function
+  genuinely computes a position *inside* the stroke-font/vector-display
+  buffer - but its only other action, the call to `SUB_F63BC`, is a
+  **second confirmed instance of the `SUB_ECEDA`-style landing-artifact
+  pattern** (see `docs/decode-anomalies/landing-artifacts-and-jump-
+  tables.md`'s matching 2026-10-10 follow-up): `SUB_F63BC` is not a
+  real function, just the heuristic scanner's label on a point 1 byte
+  short of a real internal continuation inside `draw_marker_box_and_
+  update_position`/`draw_wide_marker_box`'s own shared tail
+  (`0xF635E`/`0xF6382` in `FUNCTIONS.md`), confirmed absent from the
+  proven-reachable listing. Worse than `SUB_ECEDA`'s case: because
+  `0xEE382` never sets up its own stack frame before the `lcall`, the
+  landing code's `[bp-0xa]`/`[bp+6]` references resolve against
+  `0xEE382`'s *own* frame, not the real function's - e.g. `[bp-0xa]`
+  there ends up reading back the `es` segment value pushed earlier from
+  the `[0x1ddc]+0x29a` computation, not a clamped drawing coordinate.
+  So the one real, well-evidenced fact about `0xEE382` is its `[0x1cc4]`
+  -relative pointer arithmetic (ties it to the stroke-font/vector buffer
+  subsystem); its call is very likely dead/heuristic noise, same caveat
+  as `SUB_ECEDA`. `0xEE382` itself is absent from the proven-reachable
+  listing too (heuristic-only, like its 2 neighbors).
+
+- **`0xEE3BC`, renamed `plot_readout_point_list`** (confirmed by direct
+  trace, not a landing artifact despite containing one: `SUB_EE3ED`,
+  1 byte into its own `mov byte ptr es:[bx],dl`, is scanner byte-overlap
+  noise, same class as `render_item_list_row`'s `SUB_EE15C`). Takes
+  `(point_list=[bp+6], write_cursor=[bp+0xe])`: reads successive byte
+  pairs from the `0xFF`-terminated `point_list`, masks each to 7 bits,
+  and appends them into the display list at `write_cursor` using the
+  **exact same** second-plane-offset global (`[0x1C02]`) and
+  delimiter/marker attribute byte (`2`) that `plot_readout_point`/
+  `mark_readout_delimiter` already use - and bounds-checks
+  `write_cursor` against the **same** global buffer-end bound
+  (`[0x1CC4]+0x1400`) that `plot_readout_point`'s own wraparound check
+  uses. This is a genuine, direct tie to the readout vector
+  display-list buffer - a bulk/batch point-list appender, almost
+  certainly for rendering a whole stroke-font glyph outline (a
+  `0xFF`-terminated list of point pairs is exactly the natural format
+  for one) in a single call rather than one `plot_readout_point` call
+  per point. No confirmed caller found yet, and the edge-dependent
+  attribute-code logic (picking between `1`/`0`/`3` OR'd with `8`
+  based on bits of the second coordinate byte) wasn't fully worked out.
+
+Net effect: of the 2 originally-flagged functions, neither is
+item-dispatch; `0xEE382` leans stroke/vector-buffer (via its pointer
+arithmetic) despite its call being probable noise, and its ROM
+neighbor `0xEE3BC` is now a confirmed stroke/vector-buffer primitive.
+`0xEE35E` turns out to belong to a third, different subsystem
+(acquisition/scale-and-plot) entirely. See `FUNCTIONS.md` for the new
+entries and `disasm/gen_disasm_x86.py`'s `FUNCTIONAL_NAMES`/
+`PARAMETER_NAMES` for the exact evidence cited above.
+
 ## Follow-up, 2026-09-15: a full-alphabet HPGL capture confirms the "9 levels" puzzle is universal, not sample noise
 
 User captured (via `MESsage`) and plotted the **entire character set** -

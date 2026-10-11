@@ -3994,6 +3994,94 @@ FUNCTIONAL_NAMES = {
                                                # function's own real
                                                # instructions, not real
                                                # control-flow targets.
+    0xEE35E: "scale_and_plot_point_chained", # calls the acquisition-
+                                               # to-plotter pipeline
+                                               # scale_and_plot_point_
+                                               # default twice - once
+                                               # with literal reciprocal
+                                               # arg 0x41, then again
+                                               # with the first call's
+                                               # own return value as the
+                                               # second call's reciprocal
+                                               # - and writes 1 to
+                                               # [0x467] between the two
+                                               # calls. Ties this
+                                               # function to the
+                                               # acquisition/scale-and-
+                                               # plot subsystem (same
+                                               # pipeline as compute_
+                                               # and_draw_scale_marker),
+                                               # NOT the stroke-font or
+                                               # [0x1D10] item-dispatch
+                                               # clusters it sits
+                                               # physically between in
+                                               # ROM - resolves part of
+                                               # docs/display/vector-
+                                               # display-and-stroke-
+                                               # font.md's "0xEE35E/
+                                               # 0xEE382 unclear" open
+                                               # question. [0x467]'s
+                                               # relation (if any) to
+                                               # the item-dispatch
+                                               # cluster's adjacent
+                                               # [0x466] enable byte is
+                                               # NOT confirmed - mere
+                                               # byte adjacency, not
+                                               # evidence of a link.
+    0xEE3BC: "plot_readout_point_list", # (src=[bp+6] far ptr to a
+                                               # 0xFF-terminated list of
+                                               # raw (y,x)-looking byte
+                                               # pairs, write_cursor=
+                                               # [bp+0xe] far ptr into
+                                               # the readout display-
+                                               # list buffer) - per pair,
+                                               # masks each byte to 7
+                                               # bits and appends it via
+                                               # the exact same second-
+                                               # plane offset global
+                                               # ([0x1C02]) and
+                                               # delimiter/marker
+                                               # attribute byte (2) that
+                                               # plot_readout_point/
+                                               # mark_readout_delimiter
+                                               # already use, and bounds
+                                               # -checks the write cursor
+                                               # against the SAME
+                                               # global buffer-end bound
+                                               # ([0x1CC4]+0x1400) that
+                                               # plot_readout_point's own
+                                               # wraparound check uses -
+                                               # a bulk/batch point-list
+                                               # appender for the
+                                               # readout vector display-
+                                               # list buffer, most
+                                               # plausibly for rendering
+                                               # a whole stroke-font
+                                               # glyph outline (a 0xFF-
+                                               # terminated point list is
+                                               # the natural format for
+                                               # one) in one call rather
+                                               # than one plot_readout_
+                                               # point call per point.
+                                               # SUB_EE3ED in the
+                                               # heuristic listing is a
+                                               # byte-overlap scanner
+                                               # artifact 1 byte into
+                                               # this function's own
+                                               # `mov byte ptr es:[bx],
+                                               # dl` instruction, not a
+                                               # real function (same
+                                               # class as render_item_
+                                               # list_row's SUB_EE15C).
+                                               # Confirmed by direct
+                                               # trace 2026-10-10; no
+                                               # confirmed caller found,
+                                               # and the exact edge-
+                                               # dependent attribute-code
+                                               # logic (bits of [bp-8]
+                                               # choosing between 1/0/3
+                                               # OR'd with 8) not fully
+                                               # worked out.
     0xEF440: "copy_char_cell_template_and_sync", # (dest_idx=[bp+6],
                                                # src_idx=[bp+8]) -
                                                # checks a per-channel
@@ -4920,6 +5008,11 @@ PARAMETER_NAMES = {
     # value threaded through write_hw_shift_register/draw_marker_box_
     # and_update_position calls.
     0xEE0F7: {6: "item_index", 8: "row_index", 0xA: "running_screen_position"},
+    # plot_readout_point_list (0xEE3BC): bp+6 is the far-pointer source
+    # list read via les/inc per byte pair; bp+0xe is the far-pointer
+    # write cursor into the readout display-list buffer, re-read/
+    # re-written every iteration - confirmed by direct trace 2026-10-10.
+    0xEE3BC: {6: "point_list", 0xE: "write_cursor"},
 }
 
 # Byte-vs-word size overrides for PARAMETER_NAMES entries whose access
