@@ -1303,6 +1303,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x759]`/`SWB1` once a literal-address read site for either is
       found. `[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern still
       isn't tied to a specific named `SWB1`/`SWB2` bit - remains open.
+      **Checked 2026-10-11**: exhaustively grepped every `[0x759]`
+      reference in the heuristic disassembly (both ROMs) - only 2
+      exist, both plain hardware-capture writes (`INT2_HANDLER_EARLY`,
+      `scheduler_tick_service`, already named/confirmed), never a
+      bit-test. Confirms there's genuinely no code-structure read site
+      to repeat the `SWB2` technique against right now, closing this
+      specific sub-question as a real negative result rather than an
+      unlooked-at gap. See `STILL_PENDING_DECODE.md`'s matching
+      2026-10-11 update.
 
 ## Ongoing documentation goal
 

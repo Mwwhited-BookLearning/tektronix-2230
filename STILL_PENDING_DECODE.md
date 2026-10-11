@@ -550,7 +550,19 @@ See `docs/self-test/front-panel-switches.md` and `VARIABLES.md`.
 - **`[0x759]`/`SWB1`'s bit map is not yet confirmed** - the same
   code-structure-vs-named-bits technique that worked for `SWB2` hasn't
   been repeated here because no literal-address read site has been
-  found yet.
+  found yet. **Checked exhaustively 2026-10-11**: grepped every
+  `[0x759]` reference in `disasm/sysrom_3532_3633_heuristic.lst` (both
+  ROMs) - only 2 exist project-wide, and both are plain `mov byte ptr
+  [0x759], al/dl` captures from hardware (`INT2_HANDLER_EARLY` at
+  `0xE5D85` and `scheduler_tick_service` at `0xE65B1`, both already
+  confirmed/named), never a mask/compare/bit-test. Unlike `SWB2`
+  (whose bits were validated by matching a `& 0x63`/`& 0x80` code mask
+  against named buttons), **no code anywhere in the disassembled
+  corpus ever reads `[0x759]`'s bits back** - the technique genuinely
+  can't be applied here with what's currently disassembled, not
+  because no one looked. `SWB1`'s bit map remains hardware-test-only
+  confirmed (`VARIABLES.md`'s `[0x759]` entry), not independently
+  cross-validated by code structure the way `SWB2` is.
 - **`[0x4E7]`/`[0x4E8]`'s `&0x80` "accelerate" pattern** isn't tied to
   a specific named `SWB1`/`SWB2` bit.
 
