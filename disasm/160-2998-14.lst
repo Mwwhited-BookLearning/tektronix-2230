@@ -4610,7 +4610,7 @@ L_82E69:
     2998:2E6F  [82E6F]  52              push    dx
     2998:2E70  [82E70]  8b4606          mov     ax, word ptr [bp + 6]
     2998:2E73  [82E73]  8b5608          mov     dx, word ptr [bp + 8]
-    2998:2E76  [82E76]  9a460172e7      lcall   SUB_E7866  ; 0xe772, 0x146
+    2998:2E76  [82E76]  9a460172e7      lcall   umod32  ; 0xe772, 0x146
     2998:2E7B  [82E7B]  053000          add     ax, 0x30
     2998:2E7E  [82E7E]  83d200          adc     dx, 0
     2998:2E81  [82E81]  8ad0            mov     dl, al
@@ -17703,7 +17703,7 @@ FUNC_2998_C411:
     2998:C414  [8C414]  83ec06          sub     sp, 6
     2998:C417  [8C417]  bf3a00          mov     di, 0x3a
     2998:C41A  [8C41A]  57              push    di
-    2998:C41B  [8C41B]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C41B  [8C41B]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C420  [8C420]  8be5            mov     sp, bp
     2998:C422  [8C422]  5d              pop     bp
     2998:C423  [8C423]  cb              retf    
@@ -17713,7 +17713,7 @@ FUNC_2998_C424:
     2998:C427  [8C427]  83ec06          sub     sp, 6
     2998:C42A  [8C42A]  bf4100          mov     di, 0x41
     2998:C42D  [8C42D]  57              push    di
-    2998:C42E  [8C42E]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C42E  [8C42E]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C433  [8C433]  8be5            mov     sp, bp
     2998:C435  [8C435]  5d              pop     bp
     2998:C436  [8C436]  cb              retf    
@@ -17723,7 +17723,7 @@ FUNC_2998_C437:
     2998:C43A  [8C43A]  83ec06          sub     sp, 6
     2998:C43D  [8C43D]  bf4800          mov     di, 0x48
     2998:C440  [8C440]  57              push    di
-    2998:C441  [8C441]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C441  [8C441]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C446  [8C446]  8be5            mov     sp, bp
     2998:C448  [8C448]  5d              pop     bp
     2998:C449  [8C449]  cb              retf    
@@ -17733,7 +17733,7 @@ FUNC_2998_C44A:
     2998:C44D  [8C44D]  83ec06          sub     sp, 6
     2998:C450  [8C450]  bf5000          mov     di, 0x50
     2998:C453  [8C453]  57              push    di
-    2998:C454  [8C454]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C454  [8C454]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C459  [8C459]  8be5            mov     sp, bp
     2998:C45B  [8C45B]  5d              pop     bp
     2998:C45C  [8C45C]  cb              retf    
@@ -17743,7 +17743,7 @@ FUNC_2998_C45D:
     2998:C460  [8C460]  83ec06          sub     sp, 6
     2998:C463  [8C463]  bf5800          mov     di, 0x58
     2998:C466  [8C466]  57              push    di
-    2998:C467  [8C467]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C467  [8C467]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C46C  [8C46C]  8be5            mov     sp, bp
     2998:C46E  [8C46E]  5d              pop     bp
     2998:C46F  [8C46F]  cb              retf    
@@ -17754,7 +17754,7 @@ FUNC_2998_C470:
     2998:C476  [8C476]  9a69031f94      lcall   SUB_94559  ; 0x941f, 0x369
     2998:C47B  [8C47B]  8946f8          mov     word ptr [bp - 8], ax
     2998:C47E  [8C47E]  50              push    ax
-    2998:C47F  [8C47F]  9ae5021f94      lcall   SUB_944D5  ; 0x941f, 0x2e5
+    2998:C47F  [8C47F]  9ae5021f94      lcall   flag_value_to_keyword_ptr  ; 0x941f, 0x2e5
     2998:C484  [8C484]  8be5            mov     sp, bp
     2998:C486  [8C486]  5d              pop     bp
     2998:C487  [8C487]  cb              retf    

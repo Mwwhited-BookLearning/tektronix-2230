@@ -293,6 +293,19 @@ The single biggest cluster of open items - see
   subsystem address reuse via a `DS` swap, not a real conflict. Full
   writeup in `docs/comm-rom/command-keyword-table.md`'s new "## 4."
   section.
+  **Correction, 2026-10-11**: the shared helper above (renamed
+  `flag_value_to_keyword_ptr`, `0x944D5`) is not a generic boolean
+  `OFf`/`ON` stringifier - it reads one of exactly 4 fixed offsets off
+  a single base far pointer (`[0x6F2]`/`[0x6F4]`, itself confirmed this
+  session to be the base pointer to table 1) based on a config flag's
+  raw value, landing on `ACCpeak`/`AVErage`/`PEAkdet`/`SAMple` -
+  textbook Tek acquisition-mode keywords, not `SMOoth`/`VECtors`/
+  `GRAticule`/`AUTo`/`FLOw`-style booleans. Which of the 6 callers'
+  flag-index constants (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`, plus one
+  computed) maps to which real oscilloscope setting is still open. See
+  `docs/comm-rom/command-keyword-table.md` section 4's 2026-10-11
+  follow-up, `VARIABLES.md`'s `[0x6F2]`/`[0x6F4]` entry, and
+  `FUNCTIONS.md`'s `flag_value_to_keyword_ptr` entry.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

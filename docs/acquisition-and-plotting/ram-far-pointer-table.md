@@ -162,3 +162,44 @@ this write-up had identified the target address and the coincidental
 match with the comm ROM's table, but hadn't yet connected `dest_offset=
 0x90` to `[0x1D10]`'s own address specifically; done now in the
 cross-referenced follow-up.
+
+**Follow-up, 2026-10-11: one more comm-ROM `init_far_pointer_table`
+entry positively identified (refines, doesn't overturn, the "didn't
+yield new functions" conclusion above)**: while chasing the
+command-keyword-table.md section 4 open question, re-checked entry
+`dest_offset=0x22` (destination `[0x6F2]`/`[0x6F4]`) specifically. Its
+far pointer (`0x90a5:0x0008`) resolves - via the alias delta
+**`-0x8000`**, confirmed correct by cross-checking against
+`flag_value_to_keyword_ptr`'s own already-disassembled definition
+address (see below) - to physical `0x88A58`, which is **not** garbage
+and **not** code: it's the exact start of `command-keyword-table.md`'s
+table 1 (the argument/value keyword table). So this entry initializes
+a pointer into an already-known *data* table, not a new function - it
+doesn't contradict "didn't yield new functions," but it does mean not
+every one of this table's targets is actually garbage; some are
+legitimate pointers into already-documented string data that simply
+look like garbage when force-disassembled as code (because they aren't
+code). Full write-up of what reads `[0x6F2]`/`[0x6F4]` and what it does
+with the 4 possible offsets added to it: `command-keyword-table.md`
+section 4's 2026-10-11 follow-up; variable identity: `VARIABLES.md`'s
+`[0x6F2]`/`[0x6F4]` entry.
+
+**Self-correction worth flagging**: before re-deriving the above, this
+session first tried the wrong alias delta (`-0x10000`, i.e. treating
+`0x90000-0x97FFF` as aliasing native `0x80000-0x87FFF`) and got a
+"new, previously-uncovered code region" that `capstone` happily
+disassembled as plausible-looking function prologues. That target
+turned out to be nothing more than the middle of an already-
+disassembled, unrelated, already-named function
+(`FUNC_2998_0A3A`/`FUNC_2998_0A6A`'s `print_signed_decimal_serial`
+trampoline) - a coincidental byte-pattern match, not a real function.
+The correct delta, confirmed independently two ways (matches this
+doc's own file-offset-based table formulas elsewhere in the project,
+and matches `flag_value_to_keyword_ptr`'s alias call target resolving
+exactly to its own known/disassembled definition address `0x8C4D5`),
+is `-0x8000`: `0x90000-0x97FFF` aliases native `0x88000-0x8FFFF` (the
+ROM's *upper* half), not the lower half. `capstone` producing
+plausible-looking instructions from essentially arbitrary bytes is not,
+by itself, evidence of a real function - always cross-check the
+candidate address against already-disassembled coverage before
+trusting the shape of a force-disassembly.

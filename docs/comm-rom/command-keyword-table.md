@@ -286,35 +286,67 @@ whose *first 6 entries* are solid, not a fully-walked table.
 
 **What the 6 confirmed handlers do**: `FUNC_2998_C411`/`C424`/`C437`/
 `C44A`/`C45D` each push one small constant (`0x3a`, `0x41`, `0x48`,
-`0x50`, `0x58` respectively) and `lcall` a shared, not-yet-named
-helper (`FUNC_2998_C4D5`); `FUNC_2998_C470` instead calls `SUB_94559`
-first to compute a value, then pushes *that* and calls the same
-helper. `FUNC_2998_C4D5` itself calls the already-named
-`get_comm_config_flag(index)` (`FUNCTIONS.md`'s `0x94488`/`(index)` -
-"reads a byte from a config/flag array at far ptr `[0x73A]`"), then
-maps the returned value (`1`/`2`/`3`/anything else) to one of 4 far
-pointers read from a table based at `[0x6F2]` and returns that
-pointer - i.e. it turns a stored flag's raw value into a *response
-string pointer*.
+`0x50`, `0x58` respectively) and `lcall` a shared helper, now renamed
+`flag_value_to_keyword_ptr` (`0x944D5`, native def site
+`FUNC_2998_C4D5` at `0x8C4D5` - see below); `FUNC_2998_C470` instead
+calls `SUB_94559` first to compute a value, then pushes *that* and
+calls the same helper. `flag_value_to_keyword_ptr` itself calls the
+already-named `get_comm_config_flag(index)` (`FUNCTIONS.md`'s
+`0x94488`/`(index)` - "reads a byte from a config/flag array at far
+ptr `[0x73A]`"), with a special case (raw `index==0x58`'s nonzero flag
+forces the dispatched value to `3`), then maps the resulting value
+(`1`/`2`/`3`/anything else) to one of 4 far pointers and returns one of
+them - i.e. it turns a stored flag's raw value into a keyword-table
+pointer.
 
-**Working hypothesis (not yet proven)**: given the leading `OFf`/`ON`
-strings and that `get_comm_config_flag`'s backing array is written by
-`set_comm_config_flag` (`0x944A2`, `(index, value)`), this table is
-most likely the comm port's generic **query-response stringifier**
-for several boolean/small-enum settings - each of the 6 confirmed
-handlers backs one specific setting's `?` query (candidates, since all
-are listed as table-1 argument/value keywords: `SMOoth`, `VECtors`,
-`GRAticule`, `AUTo`, `FLOw`), translating its raw stored flag value
-into the right `OFf`/`ON`-style text for the response. **This is a
-different mechanism from `FORmat`'s write site** (which stays
-unresolved, see `STILL_PENDING_DECODE.md`) - no record found so far
-ties back to `[0x461]` or any `FORmat`-specific handling. Not yet
-confirmed which keyword maps to which of the 5 flag-index constants
-(`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`); doing so would need tracing the
-4-byte "key" field's indexing scheme, which doesn't match either of
-tables 2/3's `id`-byte scheme above (those top out at `0x2c`, these
-keys use a different byte in the 0x15-0x57 range as the first byte,
-with a near-constant `0xFF` second byte whose role isn't decoded).
+**Correction, 2026-10-11 (supersedes the "Working hypothesis" above)**:
+the prior write-up described this as reading "one of 4 far pointers
+read from a table based at `[0x6F2]`," implying `[0x6F2]` is itself a
+small 4-entry pointer array, and guessed the destination was a generic
+`OFf`/`ON` boolean stringifier. Neither holds up under a direct read of
+`flag_value_to_keyword_ptr`'s actual body (`160-2998-14.lst:17791`
+onward): `[0x6F2]`/`[0x6F4]` is a **single** far pointer (confirmed this
+session to be initialized by the comm ROM's own `init_far_pointer_table`,
+entry `dest_offset=0x22` -> far ptr `0x90a5:0x0008`; see `VARIABLES.md`),
+and the 4 branches each `les di, ptr [0x6f2]` then *add* a different
+literal offset to `di` (`+6`/`+0x29`/`+0x145`/`+0x19b`) rather than
+indexing a pointer array. Resolving `[0x6F2]`'s base through the
+confirmed `0x90000`-`0x97FFF` alias (`native = raw - 0x8000` - the
+delta this session mis-remembered as `-0x10000` at first, which is worth
+flagging so a future session doesn't repeat it) gives physical
+`0x88A58` - **the exact start of table 1 above** (`0x88a58`/`ABOrt`).
+So `flag_value_to_keyword_ptr` doesn't return an independent
+response-string pointer at all; it returns a pointer *into table 1*,
+and the 4 possible offsets land exactly on 4 of table 1's own entries
+(verified byte-for-byte against `binary/160-2998-14.bin`):
+
+| Dispatched value | Offset from `[0x6F2]` | Lands on (table 1 entry) |
+|---|---|---|
+| `1` | `+6` | `ACCpeak` |
+| `2` | `+0x29` | `AVErage` |
+| `3` (or forced, if `index==0x58`'s flag is nonzero) | `+0x145` | `PEAkdet` |
+| anything else (default) | `+0x19b` | `SAMple` |
+
+Three of these four (`AVErage`, `PEAkdet`, `SAMple`) are textbook
+Tektronix **acquisition-mode** keywords; the fourth (`ACCpeak`) doesn't
+cleanly match a known mode name but sits immediately next to `ACQ`/`ARM`
+in the table. Best-fit (not proven) reading: each of the 6 handlers'
+fixed flag index (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`) represents a
+different acquisition-mode-style setting, and this function converts
+that setting's raw 0-3 flag value into the matching mode keyword for a
+query response - not a generic boolean `OFf`/`ON` stringifier as
+previously guessed (the leading `OFf`/`ON` strings at the start of this
+byte range are real, but nothing in `flag_value_to_keyword_ptr`'s own
+code path reaches them). **This is a different mechanism from
+`FORmat`'s write site** (which stays unresolved, see
+`STILL_PENDING_DECODE.md`) - no record found so far ties back to
+`[0x461]` or any `FORmat`-specific handling. Still not confirmed which
+real-world setting each of the 5 flag-index constants corresponds to
+(e.g. whether `0x3a`/`0x41`/`0x48`/`0x50` are per-channel or otherwise
+distinct acquisition parameters) - the 4-byte "key" field mentioned
+below is a separate, still-undecoded structure from this function's own
+flag-index constants, which don't appear as literal bytes in that key
+field.
 
 **Loose end found in passing, now resolved**: `get_comm_config_flag`/
 `set_comm_config_flag`'s `les di, ptr [0x73a]` and

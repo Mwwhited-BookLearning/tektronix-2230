@@ -1765,6 +1765,49 @@ FUNCTIONAL_NAMES = {
                                                # 0xFFFF) and sets bit 0
                                                # of [0x603] (plus bit 1
                                                # too if [0x604]==0)
+    0x944D5: "flag_value_to_keyword_ptr",       # comm ROM (native
+                                               # 0x8C4D5, labeled
+                                               # FUNC_2998_C4D5 at its
+                                               # definition site - same
+                                               # native/alias split as
+                                               # get_comm_config_flag
+                                               # above): (index) - calls
+                                               # get_comm_config_flag
+                                               # (index) (with a special
+                                               # case: raw index 0x58's
+                                               # nonzero flag value forces
+                                               # the dispatched value to
+                                               # 3 regardless of its real
+                                               # value), then returns (in
+                                               # ES:BX) a far pointer into
+                                               # the comm ROM's argument/
+                                               # value keyword table
+                                               # (command-keyword-table.md
+                                               # table 1, confirmed
+                                               # 2026-10-11 to be the same
+                                               # table [0x6F2]/[0x6F4]
+                                               # point at - see VARIABLES.
+                                               # md): raw flag value 1->
+                                               # table1+6 ("ACCpeak"), 2->
+                                               # table1+0x29 ("AVErage"),
+                                               # 3->table1+0x145
+                                               # ("PEAkdet"), anything else
+                                               # (default)->table1+0x19b
+                                               # ("SAMple") - i.e. it maps
+                                               # a stored flag's raw value
+                                               # to one of exactly 4 fixed
+                                               # keyword-table entries, not
+                                               # a generic table lookup.
+                                               # Called by 6 sibling
+                                               # handlers (FUNC_2998_C411/
+                                               # C424/C437/C44A/C45D/C470)
+                                               # each fixed to a different
+                                               # config-flag index (0x3a/
+                                               # 0x41/0x48/0x50/0x58, plus
+                                               # C470's computed value) -
+                                               # see command-keyword-
+                                               # table.md section 4's
+                                               # 2026-10-11 follow-up
     0x96597: "init_comm_channel_state_a",       # comm ROM: resets
                                                # several default far
                                                # pointers (to offset
@@ -4957,6 +5000,10 @@ PARAMETER_NAMES = {
     # set_comm_config_flag (comm ROM, 0x944A2): "(index, value)" -
     # bp+8 (value) is written into the array at bp+6's (index) slot.
     0x944A2: {6: "index", 8: "value"},
+    # flag_value_to_keyword_ptr (comm ROM, 0x944D5): "(index)" - passed
+    # straight through to get_comm_config_flag(index); also directly
+    # compared against the literal 0x58 for its own special case.
+    0x944D5: {6: "index"},
     # engage_comm_hold (comm ROM, 0x97BE6): "(reason)" - ORed into the
     # hold bitmask [0x45C] at the end of the function.
     0x97BE6: {6: "reason"},
