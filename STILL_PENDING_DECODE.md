@@ -977,14 +977,36 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   inconsistent stack-parameter push counts across `0xEDDE2`'s 4
   callers; what `FUNC_3532_B529` (called twice by `FUNC_3633_FC94`)
   does. A third case, `SUB_EFDC2` (3 callers, all from a separate
-  dispatcher `FUNC_3633_9611`), is a clean non-overlapping instruction
-  boundary (same class as `0xF4CE8`) but reached cross-function without
-  a shared frame - what its `[bp-0xe]` read means for those 3 callers,
-  and `FUNC_3633_9611`'s own purpose plus its other sub-labels
-  (`SUB_E962C`, `SUB_EFFEE`), are new open threads. See `docs/decode-
-  anomalies/landing-artifacts-and-jump-tables.md`'s matching 2026-10-10
-  follow-up and `FUNCTIONS.md`'s new `format_word_decimal_and_copy_out`
-  entry.
+  dispatcher `FUNC_3633_9611`), was flagged as an open third category.
+  See `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+  matching 2026-10-10 follow-up and `FUNCTIONS.md`'s new
+  `format_word_decimal_and_copy_out` entry.
+- **2026-10-11: corrected the `SUB_EFDC2` framing above - it's neither
+  a clean secondary entry nor plain garbage, it's a third mechanism
+  (inherited-`bp` + a `mov sp,bp` exit collapses the *caller's* frame
+  too).** Traced the exact stack arithmetic for `FUNC_3633_9611`'s 3
+  call sites: `[bp-0xe]` at `SUB_EFDC2`'s entry is the just-pushed far
+  return address's own IP half (not a channel index - confirmed
+  garbage, as suspected), but more importantly, `SUB_EFDC2`'s shared
+  exit (`mov sp,bp`/`pop bp`/`retf 2`) uses the *inherited* `bp` -
+  `FUNC_3633_9611`'s own `bp`, never reanchored - so it unwinds
+  `FUNC_3633_9611`'s entire frame and returns straight to
+  *`FUNC_3633_9611`'s own caller*, never back to the `add sp,2`
+  instruction after the `lcall`. Every instruction after each of the 3
+  `lcall`s inside `FUNC_3633_9611` (the shift-register writes in
+  `SUB_E962C`, the `[0x502]` table reads, the final `jmp L_E972C`) is
+  dead code along this path - unreachable regardless of `SUB_EFDC2`'s
+  internal branch. **Plausible, not confirmed**: `0xE951A`'s still-
+  unresolved "14 pushed/12 cleaned" stack mismatch has the same 2-byte
+  asymmetry signature this mechanism produces - worth re-examining with
+  this specific check before re-deriving from scratch. Not resolved:
+  `FUNC_3633_9611`'s `ax=5..14` path (via `SUB_EFFEE`, whose own
+  landing point wasn't pinned down - it decodes into a confusing region
+  that appears to cross into the `160-3532` ROM's address space); and
+  whether `FUNC_3633_9611` (`ref_count: 0`, no confirmed callers of its
+  own) is a real function at all. Left unnamed. See `docs/decode-
+  anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
+  2026-10-11" section.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

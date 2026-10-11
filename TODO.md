@@ -840,6 +840,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       unexplored sub-labels (`SUB_E962C`, `SUB_EFFEE`); what
       `FUNC_3532_B529` does; identifying the settings bytes `[0x4e0]`-
       `[0x4fc]`; and `FUNC_3532_4629`'s `[0x1bf0]` fixed-point value.
+      2026-10-11: corrected `SUB_EFDC2`'s framing above - traced the
+      exact stack arithmetic and found a third mechanism distinct from
+      both established categories: its shared `mov sp,bp`/`pop bp`/
+      `retf 2` exit uses the *inherited* `bp` (`FUNC_3633_9611`'s own,
+      never reanchored), so calling it unwinds `FUNC_3633_9611`'s
+      entire frame and returns straight to *`FUNC_3633_9611`'s own
+      caller` - every instruction after each of the 3 `lcall`s inside
+      `FUNC_3633_9611` is dead code along this path. Worth checking
+      this same way on any future `mov sp,bp`-exit candidate reached
+      without a fresh prologue. Plausibly (not confirmed) the same
+      explanation for `0xE951A`'s still-unresolved "14 pushed/12
+      cleaned" mismatch above - worth revisiting with this check before
+      re-deriving from scratch. `FUNC_3633_9611` (`ref_count: 0`) stays
+      unnamed; its `ax=5..14`/`SUB_EFFEE` path wasn't pinned down. See
+      `docs/decode-anomalies/landing-artifacts-and-jump-tables.md`'s
+      "Follow-up, 2026-10-11" section.
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

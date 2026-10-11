@@ -902,3 +902,97 @@ zero-argument `0xF4CE8`-style secondary entry) and is flagged as a
 distinct, not-yet-understood third case rather than forced into one of
 those boxes. `FUNC_3633_9611`'s own purpose, and `SUB_E962C`/
 `SUB_EFFEE`, are untouched - good next candidates.
+
+## Follow-up, 2026-10-11: correcting yesterday's `SUB_EFDC2` framing - it's neither a clean secondary entry nor simple garbage, it's a new mechanism (inherited-`bp` + `mov sp,bp` exit collapses the *caller's* frame too)
+
+Chased down `FUNC_3633_9611`'s 3 external calls to `SUB_EFDC2`
+(`0xE9620`/`0xE9669`/`0xE968B`, all pushing `word[bp+8]` then
+`word[bp+6]` immediately before the `lcall`) by tracing the exact
+stack arithmetic rather than guessing. This supersedes yesterday's
+tentative "clean shared-frame secondary entry point, same class as
+`0xF4CE8`" framing - that was wrong, and the real mechanism is more
+interesting than either of this doc's two established categories.
+
+**The bogus-parameter half**: `FUNC_3633_9611`'s own prologue is
+`push bp` / `mov bp,sp` / `sub sp,6` (3 words of locals), and its
+dispatch block (`L_E96B7`, reached via an unconditional `jmp` right
+after the prologue) does no further stack manipulation before falling
+into `L_E961A`/`L_E9663`/`L_E9685`. So at each of the 3 call sites,
+right before the `lcall`, `sp = bp-6` exactly (call this `bp0` for
+`bp`). The 2 pushes (`word[bp+8]`, `word[bp+6]`) bring `sp` to
+`bp0-10`; the far `lcall`'s own 4-byte return-address push brings it
+to `bp0-14` = `bp0-0xE`. `SUB_EFDC2`'s first instruction,
+`mov di, word ptr [bp-0xe]`, executes with `bp` still equal to `bp0`
+(no prologue of its own) - so `[bp-0xe]` is **exactly the current
+stack top**, i.e. the low word (IP half) of the far return address
+that the `lcall` instruction itself *just* pushed a moment earlier.
+Concretely, `di` ends up holding something like `0x9625`/`0x966E`/
+`0x9690` (the address immediately after each respective `lcall`) -
+not a channel index at all. The subsequent `[di+0x1be2]` read is
+therefore reading an arbitrary, call-site-dependent RAM address
+(`~0xB207`+) as if it were a real per-channel settings byte - this
+part **is** the incoherent-garbage behavior this doc's `SUB_ECEDA`
+category describes.
+
+**The frame-collapse half (the new part)**: both of `SUB_EFDC2`'s
+internal branches converge at `L_EFE24` (`0xEFE24`), whose exit is
+`mov sp,bp` / `pop bp` / `retf 2` - the same `mov sp,bp`-based tail
+shape already flagged in the 2026-10-10 `0xECE82` follow-up as one
+that breaks the simple push-vs-retf stack check. Because `bp` was
+never reanchored (still `FUNC_3633_9611`'s own `bp0`), `mov sp,bp`
+sets `sp = bp0`, which is the address where `FUNC_3633_9611`'s *own*
+prologue `push bp` saved *its* caller's old `bp`. The following
+`pop bp` therefore restores `FUNC_3633_9611`'s caller's `bp` (not
+anything belonging to `SUB_EFDC2`/`FUNC_3633_FC94`), and `retf 2`
+then pops the 4 bytes sitting at `[bp0+2]`/`[bp0+4]` - which, by the
+standard prologue layout, are `FUNC_3633_9611`'s *own* far return
+address pushed by *its* caller - and discards 2 more bytes (what
+`FUNC_3633_9611` itself would call its own `[bp+6]` parameter slot).
+
+**Net effect**: calling `SUB_EFDC2` from any of `FUNC_3633_9611`'s 3
+sites doesn't return to the `add sp,2` instruction immediately
+following the `lcall` at all. It unwinds `FUNC_3633_9611`'s entire
+frame and returns control straight to *`FUNC_3633_9611`'s own
+caller*, consuming one of `FUNC_3633_9611`'s own incoming parameters
+via the `retf 2` immediate in the process. Every instruction after
+each of these 3 `lcall`s inside `FUNC_3633_9611` - the `add sp,2`
+cleanups, the `shl`/`imul` index math, `SUB_E962C`'s `out 0xd1`/
+`out 0xd1`/`out 0x8a` hardware shift-register writes, the `[0x502]`
+table reads, and the final `jmp L_E972C` - is therefore dead code
+along this path: it can never execute, regardless of which branch
+`SUB_EFDC2`'s (garbage) `di` value happens to take internally, because
+*both* of `SUB_EFDC2`'s internal branches converge on the same
+frame-collapsing `L_EFE24` exit.
+
+This is a **third, distinct mechanism** beyond this doc's two
+established categories (dead-via-trap-instruction like `SUB_ECEDA`, or
+same-function zero-argument secondary entry like `0xF4CE8`): a landing
+point whose *target* function is real and whose own internal logic
+runs to completion without crashing, but whose exit convention (`mov
+sp,bp` against an inherited, wrong-frame `bp`) silently discards the
+entire calling function's frame and returns past it - making the
+calling function's own remaining code unreachable via that call,
+without any trap/`hlt`/obviously-bogus instruction to signal it.
+Worth checking for on any future candidate with a `mov sp,bp`-based
+exit reached without a fresh prologue: **trace where the inherited
+`bp` actually points, not just whether the byte decode looks clean.**
+
+`0xE951A`'s still-unresolved stack-accounting mismatch (`docs` 2026-
+10-09 follow-up: "14 bytes pushed by every caller, only 12 cleaned
+between caller+callee") has the same 2-byte asymmetry signature as
+this mechanism produces (one parameter slot consumed by an outer
+`retf N` that doesn't belong to the immediate callee) - **plausible,
+not confirmed**, that the same inherited-`bp`-collapse mechanism
+explains it too; worth revisiting with this specific check in mind
+rather than re-deriving from scratch.
+
+**Not resolved this round**: `FUNC_3633_9611`'s `ax`-5-to-14 path
+(via `SUB_EFFEE`) wasn't re-traced against this same question -
+`SUB_EFFEE`'s own landing point decodes into a confusing byte region
+that appears to cross into the `160-3532` ROM's address space before
+re-converging with any real code, and wasn't pinned down. Whether
+`FUNC_3633_9611` ever actually completes its dispatch for *any* input
+(making it a real, if partially dead-ended, function) or is itself
+just heuristic-scanner noise - it has **zero confirmed callers of its
+own** (`ref_count: 0` in `symbols.json`) - is left unnamed and
+unresolved rather than guessed at.
