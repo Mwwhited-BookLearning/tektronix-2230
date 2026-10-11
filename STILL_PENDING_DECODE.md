@@ -963,6 +963,28 @@ See `docs/decode-anomalies/dual-entry-points.md` and
   artifacts-and-jump-tables.md`'s "Follow-up, 2026-10-10" sections
   (second and third) and `docs/acquisition-and-plotting/mode-
   dispatcher-and-formatting.md`'s matching follow-up.
+- **2026-10-10 (same session): resolved the 2 remaining ranked
+  candidates, `0xEDDE2` (4 callers) and `0xEFD99` (3/1 callers) - both
+  landing artifacts, plus a new unresolved third case, `SUB_EFDC2`.**
+  `0xEDDE2` lands 2 bytes into the real `cmp ax, 0` inside the newly-
+  named `format_word_decimal_and_copy_out` (`0xEDD89`) and always
+  falls through to that function's copy-out phase, skipping digit
+  extraction. `0xEFD99` lands 1 byte into the tail of `les di, ptr
+  [0x1ddc]` inside an unnamed per-channel sample-processing function
+  (`FUNC_3633_FC94`, `0xEFC94`). Both confirmed via direct raw-byte
+  decode. Open/unresolved: why `format_word_decimal_and_copy_out`'s
+  own space-padding fill is never copied by its output path; the
+  inconsistent stack-parameter push counts across `0xEDDE2`'s 4
+  callers; what `FUNC_3532_B529` (called twice by `FUNC_3633_FC94`)
+  does. A third case, `SUB_EFDC2` (3 callers, all from a separate
+  dispatcher `FUNC_3633_9611`), is a clean non-overlapping instruction
+  boundary (same class as `0xF4CE8`) but reached cross-function without
+  a shared frame - what its `[bp-0xe]` read means for those 3 callers,
+  and `FUNC_3633_9611`'s own purpose plus its other sub-labels
+  (`SUB_E962C`, `SUB_EFFEE`), are new open threads. See `docs/decode-
+  anomalies/landing-artifacts-and-jump-tables.md`'s matching 2026-10-10
+  follow-up and `FUNCTIONS.md`'s new `format_word_decimal_and_copy_out`
+  entry.
 - **Whether the whole landing-artifact phenomenon is a genuine
   off-by-N linker/relocation defect specific to this ROM revision, or
   some other systematic cause, is unresolved** - would be worth

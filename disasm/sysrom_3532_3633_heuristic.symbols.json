@@ -14105,10 +14105,10 @@
     "notes": null
   },
   "EDD89": {
-    "name": "FUNC_3633_DD89",
+    "name": "format_word_decimal_and_copy_out",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "format_word_decimal_and_copy_out",
     "notes": null
   },
   "EDDA0": {

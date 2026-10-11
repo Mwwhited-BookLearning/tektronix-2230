@@ -798,3 +798,107 @@ treating any future single-caller, no-"real"-callers `SUB_` label with
 suspicion of the same thing, especially when that label's address also
 appears in the proven-reachable listing via a *different* path (a
 strong tell that it's a mid-function landing point, not a true entry).
+
+## Follow-up, 2026-10-10 (same session): two more `TODO.md`-flagged candidates resolved (`SUB_EDDE2`, `SUB_EFD99`), and a third (`SUB_EFDC2`) turns out to be a cross-function frame-sharing case, not a simple one
+
+Picked up the two remaining ranked candidates `TODO.md` had explicitly
+deferred ("`0xEDDE2` at 4 callers and `0xEFD99` at 3"). Both resolved
+cleanly as landing artifacts via direct raw-byte decode; a third,
+`SUB_EFDC2`, was found along the way and is a different, more tangled
+situation that's left open rather than resolved.
+
+**`SUB_EDDE2`** (`0xEDDE2`, 4 external callers, all far-calling
+`0x3532:5C53`/`5C6B`/`5CE6`/`5CFF` via the shared target
+`EDA2:03C2`): lands 2 bytes into the real 3-byte `cmp ax, 0`
+(`3d0000`) at `0xEDDE0`, inside the real function now named
+`format_word_decimal_and_copy_out` (`0xEDD89` - see `FUNCTIONS.md`).
+That function digit-extracts an unsigned word into a 9-byte stack
+buffer (writing backward from the end, space-padded), then copies
+forward from the final cursor position to a far destination and
+returns the char count via `retf 2`. `SUB_EDDE2` decodes exactly one
+harmless bogus instruction - `add byte ptr [bx-0x27], dh` (`0077d9`,
+3 bytes, `0xEDDE2`-`0xEDDE4`) - then lands **exactly** on the real
+function's own unconditional `jmp L_EDE01` at `0xEDDE5` (`e91900`).
+Because that `jmp` is unconditional (the artifact's decode swallows
+the bytes of the real conditional `ja` that would normally guard it),
+every external call through `SUB_EDDE2` always skips digit extraction
+entirely and falls straight into the copy-out phase - i.e. it always
+copies out whatever was already sitting in the local buffer from the
+*previous* use of that stack slot, not a freshly-formatted value. This
+is a landing artifact, not a real function: no rename.
+
+Left open (flagged in `FUNCTIONS.md`/`STILL_PENDING_DECODE.md` rather
+than guessed at): the 4 callers' own stack-parameter convention is
+inconsistent across call sites when examined closely - one pushes
+exactly 3 words (`di`, `dx`, `word[bp+6]`) before the far call, while
+another path (through a separately-labeled shared entry point,
+`SUB_F5C6A` at `0x3532:5C6A`) appears to push a 4th (`push es`) in
+between, which doesn't cleanly reconcile with the uniform `add sp,4`
+cleanup seen at every site. Given the function is always reached with
+digit-extraction skipped regardless, this doesn't block naming it, but
+the exact argument shape callers think they're passing is unresolved.
+
+**`SUB_EFD99`** (`0xEFD99`, 1 confirmed external caller, `0x3532:7B9C`
+per `symbols.json`'s own `ref_count: 1`): confirmed via manual
+byte-by-byte decode of `binary/160-3633-14.bin`'s physical range
+`0xEFD96`-`0xEFDB0` (raw bytes
+`c43edc1d8d9582008956e68c46e8c45ee60653c446ea0650ff76`) to be a
+landing artifact 1 byte into the *last* byte of the real 4-byte
+`les di, ptr [0x1ddc]` at `0xEFD96` (`c43edc1d`), inside an
+as-yet-unnamed per-channel acquisition-sample-processing function
+(`FUNC_3633_FC94`, `0xEFC94`). It decodes 2 bogus instructions -
+`sbb ax, 0x958d` (`1d8d95`, `0xEFD99`-`0xEFD9B`) then
+`add byte ptr [bx+si], 0x89` (`820089`, `0xEFD9C`-`0xEFD9E`) -
+reconverging at byte `0xEFD9F`, which is itself mid-instruction
+relative to the true path's own boundaries
+(`0xEFD96`(4B)->`0xEFD9A`(4B, `lea dx,[di+0x82]`)->`0xEFD9E`(3B,
+`mov [bp-0x1a],dx`)->`0xEFDA1`(3B, `mov [bp-0x18],es`)->`0xEFDA4`
+(`les bx,[bp-0x1a]`)). That true sequence is a second, inline-
+duplicated "half" of a pattern the function runs twice per iteration
+at offset `+0x80` then again at `+0x82` into the `[0x1ddc]` far
+pointer, mirroring the first half's own call sequence
+(`L_EFD41`) without an explicit jump between the two. Not a real
+function: no rename. `FUNC_3633_FC94` itself is left unnamed this
+round - its mechanism (table offset via `imul dx,0x14` plus base
+`0xa6`+`0xb`/`+0xd`, a call to `read_acq_sample_with_wrap`, then two
+calls to an unnamed `FUNC_3532_B529` with the `+0x80`/`+0x82` far
+pointers) is understood well enough to describe but not well enough
+to name with confidence; what `FUNC_3532_B529` does and what the
+`0xa6`-based table represents are still open.
+
+**`SUB_EFDC2`** (`0xEFDC2`, 3 external callers, all `lcall`s from
+inside a different function, `FUNC_3633_9611` at `0xE9611`): this one
+is **not** a byte-overlap landing artifact - its label sits at a
+clean instruction boundary, immediately following
+`FUNC_3633_FC94`'s own `inc word ptr [bp-0xe]` loop-continuation
+instruction. That matches this project's already-established "clean
+shared-frame secondary entry point" class (same class as `0xF4CE8` -
+see the 2026-10-09 follow-up above). But unlike `0xF4CE8`, the 3
+external callers here are not a stray heuristic artifact reaching
+into the *same* function's own frame - they're a genuinely different
+function, `FUNC_3633_9611`, calling across into
+`FUNC_3633_FC94`'s code address without `FUNC_3633_FC94` ever
+re-establishing its own `push bp`/`mov bp,sp` at that label. Since
+`SUB_EFDC2` reads `mov di, word ptr [bp-0xe]` as its first instruction
+with no intervening prologue, whatever `bp` is active there (inherited
+from whichever function actually called into this address) decides
+what `[bp-0xe]` means - for these 3 external calls that's
+`FUNC_3633_9611`'s own local slot, not a freshly-pushed parameter.
+`FUNC_3633_9611` itself turned out to be a multi-way dispatcher with
+several of its own unresolved sub-labels (`SUB_E962C`, which follows
+a call to `SUB_EFDC2` with `out 0xd1`/`out 0xd1`/`out 0x8a` writes
+reminiscent of `write_hw_shift_register`'s shift-register pattern, and
+`SUB_EFFEE`, reached from a separate branch and reading a
+`[0x1d1c]`-table-indexed byte via `imul dx,6`) that weren't chased
+this round.
+
+**Left open rather than resolved**: exactly what value
+`FUNC_3633_9611` leaves at its own `bp-0xe` before reaching each of
+the 3 call sites, and therefore what `SUB_EFDC2`'s cross-function
+`[bp-0xe]` reads actually mean in that context, is unresolved - this
+doesn't fit either of this doc's two established categories cleanly
+(dead/incoherent `SUB_ECEDA`-style artifact, or same-function
+zero-argument `0xF4CE8`-style secondary entry) and is flagged as a
+distinct, not-yet-understood third case rather than forced into one of
+those boxes. `FUNC_3633_9611`'s own purpose, and `SUB_E962C`/
+`SUB_EFFEE`, are untouched - good next candidates.

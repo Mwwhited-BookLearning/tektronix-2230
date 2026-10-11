@@ -20837,7 +20837,7 @@ L_EDD83:
     3633:DD83  [EDD83]  8be5            mov     sp, bp
     3633:DD85  [EDD85]  5d              pop     bp
     3633:DD86  [EDD86]  ca0200          retf    2
-FUNC_3633_DD89:
+format_word_decimal_and_copy_out:
     3633:DD89  [EDD89]  55              push    bp
     3633:DD8A  [EDD8A]  8bec            mov     bp, sp
     3633:DD8C  [EDD8C]  83ec16          sub     sp, 0x16

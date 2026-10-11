@@ -824,6 +824,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       at 4 callers and `0xEFD99` at 3) weren't individually chased -
       worth a look only if one stands out (many independent call sites
       is the best tell).
+      2026-10-10 (same session): chased both deferred candidates above.
+      `0xEDDE2` and `0xEFD99` both resolved cleanly as landing
+      artifacts (into the newly-named `format_word_decimal_and_copy_out`,
+      `0xEDD89`, and an unnamed per-channel sample-processing function
+      `FUNC_3633_FC94` respectively) - see `docs/decode-anomalies/
+      landing-artifacts-and-jump-tables.md`'s matching follow-up. Found
+      a third case along the way, `SUB_EFDC2` (3 callers, all from a
+      separate dispatcher function `FUNC_3633_9611`) that doesn't fit
+      either established category (dead artifact vs. same-function
+      secondary entry) - it's a clean instruction boundary but reached
+      cross-function without a shared frame, so what its `[bp-0xe]`
+      read actually means for those 3 callers is unresolved. New next
+      candidates: `FUNC_3633_9611`'s own purpose and its other
+      unexplored sub-labels (`SUB_E962C`, `SUB_EFFEE`); what
+      `FUNC_3532_B529` does; identifying the settings bytes `[0x4e0]`-
+      `[0x4fc]`; and `FUNC_3532_4629`'s `[0x1bf0]` fixed-point value.
       2026-10-10: followed up on the `[0x1D10]` command-code thread
       instead - found `dispatch_item_handler_if_enabled` (`0xEDFFD`) is
       itself a secondary entry into a larger real function

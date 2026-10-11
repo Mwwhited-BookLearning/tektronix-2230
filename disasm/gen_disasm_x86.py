@@ -3938,6 +3938,63 @@ FUNCTIONAL_NAMES = {
                                                # shape alongside its
                                                # sibling, not from a
                                                # confirmed call site.
+    0xEDD89: "format_word_decimal_and_copy_out", # real, fully-prologued
+                                               # (push bp/mov bp,sp/sub
+                                               # sp,0x16) function.
+                                               # Fills a 9-byte stack
+                                               # buffer with spaces,
+                                               # repeatedly divides
+                                               # [bp+6] by 10 writing
+                                               # ASCII digits backward
+                                               # from the buffer's end
+                                               # until the quotient
+                                               # hits 0, then copies
+                                               # forward from the
+                                               # final (most-
+                                               # significant-digit)
+                                               # cursor position to a
+                                               # far destination
+                                               # [bp+8]:[bp+0xa],
+                                               # NUL-terminates, and
+                                               # returns the char
+                                               # count via retf 2. The
+                                               # space-padding fill
+                                               # itself is never
+                                               # copied by this path -
+                                               # unexplained, flagged
+                                               # in STILL_PENDING_
+                                               # DECODE.md. SUB_EDDE2
+                                               # (4 external callers)
+                                               # is a landing artifact
+                                               # 2 bytes into this
+                                               # function's own
+                                               # `cmp ax, 0` at
+                                               # 0xEDDE0 - it decodes
+                                               # one harmless bogus
+                                               # instruction then
+                                               # lands exactly on the
+                                               # real unconditional
+                                               # `jmp L_EDE01`,
+                                               # skipping digit
+                                               # extraction entirely
+                                               # and always producing
+                                               # the copy-out of
+                                               # whatever was already
+                                               # in the buffer. The
+                                               # exact stack-parameter
+                                               # convention used by
+                                               # SUB_EDDE2's 4 callers
+                                               # is inconsistent
+                                               # across call sites
+                                               # (one pushes 3 words,
+                                               # another path through
+                                               # a separately-labeled
+                                               # shared entry
+                                               # (0x3532:5C6A) appears
+                                               # to push a 4th) and is
+                                               # left unresolved
+                                               # rather than guessed
+                                               # at.
     0xEDF56: "dispatch_item_change_notification", # real, fully-
                                                # prologued entry
                                                # (push bp/mov bp,sp/sub
