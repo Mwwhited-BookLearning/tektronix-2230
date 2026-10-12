@@ -857,6 +857,12 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       range/limit-check-shaped record array. `[0x70E]`/`[0x712]` remain
       as previously characterized. See `command-keyword-table.md`
       section 9 and `VARIABLES.md`.
+      **2026-10-12: also resolved `[0x702]`** - the master command-ID
+      -> block-6-record-slice descriptor table, indexed by `[0x604]*2`.
+      See `command-keyword-table.md` section 10. Surfaced a new, large
+      open item: `[0x73E]`/`[0x746]`/`[0x5F8]` (85-105 references each,
+      undocumented), a 12-byte-stride record array distinct from
+      everything else in this cluster - needs its own session.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

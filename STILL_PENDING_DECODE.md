@@ -456,6 +456,28 @@ The single biggest cluster of open items - see
   text tokens / 2-letter mnemonic strings, both still unconfirmed). Full
   writeup in `docs/comm-rom/command-keyword-table.md` section 9;
   `VARIABLES.md` now has rows for all 6 newly-resolved offsets.
+  **Second follow-up, 2026-10-12**: `[0x702]` (section 7's "comm ROM's
+  own lower half, not yet characterized") is now resolved too - it's
+  the master command-ID -> block-6-record-slice descriptor table,
+  indexed by `[0x604]*2` (the resolved command ID), giving each
+  command's record count and starting-record offset into the shared
+  12-byte block-6 array based at `[0x6FE]`. Full writeup in
+  `command-keyword-table.md` section 10; `VARIABLES.md` has the new
+  row. Tracing it also surfaced a **new, large, still-unresolved
+  structure**: `[0x73E]` (a 12-byte-stride record array, flag byte at
+  `+0xA`) and `[0x746]` (a per-record counter/flag reset to 0 after
+  updates) are each referenced 85-105 times across a big code region,
+  indexed by an undocumented variable `[0x5F8]`, with out-of-range
+  values writing `0x15` to the generic comm-ROM error-code byte
+  `[0x623]` (already documented elsewhere, e.g. `[0x5F4]`'s row, as a
+  general error-status cell with several unrelated error codes seen
+  written to it - this `0x15` is **not** confirmed to be the same
+  `0x15`/`MESsage` discussed above; that's a different variable,
+  `[0x1B83]`, and may just be a coincidental shared literal);
+  `[0x742]`/`[0x74A]`
+  are referenced in the same region but untraced. This is bigger than
+  a leftover "dense cluster" entry and needs its own dedicated pass -
+  not attempted further this session.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

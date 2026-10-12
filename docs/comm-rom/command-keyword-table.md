@@ -703,7 +703,7 @@ caught before anything was written down):
 | `0xa` | `[0x6DA]` | `4067:000c` | `0x4067C` | **"Option Status Latch" (Table 3-1)** - already confirmed in `MEMORY_MAP.md` |
 | `0xe` | `[0x6DE]` | `406b:000c` | `0x406BC` | **"Option Parameters Latch (in)" (Table 3-1)** - already confirmed in `MEMORY_MAP.md`; not yet cross-referenced in `VARIABLES.md`'s comm-ROM section until now |
 | `0x6`/`0x12` | `[0x6D6]`/`[0x6E2]` | `406f:0000`/`406f:0008` | `0x406F0`/`0x406F8` | **"Option UART/GPIB chips" (Table 3-1)** - already confirmed |
-| `0x32` | `[0x702]` | `85e0:000c` | `0x85E0C` | The comm ROM's own lower half - not yet characterized |
+| `0x32` | `[0x702]` | `85e0:000c` | `0x85E0C` | The master command-ID -> block-6-record-slice descriptor table, indexed by `[0x604]*2` - see section 10 |
 | `0x46` | `[0x716]` | `900e:0004` | `0x880E4` | A baud-rate lookup table feeding the RS-232 UART register bank, indexed by the DIP-switch baud index `[0x4EC]` - see section 9 |
 | `0x3e` | `[0x70E]` | `9020:0000` | `0x88200` | Uncharacterized, dense cluster - decodes as a run of short length-prefixed numeric-text tokens (`'1'`,`'2'`,`'5'`,`'1'`,`'2'`,`'4'`,`'2'`,`'4'`,`'8'`,`'15625'`...), hypothesized but unconfirmed as baud-rate-related constants |
 | `0x42` | `[0x712]` | `900f:0004` | `0x880F4` | Uncharacterized, dense cluster - repeating `02 61 XX 00` records decoding as 2-letter lowercase strings (`"ae"`,`"af"`,`"ag"`,...), hypothesized but unconfirmed as a diagnostic/error-code mnemonic table |
@@ -872,14 +872,20 @@ initialization are now fully confirmed.
 
 ### Still uncharacterized
 
-The remaining entries (`[0x742]`, `[0x73E]`, `[0x74A]`, `[0x746]`,
-`[0x702]`) are recorded in the table above with their resolved
-addresses but not yet decoded past a first byte-level glance - left as
-open leads in `STILL_PENDING_DECODE.md`. The dense cluster packed into
+The remaining entries (`[0x742]`, `[0x73E]`, `[0x74A]`, `[0x746]`) are
+recorded in the table above with their resolved addresses but not yet
+decoded past a first byte-level glance - left as open leads in
+`STILL_PENDING_DECODE.md`. The dense cluster packed into
 `0x88006`-`0x880F4` (`[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/`[0x71E]`/
 `[0x72A]`/`[0x71A]`/`[0x726]`/`[0x72E]`) turned out, on 2026-10-12, to
 be several unrelated small structures rather than one mystery table -
-see section 9 below.
+see section 9 below. `[0x702]` is now resolved too, as the master
+command-ID descriptor table for block 6's shared record array - see
+section 10. Tracing `[0x702]` also surfaced a second, much larger
+still-unresolved structure centered on `[0x73E]`/`[0x746]`/`[0x5F8]`
+(85-105 references each) - flagged as a new open item, not yet
+characterized beyond its record stride and index variable; see
+section 10's own closing subsection.
 
 ## 8. `[0x5fe]`'s write site found; its exact numeric encoding still not pinned down (found 2026-10-12)
 
@@ -1036,3 +1042,81 @@ UART register field, which command's allow-list/response-list, what
 future pass. `[0x70E]`/`[0x712]` (the baud-rate-text and 2-letter-
 mnemonic tables from earlier sessions) are unaffected by this -
 already separately characterized, see the table in section 7.
+
+## 10. `[0x702]` is the master command-ID -> block-6-record-slice descriptor table (found 2026-10-12)
+
+Section 7 had flagged `[0x702]` ("the comm ROM's own lower half") as
+not yet characterized. Its only 4 readers (`0x84519`, `0x84527`,
+`0x84529`... all inside one function around physical `0x84512`-
+`0x84551`) resolve it cleanly:
+
+- `[0x604]` (the already-confirmed resolved command ID - e.g. `PLOt`
+  = `0x17`, per section 7's `FUNC_2998_5115`/`519A` finding) is used as
+  a **word index** (`*2`) into `[0x702]`, a 2-byte-per-entry table.
+- Entry byte 0 (`es:[bx+di]`) is a **record count**, stored in
+  `[bp-8]` and later used as the loop bound for a `for` loop
+  (`L_845CA`-`L_845F6`) that walks 12-byte records.
+- Entry byte 1 (`es:[bx+si+1]`) is multiplied by `0xC` (12) and added
+  to the `[0x6FE]` far pointer's offset - `[0x6FE]` being section 7's
+  already-confirmed base of block 6's first real 12-byte record (the
+  `ACQuisition` GET-response/argument-matching record array,
+  `command-keyword-table.md` section 4). The result becomes the
+  starting far pointer (`[bp-0xc]`/`[bp-0xa]`) for the loop.
+- The loop body calls the same argument/keyword-matching helpers
+  (`FUNC_2998_477F`/`FUNC_2998_4835`, with literal masks like `0xC02F`/
+  `0xC00F`/`0xC01F`) already seen operating on block 6's 12-byte
+  records elsewhere, advancing the pointer by `0xC` each iteration and
+  incrementing a counter compared against the entry's byte-0 count.
+
+So **`[0x702][id*2]` = `{record_count, start_record_index}` for
+command ID `id`**: it tells the shared dispatcher which contiguous
+slice of the single block-6 record array (based at `[0x6FE]`) belongs
+to that specific command. This generalizes the previously
+command-specific "block 6" mechanism (seen fixed for `ACQuisition`'s 5
+flags in section 4, and reused via a separate field-index list for one
+other command via `[0x726]` in section 9) into a single, uniform,
+command-ID-driven lookup covering (in principle) every comm command
+that has block-6-style arguments or GET-response fields - not just the
+ones already traced by name. Not yet cross-validated against a named
+command's own known record count (would need `ACQuisition`'s own
+`[0x604]`-space ID, not yet determined - its table-3 position (`11`)
+and its `[0x604]`-space ID appear to be different numbering schemes).
+
+### A second, larger, still-unresolved structure found while tracing this: `[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]`
+
+While confirming `[0x702]`, grepped the remaining "not yet
+characterized" section-7 entries and found `[0x73E]`/`[0x746]` are
+each referenced **85-105 times** across a large block of code
+(physical roughly `0x8B27D`-`0x8B335` and much further, lines
+~15898-20117 of the listing) - clearly a central, heavily-used
+structure, not a small table. What's confirmed so far:
+
+- `[0x73E]` is a far pointer to a **12-byte-stride record array**,
+  indexed by `word ptr [0x5F8]` (itself not yet documented anywhere)
+  via a chain through `SUB_93B1C`/`SUB_93B7E`. Record field `+0xA` is a
+  flag byte, modified with `and`/`or` against literal masks (`0xBB`,
+  `0xBF`, `0x04` seen so far).
+- `[0x746]` is a far pointer whose target word is reset to `0`
+  immediately after each `[0x73E]` record update - shaped like a
+  per-record "dirty"/pending-change counter or flag, not yet confirmed.
+- `[0x5F8]` itself is validated against two range checks seen
+  repeatedly (`>0x1E` -> error `0x623=0x15`; `<=4` -> also error
+  `0x15` in at least one path; valid range looks like `5..0x1E`
+  (`5..30`) in the function read so far, but other sites compare it
+  against `1`/`4`/`5` with different branch shapes, so this may cover
+  more than one valid range depending on context) - writes `0x15` to
+  the generic comm-ROM error-code byte `[0x623]` on failure. **Not**
+  confirmed to be the same `0x15` as the still-open `[0x1B83]`/
+  `MESsage` dead-code question elsewhere in this doc - that's a
+  different variable, and this may just be a coincidental shared
+  literal; `[0x623]` is already documented (`VARIABLES.md`'s `[0x5F4]`
+  row) as a general error-status cell with several unrelated codes
+  written to it.
+- `[0x742]`/`[0x74A]` are referenced throughout the same code region
+  (27 and 14 hits respectively) but their specific role within it
+  hasn't been traced yet.
+
+This is evidently a substantial, real structure (far larger than a
+"dense cluster" leftover) - flagging it as a distinct, newly-found open
+item for a dedicated future pass rather than rushing a conclusion here.
+See `STILL_PENDING_DECODE.md`/`TODO.md` for the forward pointer.
