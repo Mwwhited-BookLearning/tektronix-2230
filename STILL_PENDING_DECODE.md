@@ -428,6 +428,18 @@ The single biggest cluster of open items - see
   about table 1's 3-byte metadata-gap entries encoding the next
   entry's first letter) in `docs/comm-rom/command-keyword-table.md`
   section 8.
+  **Follow-up, 2026-10-12**: checked whether the main item table
+  (`[0x1D10]`) itself names item indices 58/65/72/80/88, separately
+  from their already-resolved comm-command identity. Two avenues ruled
+  out: the table's own record fields have no string/label field at
+  all (see `VARIABLES.md`'s `[0x1D10]` row), and grepping every
+  `[0x464]` (current item index) write in the main ROM found none that
+  assign a literal matching these 5 values - all go through a register
+  loaded from an as-yet-unidentified switch-ID-to-index lookup. Would
+  need that lookup table or a live RAM dump (emulator) to go further;
+  not attempted. See `VARIABLES.md`'s `[0x73A]` row for the full
+  writeup. Low priority given the real-world identity is already
+  solid via the comm-command cross-reference.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

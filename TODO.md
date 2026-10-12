@@ -840,6 +840,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       (fed from `[0x1ddc]`, already-documented general scratch RAM),
       not block 7's reader - a flat-offset collision like `[0x4EC]`/
       `[0x6EA]`. Block 7's reader is still genuinely unfound.
+      Also checked the "which items 58/65/72/80/88 are in the main item
+      table itself" question above: the table's own record fields carry
+      no string/label field, and no literal `[0x464]`-assignment ties a
+      switch to any of these 5 indices directly (all go through a
+      register from an unidentified switch-ID lookup) - both dead ends,
+      not pursued further since the real-world identity is already
+      solid via the comm-command mapping. See `VARIABLES.md`'s `[0x73A]`
+      row.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
