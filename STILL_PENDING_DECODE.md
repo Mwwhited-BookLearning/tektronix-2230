@@ -387,11 +387,32 @@ The single biggest cluster of open items - see
   pointers (`[0x706]`/`[0x6FE]`), and a new `ID?`-response candidate
   string (`[0x70A]`, `"TEK/2230 SYS:0.0,COMM:0.0"`) were all resolved.
   Full writeup in `docs/comm-rom/command-keyword-table.md` section 7;
-  `VARIABLES.md`'s comm-ROM section has the per-address rows. Still
-  open: which of items 58/65/72/80/88 maps to which real front-panel
-  setting; the dense uncharacterized cluster (`[0x722]`/`[0x716]`/
-  `[0x70E]`/`[0x712]`/`[0x71E]`/`[0x71A]`/`[0x726]`/`[0x72E]`, physical
-  `0x88006`-`0x880F4`) still isn't decoded past initial hypotheses.
+  `VARIABLES.md`'s comm-ROM section has the per-address rows.
+  **Resolved, 2026-10-11 (same day, later pass)**: the flag-index
+  question itself. `docs/programming-manual.md` table 7-27 documents
+  exactly 6 `ACQuisition` sub-arguments (`CURRent`/`HSRec`/`LSRec`/
+  `REPetitive`/`ROLl`/`SCAn`) drawn from the same 4-keyword set
+  `flag_value_to_keyword_ptr` dispatches onto, a 1:1 count match with
+  the 5 fixed flag indices plus the one computed-index path. Each flag
+  index's SET-side value-domain (2/3/3/4/4 legal values for `0x58`/
+  `0x3a`/`0x41`/`0x48`/`0x50`) exactly fingerprints each sub-argument's
+  manual-documented legal-keyword restriction, and block 6's own
+  GET-side push order (`0x3a`,`0x41`,`0x48`,`0x50`,`0x58`, confirmed by
+  direct read) matches the manual's own `ACQuisition?` example response
+  field order (`REP`,`HSR`,`LSR`,`SCA`,`ROL`) position-for-position:
+  **`0x3a`=`REPetitive`, `0x41`=`HSRec`, `0x48`=`LSRec`, `0x50`=`SCAn`,
+  `0x58`=`ROLl`**, computed-index=`CURRent`. The `0x3a`/`0x41` pairing
+  and `0x48`/`0x50` pairing each rest on the response-field-order
+  argument alone (their handler bodies are structurally identical
+  within each pair), so treat those two orderings as well-supported but
+  not independently proven the way `0x58`=`ROLl` is. Full writeup in
+  `docs/comm-rom/command-keyword-table.md` section 4's 2026-10-11 later
+  pass. Still open: which specific front-panel item numbers 58/65/72/
+  80/88 name in the main item table (orthogonal to the comm-command
+  identity now resolved above); the dense uncharacterized cluster
+  (`[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/`[0x71E]`/`[0x71A]`/
+  `[0x726]`/`[0x72E]`, physical `0x88006`-`0x880F4`) still isn't decoded
+  past initial hypotheses.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

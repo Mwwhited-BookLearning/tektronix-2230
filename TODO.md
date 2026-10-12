@@ -811,7 +811,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       parser-state jump table, table 3's base pointer (`[0x6E6]`), the
       per-command abbreviation-length array (`[0x6EE]`), block 6's two
       pointers, and a new `ID?`-response string candidate (`[0x70A]`).
-      Still open: which items 58/65/72/80/88 are; the dense
+      **2026-10-11 (later still): resolved the flag-index question.**
+      `docs/programming-manual.md` table 7-27's 6 `ACQuisition`
+      sub-arguments (`CURRent`/`HSRec`/`LSRec`/`REPetitive`/`ROLl`/
+      `SCAn`) match 1:1 with the 5 fixed flag indices + 1 computed-index
+      path; each flag index's SET-side value-domain size (2/3/3/4/4)
+      fingerprints the manual's per-sub-argument legal-keyword
+      restriction, and block 6's GET-side push order matches the
+      manual's own `ACQuisition?` response field order: `0x3a`=
+      `REPetitive`, `0x41`=`HSRec`, `0x48`=`LSRec`, `0x50`=`SCAn`,
+      `0x58`=`ROLl`, computed=`CURRent`. See `command-keyword-table.md`
+      section 4's 2026-10-11 later-pass follow-up. Still open: which
+      items 58/65/72/80/88 are in the main item table itself (separate
+      from their now-known comm-command identity); the dense
       uncharacterized cluster `[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/
       `[0x71E]`/`[0x71A]`/`[0x726]`/`[0x72E]`; block 7's reader itself.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX

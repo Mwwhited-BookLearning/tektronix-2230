@@ -379,23 +379,24 @@ and the 4 possible offsets land exactly on 4 of table 1's own entries
 Three of these four (`AVErage`, `PEAkdet`, `SAMple`) are textbook
 Tektronix **acquisition-mode** keywords; the fourth (`ACCpeak`) doesn't
 cleanly match a known mode name but sits immediately next to `ACQ`/`ARM`
-in the table. Best-fit (not proven) reading: each of the 6 handlers'
-fixed flag index (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`) represents a
-different acquisition-mode-style setting, and this function converts
-that setting's raw 0-3 flag value into the matching mode keyword for a
-query response - not a generic boolean `OFf`/`ON` stringifier as
-previously guessed (the leading `OFf`/`ON` strings at the start of this
-byte range are real, but nothing in `flag_value_to_keyword_ptr`'s own
-code path reaches them). **This is a different mechanism from
-`FORmat`'s write site** (which stays unresolved, see
-`STILL_PENDING_DECODE.md`) - no record found so far ties back to
-`[0x461]` or any `FORmat`-specific handling. Still not confirmed which
-real-world setting each of the 5 flag-index constants corresponds to
-(e.g. whether `0x3a`/`0x41`/`0x48`/`0x50` are per-channel or otherwise
-distinct acquisition parameters) - the 4-byte "key" field mentioned
-below is a separate, still-undecoded structure from this function's own
-flag-index constants, which don't appear as literal bytes in that key
-field.
+in the table. Each of the 6 handlers' fixed flag index (`0x3a`/`0x41`/
+`0x48`/`0x50`/`0x58`) represents a different acquisition-mode-style
+setting, and this function converts that setting's raw 0-3 flag value
+into the matching mode keyword for a query response - not a generic
+boolean `OFf`/`ON` stringifier as previously guessed (the leading
+`OFf`/`ON` strings at the start of this byte range are real, but
+nothing in `flag_value_to_keyword_ptr`'s own code path reaches them).
+**This is a different mechanism from `FORmat`'s write site** (which
+stays unresolved, see `STILL_PENDING_DECODE.md`) - no record found so
+far ties back to `[0x461]` or any `FORmat`-specific handling.
+**Resolved, 2026-10-11 (later pass, see the "Resolved" subsection at
+the end of the SET-side section below)**: the 5 flag-index constants
+are the `ACQuisition` command's `REPetitive`(`0x3a`)/`HSRec`(`0x41`)/
+`LSRec`(`0x48`)/`SCAn`(`0x50`)/`ROLl`(`0x58`) sub-arguments, and the
+computed-index path (`FUNC_2998_C470`/`C6C2`) is `CURRent`. The 4-byte
+"key" field mentioned below is a separate, still-undecoded structure
+from this function's own flag-index constants, which don't appear as
+literal bytes in that key field.
 
 **Loose end found in passing, now resolved**: `get_comm_config_flag`/
 `set_comm_config_flag`'s `les di, ptr [0x73a]` and
@@ -549,15 +550,56 @@ indices `0x3a`/`0x41`/`0x48`/`0x50`/`0x58`). Traced in full:
   categorically narrower (fewer valid states) than the other 4 flag
   indices.
 
-Still open: which real-world setting each of the 5 flag indices
-represents in user-facing terms (only `0x58`'s narrower range and the
-`LONg`-processing tie-in are known); what `[0x5fe]`'s own value is
-actually read from (which command's argument parsing writes it); and
-the downstream use of `SUB_945CF`'s bitmask result beyond the
-`set_comm_config_flag` call. No renames have been made yet for any of
-these - deferred per the project's existing convention (`FUNCTIONS.md`'s
-unnamed "settings-byte-translator family") until the real-world meaning
-is clearer.
+Still open: what `[0x5fe]`'s own value is actually read from (which
+command's argument parsing writes it); and the downstream use of
+`SUB_945CF`'s bitmask result beyond the `set_comm_config_flag` call. No
+renames have been made yet for any of these - deferred per the
+project's existing convention until the real-world meaning is clearer.
+
+### Resolved, 2026-10-11 (later pass): the 5 flag indices are the `ACQuisition` command's `REPetitive`/`HSRec`/`LSRec`/`SCAn`/`ROLl` sub-arguments; the computed-index path is `CURRent`
+
+`docs/programming-manual.md` table 7-27 ("Acquisition Commands")
+documents exactly 6 `ACQuisition` sub-arguments whose values are drawn
+from the same 4-keyword set `flag_value_to_keyword_ptr` dispatches onto
+(`ACCpeak`/`AVErage`/`PEAkdet`/`SAMple`): `CURRent`, `HSRec`, `LSRec`,
+`REPetitive`, `ROLl`, `SCAn` - a 1:1 count match with the 5 fixed flag
+indices plus the one computed-index handler (`FUNC_2998_C470`/`C6C2`
+via `SUB_94559`). The manual also documents, per sub-argument, *which*
+of the 4 keywords are actually legal - a restriction that turns out to
+exactly fingerprint each flag index's SET-side value domain:
+
+| Flag index | SET-side handler | Values it can store | Manual's legal values for... | Match |
+|---|---|---|---|---|
+| `0x58` | `C2E8`/`C301` (unconditional `0`/`1`) | 2 (`SAMple`, `PEAkdet` after GET's nonzero-forces-`3` collapse) | `ROLl`: `{PEAkdet, SAMple}` only | **`0x58` = `ROLl`** |
+| `0x3a` | `C1FA` (`[0x5fe]==7`→`2`(AVErage), `==1`→`1`(ACCpeak), else→`0`(SAMple); no `3`/PEAkdet case) | 3, no `PEAkdet` | `REPetitive`: `{ACCpeak, AVErage, SAMple}`, no PEAkdet | `0x3a` = `REPetitive` |
+| `0x41` | `C22F` (byte-for-byte identical structure to `C1FA`) | 3, no `PEAkdet` | `HSRec`: `{ACCpeak, AVErage, SAMple}`, no PEAkdet | `0x41` = `HSRec` |
+| `0x48` | `C264` (decodes `[0x5fe]` against `7`/`1`/`0x43`/`0x35` into all of `0`-`3`) | 4 (full set) | `LSRec`: all 4 keywords legal | `0x48` = `LSRec` |
+| `0x50` | `C2A6` (same 4-way decode as `C264`) | 4 (full set) | `SCAn`: all 4 keywords legal | `0x50` = `SCAn` |
+| computed (`SUB_94559`) | `C470`/`C6C2` | n/a - index itself is derived at runtime, not fixed | `CURRent`: "depends on the current acquisition type and SEC/DIV setting," not a stored flag | computed = `CURRent` |
+
+`0x58`=`ROLl` is the strongest link (a distinctive 2-value domain
+matching a restriction unique to one command among the six). `0x3a`
+and `0x41` have byte-for-byte identical handler bodies, so their
+3-value domains alone can't distinguish `REPetitive` from `HSRec` -
+both manual entries exclude `PEAkdet` identically. The tie-breaker is
+block 6's own GET-side record order: `FUNC_2998_C411`/`C424`/`C437`/
+`C44A`/`C45D`/`C470` push flag indices `0x3a`/`0x41`/`0x48`/`0x50`/
+`0x58`/computed **in that exact order** (confirmed by direct read,
+`160-2998-14.lst:17700`-`17759`), which matches the field order of the
+manual's own `ACQuisition?` example query response string -
+`"ACQ REP:AVE,HSR:SAM,LSR:PEA,SCA:PEA,ROL:PEA,..."` - field-for-field:
+`REP`,`HSR`,`LSR`,`SCA`,`ROL`. Given `0x58`'s independently-confirmed
+identity lands correctly at the 5th position in both orderings, the
+same positional correspondence is taken as resolving `0x3a`=`REPetitive`
+and `0x41`=`HSRec` (first two positions) and `0x48`=`LSRec`,
+`0x50`=`SCAn` (third/fourth positions) - **the `0x48`/`0x50` and
+`0x3a`/`0x41` pairings rest on this positional argument alone**, since
+each pair's two handlers are structurally indistinguishable from each
+other; the 2-vs-3-vs-4-value-domain fingerprinting only proves which
+*pair* a flag index belongs to, not which specific member of the pair.
+No renames made yet pending a convenient batch with other comm-ROM
+flag-index cleanup, but the real-world identity of all 6 settings is
+now considered resolved for documentation purposes.
 
 ## 6. `init_far_pointer_table` decoded; resolves the `[0x6EA]`/`[0x6F6]` "zero writes" mystery and finds a second letter-bucket table (found 2026-10-11)
 
