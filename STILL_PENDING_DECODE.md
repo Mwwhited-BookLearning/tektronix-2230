@@ -136,6 +136,26 @@ The single biggest cluster of open items - see
   for both the full negative-result writeup and the reusable technique
   (search `cmp ax, <id>` against each of the other ~37 known command
   IDs) for whoever picks this up next.
+  **Resolved 2026-10-11 (most likely explanation)**: decoding the rest
+  of `init_far_pointer_table` (comm ROM, `0x80133`) found that `[0x732]`
+  itself is initialized at boot to raw far pointer `0041:1b64` - under
+  this project's own flat-`DS=0x41` variable-naming convention, that
+  *is* `[0x1B64]`, the already-documented `find_item_table_indices`
+  index (completely unrelated subsystem, main ROM). Consequently
+  `[0x732]+0x1F` resolves to physical `0x410+0x1B64+0x1F = 0x1F93`,
+  which is **exactly** `[0x1B83]` under the same convention - the
+  already-fully-documented comm-option-hardware-detection-result byte,
+  written by `detect_comm_option_hw` to `0x14` or `0x1E` (never `0x15`).
+  This explains the exhaustive-search failure above: the real write
+  site is in the main ROM, under a completely different name and
+  instruction form (`mov byte ptr [0x1b83], imm8`), not anything in the
+  comm ROM. Confirmed by direct arithmetic/byte-match, not speculative.
+  **Still open**: `compute_response_format_flags` also checks for
+  `0x15` (`MESsage`) on this same field, but no write of `0x15` to
+  `[0x1B83]` has been found anywhere - either that branch is dead code,
+  or a second, undiscovered write path exists. See `docs/comm-rom/
+  command-keyword-table.md` section 7 and `VARIABLES.md`'s `[0x732]`/
+  `[0x1B83]` rows for the full writeup.
   **Candidate found 2026-10-09, still not confirmed**: `FUNC_2998_5115`/
   `FUNC_2998_519A` (`0x85115`/`0x8519A`, both directly `lcall`'d from
   `comm_call_main_rom`'s own body) walk a 26-entry, first-letter-
@@ -346,6 +366,32 @@ The single biggest cluster of open items - see
   initializer resolves the long-standing `[0x6EA]`/`[0x6F6]` "zero
   comm-ROM writes" mystery from the `[0x732+0x1F]` writer-search
   section above - see that section's own 2026-10-11 resolution note.
+  **Further follow-up, 2026-10-11 (same day, later pass)**: finished
+  decoding all 31 of `init_far_pointer_table`'s entries. New lead on
+  the flag-index question: `[0x73A]` (the `get_comm_config_flag`/
+  `set_comm_config_flag` base) is initialized at boot to far pointer
+  `0041:03e3` - under the flat-`DS=0x41` convention, that's the
+  already-documented `[0x3E3]` per-item alt-value step/position byte
+  array (indexed by front-panel item index). So "comm config flags"
+  are literally the main item table's per-item step bytes, and the 5
+  flag-index constants (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`) are most
+  likely item indices 58/65/72/80/88 into that table - not yet looked
+  up against a name, but a much more concrete lead than before. Also
+  resolved in the same pass: `[0x732]`'s own boot value (`0041:1b64`,
+  i.e. `[0x1B64]`) proves the identity with `[0x1B83]` described in the
+  `[0x732+0x1F]` write-site section above; `[0x736]` similarly forwards
+  to `[0x548]` (display-dirty flag); `[0x72A]`'s own write site and
+  24-entry jump-table contents were found (see `VARIABLES.md`'s
+  `[0x5A4]` row); and table 3's base pointer (`[0x6E6]`), the per-
+  command minimum-abbreviation-length array (`[0x6EE]`), block 6's two
+  pointers (`[0x706]`/`[0x6FE]`), and a new `ID?`-response candidate
+  string (`[0x70A]`, `"TEK/2230 SYS:0.0,COMM:0.0"`) were all resolved.
+  Full writeup in `docs/comm-rom/command-keyword-table.md` section 7;
+  `VARIABLES.md`'s comm-ROM section has the per-address rows. Still
+  open: which of items 58/65/72/80/88 maps to which real front-panel
+  setting; the dense uncharacterized cluster (`[0x722]`/`[0x716]`/
+  `[0x70E]`/`[0x712]`/`[0x71E]`/`[0x71A]`/`[0x726]`/`[0x72E]`, physical
+  `0x88006`-`0x880F4`) still isn't decoded past initial hypotheses.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

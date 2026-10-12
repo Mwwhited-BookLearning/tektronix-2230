@@ -618,12 +618,219 @@ consistent with these being genuine one-slot-per-letter indexes (with
 repeated empty-sentinel slots for absent letters) rather than anything
 proportional to the underlying table's size.
 
-No renames made for `init_far_pointer_table`'s other 29 entries yet -
-most weren't decoded this round. `[0x6FA]` (table-start-of-block-7,
-`dest_offset=0x2a`) remains the single interesting loose end: it's
-initialized correctly but still has no confirmed static reader
-anywhere in the disassembly (checked via grep for the literal text
-`[0x6fa]` and the raw byte pattern `fa06`, both empty) - possibly read
-only via the same kind of register-indirect addressing that hid this
-section's own finding, or not read by any currently-reachable code
-path at all.
+`[0x6FA]` (table-start-of-block-7, `dest_offset=0x2a`) remains the
+single interesting loose end from that first pass: it's initialized
+correctly but still has no confirmed static reader anywhere in the
+disassembly (checked via grep for the literal text `[0x6fa]` and the
+raw byte pattern `fa06`, both empty) - possibly read only via the same
+kind of register-indirect addressing that hid this section's own
+finding, or not read by any currently-reachable code path at all.
+
+## 7. The rest of `init_far_pointer_table` decoded - resolves table 3's base pointer, the per-entry "metadata byte," and (headline result) the `[0x732+0x1F]` write-site mystery (found 2026-10-11)
+
+Continuing from section 6, decoded the remaining 24 of the table's 31
+entries (full list: `dest_offset` → `[0x6xx]`/`[0x7xx]` name → raw far
+pointer → resolved native address, all re-verified byte-for-byte
+against `binary/160-2998-14.bin` with a corrected alias-bounding rule
+- the `0x90000`-`0x97FFF` alias correction only applies for
+`0x9000 <= segment < 0x9800`; an earlier pass in this same session
+mis-applied it to any `segment >= 0x9000` with no upper bound and
+briefly mis-resolved entry `dest_offset=0x90` as `0xEA5E5` instead of
+the correct `0xF25E5`, a genuine un-aliased main-ROM address - self-
+caught before anything was written down):
+
+| `dest_offset` | `[0x6xx]` name | far ptr (seg:off) | native | Identified as |
+|---|---|---|---|---|
+| `0x16` | `[0x6E6]` | `90de:0006` | `0x88DE6` | **Table 3's own base pointer** - exact start of the top-level command header table (section 3), confirmed byte-for-byte (`0x0bACQuisition...`) |
+| `0x1e` | `[0x6EE]` | `90d1:000c` | `0x88D1C` | **The per-command minimum-abbreviation-length byte array** - see below |
+| `0x36` | `[0x706]` | `9024:000c` | `0x8824C` | Block 6's header-inclusive start (the `OFf`/`ON` length-prefixed strings) |
+| `0x2e` | `[0x6FE]` | `9025:0004` | `0x88254` | Block 6's first real 12-byte record |
+| `0x3a` | `[0x70A]` | `9023:0002` | `0x88232` | A null-terminated ID string, `"TEK/2230 SYS:0.0,COMM:0.0"` - see below |
+| `0x62` | `[0x732]` | `0041:1b64` | `0x1F74` | **Forwards into the main ROM's flat `DS=0x41` variable pool, landing on the already-documented `[0x1B64]`** - see below |
+| `0x66` | `[0x736]` | `0041:0548` | `0x958` | Forwards to flat `[0x548]` (a display-dirty-flag byte set by `tag_position_marker_and_dispatch`) |
+| `0x6a` | `[0x73A]` | `0041:03e3` | `0x7F3` | Forwards to flat `[0x3E3]` (the per-item alt-value step/position byte array) - see below |
+| `0x72` | `[0x742]` | `8e80:000e` | `0x8E80E` | Not yet characterized |
+| `0x6e` | `[0x73E]` | `8eff:000a` | `0x8EFFA` | Not yet characterized |
+| `0x7a` | `[0x74A]` | `8800:0000` | `0x88000` | The comm ROM's own absolute start (offset 0) - a self-referential pointer, purpose not characterized |
+| `0x76` | `[0x746]` | `8e80:0000` | `0x8E800` | Not yet characterized |
+| `0x90` | `[0x760]` | `f1d8:0865` | `0xF25E5` | A genuine main-ROM address (not alias-corrected - segment is outside `[0x9000,0x9800)`); **the exact same target** `init_far_pointer_table_sysrom`'s own entry #54 points to (`docs/acquisition-and-plotting/ram-far-pointer-table.md`'s "two independent far-pointer tables... agreeing on this one specific byte" finding) - still flagged there as "too precise to be coincidence, meaning not understood," unchanged by this pass |
+| `0x52` | `[0x722]` | `900c:000c` | `0x880CC` | Uncharacterized, in the dense cluster below |
+| `0xa` | `[0x6DA]` | `4067:000c` | `0x4067C` | **"Option Status Latch" (Table 3-1)** - already confirmed in `MEMORY_MAP.md` |
+| `0xe` | `[0x6DE]` | `406b:000c` | `0x406BC` | **"Option Parameters Latch (in)" (Table 3-1)** - already confirmed in `MEMORY_MAP.md`; not yet cross-referenced in `VARIABLES.md`'s comm-ROM section until now |
+| `0x6`/`0x12` | `[0x6D6]`/`[0x6E2]` | `406f:0000`/`406f:0008` | `0x406F0`/`0x406F8` | **"Option UART/GPIB chips" (Table 3-1)** - already confirmed |
+| `0x32` | `[0x702]` | `85e0:000c` | `0x85E0C` | The comm ROM's own lower half - not yet characterized |
+| `0x46` | `[0x716]` | `900e:0004` | `0x880E4` | Uncharacterized, dense cluster |
+| `0x3e` | `[0x70E]` | `9020:0000` | `0x88200` | Uncharacterized, dense cluster - decodes as a run of short length-prefixed numeric-text tokens (`'1'`,`'2'`,`'5'`,`'1'`,`'2'`,`'4'`,`'2'`,`'4'`,`'8'`,`'15625'`...), hypothesized but unconfirmed as baud-rate-related constants |
+| `0x42` | `[0x712]` | `900f:0004` | `0x880F4` | Uncharacterized, dense cluster - repeating `02 61 XX 00` records decoding as 2-letter lowercase strings (`"ae"`,`"af"`,`"ag"`,...), hypothesized but unconfirmed as a diagnostic/error-code mnemonic table |
+| `0x4e` | `[0x71E]` | `900d:0000` | `0x880D0` | Uncharacterized, dense cluster |
+| `0x5a` | `[0x72A]` | `9006:0000` | `0x88060` | **`comm_call_main_rom`'s own parser-state jump-table base** - see below |
+| `0x4a` | `[0x71A]` | `900d:000e` | `0x880DE` | Uncharacterized, dense cluster |
+| `0x56` | `[0x726]` | `900c:0000` | `0x880C0` | Uncharacterized, dense cluster |
+| `0x5e` | `[0x72E]` | `9000:0006` | `0x88006` | Uncharacterized, dense cluster |
+
+### Table 3's base pointer and the per-command "metadata byte" resolved
+
+`[0x6E6]` resolving to `0x88DE6` finally gives table 3 (section 3) a
+confirmed base pointer - previously its start address was only known
+from the raw byte layout, not tied to any comm-ROM variable.
+
+`[0x6EE]` resolving to `0x88D1C` is the more interesting find: this is
+a flat 45-byte array, parallel to table 3's 45 entries (44 real
+commands + the `ZZZZ` terminator) in the exact same order, where byte
+`i` equals **the minimum valid abbreviation length for entry `i`'s
+command** - i.e. the count of leading uppercase-letter/digit
+characters in that entry's text (`ACQuisition` → `3`, `CURSor` → `4`,
+`DELTAT` → `6` since it's all-caps, `ID` → `2`, etc. - the standard
+Tektronix "capitalized prefix is the shortest valid abbreviation"
+convention already used throughout `docs/programming-manual.md`).
+Verified with a direct script reading both the array and all 45 of
+table 3's entries from `binary/160-2998-14.bin`: **0 mismatches across
+all 45 entries**. This resolves section 1's long-standing open
+question about the "metadata bytes between entries... hasn't been
+cracked" - at least for table 3's per-entry metadata; table 1's
+separate, still-undecoded gap bytes are a distinct question (see
+below).
+
+### The ID string
+
+`[0x70A]` resolves to a null-terminated ASCII string, `"TEK/2230
+SYS:0.0,COMM:0.0"`, sitting immediately before block 6's header (string
+ends, then block 6's `0x03 OFf 0x02 ON` starts with zero gap bytes).
+Table 3 has an `ID` entry (section 3 above), and this is a textbook
+Tektronix `ID?` response format (`TEK/<model> SYS:<rev>,COMM:<rev>`
+per `docs/programming-manual.md`'s `ID` command description) - **this
+is plausibly the firmware's actual boot-time `ID?` response string**,
+though no caller/reader of `[0x70A]` has been traced yet to confirm it
+(same caveat as the dispatch-table entries above: the thing that
+*reads* this table of base pointers by index, rather than the pointers
+themselves, is still not found for most of them).
+
+### Headline result: `[0x732]`, `[0x736]`, and `[0x73A]` are not comm-ROM-private structures - they forward into the main ROM's flat `DS=0x41` variable pool
+
+All three of `init_far_pointer_table`'s "segment `0x41`" entries use
+the project's already-established flat-RAM naming convention directly
+as their far pointer's own fields (segment `0x41`, offset = the
+bracket number) - i.e. `far_ptr=0041:1b64` *is* `[0x1B64]` in this
+project's own notation, with no further translation needed. Each of
+the three targets turns out to already be a documented, independently-
+discovered variable from a completely unrelated main-ROM subsystem:
+
+- `[0x732]` → `0041:1b64` = **`[0x1B64]`**, the first of the two
+  indices `find_item_table_indices` (`0xF6CEA`) computes for the
+  readout-label builder (`VARIABLES.md`'s `[0x1B64]`/`[0x1B67]` row,
+  found 2026-10-10 - completely unrelated to anything comm-ROM).
+- `[0x736]` → `0041:0548` = **`[0x548]`**, a display-dirty-flag byte
+  set by `tag_position_marker_and_dispatch` (`FUNCTIONS.md:208`).
+- `[0x73A]` → `0041:03e3` = **`[0x3E3]`**, the per-item alt-value
+  step/position byte array indexed by `step_item_subvalue_fwd`/`_back`
+  (`VARIABLES.md:55`) - and already independently confirmed (section 4
+  above) as the base `get_comm_config_flag`/`set_comm_config_flag`
+  read/write through `les di, ptr [0x73a]`. **This means the comm
+  ROM's "config flags" aren't a comm-private array at all - they are
+  literally the same per-item step/position bytes the front-panel item
+  stepper uses**, and the 5 flag-index constants (`0x3a`/`0x41`/`0x48`/
+  `0x50`/`0x58`) this project has been treating as opaque "flag
+  indices" are almost certainly **item indices into the main item
+  table** (items `0x3a`(58)/`0x41`(65)/`0x48`(72)/`0x50`(80)/`0x58`(88)
+  specifically). This doesn't by itself identify which real settings
+  those 5 item indices are, but it reframes the open question
+  concretely and is worth chasing by cross-referencing the main item
+  table's own per-index records next session.
+
+This isn't a new phenomenon for this project - `docs/acquisition-and-
+plotting/ram-far-pointer-table.md`'s "Follow-up" on this same
+`init_far_pointer_table` already flagged "3 more entries forward to
+plain flat-RAM cells (`[0x548]`/`[0x1B64]`/`[0x3E3]` under `DS=0x41`)"
+as a loose end without identifying which comm-ROM variable each one
+corresponded to. This section supplies that missing link.
+
+### The `[0x732]`/`[0x1B64]` identity resolves the long-unfound `[0x732+0x1F]` write site
+
+This is the most significant consequence. `[0x732]` is read via `les
+di,[0x732]` (89 sites) / `les bx,[0x732]` (18 sites) throughout the
+comm ROM, and `[0x732+0x1F]` specifically holds a byte this project has
+confirmed (section 2, and `compute_response_format_flags`) matches
+`0x14`/`0x15`/`0x1E` - the numeric dispatch IDs for `LONg`/`MESsage`/
+`REFStat`. **An exhaustive search for whoever writes `[0x732+0x1F]`
+found nothing anywhere in either ROM** (`STILL_PENDING_DECODE.md`,
+`rs232-live-session-2026-09-14.md`) - every write form via both
+confirmed base registers, immediate and register-sourced, was checked
+and came up empty.
+
+Now that `[0x732]`'s own boot value is known (`0041:1b64`, i.e. `ES=
+0x41`, `DI=0x1B64` after the `les`), `es:[di+0x1F]` resolves to
+physical `0x41*16 + 0x1B64 + 0x1F = 0x1F93` - which is **exactly**
+`[0x1B83]` under this project's own flat-`DS=0x41` convention
+(`0x410 + 0x1B83 = 0x1F93`). `[0x1B83]` is already fully documented
+(`VARIABLES.md:25`) as **the comm-option-board detection result,
+written by `detect_comm_option_hw` (`0xE75C0`) to exactly `0x1E` or
+`0x14`** - the same two values independently found at `[0x732+0x1F]`.
+
+This is not a coincidental value match; the arithmetic shows these are
+**the same physical RAM byte**: `[0x732+0x1F]` and `[0x1B83]` are one
+and the same, reached via two completely different paths (a comm-ROM
+far-pointer dereference vs. a main-ROM direct-displacement access)
+that this project had been investigating as two unrelated things. This
+fully explains why no write site for `[0x732+0x1F]` could be found by
+searching the comm ROM: **the write happens in the main ROM**, via the
+already-confirmed `mov byte ptr [0x1b83], 0x1e`/`0x14` instructions
+inside `detect_comm_option_hw` (physical `0xE75F6`/`0xE7614`/`0xE761C`)
+- a totally different instruction form, in a different ROM, under a
+different name, that the comm-ROM-focused search had no reason to look
+at.
+
+It also reframes (without fully resolving) two existing open
+questions:
+
+- `compute_response_format_flags`'s own "open question" (`FUNCTIONS.
+  md:297`) - whether `[0x732+0x1F]`'s boot-time value of `0x1E` is "a
+  genuine device-type code that coincidentally matches `REFStat`'s
+  command ID" - is answered on the "coincidence" side: it's not a
+  coincidence of *value*, because it's the same *byte* as the already-
+  understood hardware-detection flag `[0x1B83]`, which only ever holds
+  `0x14` or `0x1E` (never `0x15`). `init_comm_device_type_and_defaults`
+  checking `es:[0x732+0x1F]==0x1E` at boot time is, concretely,
+  checking `detect_comm_option_hw`'s own result.
+- This leaves an open sub-question of its own: if `[0x732+0x1F]` really
+  is just `[0x1B83]` (a static hardware-variant flag set once at boot,
+  never `0x15`), **how does `compute_response_format_flags`'s `0x15`
+  (`MESsage`) case ever fire**, since nothing writes `0x15` to
+  `[0x1B83]` anywhere in either ROM? Two possibilities, neither
+  confirmed: (a) that branch is simply dead code in the shipped
+  firmware (consistent with this project's precedent of finding dead
+  branches elsewhere, e.g. `test_gpib_lon_or_ton_active`), or (b) a
+  second, still-undiscovered write path to this same byte exists for
+  genuine per-command dispatch-ID tagging while a command is actively
+  being parsed, coexisting with the boot-time hardware-detection write.
+  Not resolved - flagged for a future session rather than guessed.
+
+### A second resolved mystery: `[0x72A]`'s own write site, and its jump-table contents
+
+`VARIABLES.md`'s existing `[0x5A4]` entry documents `comm_call_main_rom`'s
+parser-state byte `[0x5A4]` indexing "a 4-byte-per-entry far-call jump
+table at `[0x72A]`" (`al=[0x5A4]; ax=al*4; les di,[0x72A]; lcall
+es:[bx+di]`), but flags `[0x72A]`'s own write site as not found.
+`init_far_pointer_table`'s entry `dest_offset=0x5a` **is** that write
+site: it sets `[0x72A]` to raw far pointer `9006:0000` at boot - which,
+read directly by `les di,[0x72A]` (no software alias correction; the
+comm ROM's own address-decode hardware handles the `0x90000`-`0x97FFF`
+aliasing transparently), lands on native `0x88060`. Dumping that
+address as a 24-entry array of 4-byte far pointers (the shape
+`comm_call_main_rom`'s indexing implies) resolves **every single
+entry** to a real, consistent address in the comm ROM's own lower half
+(`0x83B1A`-`0x85098`, all segment `0x839f`, ascending) - a clean,
+dedicated per-parser-state handler table, exactly matching the
+already-documented 23-ish distinct state values `[0x5A4]` is observed
+to take. The per-state semantics of each of the 24 entries aren't
+decoded yet, but the table's existence, base address, and boot
+initialization are now fully confirmed.
+
+### Still uncharacterized
+
+The remaining entries (`[0x742]`, `[0x73E]`, `[0x74A]`, `[0x746]`,
+`[0x702]`, and the dense cluster `[0x722]`/`[0x716]`/`[0x70E]`/
+`[0x712]`/`[0x71E]`/`[0x72A]`/`[0x71A]`/`[0x726]`/`[0x72E]` packed into
+the narrow physical range `0x88006`-`0x880F4`) are recorded in the
+table above with their resolved addresses but not yet decoded past a
+first byte-level glance - left as open leads in
+`STILL_PENDING_DECODE.md`.

@@ -131,6 +131,16 @@ RAM-forwarding pointers, and what look like stale/non-code entries.
 Worth the same "decode and check" treatment on any newly-found table,
 but don't expect every one to pay off the way the sysrom table did.
 
+**Resolved, 2026-10-11**: the "3 more entries forward to plain flat-RAM
+cells" loose end above turned out to be far more significant than it
+looked at the time. `[0x732]` (one of the comm ROM's own far pointers
+initialized from this same table) also forwards to `[0x1B64]` under
+this same `DS=0x41` convention, and that identity resolves a
+long-exhausted write-site mystery (`[0x732]+0x1F` is the same physical
+byte as `[0x1B83]`, the main-ROM comm-option-detection result). See
+`docs/comm-rom/command-keyword-table.md` section 7 for the full
+writeup.
+
 **Follow-up, 2026-10-10**: re-decoded the sysrom table's full 80-entry
 list by destination offset (not file order) while chasing an unrelated
 `[0x1D10]` item-dispatch-table question (see `docs/acquisition-and-

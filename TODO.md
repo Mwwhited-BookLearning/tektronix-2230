@@ -794,6 +794,26 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       table bases) turned out to be written by the same initializer,
       and decode to table 2 itself plus a newly-found second
       letter-bucket table into table 1.
+      **2026-10-11, later pass**: finished decoding all 31 of
+      `init_far_pointer_table`'s entries (see `command-keyword-table.md`
+      section 7). Headline result: `[0x732]` (the comm ROM's most
+      pervasively-referenced pointer) boots to far pointer `0041:1b64`,
+      i.e. (flat-`DS=0x41` convention) the main-ROM `[0x1B64]` index -
+      and `[0x732]+0x1F` therefore lands on `[0x1B83]`, the already-
+      documented comm-option-detection byte, resolving the long-
+      exhausted "no write site found for `+0x1F`" mystery (the write is
+      `detect_comm_option_hw`'s, in the main ROM). New lead on the
+      flag-index question above: `[0x73A]` (the config-flag base)
+      similarly forwards to `[0x3E3]`, the main item table's per-item
+      step-byte array - so the 5 flag indices are most likely item
+      indices 58/65/72/80/88, not yet looked up against real setting
+      names. Also resolved: `[0x72A]`'s own write site and 24-entry
+      parser-state jump table, table 3's base pointer (`[0x6E6]`), the
+      per-command abbreviation-length array (`[0x6EE]`), block 6's two
+      pointers, and a new `ID?`-response string candidate (`[0x70A]`).
+      Still open: which items 58/65/72/80/88 are; the dense
+      uncharacterized cluster `[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/
+      `[0x71E]`/`[0x71A]`/`[0x726]`/`[0x72E]`; block 7's reader itself.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
