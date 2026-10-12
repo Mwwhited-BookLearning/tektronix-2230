@@ -100,7 +100,7 @@ mode, `UNKnown` as a catch-all).
 | `0x88bc2` | 6 | `PT.Fmt` | | | | |
 | `0x88bc9` | 6 | `PT.Off` | | | | |
 
-## 2. The dispatch/index table (26 records, `0x8D3E`-`0x8DE6`)
+## 2. The dispatch/index table (26 records, `0x8D4A`-`0x8DE6`)
 
 Each 6-byte record: `[id_byte][0xFF marker][2-byte little-endian
 offset][2-byte segment, always 0xDE,0x90]`. The far pointer
@@ -108,6 +108,17 @@ offset][2-byte segment, always 0xDE,0x90]`. The far pointer
 `0x90000`-`0x97FFF` address-decode alias back to a real file offset
 (`file_off = 0x8DE0 + offset`) - landing exactly on the length byte of
 a header-table entry (table 3) for every non-zero `id`.
+
+**Correction, 2026-10-11**: the start address was previously given as
+`0x8D3E`. The real start is `0x8D4A` (confirmed two ways: `26*6 =
+0x9C` bytes exactly spans `0x8D4A`-`0x8DE6` matching the table's own
+end boundary with no slack, and this is exactly the address
+`init_far_pointer_table` points `[0x6EA]` at - see section 6 below).
+The 12 bytes at `0x8D3E`-`0x8D49` (two phantom "records" with
+marker/segment bytes that don't fit the `0xFF`/`0x90xx` pattern at
+all) aren't part of this table; they were never re-examined after the
+original extraction script's off-by-two-records guess at the start
+boundary.
 
 | id | record offset | → file offset | → resolves to |
 |---|---|---|---|
@@ -243,6 +254,37 @@ genuinely open question - see below.
   `FUNC_2998_5115`/`519A`'s real letter-table base is still unknown.
   See `docs/comm-rom/command-parser-token-scan-and-plot-handler.md`
   for the full writeup.
+  **Reopened and fully resolved, 2026-10-11**: this conclusion was
+  wrong. `init_far_pointer_table` (comm ROM, physical `0x80133` - see
+  section 6 below) DOES write both `[0x6EA]` and `[0x6F6]`, via a
+  generic `movsw`-pair copy loop that a literal-text grep for `mov
+  [0x6ea], ...`/`mov [0x6f6], ...` can't see (the destination is
+  computed register-indirectly through `ES:DI`, not encoded as a
+  direct-displacement operand anywhere). `[0x6EA]` turns out to point
+  at section 2's own dispatch/index table (now that its start address
+  is corrected to `0x8D4A` - see above - it's the exact same table,
+  not a second one). `[0x6F6]` points at a genuinely separate,
+  previously-undocumented second 26-entry letter-bucket table at
+  physical `0x889BC`, in the same 6-byte-record format, indexing into
+  table 1 (the argument/keyword table, section 1) instead of table 3.
+  Both tables' first-letter-bucket structure is now directly confirmed
+  by decoding all 26 slots of each: slot `N`'s resolved text starts
+  with the letter `chr(0x41+N)` for every non-empty slot (`A`→
+  `ACQuisition`/`ABOrt`, `B`→`BYTe`/`BASegain`, ... `Z`→`ZZZZ`/*(empty,
+  no Z keyword)*), and every empty slot resolves to a single shared
+  sentinel address (`0x88F1C` for the table-3 side, `0x88CC9` for the
+  table-1 side) rather than scattering garbage. The `[0x6F6]`/table-1
+  side has one minor unresolved wrinkle: several slots (`D`, `L`, `R`,
+  `S`, `U`, `V`, `Y`) resolve 2-3 bytes *before* their keyword's actual
+  length byte, landing in the still-undecoded per-entry metadata gap
+  noted in the second open-question bullet above, rather than exactly
+  on it - cosmetic evidence that table 1's metadata bytes are read as
+  part of the bucket lookup, not yet evidence against the bucket
+  theory itself. So: `FUNC_2998_5115`/`519A`'s real letter-table bases
+  are resolved - they're table 2 and this new table-1 index,
+  respectively - though the register-indirect `ES:DI` write path is
+  the reason the earlier grep-based writer search came up empty, not
+  a sign the writer doesn't exist.
 
 ## 4. New, partially-decoded structure immediately before table 1: a flag-value query/stringify dispatch (found 2026-10-09)
 
@@ -516,3 +558,72 @@ the downstream use of `SUB_945CF`'s bitmask result beyond the
 these - deferred per the project's existing convention (`FUNCTIONS.md`'s
 unnamed "settings-byte-translator family") until the real-world meaning
 is clearer.
+
+## 6. `init_far_pointer_table` decoded; resolves the `[0x6EA]`/`[0x6F6]` "zero writes" mystery and finds a second letter-bucket table (found 2026-10-11)
+
+While looking for block 7's reader (still not found - see
+`STILL_PENDING_DECODE.md`), decoded `init_far_pointer_table` (comm ROM,
+physical `0x80133`) fully. It's a small generic RAM-pointer
+initializer: `DS=0x8013`, data starts at `SI=0x22` (physical
+`0x80152`) with one header word (an `ES` segment value, `0x8fed`),
+then 31 repeating 6-byte `(dest_offset:word, far_ptr:dword)` entries
+terminated by `dest_offset=-1`, copied via a `movsw;movsw` pair into
+`ES:[DI]` where `DI = dest_offset` per entry - i.e. a straight
+`[0x8fed0 + dest_offset] = far_ptr` write for each entry.
+
+`ES(0x8fed)*16 - DS(0x8f80)*16 = 0x6D0`, so any `dest_offset` here
+converts to this project's established `[0x6xx]`/`[0x7xx]`-under-
+`DS=0x8f80` naming convention via `offset_in_DS_convention =
+dest_offset + 0x6D0` (checks out exactly against the already-known
+`[0x6F2]` entry: `dest_offset=0x22` → `0x22+0x6D0=0x6F2`).
+
+Two of the 31 entries are `dest_offset=0x1a` (→ `[0x6EA]`, far pointer
+`0x90d4:0x0a` → native `0x88D4A`) and `dest_offset=0x26` (→ `[0x6F6]`,
+far pointer `0x909b:0x0c` → native `0x889BC`). **This means
+`init_far_pointer_table` is a comm-ROM writer of both `[0x6EA]` and
+`[0x6F6]`**, contradicting section "Open questions"'s earlier
+(2026-10-09) conclusion that tracing every reference found "zero
+comm-ROM writes to either address." That earlier grep looked for a
+literal `mov [0x6ea], ...`/`mov [0x6f6], ...`-style direct-displacement
+instruction and found none, correctly - but missed this write because
+it's done register-indirectly through `ES:DI` inside a generic copy
+loop, with the destination offset sitting in the initializer's own
+data table rather than in an instruction operand. The main-ROM
+HPGL/plot-cache writes to displacement `0x6EA`/`0x6EC` found by that
+same grep (`FUNC_3633_7EBF`, `reset_all_channel_plot_caches`) are
+real, but address a *different* physical byte (main ROM runs under a
+different `DS`) - that part of the "cross-subsystem address reuse"
+conclusion still stands; it just wasn't the whole story.
+
+Decoding the two target addresses (see the "Reopened and fully
+resolved" note under section 2's open questions above for the full
+letter-bucket analysis):
+
+- `0x88D4A` (`[0x6EA]`'s target) **is section 2's own dispatch/index
+  table**, byte-for-byte, once section 2's start address is corrected
+  from the old (wrong) `0x8D3E` to `0x8D4A`. Not a second table at
+  all - `[0x6EA]` is simply table 2's base far pointer, finally found.
+- `0x889BC` (`[0x6F6]`'s target) is a genuinely new, previously
+  undocumented second 26-entry table in the identical 6-byte-record
+  format, sitting just past the nominal end of "block 7" (file offset
+  `0x89BC`, vs. block 7's documented nominal range ending around
+  `0x8A57`). Its 26 slots resolve into table 1 (the argument/keyword
+  table, section 1) rather than table 3, with the same first-letter
+  bucketing: slot 0 (`A`) → `0x88A58` = table 1's very first entry,
+  `ABOrt`.
+
+Neither table's slot count varies (`N`=26) despite the two source
+tables (3 and 1) having very different entry counts (45 vs. 110) -
+consistent with these being genuine one-slot-per-letter indexes (with
+repeated empty-sentinel slots for absent letters) rather than anything
+proportional to the underlying table's size.
+
+No renames made for `init_far_pointer_table`'s other 29 entries yet -
+most weren't decoded this round. `[0x6FA]` (table-start-of-block-7,
+`dest_offset=0x2a`) remains the single interesting loose end: it's
+initialized correctly but still has no confirmed static reader
+anywhere in the disassembly (checked via grep for the literal text
+`[0x6fa]` and the raw byte pattern `fa06`, both empty) - possibly read
+only via the same kind of register-indirect addressing that hid this
+section's own finding, or not read by any currently-reachable code
+path at all.

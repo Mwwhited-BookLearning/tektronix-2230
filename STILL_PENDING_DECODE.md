@@ -153,6 +153,20 @@ The single biggest cluster of open items - see
   `FUNC_2998_44D0` (walked looking for the `PLOt FORmat` write site
   below) is a generic, multi-command argument-type validator, not a
   PLOt-specific handler - it never writes `[0x461]` on any path.
+  **Resolved 2026-10-11**: both write sites exist after all, found by
+  decoding `init_far_pointer_table` (comm ROM, `0x80133`) in full - it
+  writes `[0x6EA]`/`[0x6F6]` via a register-indirect `ES:DI` copy loop,
+  invisible to the literal-displacement-instruction grep used above.
+  `[0x6EA]` resolves to `command-keyword-table.md` section 2's own
+  dispatch/index table (whose documented start was itself off by 2
+  phantom records, corrected `0x8D3E`→`0x8D4A` as part of this fix) -
+  not a second table. `[0x6F6]` resolves to a genuinely new,
+  previously-undocumented second 26-entry letter-bucket table
+  (physical `0x889BC`) indexing into table 1 instead of table 3. Both
+  confirmed via full 26-slot decode: non-empty slot `N`'s resolved text
+  starts with `chr(0x41+N)` in every case. See `command-keyword-
+  table.md` section 6 and `VARIABLES.md`'s `[0x6EA]`/`[0x6F6]` (comm
+  ROM) row for the full writeup.
 - **`[0x1B83]`'s exact bit semantics.** Confirmed as the general-
   purpose "Time Base Mode Register U4119" (not comm-specific), and
   `detect_comm_option_hw` treats `0x1E` vs `0x14` as the "comm
@@ -324,6 +338,14 @@ The single biggest cluster of open items - see
   semantics, what code actually reads a record's `id`/`marker` to
   select it at runtime (not yet found), and which of the 5 flag indices
   maps to which real setting.
+  **Follow-up, 2026-10-11**: decoded `init_far_pointer_table`
+  (`0x80133`, 31 RAM-pointer entries) while still hunting block 7's
+  reader. Found `[0x6FA]` (block 7's own base pointer, confirmed to
+  point exactly at `0x887C4`) but no static reader for it anywhere -
+  genuinely still open. Also found, as a side effect, that this same
+  initializer resolves the long-standing `[0x6EA]`/`[0x6F6]` "zero
+  comm-ROM writes" mystery from the `[0x732+0x1F]` writer-search
+  section above - see that section's own 2026-10-11 resolution note.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

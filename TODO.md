@@ -786,6 +786,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       still open: which of the 5 acquisition-mode-style flag indices
       (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`) maps to which real
       oscilloscope setting, beyond the new `LONg`-command tie-in.
+      2026-10-11: found block 7's own base pointer (`[0x6FA]`, via
+      `init_far_pointer_table`) but still no reader for it - see
+      `command-keyword-table.md`'s "## 6." section. As a side effect,
+      resolved a different, previously-stuck lead in the same area:
+      `[0x6EA]`/`[0x6F6]` (the `FUNC_2998_5115`/`519A` letter-bucket
+      table bases) turned out to be written by the same initializer,
+      and decode to table 2 itself plus a newly-found second
+      letter-bucket table into table 1.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
