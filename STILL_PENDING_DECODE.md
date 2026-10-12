@@ -440,6 +440,22 @@ The single biggest cluster of open items - see
   not attempted. See `VARIABLES.md`'s `[0x73A]` row for the full
   writeup. Low priority given the real-world identity is already
   solid via the comm-command cross-reference.
+  **Follow-up, 2026-10-12**: the separately-listed "dense uncharacterized
+  cluster" (`[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/`[0x71E]`/`[0x71A]`/
+  `[0x726]`/`[0x72E]`) is resolved for 6 of its 8 offsets - traced each
+  one's actual runtime *reader* (not just its boot-init pointer-table
+  entry) and found 5 unrelated structures: `[0x716]`/`[0x71A]` are a
+  baud-rate/parity table pair feeding the RS-232 UART register bank
+  (indexed by the already-known DIP-switch decode `[0x4EC]`/`[0x4ED]`);
+  `[0x71E]` is a command-ID membership list gated by a device-variant
+  byte; `[0x722]` is a literal `"#H"` ASCII string printed as a numeric
+  prefix; `[0x726]` is a GET-response field-index list reusing
+  `ACQuisition`'s block-6 mechanism for a different, still-unidentified
+  command; `[0x72E]` is a 10-byte-stride range/limit-check-shaped record
+  array. `[0x70E]`/`[0x712]` remain as previously characterized (baud-rate
+  text tokens / 2-letter mnemonic strings, both still unconfirmed). Full
+  writeup in `docs/comm-rom/command-keyword-table.md` section 9;
+  `VARIABLES.md` now has rows for all 6 newly-resolved offsets.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

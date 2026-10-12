@@ -699,19 +699,19 @@ caught before anything was written down):
 | `0x7a` | `[0x74A]` | `8800:0000` | `0x88000` | The comm ROM's own absolute start (offset 0) - a self-referential pointer, purpose not characterized |
 | `0x76` | `[0x746]` | `8e80:0000` | `0x8E800` | Not yet characterized |
 | `0x90` | `[0x760]` | `f1d8:0865` | `0xF25E5` | A genuine main-ROM address (not alias-corrected - segment is outside `[0x9000,0x9800)`); **the exact same target** `init_far_pointer_table_sysrom`'s own entry #54 points to (`docs/acquisition-and-plotting/ram-far-pointer-table.md`'s "two independent far-pointer tables... agreeing on this one specific byte" finding) - still flagged there as "too precise to be coincidence, meaning not understood," unchanged by this pass |
-| `0x52` | `[0x722]` | `900c:000c` | `0x880CC` | Uncharacterized, in the dense cluster below |
+| `0x52` | `[0x722]` | `900c:000c` | `0x880CC` | A far pointer to the literal ASCII string `"#H"`, printed as a prefix before numeric fields - see section 9 |
 | `0xa` | `[0x6DA]` | `4067:000c` | `0x4067C` | **"Option Status Latch" (Table 3-1)** - already confirmed in `MEMORY_MAP.md` |
 | `0xe` | `[0x6DE]` | `406b:000c` | `0x406BC` | **"Option Parameters Latch (in)" (Table 3-1)** - already confirmed in `MEMORY_MAP.md`; not yet cross-referenced in `VARIABLES.md`'s comm-ROM section until now |
 | `0x6`/`0x12` | `[0x6D6]`/`[0x6E2]` | `406f:0000`/`406f:0008` | `0x406F0`/`0x406F8` | **"Option UART/GPIB chips" (Table 3-1)** - already confirmed |
 | `0x32` | `[0x702]` | `85e0:000c` | `0x85E0C` | The comm ROM's own lower half - not yet characterized |
-| `0x46` | `[0x716]` | `900e:0004` | `0x880E4` | Uncharacterized, dense cluster |
+| `0x46` | `[0x716]` | `900e:0004` | `0x880E4` | A baud-rate lookup table feeding the RS-232 UART register bank, indexed by the DIP-switch baud index `[0x4EC]` - see section 9 |
 | `0x3e` | `[0x70E]` | `9020:0000` | `0x88200` | Uncharacterized, dense cluster - decodes as a run of short length-prefixed numeric-text tokens (`'1'`,`'2'`,`'5'`,`'1'`,`'2'`,`'4'`,`'2'`,`'4'`,`'8'`,`'15625'`...), hypothesized but unconfirmed as baud-rate-related constants |
 | `0x42` | `[0x712]` | `900f:0004` | `0x880F4` | Uncharacterized, dense cluster - repeating `02 61 XX 00` records decoding as 2-letter lowercase strings (`"ae"`,`"af"`,`"ag"`,...), hypothesized but unconfirmed as a diagnostic/error-code mnemonic table |
-| `0x4e` | `[0x71E]` | `900d:0000` | `0x880D0` | Uncharacterized, dense cluster |
+| `0x4e` | `[0x71E]` | `900d:0000` | `0x880D0` | A command-ID membership/validity list, gated by the device-variant byte `[0x732]+0x1F` - see section 9 |
 | `0x5a` | `[0x72A]` | `9006:0000` | `0x88060` | **`comm_call_main_rom`'s own parser-state jump-table base** - see below |
-| `0x4a` | `[0x71A]` | `900d:000e` | `0x880DE` | Uncharacterized, dense cluster |
-| `0x56` | `[0x726]` | `900c:0000` | `0x880C0` | Uncharacterized, dense cluster |
-| `0x5e` | `[0x72E]` | `9000:0006` | `0x88006` | Uncharacterized, dense cluster |
+| `0x4a` | `[0x71A]` | `900d:000e` | `0x880DE` | A parity lookup table feeding the RS-232 UART register bank, indexed by the DIP-switch parity index `[0x4ED]` - see section 9 |
+| `0x56` | `[0x726]` | `900c:0000` | `0x880C0` | A per-command GET-response field-index list, reusing `ACQuisition`'s block-6 response-building mechanism for a different (unidentified) command - see section 9 |
+| `0x5e` | `[0x72E]` | `9000:0006` | `0x88006` | A 10-byte-stride record array, shaped like a numeric range/limit-check table - see section 9 |
 
 ### Table 3's base pointer and the per-command "metadata byte" resolved
 
@@ -873,12 +873,13 @@ initialization are now fully confirmed.
 ### Still uncharacterized
 
 The remaining entries (`[0x742]`, `[0x73E]`, `[0x74A]`, `[0x746]`,
-`[0x702]`, and the dense cluster `[0x722]`/`[0x716]`/`[0x70E]`/
-`[0x712]`/`[0x71E]`/`[0x72A]`/`[0x71A]`/`[0x726]`/`[0x72E]` packed into
-the narrow physical range `0x88006`-`0x880F4`) are recorded in the
-table above with their resolved addresses but not yet decoded past a
-first byte-level glance - left as open leads in
-`STILL_PENDING_DECODE.md`.
+`[0x702]`) are recorded in the table above with their resolved
+addresses but not yet decoded past a first byte-level glance - left as
+open leads in `STILL_PENDING_DECODE.md`. The dense cluster packed into
+`0x88006`-`0x880F4` (`[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/`[0x71E]`/
+`[0x72A]`/`[0x71A]`/`[0x726]`/`[0x72E]`) turned out, on 2026-10-12, to
+be several unrelated small structures rather than one mystery table -
+see section 9 below.
 
 ## 8. `[0x5fe]`'s write site found; its exact numeric encoding still not pinned down (found 2026-10-12)
 
@@ -948,3 +949,90 @@ guessed at further. This does not weaken section 5's flag-index-to-
 sub-argument mapping, which rests on value-domain *size* and the
 block-6 push-order argument, neither of which depends on `[0x5fe]`'s
 own numeric encoding.
+
+## 9. The "dense cluster" (`0x88006`-`0x880F4`) is several unrelated small structures, not one table (found 2026-10-12)
+
+Section 7's table flagged 9 `init_far_pointer_table` entries packed
+into the narrow range `0x88006`-`0x880F4` as "uncharacterized, dense
+cluster" - previously assumed (across several sessions) to plausibly
+be one related table. Grepped every one of these 9 flat offsets for
+its own *runtime reader* (as opposed to just the boot-init entry that
+sets the pointer) and read each call site - they resolve to **at least
+5 unrelated structures**, now mechanism-confirmed by direct trace:
+
+- **`[0x716]`/`[0x71A]`: a baud-rate table and a parity table feeding
+  the RS-232 UART hardware.** Both are read together in one place
+  (`0x8E4FF`-`0x8E524`, right after a call to
+  `read_dip_switches_serial_config` and a `cmp byte ptr [0x4ec], 0x1f`
+  "not Off Line" guard): `[0x716][[0x4EC]]` (the DIP-switch-decoded
+  baud-rate index, confirmed in `MEMORY_MAP.md`) is OR'd with `2` and
+  stored to `[0x59f]`, which is then written to `es:[di+3]` of the far
+  pointer at `[0x6D6]` - the service manual's confirmed "Option
+  UART/GPIB chips (I/O)" register bank (`MEMORY_MAP.md`, physical
+  `0x406F0`-`0x406F7`). `[0x71A][[0x4ED]]` (the DIP-switch-decoded
+  parity index) is AND'd with `0x3F` and stored to `[0x59a]`, written
+  to `es:[bx+1]` of the same `[0x6D6]` bank. `docs/options.md`'s own
+  text on the UART (`U1251`, an Intel 8251) says its "internal baud
+  rate generator... crystal Y1251... is divided by **software
+  selectable ratios**" - exactly the shape of a lookup table turning a
+  DIP-switch index into a hardware-register byte. Whether `[0x716]`'s
+  byte is literally the 8251's own Mode-register baud-factor bits or a
+  separate baud-generator-latch divisor code (both live in the same
+  8-byte I/O bank per the manual) isn't distinguished yet - flagging
+  as a plausible but unconfirmed detail, not the overall finding.
+- **`[0x71E]`: a command-ID membership/validity list, read inside the
+  already-known command-ID-resolution function (`FUNC_2998_57E5`,
+  `0x857E5`).** After the `[0x608]`-based letter-match (see section 8)
+  rules out several fixed command IDs (`1`/`3`/`0x22`/`0x2c`/`0x13`),
+  the function loads `[0x71E]` (or `[0x71E]+8`, selected by a device-
+  variant byte at `[0x732]+0x1F` - i.e. the already-confirmed
+  `[0x1B83]` field - being `0x15`) and linearly scans its bytes for one
+  matching `[0x608]` (the matched command ID), gating whatever follows
+  on membership in this list. Reads as "is this command ID in the
+  variant-specific allow-list" - plausibly GPIB-only vs RS-232-only (or
+  2200-series-only) command subsets, not proven which.
+- **`[0x722]`: a short, literal null-terminated ASCII string, `"#H"`**
+  (confirmed by direct byte read at its target physical address,
+  `0x880CC`: `23 48 00`). Printed via `print_string_serial` at the
+  start of two sibling functions (`FUNC_2998_5985`, `FUNC_2998_59D9`)
+  that otherwise print decimal numbers - one splits a 16-bit value at
+  `[0x612]` into high/low bytes (`sar` ×8) and prints each as a
+  separate decimal field after the `"#H"` prefix (looks like a
+  `"#H<hi>.<lo>"`-shaped version/revision tag, comparable in spirit to
+  the already-confirmed `[0x70A]` `ID?`-response string, but not
+  confirmed as such); the other prints `"#H"` then a loop of `si` raw
+  bytes read from a separate buffer at `[0x61E]`. Which comm command(s)
+  call into this - and so what `"#H"` actually labels - not traced.
+- **`[0x726]`: a per-command GET-response field-index list**, read by
+  `FUNC_2998_5B9B` (`0x85B9B`) in the exact same "config-flag index ->
+  `compute_response_format_flags` -> `;`-separated field" loop already
+  confirmed for `ACQuisition`'s block-6 GET response (section 4) - but
+  with a *different* literal byte sequence (`19 00 06 17 20 16 14 fe 0e
+  26 ff ff`, i.e. config-flag indices `0x19`/`0`/`6`/`0x17`/`0x20`/
+  `0x16`/`0x14`/`0x0e`/`0x26` with a `0xFE` separator/EOI marker and a
+  double-`0xFF` terminator), confirming this GET-response-building
+  mechanism is reused by at least one other comm command besides
+  `ACQuisition` - which command, not yet identified (would need
+  matching this 9-field list against `docs/programming-manual.md`'s
+  other command response shapes).
+- **`[0x72E]`: a 10-byte-stride record array**, read by `FUNC_2998_
+  373A` (`0x8373A`) indexed by `[bp+6]*10` (a caller-supplied argument,
+  not a fixed index). Each record's word at `+0`/`+2` is compared
+  (via the cross-ROM helper `SUB_E7753`) against a pushed pair of
+  values from `[0x578]`/`[0x57a]`, and a flag bit (`+9` bit `0x80`) is
+  checked afterward - the shape of a **numeric range/limit-check
+  table** (per-something min/max thresholds), but which argument
+  `[bp+6]` represents, and what `[0x578]`/`[0x57a]` hold, aren't
+  traced.
+
+**Net result**: the "dense cluster" framing (implying one
+undiscovered shared table) was itself the obstacle - these are 5
+independent structures that happen to sit in the same ~240-byte
+region, each already reachable from a distinct, real caller once
+grepped for by its own flat offset rather than assumed to be part of
+a single blob. Mechanism confirmed for all 5; full identity (which
+UART register field, which command's allow-list/response-list, what
+`"#H"` labels, what `[0x72E]`'s records bound) remains open for a
+future pass. `[0x70E]`/`[0x712]` (the baud-rate-text and 2-letter-
+mnemonic tables from earlier sessions) are unaffected by this -
+already separately characterized, see the table in section 7.

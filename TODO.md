@@ -848,6 +848,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       not pursued further since the real-world identity is already
       solid via the comm-command mapping. See `VARIABLES.md`'s `[0x73A]`
       row.
+      **2026-10-12: resolved 6 of the 8 dense-cluster offsets** -
+      `[0x716]`/`[0x71A]` are a baud-rate/parity table pair feeding the
+      RS-232 UART register bank; `[0x71E]` is a command-ID membership
+      list; `[0x722]` is a literal `"#H"` string; `[0x726]` is a
+      GET-response field-index list reusing `ACQuisition`'s mechanism
+      for an unidentified command; `[0x72E]` is a 10-byte-stride
+      range/limit-check-shaped record array. `[0x70E]`/`[0x712]` remain
+      as previously characterized. See `command-keyword-table.md`
+      section 9 and `VARIABLES.md`.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
