@@ -171,12 +171,26 @@ lines 6793-7064) shows:
 Left unnamed (`FUNC_2998_44D0`) pending a correct, non-PLOt-specific
 characterization of what it actually validates.
 
+**Superseded, 2026-10-11**: the "`[0x6EA]`/`[0x6F6]` are address-reuse
+red herrings" conclusion right above was itself wrong. It compared the
+comm ROM's read sites against a *main-ROM* write site at the same flat
+offset and concluded cross-subsystem collision - but `init_far_pointer_table`
+(the comm ROM's own boot-time far-pointer initializer, decoded this
+session) turns out to write `[0x6EA]`/`[0x6F6]` itself, via a
+register-indirect `ES:DI` copy loop that the original literal-displacement
+grep couldn't see. `FUNC_2998_5115`/`FUNC_2998_519A`'s original
+hypothesis (a letter-indexed keyword-table base) was correct all along.
+`[0x6EA]` resolves to `command-keyword-table.md` section 2's
+dispatch/index table; `[0x6F6]` resolves to a second, previously
+undocumented 26-entry letter-bucket table into table 1 (the
+argument/value keyword table). See `VARIABLES.md`'s `[0x6EA]`/`[0x6F6]`
+(comm ROM) row and `command-keyword-table.md` section 6 for the full
+writeup - this file's "Still open" item below is resolved.
+
 ## Still open
 
-- `FUNC_2998_5115`/`FUNC_2998_519A`'s *real* letter-indexed table base
-  (now that `[0x6EA]`/`[0x6F6]` are confirmed address-reuse red
-  herrings, not live leads - see above) - unknown, no fresh candidate
-  found yet.
+- ~~`FUNC_2998_5115`/`FUNC_2998_519A`'s *real* letter-indexed table
+  base~~ - **resolved 2026-10-11**, see the supersession note above.
 - `FUNC_2998_50B2` (byte-identical to `reset_comm_token_length` but no
   confirmed caller found), `FUNC_2998_50C2`, `FUNC_2998_50E4`,
   `FUNC_2998_5115`, `FUNC_2998_519A`, `SUB_96CE9`, `FUNC_2998_2FD7`,

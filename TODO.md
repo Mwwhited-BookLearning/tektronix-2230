@@ -826,6 +826,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       from their now-known comm-command identity); the dense
       uncharacterized cluster `[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/
       `[0x71E]`/`[0x71A]`/`[0x726]`/`[0x72E]`; block 7's reader itself.
+      **2026-10-12: found `[0x5fe]`'s write site** (`FUNC_2998_43F0`,
+      `0x8444C`), fed by the same letter-bucket-walk +
+      scan-increment mechanism as command-ID resolution. Its exact raw
+      numeric encoding is still not pinned down - tested and
+      disproved "equals table 1's global alphabetical index" (exact
+      match for `ACCpeak`/`AVErage`, off by `+4`/`+2` for
+      `SAMple`/`PEAkdet`, re-verified by independent manual table walk,
+      not a counting bug). See `command-keyword-table.md` section 8.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

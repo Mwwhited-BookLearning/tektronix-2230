@@ -413,6 +413,21 @@ The single biggest cluster of open items - see
   (`[0x722]`/`[0x716]`/`[0x70E]`/`[0x712]`/`[0x71E]`/`[0x71A]`/
   `[0x726]`/`[0x72E]`, physical `0x88006`-`0x880F4`) still isn't decoded
   past initial hypotheses.
+  **Follow-up, 2026-10-12**: found `[0x5fe]`'s write site -
+  `FUNC_2998_43F0` (`0x8444C`), fed by `FUNC_2998_5115`/
+  `FUNC_2998_519A`'s letter-bucket walk plus `FUNC_2998_3048`'s
+  per-candidate scan increment (the same mechanism already confirmed
+  for command-ID resolution). Tested whether `[0x5fe]`'s raw
+  comparison literals (`1`/`7`/`0x43`/`0x35`) equal table 1's global
+  alphabetical index of the matched keyword: exact match for
+  `ACCpeak`(1)/`AVErage`(7), but off by `+4`/`+2` for `SAMple`(real 63,
+  literal 67)/`PEAkdet`(real 51, literal 53) - independently
+  re-verified by a manual byte-level table walk, so not a counting
+  bug. **Still open**: the exact numeric encoding `[0x5fe]` actually
+  uses remains unresolved; full writeup (including a side finding
+  about table 1's 3-byte metadata-gap entries encoding the next
+  entry's first letter) in `docs/comm-rom/command-keyword-table.md`
+  section 8.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

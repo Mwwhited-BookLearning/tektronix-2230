@@ -550,8 +550,11 @@ indices `0x3a`/`0x41`/`0x48`/`0x50`/`0x58`). Traced in full:
   categorically narrower (fewer valid states) than the other 4 flag
   indices.
 
-Still open: what `[0x5fe]`'s own value is actually read from (which
-command's argument parsing writes it); and the downstream use of
+Still open (partially resolved 2026-10-12, see the new subsection
+below): what `[0x5fe]`'s own value is actually read from (which
+command's argument parsing writes it) - the write site itself is now
+found, though the exact numeric meaning of its comparison literals
+(`1`/`7`/`0x43`/`0x35`) is not; and the downstream use of
 `SUB_945CF`'s bitmask result beyond the `set_comm_config_flag` call. No
 renames have been made yet for any of these - deferred per the
 project's existing convention until the real-world meaning is clearer.
@@ -573,8 +576,8 @@ exactly fingerprint each flag index's SET-side value domain:
 | `0x58` | `C2E8`/`C301` (unconditional `0`/`1`) | 2 (`SAMple`, `PEAkdet` after GET's nonzero-forces-`3` collapse) | `ROLl`: `{PEAkdet, SAMple}` only | **`0x58` = `ROLl`** |
 | `0x3a` | `C1FA` (`[0x5fe]==7`→`2`(AVErage), `==1`→`1`(ACCpeak), else→`0`(SAMple); no `3`/PEAkdet case) | 3, no `PEAkdet` | `REPetitive`: `{ACCpeak, AVErage, SAMple}`, no PEAkdet | `0x3a` = `REPetitive` |
 | `0x41` | `C22F` (byte-for-byte identical structure to `C1FA`) | 3, no `PEAkdet` | `HSRec`: `{ACCpeak, AVErage, SAMple}`, no PEAkdet | `0x41` = `HSRec` |
-| `0x48` | `C264` (decodes `[0x5fe]` against `7`/`1`/`0x43`/`0x35` into all of `0`-`3`) | 4 (full set) | `LSRec`: all 4 keywords legal | `0x48` = `LSRec` |
-| `0x50` | `C2A6` (same 4-way decode as `C264`) | 4 (full set) | `SCAn`: all 4 keywords legal | `0x50` = `SCAn` |
+| `0x48` | `C264` (decodes `[0x5fe]` against `7`/`1`/`0x43` into all of `0`-`3`, no explicit `0x35` case - the 4th value is the `else` fallback) | 4 (full set) | `LSRec`: all 4 keywords legal | `0x48` = `LSRec` |
+| `0x50` | `C2A6` (byte-for-byte identical decode to `C264`) | 4 (full set) | `SCAn`: all 4 keywords legal | `0x50` = `SCAn` |
 | computed (`SUB_94559`) | `C470`/`C6C2` | n/a - index itself is derived at runtime, not fixed | `CURRent`: "depends on the current acquisition type and SEC/DIV setting," not a stored flag | computed = `CURRent` |
 
 `0x58`=`ROLl` is the strongest link (a distinctive 2-value domain
@@ -876,3 +879,72 @@ the narrow physical range `0x88006`-`0x880F4`) are recorded in the
 table above with their resolved addresses but not yet decoded past a
 first byte-level glance - left as open leads in
 `STILL_PENDING_DECODE.md`.
+
+## 8. `[0x5fe]`'s write site found; its exact numeric encoding still not pinned down (found 2026-10-12)
+
+Section 5's SET-side flag-family writeup left one open question: which
+command's argument-parsing code actually *writes* `[0x5fe]` before the
+8 flag-decoding functions read it. Traced in full:
+
+- The write site is `FUNC_2998_43F0` (physical `0x8444C`):
+  `mov al, byte ptr [0x608]` followed immediately by `mov byte ptr
+  [0x5fe], al`, inside a branch gated on `[0x5f7]==0` being false (i.e.
+  the function's *second* pass through its main loop - the first pass
+  writes the same `[0x608]` value into a sibling byte `[0x606]`
+  instead, via a structurally identical branch just above). No static
+  caller was found by name (`grep` for `FUNC_2998_43F0` turns up only
+  its own label), but its address falls inside the parser-state
+  handler table's already-confirmed range (`0x83B1A`-`0x85098`, see
+  section 7 above) - consistent with it being reached only through
+  `[0x5A4]`/`[0x72A]`'s register-indirect dispatch, not a direct call.
+- `[0x608]` is itself set by `FUNC_2998_5115`/`FUNC_2998_519A` (the
+  letter-bucket table walkers resolved in section 6 above, via
+  `[0x6EA]`/`[0x6F6]`) from the first byte of the matched letter
+  bucket's 6-byte record, then incremented once per rejected candidate
+  by `FUNC_2998_3048`'s forward abbreviation-matching scan
+  (`inc byte ptr [0x608]` at physical `0x831C5`) as it advances through
+  consecutive table-1 entries within that letter. So `[0x5fe]` holds a
+  per-match value seeded from the matched keyword's first-letter bucket
+  and incremented by its position within that bucket's run - mechanically
+  consistent with (but not proven identical to) table 1's global
+  alphabetical index of the matched argument/value keyword.
+- Numerically testing that "global alphabetical index" hypothesis
+  against `disasm/comm_keyword_tables.json`'s confirmed real indices
+  (re-verified by an independent manual byte-level walk of table 1 from
+  `ABOrt`, not just the JSON): `ACCpeak`=1, `AVErage`=7, `PEAkdet`=51,
+  `SAMple`=63. `FUNC_2998_C1FA`/`C22F`'s comparison literals `1`/`7`
+  match `ACCpeak`/`AVErage` **exactly**, but `FUNC_2998_C264`/`C2A6`'s
+  literal `0x43` (67) for the value they resolve to `0`
+  (`SAMple`/enum-`0`) is off by `+4` from `SAMple`'s real index `63`,
+  and `FUNC_2998_C31B`'s literal `0x35` (53) for its `PEAkdet`/enum-`3`
+  value is off by `+2` from `PEAkdet`'s real index `51` - a
+  **mismatch that is not explained by a table-parsing error**: the
+  manual byte-level re-walk independently reproduced the same real
+  indices as the JSON (including every metadata-byte gap in between),
+  and the metadata bytes themselves don't encode anything resembling
+  the comparison literals either (see below). So `[0x5fe]`'s raw value
+  is **not** simply table 1's absolute alphabetical index, despite the
+  exact match for the first two entries - that match may be coincidence
+  (both `ACCpeak` and `AVErage` are early, `A`-prefixed entries where a
+  per-letter-bucket-relative index and a global index would agree).
+- Side finding while checking the metadata-byte hypothesis: table 1
+  entries with a 3-byte metadata gap (`CURS2`, `INVert`, `PT.Off`, `RP`)
+  all have the same shape `00 01 <ASCII char>`, where `<ASCII char>` is
+  consistently the **first letter of the very next table-1 entry**
+  (`CURS2`->`'D'`/`DEFault`, `INVert`->`'L'`/`LOCk`, `PT.Off`->`'R'`/
+  `REF`, `RP`->`'S'`/`SAMple`) - confirmed byte-for-byte for all four.
+  Entries with a 1-byte gap just have a bare `00`. This looks like a
+  genuine per-entry field (plausibly a "next letter-bucket starts here"
+  hint), not parser noise, but is a side lead, not a resolution of the
+  `[0x5fe]` puzzle - noted here for whoever picks this up next rather
+  than chased further this session.
+
+**Net result**: `[0x5fe]`'s write site, and the general mechanism that
+feeds it (letter-bucket lookup + scan-position increment, shared with
+the already-understood command-ID resolution path), are now confirmed.
+The exact arithmetic turning a matched keyword into `[0x5fe]`'s raw
+byte value is not - flagged here as an open loose end rather than
+guessed at further. This does not weaken section 5's flag-index-to-
+sub-argument mapping, which rests on value-domain *size* and the
+block-6 push-order argument, neither of which depends on `[0x5fe]`'s
+own numeric encoding.
