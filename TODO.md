@@ -834,6 +834,12 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       match for `ACCpeak`/`AVErage`, off by `+4`/`+2` for
       `SAMple`/`PEAkdet`, re-verified by independent manual table walk,
       not a counting bug). See `command-keyword-table.md` section 8.
+      Also ruled out a false lead on block 7's reader: the main ROM
+      (`160-3532`/`3633`) does reference flat offset `[0x6fa]`
+      repeatedly, but it's an unrelated plot-subsystem scratch record
+      (fed from `[0x1ddc]`, already-documented general scratch RAM),
+      not block 7's reader - a flat-offset collision like `[0x4EC]`/
+      `[0x6EA]`. Block 7's reader is still genuinely unfound.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
