@@ -774,6 +774,18 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `docs/comm-rom/command-keyword-table.md`'s "## 4." section). Pick
       up by targeting the remaining undisassembled gap directly if
       revisited.
+- [ ] **"Block 7" shared function-reference table (comm ROM) - walk the
+      rest of it, find its reader.** 2026-10-11: decoded as 6-byte
+      `[id][marker][offset][segment]` records; walked 35 distinct real
+      function targets out of an estimated ~135-record capacity (see
+      `docs/comm-rom/command-keyword-table.md`'s "## 5." section). Still
+      open: the table's true start/end boundaries, the `id`/`marker`
+      byte semantics, and - the actually interesting part - what code
+      reads a record's `id`/`marker` to pick it at runtime (not found
+      yet, so this is still a table with no confirmed caller). Also
+      still open: which of the 5 acquisition-mode-style flag indices
+      (`0x3a`/`0x41`/`0x48`/`0x50`/`0x58`) maps to which real
+      oscilloscope setting, beyond the new `LONg`-command tie-in.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

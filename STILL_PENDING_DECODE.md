@@ -306,6 +306,24 @@ The single biggest cluster of open items - see
   `docs/comm-rom/command-keyword-table.md` section 4's 2026-10-11
   follow-up, `VARIABLES.md`'s `[0x6F2]`/`[0x6F4]` entry, and
   `FUNCTIONS.md`'s `flag_value_to_keyword_ptr` entry.
+  **Follow-up, 2026-10-11**: found the SET-side counterpart of this
+  same 5-flag-index family (8 functions at `0x8C1FA`-`0x8C356`), and in
+  the process decoded "block 7" (the region the above section's far
+  pointer A pointed into, previously undecoded) as a large shared
+  function-reference table - at least 35 distinct real function
+  targets confirmed so far (up from an initial 18), all with
+  `ref_count: 0`/`functional_name: null`, i.e. this table appears to be
+  the actual reference mechanism for a meaningful chunk (~11%) of the
+  comm ROM's 310 total orphan functions. One of the 35
+  (`SUB_945CF`/`0x8C5CF`) ties the flag family to the real `LONg`
+  command (`[0x732]+0x1F == 0x14`) - narrowing, but not yet resolving,
+  which real setting each flag index represents. Full writeup in
+  `docs/comm-rom/command-keyword-table.md`'s new "## 5." section;
+  `VARIABLES.md`'s `[0x732]`/`[0x734]` and new `[0x5fe]` entries. Still
+  open: the table's true start/end boundaries, the `id`/`marker` byte
+  semantics, what code actually reads a record's `id`/`marker` to
+  select it at runtime (not yet found), and which of the 5 flag indices
+  maps to which real setting.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
