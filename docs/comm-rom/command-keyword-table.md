@@ -1339,6 +1339,65 @@ dense-cluster functions in section 9) resolved this:
     of each category-pair branch (which UI/acquisition state transition
     it corresponds to) isn't pinned down - this is confirmed at the
     level of "what it calls and when," not "why."
+  - **`SUB_9471C`/`SUB_94D9C` traced (2026-10-13, ground-truth re-trace)
+    = physical `0x8C71C`/`0x8CD9C`** - a matched acquire/release pair
+    for a lettered reference's waveform data, confirming `[0x746]+2`/
+    `+4` are genuine reference counters rather than dirty-flag fields
+    (correcting the characterization below):
+    - `SUB_9471C` takes a raw ASCII letter byte `[bp+6]` (duplicating
+      `SUB_93B7E`'s `letter-0x61` math inline rather than calling it)
+      and a caller output-status far pointer `[bp+8]`. It checks
+      `[0x73E]`'s record `+0xA` bit `0x02` first - if clear, returns a
+      null pointer with status `2` (`[0x690]=0x117`): "this letter has
+      no waveform data at all," a capability bit distinct from the
+      `0x04`/`0x40`/`0x44` protection-state bits and `E1E9`'s wipe
+      sentinel `0x01`. If set, it disables interrupts and checks
+      `+0xA` bit `0x10` OR `[0x746]+4 != 0` OR `[0x746]+0 != 0` - any
+      true means "busy" (status `1`, `[0x690]=0xF4`, no pointer
+      returned); otherwise "available" (status `0`, `[0x690]=0xFA`):
+      it sets `+0xA` bit `0x08`, increments the record's own `+8`
+      field, and increments `[0x746]+2`, then returns a far pointer to
+      the letter's `[0x742]` record (`base + index*78`).
+    - `SUB_94D9C` is the inverse: given the same raw letter byte (not
+      a pre-resolved index; returns `0` directly for anything outside
+      `'a'..'z'`), it reads `+0xA` and tests bits `0x18`
+      (`0x08|0x10`) - if neither is set, returns error `8` ("nothing
+      to release"). If bit `0x08` is set (a read-acquired handle,
+      checked ahead of `0x10` when both happen to be set): calls
+      `validate_gpib_record_consistency`, then with interrupts
+      disabled **decrements** `[0x746]+2` and the record's own `+8`
+      field; only once that `+8` field reaches `0` does it clear
+      `+0xA` bit `0x08` - i.e. `+8` is itself a per-record outstanding
+      handle count, and `[0x746]+2` is the equivalent pool-wide total
+      across all 26 letters. If bit `0x08` is clear (only `0x10` set):
+      calls `build_gpib_message_checksum` instead, then clears `+0xA`
+      bit `0x10` and decrements `[0x746]+4` - a second, separately-
+      tracked counter. Both branches return their respective helper
+      call's status code; the invalid-letter and "nothing to release"
+      paths return `0`/`8` directly. `retf 2` confirms a single
+      word-sized argument (the letter).
+    - Together these resolve `[0x746]+2`/`+4` as **two independent
+      pool-wide outstanding-handle counters** - `+2` for "read-
+      acquired" handles (bit `0x08`, backed by each record's own `+8`
+      sub-count), `+4` for "exclusively-locked" handles (bit `0x10`,
+      with no per-record sub-count observed) - and explain `SUB_96126`'s
+      "`+0`/`+2`/`+4` all zero" idle test from the correction above: it
+      is checking that no reference is currently checked out for
+      reading *and* no reference is exclusively locked, in addition to
+      no other caller already holding its own `+0` interlock, before
+      letting `B252`/`B2BC`/`B339` touch a record's protection bits.
+      `SUB_9471C` only ever sets bit `0x08`/increments `+2` - no
+      function setting bit `0x10`/incrementing `+4` (the presumed
+      "exclusive lock acquire" counterpart to `SUB_9471C`) has been
+      found yet; it's either not yet traced or reached through a
+      different entry point than this cluster. Plausible but unproven
+      reading of why `SUB_94D9C` calls two differently-named helpers on
+      release: re-validating consistency when giving up read access
+      (`validate_gpib_record_consistency`) vs. rebuilding a checksum
+      when giving up exclusive/write access (`build_gpib_message_
+      checksum`), consistent with those functions' own documented
+      roles in `FUNCTIONS.md` - but this is inference from naming and
+      timing, not a traced causal link.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
@@ -1394,9 +1453,13 @@ dense-cluster functions in section 9) resolved this:
   fields referenced at `+0`, `+2`, `+4`, `+6`, `+8` - `+8` acts as a
   pool base pointer that per-record offsets get added to; `+6` behaves
   like a free-space count/limit (`FUNC_2998_B600` divides it by 1024
-  and prints it); `+0`/`+2`/`+4` are `SUB_96126`'s interlock/busy-flag
-  fields (above), not a per-`[0x73E]`-record dirty counter as
-  previously guessed. `[0x74A]` is a second, separate far pointer used
+  and prints it); `+0` is `SUB_96126`'s single-owner interlock/busy
+  flag (above); `+2`/`+4` are **two independent pool-wide outstanding-
+  handle counters** (2026-10-13, later pass: `SUB_9471C`/`SUB_94D9C`
+  above) - `+2` counts "read-acquired" lettered-reference handles
+  (`[0x73E]` record `+0xA` bit `0x08`), `+4` counts "exclusively-
+  locked" handles (bit `0x10`) - rather than a per-`[0x73E]`-record
+  dirty counter as previously guessed. `[0x74A]` is a second, separate far pointer used
   alongside `[0x746]+8` in the same compaction code; its distinct role
   from `[0x746]` itself isn't pinned down. Together these look like a
   shared waveform-data heap/compaction manager for the 26 lettered

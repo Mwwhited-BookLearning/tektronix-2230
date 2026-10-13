@@ -581,6 +581,25 @@ The single biggest cluster of open items - see
   flag). Each branch's real-world meaning (which UI state transition
   it implements) is not pinned down. `SUB_9471C`/`SUB_94D9C`/
   `FUNC_2998_7609`'s `func_0x00086b4b` branch remain untraced.
+  **Ninth follow-up, 2026-10-13**: traced `SUB_9471C`/`SUB_94D9C`
+  (physical `0x8C71C`/`0x8CD9C`) - a matched acquire/release pair for
+  a lettered reference's waveform data. `SUB_9471C` checks `[0x73E]`
+  record `+0xA` bit `0x02` ("has waveform data" capability) then bit
+  `0x10`/`[0x746]+4`/`+0` ("busy") before granting access: on success
+  it sets bit `0x08`, increments the record's own `+8` field, and
+  increments `[0x746]+2`, returning a far pointer to the letter's
+  `[0x742]` record. `SUB_94D9C` reverses this (decrements `+8`/`+2`,
+  clearing bit `0x08` only once `+8` hits `0`) via one branch, or
+  clears bit `0x10`/decrements `[0x746]+4` via a second branch for a
+  handle type `SUB_9471C` itself never sets. This resolves `[0x746]+2`/
+  `+4` as two independent pool-wide outstanding-handle counters (not a
+  dirty-flag pair as previously guessed) and explains `SUB_96126`'s
+  "`+0`/`+2`/`+4` all zero" idle check as "no reference checked out for
+  reading, none exclusively locked, and no other caller already holds
+  the interlock." Open: no setter for bit `0x10`/`[0x746]+4` (the
+  presumed "exclusive lock acquire" counterpart to `SUB_9471C`) has
+  been found in this cluster; `FUNC_2998_7609`'s `func_0x00086b4b`
+  branch remains untraced.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

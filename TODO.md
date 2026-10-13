@@ -928,6 +928,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       dispatcher branching on the source/target `1`-or-`4` category
       pair, always setting `[0x736]` bit `0x200` on success. Branch
       semantics not pinned down. See eighth follow-up.
+      **2026-10-13, traced `SUB_9471C`/`SUB_94D9C`** (physical
+      `0x8C71C`/`0x8CD9C`): a matched acquire/release pair for a
+      lettered reference's waveform data, gated by `[0x73E]` `+0xA`
+      bits `0x02`/`0x08`/`0x10`. Resolves `[0x746]+2`/`+4` as two
+      independent pool-wide outstanding-handle counters (read-acquired
+      vs. exclusively-locked), not a dirty-flag pair - which in turn
+      explains `SUB_96126`'s "all zero" idle check. No setter for the
+      exclusive-lock bit/counter found yet. See ninth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
