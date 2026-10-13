@@ -1204,6 +1204,25 @@ dense-cluster functions in section 9) resolved this:
     message/status-code pair rather than a boolean; their real-world
     text (if any, via the `0xFF7B`-segment string table) is not yet
     looked up.
+  - Two functions immediately following `SUB_96126` in the listing,
+    `FUNC_2998_E1AF` (above) and **`FUNC_2998_E1E9`** (physical
+    `0x8E1E9`), share its no-static-caller shape. `FUNC_2998_E1E9`
+    takes a single `0..25` record-index argument and: zeroes
+    `[0x73E]`'s record words at `+0`/`+2`/`+4`/`+6`/`+8` and sets its
+    `+0xA` byte to the literal value `1` (a **fourth** distinct value
+    for that byte, not matching any of the `0x04`/`0x40`/`0x44`
+    protection-state masks `FUNC_2998_B3A3`/`B568` decode); then
+    `memset_far`s the *entire* corresponding 78-byte `[0x742]` record
+    to zero. This is a full record wipe across both arrays, not a
+    protection-bit toggle - a **stronger-fitting candidate for
+    `REFDisp REF{A-Z}:EMPTY`** than `FUNC_2998_B339` (which only sets
+    protection bits `0x44` and never clears `[0x742]`'s waveform data
+    at all). `FUNC_2998_B339`'s own real identity is accordingly back
+    to uncertain rather than settled, pending a caller/trigger trace
+    for either function. `[0x73E]`'s record therefore has at least 5
+    more word fields (`+0`/`+2`/`+4`/`+6`/`+8`) beyond the
+    already-documented `+0xA` flag byte, whose normal (non-wiped)
+    contents are not yet characterized.
 - **An unresolved inconsistency found while cross-checking the GET
   side**: `FUNC_2998_B3A3` (above, feeding what looks like a
   per-reference keyword query - candidate: `REFProt?`) maps the raw

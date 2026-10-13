@@ -558,6 +558,18 @@ The single biggest cluster of open items - see
   `[0x5F8]`/`[0x746]` rows updated and a new `[0x690]` row added.
   `SUB_93925`/`SUB_9471C`/`SUB_94D9C`/`FUNC_2998_7609`/`[0x74A]`'s exact
   role/`[0x690]`'s real-world text remain open.
+  **Seventh follow-up, 2026-10-13**: found `FUNC_2998_E1E9` (physical
+  `0x8E1E9`, same no-static-caller shape as its neighbors) - given a
+  `0..25` record index, it zeroes `[0x73E]`'s record words `+0`/`+2`/
+  `+4`/`+6`/`+8`, sets `+0xA` to the literal `1` (a fourth value
+  distinct from the `0x04`/`0x40`/`0x44` protection masks), and
+  `memset_far`s the entire parallel 78-byte `[0x742]` record to zero -
+  a full per-letter record wipe. This is a **stronger-fitting
+  candidate for `REFDisp REF{A-Z}:EMPTY`** than `FUNC_2998_B339`
+  (which only ever sets protection bits, never clears `[0x742]`),
+  reopening `B339`'s own identity rather than settling it. Also pins
+  `[0x73E]`'s record as having at least 5 more word fields beyond
+  `+0xA`, not yet characterized in their normal (non-wiped) use.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

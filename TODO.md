@@ -917,6 +917,12 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x603]` bit-`0x01` dirty flag distinct from `B622`'s `[0x736]`
       bit `0x200`. See `command-keyword-table.md` section 11,
       `STILL_PENDING_DECODE.md`'s sixth follow-up, and `VARIABLES.md`.
+      **2026-10-13, also found `FUNC_2998_E1E9`**: given a `0..25`
+      index, fully wipes both `[0x73E]`'s record (5 words zeroed,
+      `+0xA` set to `1`) and the parallel 78-byte `[0x742]` record
+      (`memset_far` to zero) - a stronger `REFDisp REF{A-Z}:EMPTY`
+      candidate than `FUNC_2998_B339`, reopening `B339`'s identity.
+      See `STILL_PENDING_DECODE.md`'s seventh follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
