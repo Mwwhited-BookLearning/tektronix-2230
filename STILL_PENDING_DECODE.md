@@ -570,6 +570,17 @@ The single biggest cluster of open items - see
   reopening `B339`'s own identity rather than settling it. Also pins
   `[0x73E]`'s record as having at least 5 more word fields beyond
   `+0xA`, not yet characterized in their normal (non-wiped) use.
+  **Eighth follow-up, 2026-10-13**: traced `SUB_93925` (physical
+  `0x8B925`, one of `FUNC_2998_B622`'s not-yet-traced callees) - it's
+  a post-validation display-mode/acquisition-state update dispatcher,
+  branching on the `(source,target)` `1`-or-`4` category pair and
+  calling combinations of `update_display_mode_flags`,
+  `print_and_reset_acq_buffers`, `disable_item_pair`, and a
+  `restart_current_task` poll loop, always `or`-setting `[0x736]` bit
+  `0x200` on success (confirming that's the shared redraw-pending
+  flag). Each branch's real-world meaning (which UI state transition
+  it implements) is not pinned down. `SUB_9471C`/`SUB_94D9C`/
+  `FUNC_2998_7609`'s `func_0x00086b4b` branch remain untraced.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

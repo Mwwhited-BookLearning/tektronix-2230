@@ -1320,6 +1320,25 @@ dense-cluster functions in section 9) resolved this:
     all newly-surfaced, not-yet-individually-traced callees; their
     exact roles (beyond "performs the copy"/"fetches the waveform
     pointer") are open items.
+  - **`SUB_93925` traced (2026-10-13, ground-truth re-trace) = physical
+    `0x8B925`**, called with `[bp+6]`/`[bp+8]` = the same source/target
+    `1`-or-`4` "category" values from `B622`'s analysis above. It's a
+    post-validation **display-mode/acquisition-state update
+    dispatcher**: branches on the `(source, target)` category pair
+    (`(1,1)`, `(4,1)`, and a default/else case gated by a per-reference
+    capability bit at `[0x732]+0x80`/`+0x81` bit `0x02` and byte
+    `[0x19C]`), each branch calling some combination of
+    `update_display_mode_flags`, `print_and_reset_acq_buffers`
+    (argument `1`, `2`, or `3`), `disable_item_pair` (argument `1`,
+    `2`, or `3`), `SUB_97C95`/`SUB_97C6E` (a poll-and-retry loop around
+    `restart_current_task`), and - on every successful branch -
+    `or`-setting bit `0x200` of `[0x736]` (confirming, independent of
+    `FUNC_2998_B622`'s own direct set, that this is the shared
+    "redraw/refresh pending" flag). One branch instead falls through to
+    an error path writing `0x1B` to `[0x623]`. The real-world meaning
+    of each category-pair branch (which UI/acquisition state transition
+    it corresponds to) isn't pinned down - this is confirmed at the
+    level of "what it calls and when," not "why."
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**

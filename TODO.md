@@ -923,6 +923,11 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       (`memset_far` to zero) - a stronger `REFDisp REF{A-Z}:EMPTY`
       candidate than `FUNC_2998_B339`, reopening `B339`'s identity.
       See `STILL_PENDING_DECODE.md`'s seventh follow-up.
+      **2026-10-13, traced `SUB_93925`** (physical `0x8B925`): a
+      post-validation display-mode/acquisition-state update
+      dispatcher branching on the source/target `1`-or-`4` category
+      pair, always setting `[0x736]` bit `0x200` on success. Branch
+      semantics not pinned down. See eighth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
