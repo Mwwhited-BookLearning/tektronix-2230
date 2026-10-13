@@ -1951,6 +1951,12 @@ dense-cluster functions in section 9) resolved this:
   very first "destination empty" branch (`L_8C99F`) weren't traced in
   this pass, so the identification is **SAVeref, strong confidence**,
   not yet a byte-for-byte-complete account of the function.
+  **Completed 2026-10-13, later pass**: the remaining branches were
+  traced - see "`FUNC_2998_C85B` (`SAVeref`) ruled out as
+  `validate_gpib_device_records`'s caller" below, which covers the
+  "destination empty" and unequal-length paths and corrects the
+  "reallocation" guess (it's an insufficient-room error/`SUB_95D81`
+  call, not a compaction retry).
 - **`FUNC_2998_D1AA`/`D476`'s identities closed, 2026-10-13, later
   pass: they're `validate_gpib_record_consistency`/`scan_and_repair_
   gpib_records`, already named at their 0x9000-segment-aliased
@@ -2058,14 +2064,40 @@ dense-cluster functions in section 9) resolved this:
     currently in use** (consistent with `+6` already being confirmed
     as the free-space count: `limit - watermark`). No static caller
     found (same no-caller/register-indirect-dispatch shape as the
-    rest of this cluster), but this strongly suggests the missing
-    caller is whatever logic decides the pool is too fragmented/full
-    to satisfy a pending `SAVeref`/`DATa TARget` write and needs to
-    compact it first - plausibly `FUNC_2998_C85B` (`SAVeref`) itself,
-    on its length-mismatch path, though that call site wasn't found by
-    static search either. Updated `FUNCTIONS.md`'s `0x95B69` entry and
+    rest of this cluster). Updated `FUNCTIONS.md`'s `0x95B69` entry and
     added the matching `0x8DB69` `FUNCTIONAL_NAMES`/`PARAMETER_NAMES`
     entries.
+  - **`FUNC_2998_C85B` (`SAVeref`) ruled out as `validate_gpib_device_
+    records`'s caller, 2026-10-13, later pass**: the hypothesis above
+    - that `SAVeref`'s length-mismatch path calls the pool-compaction
+    function to make room - was checked by reading `C85B`'s entire
+    body (physical `0x8C85B`-`0x8CD99`, all ~445 lines) end to end.
+    Its only `lcall` targets anywhere in the function are
+    `set_ds_return_old` (at every exit), `SUB_96126` (the pool
+    interlock acquire, once near the top), `memcpy_far` (the actual
+    waveform-data copy, on the length-match success path), and one
+    previously-unidentified function, `SUB_95D81` (physical `0x8D581`
+    via the alias rule, called once at `0x8CA5B`) - reached exactly on
+    the branch where the combined source+destination length exceeds
+    the destination's current capacity (`cmp si, ax; jg L_8CAC6`,
+    where `ax` includes `[0x746]+6`'s free-space count). **No call to
+    `validate_gpib_device_records`, at either its native (`0x8DB69`)
+    or aliased (`0x9471,0x1459`/`0x95B69`) form, appears anywhere in
+    this function.** The other insufficient-room branch (reached when
+    the length check at `L_8CBF7`/`0x8CC12` fails, `cmp si, cx; jg
+    L_8CC8E`) also does not compact - it falls straight through to an
+    error return (`[0x690]=0x21A`, status code `4`) without attempting
+    to free space. `SAVeref` is therefore **ruled out** as the missing
+    caller; the caller remains unresolved, and `SUB_95D81` (not yet
+    traced) is a new, more promising lead on the same length-mismatch
+    path. This also completes a byte-for-byte account of `C85B`'s full
+    body (the "not yet byte-for-byte-complete" caveat above is
+    resolved): the previously-untraced "destination empty"
+    (`L_8C99F`) and unequal-length branches are now accounted for -
+    the latter is exactly this insufficient-room/`SUB_95D81` path,
+    not a reallocation-via-compaction as guessed. Updated
+    `FUNCTIONS.md`'s `0x95B69` entry, `STILL_PENDING_DECODE.md`, and
+    `TODO.md` to retract the "leading candidate" framing.
   - `build_gpib_message_checksum` (`D0C2`, immediately preceding
     `D1AA`/`validate_gpib_record_consistency` in the listing) is the
     **write-side counterpart**: given an index, it computes and stores

@@ -837,10 +837,22 @@ The single biggest cluster of open items - see
   **correcting `+8`'s role** from a static "pool base pointer" to a
   live watermark (offset just past the last used byte), with `+6`
   confirmed as `limit - watermark`. No static caller found (same
-  shape as its siblings), but this makes `FUNC_2998_C85B` (`SAVeref`)
-  itself - on its length-mismatch path, when an existing record's
-  slot is too small for new data - the leading candidate for the
-  still-missing caller, though unconfirmed by a found call site. See
+  shape as its siblings). See `docs/comm-rom/command-keyword-table.md`
+  section 11.
+  **Twenty-fourth follow-up, 2026-10-13, later pass**: checked the
+  twenty-third follow-up's "leading candidate" hypothesis by reading
+  `FUNC_2998_C85B` (`SAVeref`)'s entire body (all ~445 lines,
+  `0x8C85B`-`0x8CD99`) end to end - **ruled out**. Its only `lcall`
+  targets are `set_ds_return_old`, `SUB_96126`, `memcpy_far`, and a
+  previously-unidentified function `SUB_95D81` (called once, on the
+  length-mismatch/insufficient-room branch); no call to
+  `validate_gpib_device_records` (native or aliased form) appears
+  anywhere. The other insufficient-room branch just fails with an
+  error code instead of compacting. This also completes a
+  byte-for-byte trace of `SAVeref` itself (previously "strong
+  confidence, not byte-for-byte complete"). The missing caller for
+  `validate_gpib_device_records` remains unresolved; `SUB_95D81`
+  (physical `0x8D581`) is a new, untraced lead on the same path. See
   `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question

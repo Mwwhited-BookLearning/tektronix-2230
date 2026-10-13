@@ -1061,9 +1061,12 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `0x8DB69`), a pool defragmentation/compaction pass over
       `[0x73E]`/`[0x742]`, not the "lookup" its stale description
       claimed. Corrects `[0x746]+8` from "pool base pointer" to a live
-      watermark. Makes `SAVeref` (`C85B`)'s own length-mismatch path
-      the leading (still unconfirmed) candidate for the caller. See
-      twenty-third follow-up.
+      watermark. See twenty-third follow-up.
+      **2026-10-13, later pass**: checked whether `SAVeref` (`C85B`)
+      is the missing caller by reading its full body - **ruled out**,
+      no call to `validate_gpib_device_records` anywhere in it; its
+      length-mismatch path instead calls an unidentified `SUB_95D81`,
+      a new untraced lead. See twenty-fourth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
