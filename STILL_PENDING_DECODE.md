@@ -635,6 +635,19 @@ The single biggest cluster of open items - see
   meaning of what `3`/`1` specifically denote (and why that order)
   remains unconfirmed. See `docs/comm-rom/command-keyword-table.md`
   section 11.
+  **Twelfth follow-up, 2026-10-13**: identified `FUNC_2998_6F6F`
+  (physical `0x86F6F`), adjacent to `FUNC_2998_6B4B` and its exact
+  inverse - a scatter/"install" counterpart to `6B4B`'s gather/
+  "translate." Its only caller is `FUNC_2998_7609` itself, which uses
+  it to write a locally-assembled destination record's fields back out
+  to the same scattered per-reference tables `6B4B` reads from, when a
+  reference-copy's destination is a numbered reference. Confirms the
+  same `retf 2` stack shape as `6B4B` but the opposite data-flow
+  direction through the far-pointer argument. Also surfaces a new,
+  unexplained detail: each numbered reference occupies **two adjacent
+  table-row slots** (`class*2`/`class*2+1`) in several of these tables,
+  not one row per reference. See `docs/comm-rom/command-keyword-table.md`
+  section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

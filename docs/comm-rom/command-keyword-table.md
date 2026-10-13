@@ -1543,6 +1543,42 @@ dense-cluster functions in section 9) resolved this:
     per-byte classification - but the real-world meaning of *why* `3`
     comes first and `1` second, and what either specifically denotes,
     remains unconfirmed.
+  - **`FUNC_2998_6F6F` identified (2026-10-13)**, physical `0x86F6F`,
+    immediately adjacent to `FUNC_2998_6B4B` in the listing and its
+    exact **inverse**: a scatter/"install" counterpart where
+    `FUNC_2998_6B4B` is a gather/"translate" function. It has a single
+    caller, inside `FUNC_2998_7609` itself (the call at physical
+    `0x87AC6`), reached after `7609`'s payload-copy-and-count-recompute
+    sequence finishes assembling a local `[0x742]`-shaped record on its
+    own stack (`[bp-0x5c]`) describing the just-written destination
+    data. `7609` passes that local record and the destination's
+    numbered class (`1..3`) to `FUNC_2998_6F6F`, which reads the
+    record's fields back out (capability bits at `+0x10`/`+0x11` and
+    `+0x26`/`+0x27`, a block at `+0x1C`, and fields at `+0x28` through
+    `+0x4B`) and writes them into the very same scattered absolute
+    tables `FUNC_2998_6B4B` reads from to build such a record in the
+    first place (`[0x1DC]`, the 10-byte-stride `[0x1C14]` table via
+    `memcpy_far`, the 14-byte-stride `[0x574]`/`[0x576]`/`[0x578]`/
+    `[0x580]` tables, `[0x564]`, the main per-reference array's own
+    `+0x3E` field, and the `0x14`-byte-stride `b0`-`b4` table also used
+    by `SUB_9471C`'s record layout). Confirms `retf 2` with the same
+    stack shape as `FUNC_2998_6B4B` (word class arg + far pointer arg)
+    but the **opposite data-flow direction** through that far pointer
+    - input record here, output record there. Also reveals that each
+    numbered reference actually occupies **two adjacent table-row
+    slots** in several of these tables (indices `class*2` and
+    `class*2+1`, both filled from the same source record) rather than
+    one row per reference - not yet explained, but mechanically clear
+    from the index arithmetic in both this function and its caller.
+    Immediately after the call, `FUNC_2998_7609` itself (not
+    `FUNC_2998_6F6F`) sets a couple of related flags directly - two
+    `+0xa6`/`+0xa8`/`+0xaa` fields in the `0x14`-stride table (one per
+    slot) gated on the assembled record's own `+0x3A`/`+0x40` fields,
+    an `|= 0xb5f` on a `[0x55A]`+class*2 flag word, and a call to the
+    already-named `set_item_pair_active` - consistent with this whole
+    sequence being `7609`'s final "commit the copied data as the new
+    contents of numbered reference `class`" step when the copy's
+    destination is numbered rather than lettered.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**

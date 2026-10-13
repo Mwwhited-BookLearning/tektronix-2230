@@ -954,6 +954,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       distance to first `1`-tagged byte after that" walk, not a tally.
       Real-world meaning of the tag values themselves still open. See
       eleventh follow-up.
+      **2026-10-13, identified `FUNC_2998_6F6F`** (physical `0x86F6F`):
+      the exact inverse of `FUNC_2998_6B4B` - a scatter/"install"
+      counterpart, called once from inside `FUNC_2998_7609` to write a
+      locally-assembled destination record back out to the same
+      scattered per-reference tables `6B4B` reads from, when a
+      reference-copy's destination is numbered. New open item: each
+      numbered reference occupies two adjacent table-row slots
+      (`class*2`/`class*2+1`) in several of these tables, not one row
+      per reference - unexplained. See twelfth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
