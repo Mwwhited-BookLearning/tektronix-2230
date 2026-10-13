@@ -481,14 +481,34 @@ The single biggest cluster of open items - see
   real-world identity: `REFProt`/`REFStat? PROTect` (keyword states and
   the 4-numbered + 26-lettered = 30-total count both match the manual
   exactly). Full writeup in `command-keyword-table.md` section 11;
-  `VARIABLES.md` has rows for all 6 variables. Remaining open within
-  this subsystem: `[0x742]`'s individual fields beyond the far-pointer/
-  length pairs, `[0x746]`/`[0x74A]`'s exact pool semantics, the lock/
-  perm SET-side write patterns (only the unlock case, `FUNC_2998_B339`,
-  was traced), and firm confirmation of the separate "ACQ"/"REF"
-  2-state resolver's (`FUNC_2998_B1E8`/`B1FC`/`B227`, `[0x4F6]`) owning
-  command (candidates: `DATa SOUrce`, `REFOrmat TARget`, `CURSor
-  TARget`).
+  `VARIABLES.md` has rows for all 6 variables.
+  **Fourth follow-up, 2026-10-13, later pass**: found the `REFProt`
+  SET-side siblings - `FUNC_2998_B252` (clears `+0xA` bits `0x04`+`0x40`,
+  candidate `LOCked`) and `FUNC_2998_B2BC` (clears `0x40`, sets `0x04`,
+  candidate `UNLocked`), both rejecting `1..4`; no SET-side function
+  setting bit `0x40` alone (`PERM`) was found. `FUNC_2998_B339`
+  (previously tagged "unlock") was **re-identified away from `REFProt`**
+  toward `REFDisp REF{A-Z}:EMPTY`, a better structural fit (same
+  lettered-only validation; "erases the named reference if it is not
+  protected" per the manual). Also found a genuine, unresolved
+  **inconsistency**: the GET-side `FUNC_2998_B3A3` (candidate `REFProt?`)
+  and `REFStat? PROTect`'s own string builder `FUNC_2998_B568` (via
+  `FUNC_2998_D067`, the real target of `SUB_95067`) map the same raw
+  `+0xA` byte **oppositely** for the clear-byte and bit-`0x04`-only
+  cases (`B3A3`: clear->`LOCk`, `0x04`->`UNLock`; `B568`: clear->`'U'`,
+  `0x04`->`'L'`); both agree only on bit-`0x40`->PERM. Left open rather
+  than guessed. Two more siblings identified: `FUNC_2998_B600` (KB-free
+  readout over `[0x746]+6`) and `FUNC_2998_B622` (cross-checks `[0x4F6]`/
+  `[0x5F8]` against a new variable `[0x5F7]` and the device-variant byte
+  `[0x1B83]`, force-defaulting to numbered-ref-4/ACQ on one variant path
+  - weak corroboration of `DATa SOUrce`/`TARget` for `[0x4F6]`/`[0x5F8]`).
+  Remaining open within this subsystem: `[0x742]`'s individual fields
+  beyond the far-pointer/length pairs, `[0x746]`/`[0x74A]`'s exact pool
+  semantics, the `B3A3`-vs-`B568` bit-mapping inconsistency, `PERM`'s
+  SET-side (not found), `[0x5F7]`'s full identity, and firm confirmation
+  of the separate "ACQ"/"REF" 2-state resolver's (`FUNC_2998_B1E8`/
+  `B1FC`/`B227`, `[0x4F6]`) owning command (candidates: `DATa SOUrce`,
+  `REFOrmat TARget`, `CURSor TARget`).
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

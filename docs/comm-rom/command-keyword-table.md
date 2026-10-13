@@ -1128,16 +1128,67 @@ dense-cluster functions in section 9) resolved this:
   `+0x14D` (`"PERM"`); else (neither bit) -> `+0x11A` (`"LOCk"`). It
   special-cases `[0x5F8]` in `1..4` (the numbered references) to return
   `"UNLock"` directly without touching the array at all - numbered
-  references have no protection state. `FUNC_2998_B339` (the SET-side)
-  only accepts `[0x5F8]` in `5..30`, rejecting `1..4` as an error - you
-  cannot protect a numbered reference. On success it `or`s `0x44`
-  (bits `0x04`+`0x40` together) into the record's `+0xA` byte; since
-  the GET-side resolver checks bit `0x04` first, this reports
-  `"UNLock"` afterward regardless of bit `0x40`'s state - i.e. `0x44`
-  appears to be specifically the "unlock" write pattern, leaving room
-  for separate "lock" (clear `0x04`, set nothing) and "perm" (clear
-  `0x04`, set `0x40`) write patterns elsewhere in the same sibling
-  cluster that weren't individually traced.
+  references have no protection state.
+- **Three more sibling SET-side functions identified (2026-10-13,
+  later pass), with one re-identified away from `REFProt`**:
+  `FUNC_2998_B252` (`and`s the `+0xA` byte with `0xBB`, clearing bits
+  `0x04` and `0x40` together) and `FUNC_2998_B2BC` (clears `0x40` via
+  `and 0xBF`, then sets `0x04` via `or 4`) are both range-checked to
+  `5..30` only (same lettered-only restriction as the GET-side's
+  implicit split) and are the two best-fitting candidates for
+  `REFProt`'s `LOCked`/`UNLocked` SET operations respectively.
+  `FUNC_2998_B339` (`or`s `0x44` - both bits - without clearing
+  anything first) is **also** range-checked to `5..30`, but on
+  reflection this is a better match for a *different* command:
+  `REFDisp REF{A-Z}:EMPTY` ("erases the named reference if it is not
+  protected," `docs/programming-manual.md` line 852) - its validation
+  shape (lettered references only, matching the `2230`-only
+  `REFDisp REF{A-Z}` syntax, as opposed to the separate `ALL`-model
+  `REFDisp REF{1-3}:{ON,OFF,EMPTY}` line that covers numbered
+  references through a presumably-unrelated code path) fits better
+  than a third protection-SET function would. No SET-side function
+  for `REFProt`'s `PERM` state was found among `FUNC_2998_B1E8`-
+  `B622`; it may be set through a path not yet traced, or (plausibly,
+  given "permanent" protection is meant to be one-way) not exposed as
+  a simple flag-toggle at all.
+- **An unresolved inconsistency found while cross-checking the GET
+  side**: `FUNC_2998_B3A3` (above, feeding what looks like a
+  per-reference keyword query - candidate: `REFProt?`) maps the raw
+  `+0xA` byte as bit `0x04` set -> `"UNLock"`, else bit `0x40` set ->
+  `"PERM"`, else (all clear) -> `"LOCk"`. But `FUNC_2998_B568`
+  (physical `0x8B568`, which builds `REFStat? PROTect`'s documented
+  30-character `U`/`L`/`P` string - 4 literal `'U'` characters for the
+  numbered references, then one call per lettered reference to
+  `FUNC_2998_D067` at physical `0x8D067`, confirmed by direct read to
+  simply return the raw `+0xA` byte for a given letter) maps the
+  **same raw byte** as `(byte & 0x44) == 0` -> `'U'`, `== 4` -> `'L'`,
+  else (`0x40`/`0x44`) -> `'P'`. These two consumers agree on the
+  `0x40`-set (`PERM`) case but give **opposite** answers for the
+  all-clear and bit-`0x04`-only cases (`B3A3`: clear=`LOCk`,
+  bit4=`UNLock`; `D067`/`B568`: clear=`U`, bit4=`L`). Not resolved -
+  could mean `B3A3` serves a different field than protection status
+  despite landing on the same three keyword strings, or one of the two
+  consumers has a genuinely inverted convention (re-read both directly
+  from the listing to rule out a transcription error; the discrepancy
+  is real as disassembled). Flagging as open rather than guessing
+  further.
+- Two more untraced siblings: `FUNC_2998_B600` (physical `0x8B600`)
+  divides `[0x746]+6` by `1024` and prints it as a signed decimal -
+  shaped like a "KB free" readout for the `[0x742]` waveform-data
+  heap. `FUNC_2998_B622` (physical `0x8B622`) cross-checks `[0x4F6]`
+  and `[0x5F8]` against each other and against fixed values `0`/`1`/
+  `4`, gated by the device-variant byte `[0x732]+0x1F` (the
+  already-confirmed `[0x1B83]`) and a new, undocumented byte `[0x5F7]`
+  - on one variant path it force-defaults `[0x5F8]=4`/`[0x4F6]=0`
+  (i.e. target = numbered reference 4, source = live acquisition).
+  This reads like model-variant defaulting for `DATa SOUrce`/`TARget`,
+  consistent with the manual's note that "REF4 is the only available
+  reference memory for the 2220 and 2221 instruments" - corroborating
+  (weakly) the `DATa`-family candidate identity for `[0x4F6]` above,
+  though which of `[0x4F6]`/`[0x5F8]` is `SOUrce` vs. `TARget` is still
+  not pinned down. `[0x5F7]` itself is not yet characterized beyond
+  being compared against `0`/`4` here; it may be a model/instrument-ID
+  byte distinct from the already-confirmed `[0x1B83]` comm-option flag.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
@@ -1145,13 +1196,14 @@ dense-cluster functions in section 9) resolved this:
   unusually clean: the three decoded keywords (`LOCk`/`PERM`/`UNLock`)
   are exactly `REFProt`'s three documented states; `REFProt` is
   documented as applying only to the lettered references `REFA`-`REFZ`
-  (never the numbered ones), matching `FUNC_2998_B339`'s SET-side
-  rejection of `1..4`; and `REFStat? PROTect` is documented as
+  (never the numbered ones), matching `FUNC_2998_B252`/`B2BC`'s
+  shared SET-side rejection of `1..4`; and `REFStat? PROTect` is documented as
   returning a **thirty**-character `U`/`L`/`P` string "from REF1 to
-  REFZ" - `4` numbered (always `U`, matching `FUNC_2998_B3A3`'s
-  hardcoded `1..4` -> `"UNLock"` path) `+ 26` lettered (individually
-  tracked via the array) `= 30`, exactly matching `[0x5F8]`'s full
-  `1..30` range.
+  REFZ" - `4` numbered (always `'U'`, matching `FUNC_2998_B568`'s own
+  hardcoding of `'U'` for its 4 numbered-reference slots, independent
+  of the array) `+ 26` lettered (individually tracked via the array,
+  each resolved through `SUB_95067`/`FUNC_2998_D067`) `= 30`, exactly
+  matching `[0x5F8]`'s full `1..30` range.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
   separate, simpler 2-state mechanism, **not** touching the `[0x73E]`
   array at all: a byte flag `[0x4F6]` is set to `0` unconditionally by
