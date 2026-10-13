@@ -791,6 +791,37 @@ The single biggest cluster of open items - see
   to any of the six functions' physical addresses - none found in
   either. The caller remains genuinely unresolved, not just unsearched.
   See `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twenty-second follow-up, 2026-10-13, later pass**: closed four of
+  the nineteenth follow-up's six `[0x690]`-writing orphan functions by
+  the same `0x9000`-segment call-target alias rule used throughout this
+  cluster - each is byte-for-byte identical to an already-named
+  function, just missing a `FUNCTIONAL_NAMES` entry at its own native
+  comm-ROM address: `FUNC_2998_D1AA` = `validate_gpib_record_
+  consistency` (native `0x8D1AA`), `FUNC_2998_D476` = `scan_and_repair_
+  gpib_records` (native `0x8D476`), `FUNC_2998_D0C2` (immediately
+  preceding `D1AA` in the listing) = `build_gpib_message_checksum`
+  (native `0x8D0C2`), and `FUNC_2998_E1E9` = `init_gpib_record` (native
+  `0x8E1E9`, a simple confirmation - already traced in a prior session
+  as the full-record-wipe function). Reading all four native bodies in
+  full also completed the `[0x746]` pool-header struct's last two
+  fields (`+0xA` cumulative scan-diagnostic word, `+0xC` cumulative
+  repair counter) and two new `[0x73E]+0xA` flag bits (`0x20`
+  "checksums stale," `0x80` "state inconsistency"), plus two new
+  checksum-byte fields (`[0x73E]+0xB` payload checksum, `[0x742]+0x4C`
+  header checksum) computed by `build_gpib_message_checksum` and
+  verified by `validate_gpib_record_consistency`. Added the four
+  `FUNCTIONAL_NAMES` entries and regenerated the comm ROM's `.lst`/
+  `.asm`/aligned-binary outputs - all four now appear under their real
+  names. **This reframes the still-unresolved `[0x690]`-caller question
+  from the twenty-first follow-up**: four of the six writers (`D1AA`/
+  `D476`/`D0C2`-via-`C85B`'s-own-acquire/`E126`) are now understood as
+  internal integrity-check/repair/interlock plumbing, not command
+  handlers - making a boot-time or self-test integrity scrub, or purely
+  internal calls from `SUB_9471C`/`SUB_94D9C`'s own acquire/release
+  logic, a more plausible home for the still-missing caller than a live
+  GPIB/RS-232 command dispatcher. `FUNC_2998_DB69`'s own identity
+  remains untraced. See `docs/comm-rom/command-keyword-table.md`
+  section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

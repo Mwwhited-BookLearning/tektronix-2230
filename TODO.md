@@ -1042,6 +1042,20 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x690]`-writing functions' addresses - neither contains one, so
       the real caller is still unresolved, not just unsearched. See
       twenty-first follow-up.
+      **2026-10-13, later pass**: closed four of the six `[0x690]`-
+      writing functions by the `0x9000`-segment alias rule - `D1AA`/
+      `D476`/`D0C2`/`E1E9` are byte-for-byte `validate_gpib_record_
+      consistency`/`scan_and_repair_gpib_records`/`build_gpib_message_
+      checksum`/`init_gpib_record`, already named only at their aliased
+      addresses. Added the missing `FUNCTIONAL_NAMES` entries at their
+      native comm-ROM addresses and regenerated. This also completed
+      the `[0x746]` struct's last two fields and two new `[0x73E]+0xA`/
+      checksum-byte fields (see `VARIABLES.md`). Reframes the still-
+      open caller question: four of the six writers are internal
+      integrity-check/repair/interlock plumbing, not command handlers,
+      so a boot/self-test scrub or internal acquire/release calls are
+      now the more plausible missing caller than a live command
+      dispatcher. See twenty-second follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

@@ -15225,17 +15225,17 @@
     "notes": null
   },
   "8D0C2": {
-    "name": "FUNC_2998_D0C2",
+    "name": "build_gpib_message_checksum",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "build_gpib_message_checksum",
     "notes": null
   },
   "8D1AA": {
-    "name": "FUNC_2998_D1AA",
+    "name": "validate_gpib_record_consistency",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "validate_gpib_record_consistency",
     "notes": null
   },
   "8D246": {
@@ -15358,10 +15358,10 @@
     "notes": null
   },
   "8D476": {
-    "name": "FUNC_2998_D476",
+    "name": "scan_and_repair_gpib_records",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "scan_and_repair_gpib_records",
     "notes": null
   },
   "8D4CB": {
@@ -15981,10 +15981,10 @@
     "notes": null
   },
   "8E1E9": {
-    "name": "FUNC_2998_E1E9",
+    "name": "init_gpib_record",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "init_gpib_record",
     "notes": null
   },
   "8E28C": {

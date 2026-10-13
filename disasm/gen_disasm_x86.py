@@ -218,6 +218,19 @@ FUNCTIONAL_NAMES = {
     # --- Renamed during the "rename everything" pass (session:
     # keep going until everything is renamed) - see NOTES.md "The
     # readout vector display list" and FUNCTIONS.md for evidence. ---
+    # These four are the comm ROM's own *native* addresses for
+    # functions already named below only at their 0x9000-segment-
+    # aliased call-target address (reached via `lcall foo ; 0x9471,
+    # offset` from sibling GPIB-record functions). Confirmed identical
+    # by reading each native-address body directly and finding it
+    # byte-for-byte matches the aliased function's documented
+    # behavior; see docs/comm-rom/command-keyword-table.md section 11
+    # (2026-10-13 follow-up) for the full trace.
+    0x8D1AA: "validate_gpib_record_consistency",  # = 0x951AA native
+    0x8D476: "scan_and_repair_gpib_records",       # = 0x95476 native
+    0x8D0C2: "build_gpib_message_checksum",        # = 0x950C2 native
+    0x8E1E9: "init_gpib_record",                   # = 0x961E9 native
+
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at
                                                # [0x742] and a 12-byte

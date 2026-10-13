@@ -18864,7 +18864,7 @@ L_8D0AE:
     2998:D0BC  [8D0BC]  8be5            mov     sp, bp
     2998:D0BE  [8D0BE]  5d              pop     bp
     2998:D0BF  [8D0BF]  ca0200          retf    2
-FUNC_2998_D0C2:
+build_gpib_message_checksum:
     2998:D0C2  [8D0C2]  55              push    bp
     2998:D0C3  [8D0C3]  8bec            mov     bp, sp
     2998:D0C5  [8D0C5]  83ec0c          sub     sp, 0xc
@@ -18954,7 +18954,7 @@ FUNC_2998_D0C2:
     2998:D1A4  [8D1A4]  8be5            mov     sp, bp
     2998:D1A6  [8D1A6]  5d              pop     bp
     2998:D1A7  [8D1A7]  ca0200          retf    2
-FUNC_2998_D1AA:
+validate_gpib_record_consistency:
     2998:D1AA  [8D1AA]  55              push    bp
     2998:D1AB  [8D1AB]  8bec            mov     bp, sp
     2998:D1AD  [8D1AD]  83ec2a          sub     sp, 0x2a
@@ -19215,7 +19215,7 @@ L_8D46B:
     2998:D470  [8D470]  8be5            mov     sp, bp
     2998:D472  [8D472]  5d              pop     bp
     2998:D473  [8D473]  ca0200          retf    2
-FUNC_2998_D476:
+scan_and_repair_gpib_records:
     2998:D476  [8D476]  55              push    bp
     2998:D477  [8D477]  8bec            mov     bp, sp
     2998:D479  [8D479]  81ecb800        sub     sp, 0xb8
@@ -20389,7 +20389,7 @@ FUNC_2998_E1AF:
     2998:E1E3  [8E1E3]  8be5            mov     sp, bp
     2998:E1E5  [8E1E5]  5d              pop     bp
     2998:E1E6  [8E1E6]  ca0400          retf    4
-FUNC_2998_E1E9:
+init_gpib_record:
     2998:E1E9  [8E1E9]  55              push    bp
     2998:E1EA  [8E1EA]  8bec            mov     bp, sp
     2998:E1EC  [8E1EC]  83ec06          sub     sp, 6

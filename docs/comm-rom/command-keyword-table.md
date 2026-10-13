@@ -1951,6 +1951,101 @@ dense-cluster functions in section 9) resolved this:
   very first "destination empty" branch (`L_8C99F`) weren't traced in
   this pass, so the identification is **SAVeref, strong confidence**,
   not yet a byte-for-byte-complete account of the function.
+- **`FUNC_2998_D1AA`/`D476`'s identities closed, 2026-10-13, later
+  pass: they're `validate_gpib_record_consistency`/`scan_and_repair_
+  gpib_records`, already named at their 0x9000-segment-aliased
+  addresses (`0x951AA`/`0x95476`), just missing the matching
+  `FUNCTIONAL_NAMES` entry at their own native comm-ROM address.**
+  Reading `D1AA` in full byte-for-byte matches
+  `validate_gpib_record_consistency`'s existing `FUNCTIONS.md`
+  description exactly - confirmed, not just a plausible guess - and
+  fills in detail that description didn't already spell out:
+  - Takes a single already-resolved `0..25` record index (not a raw
+    letter, unlike `SUB_9471C`/`C85B`), and performs 6 independent
+    consistency checks, each ORing a distinct bit into a returned flags
+    word and writing its own diagnostic code to `[0x690]` on failure:
+    1. `0x387`/bit `1`: the two pointer offsets stored at `[0x73E]+0`/
+       `+4` (each relative to the `[0x74A]` pool base) must exactly
+       equal the two full far pointers stored directly in `[0x742]+
+       0x36`/`+0x38` and `+0x3C`/`+0x3E` - proving `[0x73E]+0`/`+4` are
+       **compact offset-encoded duplicates of the same two pointers**
+       `[0x742]` stores as full far pointers, not independent fields.
+    2. `0x38F`/bit `1` (shared): both of those offsets must fall within
+       `0..0x6800` (the pool's full span).
+    3. `0x39B`/bit `2`: `[0x73E]+2`/`+6` (two length words) must exactly
+       equal `[0x742]+0x3A`/`+0x40` - **`[0x73E]` caches duplicate
+       copies of `[0x742]`'s own authoritative length fields**.
+    4. `0x3AB`/bit `2` (shared): the combined length (`+2`+`+6`) must be
+       `0x400`-`0x2000` bytes, 1024-byte-aligned, and fit within the
+       pool bound once added to the base offset.
+    5. bit `0x80`: flags an internally-contradictory `[0x73E]+0xA`
+       state - bit `0x01` (`init_gpib_record`'s "just wiped" sentinel)
+       set together with any bit outside `0x01`/`0x04`, or bit `0x02`
+       ("has data") set together with a **newly-identified bit `0x80`**
+       on the same flag byte (see below - set by `scan_and_repair_gpib_
+       records`, not previously characterized).
+    6. bit `0x200` ("busy"): set if bits `0x08`/`0x10` (read-acquired/
+       exclusively-locked) are set, or the record's own `+8` handle
+       count is nonzero.
+    If the accumulated flags are `0` or exactly `0x200` (no actual
+    corruption found), it goes on to verify **two stored checksum
+    bytes**, computed via `checksum_bytes`: `[0x73E]+0xB` (new field -
+    a payload checksum over the waveform data itself, length = the
+    combined `[0x742]` length fields, base = the `[0x74A]`-relative
+    pointer) and `[0x742]+0x4C` (new field - a combined header checksum
+    over `[0x742]`'s own first `0x4C`=76 bytes plus `[0x73E]`'s own
+    first 8 bytes). Mismatches set `[0x690]=0x3EF`/bit `4` and
+    `[0x690]=0x3F6`/bit `0x80` respectively.
+  - `scan_and_repair_gpib_records` (`D476`) is the boot/reinit-time
+    integrity scrub that drives it: on entry, if `[0x746]+0` (the pool
+    interlock) or `+2`/`+4` (the two handle counters) were already
+    nonzero, it force-clears them and records that fact as bits
+    `0x100`/`0x200` into a **newly-identified `[0x746]+0xA`** word -
+    completing the 14-byte `[0x746]` struct's field list (the last 2 of
+    its 7 words, alongside a parallel `+0xC` repair counter, incremented
+    on every repair this pass makes). It then loops all 26 lettered
+    references: if a record's `+0xA` bit `0x01` ("wiped") is set, it
+    double-checks every field that *should* already be zero really is
+    (both `[0x73E]`'s and `[0x742]`'s) - if not, that's a real
+    inconsistency (`[0x690]=0x444`): it force-zeroes everything,
+    `memset_far`s the whole `[0x742]` record, **sets the new bit `0x80`
+    on `[0x73E]+0xA`** (hence `validate_gpib_record_consistency`'s own
+    check for it above), and marks the record wiped again. Otherwise it
+    calls `validate_gpib_record_consistency` directly: on any failure
+    (`[0x690]=0x459`), it ORs the failure bitmask into `[0x746]+0xA` and
+    bumps `+0xC`, then picks a repair strategy by masking out the
+    checksum-mismatch (`4`) and busy (`0x200`) bits - if nothing
+    structural remains, it's a **minor failure**: calls `init_gpib_
+    record` (full wipe, `[0x690]=0x462`) to reset the record outright;
+    if a structural bit (`1`/`2`/`0x80`) remains, it's **more severe**:
+    instead of wiping, it sets bit `0x20` on `[0x73E]+0xA` (a
+    **newly-identified "needs attention/stale-checksum" flag**, see
+    below) and force-clears bits `0x08`/`0x10` plus the `+8` handle
+    count (forcibly releasing any stuck read/exclusive lock) without
+    touching the waveform data itself.
+  - `build_gpib_message_checksum` (`D0C2`, immediately preceding
+    `D1AA`/`validate_gpib_record_consistency` in the listing) is the
+    **write-side counterpart**: given an index, it computes and stores
+    exactly the two checksums `validate_gpib_record_consistency`
+    verifies (payload checksum -> `[0x73E]+0xB`, header checksum ->
+    `[0x742]+0x4C`), then clears bit `0x20` on `[0x73E]+0xA` - the same
+    bit `scan_and_repair_gpib_records` sets as "needs attention." This
+    is the **checksum-commit/finalize step**, confirming `[0x73E]+0xA`
+    bit `0x20` is a "stored checksums are stale, recompute before
+    trusting them" dirty flag - and explains `SUB_94D9C`'s own
+    exclusive-release branch (`[0x746]`'s acquire/release writeup
+    above): calling `build_gpib_message_checksum` there is exactly
+    "recompute and commit fresh checksums once new data has been
+    written and the exclusive lock is being released," while its
+    read-release branch calling `validate_gpib_record_consistency`
+    instead is "verify nothing has gone stale before giving up read
+    access." Added `FUNCTIONAL_NAMES` entries for all four functions'
+    native comm-ROM addresses (`0x8D1AA`, `0x8D476`, `0x8D0C2`, and
+    `FUNC_2998_E1E9`'s own native address `0x8E1E9` = `init_gpib_
+    record`, already named at its `0x961E9` alias) and regenerated -
+    the `.lst`/`.asm` outputs now show all four under their real names
+    rather than `FUNC_2998_*` placeholders.
+  - `FUNC_2998_DB69` remains untraced this pass.
 
 See `VARIABLES.md` for the per-variable rows and `STILL_PENDING_DECODE.md`/
 `TODO.md` for what within this subsystem remains open (`[0x742]`'s
