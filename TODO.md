@@ -1018,6 +1018,17 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       consumed by a not-yet-found caller to format the already-known
       `STATUS <code>;` query-field substitution. See nineteenth
       follow-up.
+      **2026-10-13, resolved `PERM`'s "still-missing" SET-side**: it was
+      never missing - `FUNC_2998_B339` (the function reassigned away
+      from `REFProt` toward `REFDisp REF{A-Z}:EMPTY` two bullets up)
+      was moved on a flawed "redundant with `B2BC`" argument that
+      confused `LOCk` (`B2BC`, bit `0x04` alone) with `PERM` (both
+      bits). `B339` setting both bits unconditionally always matched
+      `PERM` under every version of the bit-mapping, and now that
+      `FUNC_2998_E1E9` covers `EMPTY` far better (a real record wipe),
+      `B339` is free to resume that identity: `B252`=`UNLocked`,
+      `B2BC`=`LOCk`, `B339`=`PERM`, a clean three-function family. See
+      twentieth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

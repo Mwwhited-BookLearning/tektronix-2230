@@ -741,6 +741,27 @@ The single biggest cluster of open items - see
   Corrected `VARIABLES.md`'s `[0x690]` row (previously said it was
   written only by `SUB_96126` with exactly two values - both wrong).
   See `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twentieth follow-up, 2026-10-13**: re-examined why `FUNC_2998_B339`
+  had been moved off `REFProt`'s `PERM` SET-side (second follow-up
+  below) onto `REFDisp REF{A-Z}:EMPTY` instead, and found the original
+  reasoning doesn't hold up. The stated reason was that `B339` would be
+  "redundant with `B2BC`" if left as a protection-SET function - but
+  `B2BC` sets bit `0x04` *alone* (`LOCk`), while `B339` sets *both*
+  `0x04` and `0x40` unconditionally; that's never redundant, and both
+  bits set is exactly `PERM` under every version of the `B3A3`/`B568`
+  mapping, corrected or not (the one state they'd always agreed on).
+  Direct reread of `B339`'s body (physical `0x8B339`-`0x8B3A2`)
+  confirms it does nothing but the bit-OR, the same `5..30` range
+  check, and the same `SUB_93B1C`->`SUB_93B7E`->`SUB_96126` resolver/
+  interlock chain as `B252`/`B2BC` - structurally identical to them,
+  not to an "erase" operation. Since `FUNC_2998_E1E9` (seventh
+  follow-up above) is a far better `EMPTY` fit anyway (a real record
+  wipe), `B339` no longer needs the `EMPTY` role it was reassigned to
+  cover. **`PERM`'s "still not found" SET-side is resolved**: `B252`
+  (clears both bits) = `UNLocked`, `B2BC` (`0x04` alone) = `LOCk`,
+  `B339` (both bits set) = `PERM` - a clean three-function family that
+  was sitting in this cluster the whole time. See `docs/comm-rom/
+  command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

@@ -1141,19 +1141,27 @@ dense-cluster functions in section 9) resolved this:
   implicit split) and are the two best-fitting candidates for
   `REFProt`'s `LOCked`/`UNLocked` SET operations respectively.
   `FUNC_2998_B339` (`or`s `0x44` - both bits - without clearing
-  anything first) is **also** range-checked to `5..30`, but on
-  reflection this is a better match for a *different* command:
-  `REFDisp REF{A-Z}:EMPTY` ("erases the named reference if it is not
-  protected," `docs/programming-manual.md` line 852) - its validation
-  shape (lettered references only, matching the `2230`-only
-  `REFDisp REF{A-Z}` syntax, as opposed to the separate `ALL`-model
-  `REFDisp REF{1-3}:{ON,OFF,EMPTY}` line that covers numbered
-  references through a presumably-unrelated code path) fits better
-  than a third protection-SET function would. No SET-side function
-  for `REFProt`'s `PERM` state was found among `FUNC_2998_B1E8`-
-  `B622`; it may be set through a path not yet traced, or (plausibly,
-  given "permanent" protection is meant to be one-way) not exposed as
-  a simple flag-toggle at all.
+  anything first) is **also** range-checked to `5..30`; originally
+  reassigned here to a *different* command, `REFDisp REF{A-Z}:EMPTY`
+  ("erases the named reference if it is not protected,"
+  `docs/programming-manual.md` line 852), reasoning it would otherwise
+  be "redundant with `B2BC`." **Reverted, 2026-10-13 (see `PERM`'s
+  SET-side resolved, below): that reassignment was a mistake.**
+  `B2BC` sets bit `0x04` *alone* (`LOCk`), not both bits - `B339`
+  setting *both* `0x04` and `0x40` unconditionally was never redundant
+  with it, and matches `PERM` (both bits set) exactly under every
+  version of the `B3A3`/`B568` bit-mapping, old and corrected alike.
+  `FUNC_2998_E1E9` (found later the same day, see below) turned out to
+  be the far better `REFDisp REF{A-Z}:EMPTY` fit anyway (a full record
+  wipe, not a bit-OR), freeing `B339` to go back to being `REFProt`'s
+  third, previously-"not found" SET-side: **`B252` (both bits clear) =
+  `UNLocked`, `B2BC` (`0x04` alone) = `LOCk`, `B339` (both bits set) =
+  `PERM`** - a clean, structurally identical three-function family
+  (same `5..30` range check, same `SUB_93B1C`->`SUB_93B7E`->
+  `SUB_96126` resolver/interlock chain, same `[0x603]` dirty-flag set on
+  success - confirmed by direct read of `B339`'s body, physical
+  `0x8B339`-`0x8B3A2`), differing only in which bits the final
+  instruction touches.
 - **Correction (2026-10-13, later pass) to the `SUB_93B1C` ->
   `SUB_93B7E` -> `SUB_96126` resolver-chain description above**: direct
   reads of all three functions' bodies show the "index arithmetic
@@ -1240,10 +1248,14 @@ dense-cluster functions in section 9) resolved this:
     protection-bit toggle - a **stronger-fitting candidate for
     `REFDisp REF{A-Z}:EMPTY`** than `FUNC_2998_B339` (which only sets
     protection bits `0x44` and never clears `[0x742]`'s waveform data
-    at all). `FUNC_2998_B339`'s own real identity is accordingly back
-    to uncertain rather than settled, pending a caller/trigger trace
-    for either function. `[0x73E]`'s record therefore has at least 5
-    more word fields (`+0`/`+2`/`+4`/`+6`/`+8`) beyond the
+    at all). **Resolved, 2026-10-13, later pass: this is exactly the
+    evidence that sends `FUNC_2998_B339` back to `REFProt REF{A-Z}
+    :PERM`** (see the corrected bullet above) rather than leaving it
+    "uncertain" - with `E1E9` taking the `EMPTY` role cleanly, `B339`'s
+    own shape (bit-OR only, no record wipe, identical structure to
+    `B252`/`B2BC`) no longer needs a second home and fits its original,
+    bit-mapping-confirmed identity. `[0x73E]`'s record therefore has at
+    least 5 more word fields (`+0`/`+2`/`+4`/`+6`/`+8`) beyond the
     already-documented `+0xA` flag byte, whose normal (non-wiped)
     contents are not yet characterized.
 - **`B3A3`-vs-`B568` bit-mapping inconsistency, resolved as mostly a
