@@ -674,6 +674,23 @@ The single biggest cluster of open items - see
   CHAnnel:{CH1,CH2}`" better than the two point-tag markers originally
   guessed, though neither is proven. See `docs/comm-rom/command-
   keyword-table.md` section 11.
+  **Seventeenth follow-up, 2026-10-13**: found the numbered-`REFDisp`
+  SET-side's two best-fitting candidates, `FUNC_2998_AD17` and
+  `FUNC_2998_AF8A` (neither has a disassembler-resolved caller, so
+  behavioral fit stands in for a confirmed call site) - and in doing so
+  explains why the whole-ROM write-site search (12th follow-up below)
+  found nothing: neither function writes `es:[0x732+0x7E]`/`[0x1BE2]`
+  directly. Both far-call into shared **main-ROM** menu-item code
+  (`set_item_pair_active`/`disable_item_pair`, already confirmed in
+  `FUNCTIONS.md`) that performs the actual bit toggle inside
+  `set_item_active_flag`, on the same `[item+0x1BE2]` array independently
+  proven (15th follow-up) to be `[0x732]+0x7E`. `FUNC_2998_AF8A`
+  (clears both status bits via `disable_item_pair`) matches `EMPty`
+  better than `OFF`; `FUNC_2998_AD17`'s `[bp+6]!=0` branch (sets only
+  the "selected" bit via `set_item_pair_active`) fits `ON`. The `[bp+6]
+  ==0` branch (calls only `print_and_reset_acq_buffers`, no flag-bit
+  touch) is not yet matched to `OFF` or anything else. See
+  `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

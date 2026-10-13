@@ -1722,6 +1722,64 @@ dense-cluster functions in section 9) resolved this:
   CH1 and CH2 independently, and is reported `ON` if either channel's
   trace is currently displayed. Not yet proven over the point-tag
   hypothesis, but now the better-fitting of the two.
+- **Numbered-`REFDisp` SET-side candidates found (2026-10-13)**:
+  `FUNC_2998_AD17` (physical `0x8AD17`, `retf 2`) and `FUNC_2998_AF8A`
+  (physical `0x8AF8A`, `retf 2`), sitting immediately before
+  `FUNC_2998_B051` in the listing. Neither is ever reached by a
+  `call`/`lcall` the disassembler could resolve by name - consistent
+  with the still-unfound register-indirect command dispatcher (section
+  2's "code that actually walks either table has still not been
+  found") - so the identification rests on behavioral fit, not a
+  confirmed call site:
+  - Both switch on the global `[0x5F8]` class selector (`1..4`,
+    aliasing `4`->`1` for the 6B4B-gated branch exactly as elsewhere)
+    and, for classes `2`/`3`, `FUNC_2998_AD17` first re-reads the exact
+    same `es:[0x732+0x7E]`-indexed 2-bit status `FUNC_2998_B051` reads
+    (`class*2`/`class*2+1`, ORed) and requires bit `0x02` set (i.e.
+    not-`EMPty`) before proceeding - error `0x1b` otherwise. Classes
+    `1`/`4` instead gate on a bit returned by `FUNC_2998_6B4B`.
+  - **Neither function contains a single instruction that writes
+    `es:[...+0x7E]`/`[0x1BE2]` directly** - which is why the whole-ROM
+    search for that write site (12th follow-up below) came up empty.
+    Both instead make a far call into shared **main-ROM** menu-item
+    infrastructure, already independently identified and confirmed in
+    `FUNCTIONS.md`: `set_item_pair_active` (`0xF8E66`) and
+    `disable_item_pair` (`0xF8F24`), both `(pair_index)` taking the
+    same class value directly. `disable_item_pair` -> `deselect_item_
+    pair` -> `set_item_active_flag(2*pair_index[+1], 0)` clears what
+    `deselect_item_pair`'s entry calls the "selected" bit, **then**
+    `disable_item_pair` itself separately clears bit `1` ("enabled/
+    valid") of `[item_index+0x1BE2]` for both items of the pair.
+    `set_item_active_flag`'s own entry confirms it is the function that
+    actually toggles bits in `[item_index+0x1BE2]` - and `[0x1BE2]` was
+    already proven, in the 15th follow-up above, to be the exact same
+    array as `[0x732]+0x7E` (`0x1BE2 == 0x1B64 + 0x7E`, and `[0x732]`
+    resolves to `[0x1B64]`). So the write path is real, it just lives
+    in the main ROM's generic, shared "menu item active/enabled" code
+    rather than anywhere in the comm ROM - the comm ROM only ever
+    reaches it through these two far calls.
+  - Decoded against `FUNC_2998_B051`'s own bit mapping (`0x02` clear ->
+    `EMPty`; `0x02` set & `0x01` clear -> `OFF`; both set -> `ON`):
+    `FUNC_2998_AF8A` clearing *both* bits (via `disable_item_pair`)
+    matches `EMPty` exactly, making it the stronger candidate for
+    **`REFDisp REF{1-4}:EMPTY`**, not `:OFF` as first assumed from its
+    name alone. `FUNC_2998_AD17`'s `[bp+6]!=0` branch, which calls
+    `set_item_pair_active` (sets only the "selected"/bit-`0x01` side,
+    guarded by the pre-existing bit-`0x02` check above - i.e. you can't
+    turn a reference ON while it's `EMPty`) fits **`REFDisp REF{1-4}:
+    ON`** well. `FUNC_2998_AD17`'s `[bp+6]==0` branch calls only
+    `print_and_reset_acq_buffers` (no flag-bit touch at all, per its
+    own `FUNCTIONS.md` entry) - **not yet matched to `:OFF`** or to any
+    other documented `REFDisp` state; it may belong to a different,
+    unrelated command sharing this same dispatcher body, or `:OFF`'s
+    actual bit-clear may happen inside `print_and_reset_acq_buffers`'s
+    own "shared buffer-init tail" in a way not yet traced into. Not
+    resolved.
+  - The device-variant gate at entry (`es:[0x732+0x1F]==0x14` -> error
+    `0x1e`, skipping the whole function) uses a *different* variant
+    byte value than the already-documented `0x1E`-for-2230 constant,
+    so which real model `0x14` denotes (if it's a variant byte at all
+    in this context) is unresolved - flagged, not chased further here.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
   simpler, narrower 2-state **report** path over the same `[0x4F6]`
   byte that `FUNC_2998_B622` (above) validates/sets with the full

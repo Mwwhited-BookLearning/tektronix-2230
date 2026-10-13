@@ -992,6 +992,17 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x52A]` is a memory-mapped hardware register (e.g. a
       rotary-encoder counter latch) written by external hardware, not
       by any CPU instruction - unconfirmed. See fourteenth follow-up.
+      **2026-10-13, found numbered-`REFDisp` SET-side candidates**:
+      `FUNC_2998_AD17`/`FUNC_2998_AF8A` (no disassembler-resolved
+      caller - fit is behavioral). Neither writes `es:[0x732+0x7E]`/
+      `[0x1BE2]` directly; both far-call shared main-ROM menu-item code
+      (`set_item_pair_active`/`disable_item_pair`) whose
+      `set_item_active_flag` does the actual bit toggle - explaining
+      the fourteenth follow-up's empty write-site search.
+      `FUNC_2998_AF8A` (clears both status bits) fits `EMPTY` better
+      than `OFF`; `FUNC_2998_AD17`'s `[bp+6]!=0` branch fits `ON`. The
+      `[bp+6]==0` branch isn't yet matched to `OFF`. See seventeenth
+      follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
