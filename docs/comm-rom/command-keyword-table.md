@@ -1151,6 +1151,59 @@ dense-cluster functions in section 9) resolved this:
   `B622`; it may be set through a path not yet traced, or (plausibly,
   given "permanent" protection is meant to be one-way) not exposed as
   a simple flag-toggle at all.
+- **Correction (2026-10-13, later pass) to the `SUB_93B1C` ->
+  `SUB_93B7E` -> `SUB_96126` resolver-chain description above**: direct
+  reads of all three functions' bodies show the "index arithmetic
+  consistent with `[0x5F8] - 5`" phrasing was an imprecise blend of two
+  different functions' work, and that `SUB_96126` is not an index
+  resolver at all:
+  - `SUB_93B1C` (physical `0x8BB1C`) is a plain switch on its one word
+    argument: `0`/`1`/`2`/`3` pass through unchanged, `4` (`REF4`) maps
+    to `1` (**the same output as `REF1`** - a genuine, directly-read
+    anomaly, not an index/offset computation and not yet explained),
+    and anything else (the raw `5..30` lettered range) computes
+    `(input + 0x5C) & 0xFF`, which for `5..30` lands exactly on ASCII
+    `'a'..'z'`. It converts the numeric selector to a **letter
+    character**, not to an array index.
+  - `SUB_93B7E` (physical `0x8BB7E`, immediately following `SUB_93B1C`
+    in the listing) is the actual letter-to-index step: it takes a
+    byte, and if it's in `0x61..0x7A` (`'a'..'z'`) returns
+    `byte - 0x61` (the `0..25` record index); otherwise returns the
+    sentinel `0xFFFF`. This is the function doing the `-5`-equivalent
+    math, operating on `SUB_93B1C`'s *output*, not on `[0x5F8]`
+    directly.
+  - `SUB_96126` (physical `0x8E126`) takes **no arguments** and does
+    not touch the resolved index at all. It briefly disables
+    interrupts, reads far pointer `[0x746]`'s pointed-to structure's
+    words at `+0`/`+2`/`+4`, and: if all three are zero, writes status
+    code `0x6D9` to a newly-identified variable `[0x690]`, sets that
+    structure's `+0` word to `1`, and returns `0`; otherwise writes
+    `0x6E4` to `[0x690]` and returns `1`. This is a simple
+    test-and-set **interlock/busy flag** guarding exclusive access to
+    the `[0x746]`-pointed pool-header structure, unrelated to
+    letter/index resolution despite sitting third in the call sequence
+    at every observed call site.
+  - At every call site seen so far (`FUNC_2998_B252`/`B2BC`/`B339`,
+    below), `SUB_96126`'s return value gates the whole operation: `0`
+    (interlock was free) lets the function proceed to use the
+    `SUB_93B7E`-resolved `0..25` index against `[0x73E]`; any other
+    value (interlock already busy) skips straight to error code
+    `0x21` without touching the record at all. On the success path,
+    after modifying the `[0x73E]` record's `+0xA` flag byte, all three
+    functions explicitly reset the `[0x746]`-pointed structure's `+0`
+    word back to `0` (releasing the interlock `SUB_96126` had just set)
+    and `or`-set bit `0x01` of `[0x603]` (a separate dirty/redraw-style
+    flag from `FUNC_2998_B622`'s `[0x736]` bit `0x200`). A companion
+    accessor, `FUNC_2998_E1AF` (physical `0x8E1AF`), `memcpy_far`s 14
+    (`0xE`) bytes out of the same `[0x746]`-pointed structure into a
+    caller buffer - consistent with (and not contradicting) the
+    already-documented `+6`/`+8` "free-space count"/"pool base
+    pointer" fields below, now pinned at a 14-byte total structure
+    size (7 words, `+0` through `+0xC`).
+  - `[0x690]`'s two observed values (`0x6D9`/`0x6E4`) read like a
+    message/status-code pair rather than a boolean; their real-world
+    text (if any, via the `0xFF7B`-segment string table) is not yet
+    looked up.
 - **An unresolved inconsistency found while cross-checking the GET
   side**: `FUNC_2998_B3A3` (above, feeding what looks like a
   per-reference keyword query - candidate: `REFProt?`) maps the raw
@@ -1296,14 +1349,18 @@ dense-cluster functions in section 9) resolved this:
   data/length for each lettered reference (the data behind `REFOrmat`
   and the reference's own stored trace), not `REFProt`'s simple flag.
   Not characterized further (field-by-field).
-- `[0x746]` is a small far-pointer **pool-header struct** (not a record
-  array) with fields referenced at `+0`, `+2`, `+4`, `+6`, `+8` - `+8`
-  acts as a pool base pointer that per-record offsets get added to;
-  `+4`/`+6` behave like a free-space count/limit; `+0`/`+2` get reset
-  around each `[0x73E]` record update, shaped like a per-operation
-  dirty flag/counter. `[0x74A]` is a second far pointer used alongside
-  `[0x746]+8` in the same compaction code; its distinct role from
-  `[0x746]` itself isn't pinned down. Together these look like a
+- `[0x746]` is a 4-byte **far-pointer variable** (confirmed directly:
+  every access is `les reg, ptr [0x746]` followed by `es:[reg+N]`) to a
+  separate **pool-header structure**, now pinned at 14 bytes total
+  (`SUB_96126`/`FUNC_2998_E126` and `FUNC_2998_E1AF`, above) with
+  fields referenced at `+0`, `+2`, `+4`, `+6`, `+8` - `+8` acts as a
+  pool base pointer that per-record offsets get added to; `+6` behaves
+  like a free-space count/limit (`FUNC_2998_B600` divides it by 1024
+  and prints it); `+0`/`+2`/`+4` are `SUB_96126`'s interlock/busy-flag
+  fields (above), not a per-`[0x73E]`-record dirty counter as
+  previously guessed. `[0x74A]` is a second, separate far pointer used
+  alongside `[0x746]+8` in the same compaction code; its distinct role
+  from `[0x746]` itself isn't pinned down. Together these look like a
   shared waveform-data heap/compaction manager for the 26 lettered
   references' stored curve data (`[0x742]`'s payload) - a real,
   distinct subsystem neighboring the protection-flag mechanism, not

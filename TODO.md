@@ -901,6 +901,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       meaning, the `{REF1,REF4}`-pairing rejection's rationale, and the
       newly-surfaced, untraced callees `SUB_93925`/`SUB_9471C`/
       `SUB_94D9C`/`FUNC_2998_7609`.
+      **2026-10-13, ground-truth re-trace of the resolver chain
+      itself**: the earlier "`SUB_93B1C -> SUB_93B7E -> SUB_96126`,
+      arithmetic consistent with `[0x5F8]-5`" framing was an imprecise
+      blend. Direct reads show `SUB_93B1C` converts the selector to an
+      ASCII letter (switch: `0..3` unchanged, `4`/`REF4` aliases to
+      `1`/`REF1` - unexplained, `5..30` -> `'a'..'z'`); `SUB_93B7E` is
+      the separate letter->`0..25`-index step; `SUB_96126` (=
+      `FUNC_2998_E126`) takes no arguments and is actually a
+      test-and-set interlock/busy-flag over the struct `[0x746]` points
+      to, gating `FUNC_2998_B252`/`B2BC`/`B339`'s record updates (and
+      writing a new status-code variable `[0x690]`). Also confirmed
+      `[0x746]` is a far-pointer *variable* to a 14-byte pool-header
+      struct (via `FUNC_2998_E1AF`'s `memcpy_far`), and a shared
+      `[0x603]` bit-`0x01` dirty flag distinct from `B622`'s `[0x736]`
+      bit `0x200`. See `command-keyword-table.md` section 11,
+      `STILL_PENDING_DECODE.md`'s sixth follow-up, and `VARIABLES.md`.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

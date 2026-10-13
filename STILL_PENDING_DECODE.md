@@ -530,6 +530,34 @@ The single biggest cluster of open items - see
   rejection and `1`/`4` category-match's rationale, and the newly
   surfaced, not-yet-traced callees `SUB_93925`/`SUB_9471C`/
   `SUB_94D9C`/`FUNC_2998_7609`.
+  **Sixth follow-up, 2026-10-13, ground-truth re-trace of the resolver
+  chain**: direct reads of `SUB_93B1C`, `SUB_93B7E`, and `SUB_96126`
+  (rather than inferring their combined behavior from input/output)
+  found the earlier "arithmetic consistent with `[0x5F8]-5`" framing
+  was an imprecise blend, and that `SUB_96126` isn't part of the index
+  resolution at all: `SUB_93B1C` (physical `0x8BB1C`) is a switch that
+  converts the numeric selector to an ASCII **letter** (`0..3`
+  pass through; `4`/`REF4` aliases to `1`/`REF1` - confirmed, not
+  explained; `5..30` -> `(input+0x5C)&0xFF` = `'a'..'z'`); `SUB_93B7E`
+  (physical `0x8BB7E`) is the separate step converting that letter to
+  the `0..25` record index (`byte-0x61`, else sentinel `0xFFFF`);
+  `SUB_96126` (physical `0x8E126`, = `FUNC_2998_E126`) takes no
+  arguments and is a test-and-set **interlock/busy flag** over the
+  structure `[0x746]` points to (checks/sets that structure's `+0`/
+  `+2`/`+4` words with interrupts disabled, writing a new status-code
+  variable `[0x690]` to `0x6D9`/`0x6E4`) - every observed caller
+  (`FUNC_2998_B252`/`B2BC`/`B339`) gates its `[0x73E]` record update on
+  this interlock, and releases it (resets `+0` to `0`) itself on
+  success. Also confirmed `[0x746]` is a plain far-pointer *variable*
+  (not itself the struct) to a 14-byte pool-header structure
+  (`FUNC_2998_E1AF`, physical `0x8E1AF`, `memcpy_far`s all 14 bytes out
+  to a caller buffer), and that `FUNC_2998_B252`/`B2BC`/`B339` share a
+  previously-undocumented `[0x603]` bit-`0x01` dirty/redraw flag
+  (distinct from `FUNC_2998_B622`'s `[0x736]` bit `0x200`). Full
+  writeup in `command-keyword-table.md` section 11; `VARIABLES.md`'s
+  `[0x5F8]`/`[0x746]` rows updated and a new `[0x690]` row added.
+  `SUB_93925`/`SUB_9471C`/`SUB_94D9C`/`FUNC_2998_7609`/`[0x74A]`'s exact
+  role/`[0x690]`'s real-world text remain open.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
