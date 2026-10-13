@@ -1003,6 +1003,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       than `OFF`; `FUNC_2998_AD17`'s `[bp+6]!=0` branch fits `ON`. The
       `[bp+6]==0` branch isn't yet matched to `OFF`. See seventeenth
       follow-up.
+      **2026-10-13, later pass**: traced the class-`1`/`4` gate inside
+      `AD17`'s shared path - it calls `FUNC_2998_6B4B` with class
+      hardcoded to `1` (never the real selector) and checks bit `0x01`
+      of its output record's `+0` byte with opposite required polarity
+      per class. Real, confirmed asymmetry; plausible tie-in to the
+      manual's "REF4 occupies the REF1-REF3 locations on the 2230"
+      note, but not proven - `6B4B`'s `+0` byte has no established
+      meaning yet. Doesn't resolve the `[bp+6]==0`-isn't-`OFF` puzzle.
+      See twenty-eighth follow-up.
       **2026-10-13, resolved the `B3A3`-vs-`B568` bit-mapping
       "inconsistency"**: mostly a doc transcription error (`B3A3` tests
       the *clear* case of bit `0x04` first, not the set case). The two

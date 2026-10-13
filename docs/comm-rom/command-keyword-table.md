@@ -1848,6 +1848,33 @@ dense-cluster functions in section 9) resolved this:
     byte value than the already-documented `0x1E`-for-2230 constant,
     so which real model `0x14` denotes (if it's a variant byte at all
     in this context) is unresolved - flagged, not chased further here.
+  - **Class-1/class-4 gate traced in full, 2026-10-13, later pass**: the
+    shared `L_8AD5B` path both classes jump into calls `FUNC_2998_6B4B`
+    with its class argument **hardcoded to `1`**, not `[bp-0xa]`'s real
+    normalized class - i.e. it always fetches REF1's own translated
+    record, never REF4's, even on the class-4 side. It then checks bit
+    `0x01` (not the `0x02` "has data" bit the class-2/3 branch checks)
+    of that record's offset-`+0` byte, with **opposite required
+    polarity**: class `1` requires the bit **clear** to proceed (`jne`
+    to the error path at `ADEF`/error `0x22` if set), class `4` requires
+    it **set** (same error if clear). This is a real, mechanically
+    confirmed asymmetry, not a copy-paste artifact (both branches
+    converge on the same `ADA3`/`[bp+6]` check afterward). A plausible
+    reading, tying back to the programming manual's own note that "REF4
+    is the only available reference memory for the 2220/2221... and
+    occupies the REF1-REF3 memory locations in the 2230" (`docs/
+    programming-manual.md` line 851): on this ROM's primary 2230 target,
+    "class 4" may not be a distinct physical store at all but a request
+    to treat REF1-3's combined space as one large waveform, so checking
+    REF1's own record with the opposite bit sense would plausibly be
+    testing "is REF1 free/not individually in use" (allowing the
+    combined-mode request) vs. class 1's own "is REF1 already in a
+    usable state." **Not confirmed** - `FUNC_2998_6B4B`'s offset-`+0`
+    byte itself has no established meaning yet (its documented field
+    map only covers `+0x10` through the point-tag-scan tail from
+    `+0x32`); this is a plausible explanation for the asymmetry, not a
+    settled one. Doesn't resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
+    above, which remains open.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
   simpler, narrower 2-state **report** path over the same `[0x4F6]`
   byte that `FUNC_2998_B622` (above) validates/sets with the full

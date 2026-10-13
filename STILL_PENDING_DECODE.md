@@ -699,6 +699,21 @@ The single biggest cluster of open items - see
   consistent across both independently-gated paths, not a one-off
   oversight, which only deepens the puzzle rather than resolving it.
   Still open. See `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twenty-eighth follow-up, 2026-10-13, later pass**: traced the
+  class-`1`/`4` gate inside `FUNC_2998_AD17`'s shared `L_8AD5B` path in
+  full. It calls `FUNC_2998_6B4B` with its class argument **hardcoded
+  to `1`** (never the real selector) and then checks bit `0x01` of the
+  resulting record's offset-`+0` byte with **opposite required
+  polarity** per class: class `1` needs it clear, class `4` needs it
+  set - a real, mechanically confirmed asymmetry (both branches
+  converge on the same downstream `[bp+6]` check), not a copy-paste
+  artifact. Plausible tie-in to the manual's note that 2230's REF4
+  "occupies the REF1-REF3 memory locations" (i.e. isn't a distinct
+  physical store on this model) - but `FUNC_2998_6B4B`'s offset-`+0`
+  byte has no established meaning yet, so this is a lead, not a
+  resolution. Does **not** resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
+  from the seventeenth follow-up, which remains open. See `docs/
+  comm-rom/command-keyword-table.md` section 11.
   **Eighteenth follow-up, 2026-10-13**: resolved the `B3A3`-vs-`B568`
   bit-mapping "inconsistency" from the fourth follow-up below - it was
   largely a transcription error in how this doc described `B3A3`'s own
