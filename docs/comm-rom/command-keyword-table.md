@@ -2098,6 +2098,78 @@ dense-cluster functions in section 9) resolved this:
     not a reallocation-via-compaction as guessed. Updated
     `FUNCTIONS.md`'s `0x95B69` entry, `STILL_PENDING_DECODE.md`, and
     `TODO.md` to retract the "leading candidate" framing.
+  - **`SUB_95D81` resolved as `vacate_and_compact_gpib_record`; `SAVeref`
+    confirmed to call it, 2026-10-13, later pass**: the lead flagged
+    immediately above was traced to completion. `SUB_95D81`'s native
+    address is `0x8DD81` (not the `0x8D581` initially guessed - the
+    alias arithmetic for `seg=0x9471, off=0x1671` is `(0x9471<<4) +
+    0x1671 = 0x94710 + 0x1671 = 0x95D81`, matching the label exactly;
+    native = `0x95D81 - 0x8000 = 0x8DD81`). Reading its full body
+    (`0x8DD81`-`0x8DF68`) shows it is the **single-record counterpart**
+    to `validate_gpib_device_records`: given one record index (its
+    only real parameter, `[bp+6]`), it marks that record's `[0x73E]+
+    0xA` wipe-in-progress bit, then repeatedly finds whichever record
+    immediately follows it in the packed pool (matching the vacated
+    record's own current pool offset plus its length, with the
+    has-data bit `0x02` set) and byte-copies it down to close the gap,
+    rewriting that record's `[0x73E]+0`/`+4` and `[0x742]+0x36..+0x3E`
+    fields and recomputing its checksum via
+    `build_gpib_message_checksum`, advancing a "frontier" cursor each
+    time until it reaches the pool's live watermark (`[0x746]+8`), at
+    which point it writes the final frontier back into `[0x746]+8`,
+    adds the reclaimed length into `[0x746]+6`, and finally calls
+    `init_gpib_record` on the originally-vacated index to fully wipe/
+    reinitialize it. Named `vacate_and_compact_gpib_record` and added
+    to `FUNCTIONAL_NAMES`/`PARAMETER_NAMES` at both its native
+    (`0x8DD81`) and aliased (`0x95D81`) addresses. **This positively
+    confirms `SAVeref` DOES call a pool-compaction routine on its
+    insufficient-room path** (`0x8CA5B`) - just this function, not
+    `validate_gpib_device_records`/`DB69`. The two findings are
+    complementary, not contradictory: `SAVeref` was only ever ruled
+    out as `DB69`'s caller specifically; `DB69`'s real static caller
+    remains unresolved. `SAVeref`'s exact room check before calling it:
+    `si` (incoming source record's combined length) is compared
+    against `ax` (destination record's own current combined length
+    plus the pool's existing free-space count `[0x746]+6`); if
+    `si > ax`, it fails outright (`[0x690]=0x21A`, no compaction
+    attempted - the same error path already described above); if
+    `si <= ax`, it sets `[0x690]=0x1AA`, calls
+    `vacate_and_compact_gpib_record(dest_index)`, then `memcpy_far`s
+    the new data into the pool at the resulting watermark and rewrites
+    the destination's `[0x742]` pointer fields.
+  - **`FUNC_2998_CEF5` resolved as the real `REFDisp REF{A-Z}:EMPTY`
+    handler, named `erase_gpib_record`, 2026-10-13, later pass**: found
+    while regenerating the listing above - a second, previously-
+    unknown call to `vacate_and_compact_gpib_record` appears at
+    `0x8CF5F`, inside a hitherto-unidentified function,
+    `FUNC_2998_CEF5` (physical `0x8CEF5`-`0x8CFD9`). Reading its full
+    body shows: given a raw ASCII letter (`[bp+6]`, same
+    `add di, -0x61` idiom as `SAVeref`'s own letter parameter), it
+    range-checks the resulting `0..25` index (error `0x10` if out of
+    range), acquires the `SUB_96126` pool interlock (error `1` if
+    busy), then checks `[0x73E]+0xA` bit `0x01` (already-wiped
+    sentinel - returns `0x40`, "already empty", if set) and bit `0x04`
+    (LOCK/protection - returns `2`, "locked", if set); only if neither
+    is set does it call `vacate_and_compact_gpib_record(index)` to
+    actually erase the record, returning `0` on success; it always
+    releases the `[0x746]+0` interlock before returning on every path.
+    This matches the programming manual's `REFDisp REF{A-Z}:EMPTY`
+    description ("erases the named reference if it is not protected")
+    exactly, and **resolves the long-open question in `VARIABLES.md`'s
+    `[0x73E]` row of whether `B339` or `E1E9` is the real `EMPTY`
+    implementation: neither is** - `B339` is `REFProt REF{A-Z}:PERM`
+    (already settled separately), and `E1E9`/`init_gpib_record` is
+    just the low-level full-wipe primitive this new function (via
+    `vacate_and_compact_gpib_record`) ultimately delegates to. Named
+    `erase_gpib_record` and added to `FUNCTIONAL_NAMES`/
+    `PARAMETER_NAMES` at its native address (`0x8CEF5`; not reached via
+    any `0x9000`-segment alias call site found so far, so no second
+    entry needed). A sibling function immediately following it in the
+    listing, `FUNC_2998_CFDA` (physical `0x8CFDA`), also takes a letter
+    parameter and acquires the same interlock, but **toggles** (XORs)
+    the `0x04` LOCK bit gated on the `0x40` PERM bit being clear - a
+    distinct "toggle lock" operation, noticed but not yet traced or
+    named; flagged as a new lead for a future pass.
   - `build_gpib_message_checksum` (`D0C2`, immediately preceding
     `D1AA`/`validate_gpib_record_consistency` in the listing) is the
     **write-side counterpart**: given an index, it computes and stores

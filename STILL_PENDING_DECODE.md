@@ -854,6 +854,27 @@ The single biggest cluster of open items - see
   `validate_gpib_device_records` remains unresolved; `SUB_95D81`
   (physical `0x8D581`) is a new, untraced lead on the same path. See
   `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twenty-fifth follow-up, 2026-10-13, later pass**: traced
+  `SUB_95D81` to completion, correcting the twenty-fourth follow-up's
+  guessed native address (`0x8D581`) to the real one, `0x8DD81`. It's
+  a genuine function, now named `vacate_and_compact_gpib_record` - the
+  single-record counterpart to `validate_gpib_device_records`: given
+  one record index, it vacates that record's slot and compacts every
+  subsequent record down to close the gap (walking forward by
+  position, not a caller-supplied plan array), then fully reinitializes
+  the vacated record via `init_gpib_record`. **This positively confirms
+  `SAVeref` DOES call a pool-compaction function** on its insufficient-
+  room path - just this one, not `validate_gpib_device_records`/`DB69`
+  (whose own real caller is still unresolved; the two findings are
+  complementary, not contradictory). While regenerating the listing, a
+  second call site turned up inside a previously-unidentified function,
+  `FUNC_2998_CEF5` (native `0x8CEF5`), now named `erase_gpib_record` -
+  tracing its body resolved it as the **real `REFDisp REF{A-Z}:EMPTY`
+  handler**, closing `VARIABLES.md`'s `[0x73E]` row's long-open
+  question of whether `B339` or `E1E9` implements `EMPTY` (neither
+  does). A further sibling, `FUNC_2998_CFDA`, was noticed toggling the
+  `0x04` LOCK bit but not yet traced - flagged as a new lead. See
+  `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

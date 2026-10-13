@@ -15078,10 +15078,10 @@
     "notes": null
   },
   "8CEF5": {
-    "name": "FUNC_2998_CEF5",
+    "name": "erase_gpib_record",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "erase_gpib_record",
     "notes": null
   },
   "8CF1A": {
@@ -15792,10 +15792,10 @@
     "notes": null
   },
   "8DD81": {
-    "name": "FUNC_2998_DD81",
+    "name": "vacate_and_compact_gpib_record",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "vacate_and_compact_gpib_record",
     "notes": null
   },
   "8DDF4": {

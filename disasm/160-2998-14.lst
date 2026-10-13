@@ -18300,7 +18300,7 @@ L_8CA21:
     2998:CA56  [8CA56]  57              push    di
     2998:CA57  [8CA57]  53              push    bx
     2998:CA58  [8CA58]  ff76f8          push    word ptr [bp - 8]
-    2998:CA5B  [8CA5B]  9a71167194      lcall   SUB_95D81  ; 0x9471, 0x1671
+    2998:CA5B  [8CA5B]  9a71167194      lcall   vacate_and_compact_gpib_record  ; 0x9471, 0x1671
     2998:CA60  [8CA60]  c43e4a07        les     di, ptr [0x74a]
     2998:CA64  [8CA64]  8cc2            mov     dx, es
     2998:CA66  [8CA66]  c4364607        les     si, ptr [0x746]
@@ -18692,7 +18692,7 @@ L_8CEEF:
     2998:CEEF  [8CEEF]  8be5            mov     sp, bp
     2998:CEF1  [8CEF1]  5d              pop     bp
     2998:CEF2  [8CEF2]  ca0200          retf    2
-FUNC_2998_CEF5:
+erase_gpib_record:
     2998:CEF5  [8CEF5]  55              push    bp
     2998:CEF6  [8CEF6]  8bec            mov     bp, sp
     2998:CEF8  [8CEF8]  83ec0e          sub     sp, 0xe
@@ -18731,7 +18731,7 @@ L_8CF22:
     2998:CF57  [8CF57]  80fa00          cmp     dl, 0
     2998:CF5A  [8CF5A]  750b            jne     L_8CF67  ; 0xcf67
     2998:CF5C  [8CF5C]  ff76f8          push    word ptr [bp - 8]
-    2998:CF5F  [8CF5F]  9a71167194      lcall   SUB_95D81  ; 0x9471, 0x1671
+    2998:CF5F  [8CF5F]  9a71167194      lcall   vacate_and_compact_gpib_record  ; 0x9471, 0x1671
     2998:CF64  [8CF64]  e94e00          jmp     L_8CFB5  ; 0xcfb5
 L_8CF67:
     2998:CF67  [8CF67]  8b46f8          mov     ax, word ptr [bp - 8]
@@ -19981,7 +19981,7 @@ L_8DD76:
     2998:DD7B  [8DD7B]  8be5            mov     sp, bp
     2998:DD7D  [8DD7D]  5d              pop     bp
     2998:DD7E  [8DD7E]  ca0400          retf    4
-FUNC_2998_DD81:
+vacate_and_compact_gpib_record:
     2998:DD81  [8DD81]  55              push    bp
     2998:DD82  [8DD82]  8bec            mov     bp, sp
     2998:DD84  [8DD84]  83ec1e          sub     sp, 0x1e

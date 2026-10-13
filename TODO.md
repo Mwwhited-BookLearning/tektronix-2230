@@ -1067,6 +1067,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       no call to `validate_gpib_device_records` anywhere in it; its
       length-mismatch path instead calls an unidentified `SUB_95D81`,
       a new untraced lead. See twenty-fourth follow-up.
+      **2026-10-13, later pass**: traced `SUB_95D81` (native `0x8DD81`,
+      not `0x8D581`) to completion - named `vacate_and_compact_gpib_
+      record`, the single-record counterpart to `validate_gpib_device_
+      records`. **`SAVeref` DOES call this** on its insufficient-room
+      path (just not `DB69` specifically - both findings stand
+      together). A second caller turned up too: a previously-
+      unidentified function, now named `erase_gpib_record` (native
+      `0x8CEF5`), confirmed as the real `REFDisp REF{A-Z}:EMPTY`
+      handler - closing `VARIABLES.md`'s `[0x73E]` row's open "B339 vs
+      E1E9" question (neither is EMPTY). See twenty-fifth follow-up in
+      `STILL_PENDING_DECODE.md` and `docs/comm-rom/command-keyword-
+      table.md` section 11. New untraced lead: sibling `FUNC_2998_CFDA`
+      toggles the `0x04` LOCK bit.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

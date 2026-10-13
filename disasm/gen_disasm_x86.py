@@ -231,6 +231,37 @@ FUNCTIONAL_NAMES = {
     0x8D0C2: "build_gpib_message_checksum",        # = 0x950C2 native
     0x8E1E9: "init_gpib_record",                   # = 0x961E9 native
     0x8DB69: "validate_gpib_device_records",       # = 0x95B69 native
+    # Newly identified (not previously named at any address), 2026-10-13
+    # later pass: this is `FUNC_2998_C85B` (SAVeref)'s own call target
+    # labeled `SUB_95D81` at its call sites (flat seg:off 0x9471:0x1671
+    # lands on alias-window address 0x95D81, same "0x9000-segment
+    # alias" phenomenon as the five functions above, just discovered
+    # the other direction - via a call site rather than a pre-existing
+    # alias-address name). Confirmed by direct trace: given a 0..25
+    # record index, vacates that record's slot and compacts every
+    # subsequent record down to close the gap (walking forward by
+    # position, not a caller-supplied plan array - the single-record
+    # counterpart to `validate_gpib_device_records`'s plan-array-driven
+    # bulk compaction), then reinitializes the vacated record via
+    # `init_gpib_record`. Confirmed called from `FUNC_2998_C85B`
+    # (SAVeref)'s length-mismatch path. See `docs/comm-rom/command-
+    # keyword-table.md` section 11.
+    0x8DD81: "vacate_and_compact_gpib_record",
+    # Found while tracing vacate_and_compact_gpib_record's second
+    # caller, 2026-10-13, later pass: given a raw ASCII letter, range-
+    # checks it, acquires the SUB_96126 pool interlock, and - only if
+    # the record is neither already-empty (`[0x73E]+0xA` bit `0x01`)
+    # nor protection-locked (bit `0x04`) - calls
+    # vacate_and_compact_gpib_record to erase it; returns distinct
+    # codes for out-of-range (`0x10`), pool-busy (`1`), already-empty
+    # (`0x40`), and locked (`2`). This is the actual `REFDisp
+    # REF{A-Z}:EMPTY` command handler the manual describes ("erases
+    # the named reference if it is not protected") - resolving the
+    # long-open question of whether `FUNC_2998_B339` or
+    # `FUNC_2998_E1E9` was really EMPTY (neither is: both are lower-
+    # level plumbing this function's callee chain uses). See
+    # `docs/comm-rom/command-keyword-table.md` section 11.
+    0x8CEF5: "erase_gpib_record",
 
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at
@@ -3919,6 +3950,17 @@ FUNCTIONAL_NAMES = {
                                                # internal logic not
                                                # exhaustively traced
                                                # given its size
+    0x95D81: "vacate_and_compact_gpib_record", # (comm ROM) - the
+                                               # 0x9000-segment-aliased
+                                               # call-target address for
+                                               # native 0x8DD81 (see
+                                               # FUNCTIONAL_NAMES above
+                                               # for the full trace);
+                                               # confirmed called from
+                                               # FUNC_2998_C85B
+                                               # (SAVeref)'s length-
+                                               # mismatch path, 2026-10-
+                                               # 13
     0x96DBE: "sync_rs232_control_bit",        # (comm ROM) - when the
                                                # RS-232 strap [0x629]
                                                # is set, folds bit
@@ -5150,6 +5192,15 @@ PARAMETER_NAMES = {
     # rule as validate_gpib_record_consistency etc.) - confirmed
     # byte-for-byte identical, 2026-10-13.
     0x8DB69: {6: "device_off", 8: "device_seg", 0xA: "count"},
+    # vacate_and_compact_gpib_record's sole real parameter (the only
+    # [bp+N] the body ever reads) - confirmed 2026-10-13 by direct
+    # trace; see FUNCTIONAL_NAMES above.
+    0x8DD81: {6: "record_index"},
+    0x95D81: {6: "record_index"},
+    # erase_gpib_record's sole real parameter - the raw ASCII REF
+    # letter, same idiom as FUNC_2998_C85B (SAVeref)'s own [bp+6];
+    # confirmed 2026-10-13. See FUNCTIONAL_NAMES above.
+    0x8CEF5: {6: "letter"},
     # format_selftest_result_string (0xE0C3D): "(status_bits)" - the
     # single argument, tested against 0x20/0x02/0x01 bit patterns.
     0xE0C3D: {6: "status_bits"},
