@@ -959,10 +959,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       counterpart, called once from inside `FUNC_2998_7609` to write a
       locally-assembled destination record back out to the same
       scattered per-reference tables `6B4B` reads from, when a
-      reference-copy's destination is numbered. New open item: each
-      numbered reference occupies two adjacent table-row slots
-      (`class*2`/`class*2+1`) in several of these tables, not one row
-      per reference - unexplained. See twelfth follow-up.
+      reference-copy's destination is numbered. New open item (since
+      resolved - see below): each numbered reference occupies two
+      adjacent table-row slots (`class*2`/`class*2+1`) in several of
+      these tables, not one row per reference. See twelfth follow-up.
+      **2026-10-13, resolved the two-adjacent-slots question**: not a
+      duplicated copy - each record bundles two disjoint field groups
+      (e.g. record bytes `+0x26`/`+0x27` and `+0x42`-`+0x46`/`+0x47`-
+      `+0x4b`), one per slot. Plausibly the two markers from `6B4B`'s
+      point-tag scan (`+0x32`/`+0x34`), not proven. See fifteenth
+      follow-up.
       **2026-10-13, identified `FUNC_2998_718D`** (physical `0x8718D`):
       a "step to next/previous reference satisfying a capability bit"
       scanner, with combined numbered+lettered vs. lettered-only

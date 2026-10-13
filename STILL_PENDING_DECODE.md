@@ -648,6 +648,18 @@ The single biggest cluster of open items - see
   table-row slots** (`class*2`/`class*2+1`) in several of these tables,
   not one row per reference. See `docs/comm-rom/command-keyword-table.md`
   section 11.
+  **Fifteenth follow-up, 2026-10-13**: resolved the two-adjacent-slots
+  question above - not a duplicated copy. `FUNC_2998_6F6F`'s own field
+  reads show record offset `+0x26`'s capability bit going to slot
+  `class*2` while the very next byte, `+0x27`, goes to slot
+  `class*2+1`; likewise record bytes `+0x42`-`+0x46` (5 bytes) fill
+  slot `class*2`'s `b0`-`b4` row while the next 5 bytes, `+0x47`-
+  `+0x4b`, fill slot `class*2+1`'s row. Each reference's record bundles
+  two disjoint field groups, not one group duplicated - plausibly the
+  two markers `FUNC_2998_6B4B`'s point-tag scan produces (`+0x32`/
+  `+0x34`, the tag-`3` and tag-`1` distances), though that specific
+  mapping isn't proven. See `docs/comm-rom/command-keyword-table.md`
+  section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

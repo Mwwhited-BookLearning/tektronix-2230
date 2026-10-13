@@ -1570,6 +1570,35 @@ dense-cluster functions in section 9) resolved this:
     `class*2+1`, both filled from the same source record) rather than
     one row per reference - not yet explained, but mechanically clear
     from the index arithmetic in both this function and its caller.
+    **Resolved, later same day**: the two slots are not a duplicated
+    copy - they're two genuinely **different, independently-tracked
+    sub-items packed as adjacent field groups in the single input
+    record**. Confirmed directly from `FUNC_2998_6F6F`'s own field
+    reads: the capability bit written to slot `class*2` comes from
+    record offset `+0x26`, while the bit written to slot `class*2+1`
+    comes from the very next record byte, `+0x27` (both bit `0x02`,
+    both landing in the same `[0x1BE2]`-based capability array just at
+    adjacent indices - this is in fact the same "byte-pair" `6B4B`'s
+    scan and `FUNC_2998_718D`'s capability check already read, just
+    now seen as two adjacent indices of one array rather than two
+    separate base addresses). The `0x14`-byte-stride `b0`-`b4` table
+    shows the same pattern at larger scale: record bytes `+0x42`
+    through `+0x46` (5 consecutive bytes) populate slot `class*2`'s
+    `b0`-`b4` row, and the *next* 5 record bytes, `+0x47` through
+    `+0x4b`, populate slot `class*2+1`'s row - two complete, disjoint
+    5-field groups from one record, not one group copied twice. Given
+    `FUNC_2998_6B4B`'s point-tag scan (above) already produces exactly
+    two distances per scan (`+0x32`: distance to the first tag-`3`
+    byte; `+0x34`: distance from there to the first tag-`1` byte), the
+    natural - but not yet directly proven - reading is that each
+    reference's record carries data for **two markers/tags** (very
+    plausibly those same two scan results, or two cursor-like
+    waveform-point markers derived from them), each needing its own
+    capability bit, its own `b0`-`b4` descriptor, and its own row in
+    the other scattered per-reference tables - hence two adjacent
+    slots per reference rather than one. The real-world identity of
+    "marker 1" vs "marker 2" (and how it maps to `3`-tag vs `1`-tag)
+    is still unconfirmed.
     Immediately after the call, `FUNC_2998_7609` itself (not
     `FUNC_2998_6F6F`) sets a couple of related flags directly - two
     `+0xa6`/`+0xa8`/`+0xaa` fields in the `0x14`-stride table (one per
