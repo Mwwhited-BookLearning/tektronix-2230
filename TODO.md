@@ -1029,6 +1029,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `B339` is free to resume that identity: `B252`=`UNLocked`,
       `B2BC`=`LOCk`, `B339`=`PERM`, a clean three-function family. See
       twentieth follow-up.
+      **2026-10-13, later pass**: re-read `FUNC_2998_C85B` in full and
+      corrected its own identity too - it's `SAVeref REF{A-Z}`'s
+      SET-side **store** handler (acquire pool interlock, refuse a
+      locked/`PERM` destination, `memcpy_far` the source waveform in on
+      a length match, set the dest's exclusive-lock bit/counter), not a
+      "query-response builder." That reopens how the `STATUS <code>;`
+      hypothesis for `[0x690]` would work (its caller would need to be
+      command-side, not query-side). Also exhaustively checked both
+      known shared dispatch tables ("block 6"'s flag-value table, "block
+      7"'s 6-byte-record table) for any reference to the six
+      `[0x690]`-writing functions' addresses - neither contains one, so
+      the real caller is still unresolved, not just unsearched. See
+      twenty-first follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

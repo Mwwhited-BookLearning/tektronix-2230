@@ -1217,8 +1217,10 @@ dense-cluster functions in section 9) resolved this:
     every `[0x690]` access across both ROM listings finds **41 distinct
     write sites total, each storing a different literal word value**
     (`0xF4` through `0x6E4`, strictly increasing with address), spread
-    across only six functions: `FUNC_2998_C71C`, `FUNC_2998_C85B` (the
-    per-lettered-reference query entry point identified above),
+    across only six functions: `FUNC_2998_C71C` (= `SUB_9471C`, the
+    acquire-for-read function traced below), `FUNC_2998_C85B` (the
+    per-lettered-reference entry point identified above - see the
+    `SAVeref` correction immediately below),
     `FUNC_2998_D1AA`, `FUNC_2998_D476`, `FUNC_2998_DB69`, and
     `SUB_96126` itself - i.e. each of these functions sets a different
     fine-grained reason code at nearly every one of its own internal
@@ -1228,13 +1230,23 @@ dense-cluster functions in section 9) resolved this:
     above), and none of the 41 write sites loads the `0xFF7B` string-
     table segment first, so there is no firmware-internal text these
     codes map to - the "real-world text... not yet looked up" framing
-    was the wrong question. Given `FUNC_2998_C85B` is a query-response
-    builder, the leading hypothesis is that `[0x690]` is the source for
-    the already-documented "`STATUS <code>;`" inline substitution used
-    when a query field can't currently be computed
-    (`rs232-live-session-2026-09-14.md`), most likely read back by
-    whichever *caller* invokes these six functions (not yet found) in
-    order to format that substitution - not by any code inside them.
+    was the wrong question. **Correction, 2026-10-13, later pass**: the
+    premise "`C85B` is a query-response builder" (below) doesn't hold up
+    - direct re-reading of its body (see the `SAVeref` identification
+    below) shows it's a SET-side store/write handler, not a GET-side
+    query-response builder, so the `STATUS <code>;` hypothesis's
+    supporting evidence needs revising even though the hypothesis
+    itself isn't ruled out: if `[0x690]` really backs that
+    substitution, its caller must be reachable from a *command*-processing
+    path (e.g. a deferred-error-reporting mechanism for a `SAVeref`/
+    `REFProt`-style command, not literally a live `?`-query handler).
+    Still the leading hypothesis, still unconfirmed, still missing its
+    actual caller (the comm ROM's "block 6"/"block 7" shared
+    function-reference tables - section 5 above - were checked
+    exhaustively for a reference to any of these six functions' physical
+    addresses and found none, as was the first 6-record span of section
+    4's flag-dispatch table past its documented stride; the caller
+    remains genuinely not found by any mechanism tried so far).
   - Two functions immediately following `SUB_96126` in the listing,
     `FUNC_2998_E1AF` (above) and **`FUNC_2998_E1E9`** (physical
     `0x8E1E9`), share its no-static-caller shape. `FUNC_2998_E1E9`
@@ -1889,6 +1901,56 @@ dense-cluster functions in section 9) resolved this:
   references' stored curve data (`[0x742]`'s payload) - a real,
   distinct subsystem neighboring the protection-flag mechanism, not
   traced field-by-field.
+- **`FUNC_2998_C85B`'s full body re-read (2026-10-13, later pass):
+  it's `SAVeref REF{A-Z}`'s SET-side store handler, not a "query-response
+  builder" (correcting that framing above)**. Sequence, matched
+  directly against the manual's `SAVeref REF{A-Z}` description ("Saves
+  the waveform selected by the `REFFrom` command into the named
+  reference," `docs/programming-manual.md` line 885):
+  1. Calls `SUB_96126` to acquire the pool-wide single-owner interlock
+     (error `0x14D` and abort if already held - a different, later-
+     found use of the same interlock already covered above for
+     `B252`/`B2BC`/`B339`).
+  2. Resolves the destination letter (`[bp+6]`, raw ASCII `'a'`-`'z'`)
+     to a `0..25` index exactly like `SUB_9471C`/`D1AA` (`letter -
+     0x61`), and checks that record's `[0x73E]+0xA` flag byte bit `0x04`
+     (the `LOCk`/`PERM` protection bit) - error `0x165` (status word set
+     to `0x40`) and abort if set: **a locked or permanently-protected
+     reference correctly refuses `SAVeref`**, matching the manual's
+     implicit protection semantics for the lock family documented above.
+  3. If bit `0x02` is clear (destination currently empty, no existing
+     waveform), skips straight to an allocate-new-space path (not traced
+     further here). If set (destination already holds data), compares
+     the existing destination length fields (`[0x742]` record `+0x3A`+
+     `+0x40`) against the source record's own matching fields (read from
+     a far-pointer struct passed in at `[bp+8]` - the actual
+     `REFFrom`-selected source, already resolved to a `[0x742]`-shaped
+     descriptor by the caller before this function runs): on an exact
+     length match (`[0x690]=0x177`), proceeds to overwrite in place;
+     otherwise (`[0x690]` not reached on this branch in the portion
+     read) takes a different, not-yet-traced path - presumably a
+     reallocation, consistent with `[0x746]`'s pool/compaction role
+     above.
+  4. On the in-place-overwrite path: `memcpy_far`s the source's data
+     into the destination's storage, updates the destination `[0x742]`
+     record's pointer/length fields (`+0x36`/`+0x38`, `+0x3A`, `+0x3C`/
+     `+0x3E`) from the source's own, then `or`-sets `[0x73E]+0xA` bit
+     `0x10` and increments `[0x746]+4` - **the same "exclusively-locked"
+     bit/pool-wide counter pair `SUB_9471C`/`SUB_94D9C` already resolved
+     above**, here acquired inline (not via a separate acquire call) and
+     left set on return rather than released within this function -
+     consistent with `SUB_94D9C`'s bit-`0x10` release branch (which
+     calls `build_gpib_message_checksum` before clearing it) being the
+     actual, separate release point once the newly-written data is
+     checksummed/finalized, not something `C85B` itself does. Finally
+     clears `[0x746]+0` (releasing the transient pool interlock from
+     step 1, per the same pattern already seen in `B252`/`B2BC`/`B339`).
+  This is a coherent, self-consistent reading of the entire function
+  body against already-established bit/counter semantics, not an
+  isolated guess - but the unequal-length/reallocation branch and the
+  very first "destination empty" branch (`L_8C99F`) weren't traced in
+  this pass, so the identification is **SAVeref, strong confidence**,
+  not yet a byte-for-byte-complete account of the function.
 
 See `VARIABLES.md` for the per-variable rows and `STILL_PENDING_DECODE.md`/
 `TODO.md` for what within this subsystem remains open (`[0x742]`'s

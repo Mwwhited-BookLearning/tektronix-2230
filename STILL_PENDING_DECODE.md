@@ -762,6 +762,35 @@ The single biggest cluster of open items - see
   `B339` (both bits set) = `PERM` - a clean three-function family that
   was sitting in this cluster the whole time. See `docs/comm-rom/
   command-keyword-table.md` section 11.
+  **Twenty-first follow-up, 2026-10-13**: re-read `FUNC_2998_C85B`'s
+  full body (one of the nineteenth follow-up's six `[0x690]`-writing
+  orphan functions) and found the "query-building entry point" framing
+  used above is wrong - it's `SAVeref REF{A-Z}`'s SET-side **store**
+  handler, not a GET-side query-response builder. It acquires the
+  `SUB_96126` pool interlock, checks the destination letter's `0x04`
+  protection bit first (refusing `SAVeref` into a locked/permanent
+  reference, error `0x165`), compares existing-vs-source record
+  lengths, `memcpy_far`s the source's waveform data into the
+  destination `[0x742]` record on a length match, and sets the
+  destination's `0x10` "exclusively-locked" bit and increments
+  `[0x746]+4` - the exact bit/counter pair `SUB_9471C`/`SUB_94D9C`
+  (eleventh follow-up... see `docs/comm-rom/command-keyword-table.md`
+  section 11) already resolved, here acquired inline and left for a
+  later release rather than released within this function. This also
+  means the "`C85B` is a query-response builder" premise behind the
+  `STATUS <code>;` hypothesis for `[0x690]` needs revising (the
+  hypothesis itself isn't ruled out, but its caller - still not
+  found - would have to be reachable from a command-processing path,
+  not a live `?`-query path). The exhaustive search for that caller
+  continued this follow-up: checked every record of section 5's "block
+  7" shared function-reference table (walked in full, using the
+  corrected `native = segment*16+offset-0x8000` alias resolution,
+  catching a `-0x80000` off-by-one-hex-digit bug in the first attempt)
+  and section 4's "block 6" flag-dispatch table (scanned for every
+  occurrence of far-pointer-B's fixed segment `0x941f`) for a reference
+  to any of the six functions' physical addresses - none found in
+  either. The caller remains genuinely unresolved, not just unsearched.
+  See `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/
