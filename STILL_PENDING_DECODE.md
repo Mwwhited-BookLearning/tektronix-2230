@@ -497,18 +497,39 @@ The single biggest cluster of open items - see
   `+0xA` byte **oppositely** for the clear-byte and bit-`0x04`-only
   cases (`B3A3`: clear->`LOCk`, `0x04`->`UNLock`; `B568`: clear->`'U'`,
   `0x04`->`'L'`); both agree only on bit-`0x40`->PERM. Left open rather
-  than guessed. Two more siblings identified: `FUNC_2998_B600` (KB-free
-  readout over `[0x746]+6`) and `FUNC_2998_B622` (cross-checks `[0x4F6]`/
-  `[0x5F8]` against a new variable `[0x5F7]` and the device-variant byte
-  `[0x1B83]`, force-defaulting to numbered-ref-4/ACQ on one variant path
-  - weak corroboration of `DATa SOUrce`/`TARget` for `[0x4F6]`/`[0x5F8]`).
+  than guessed. Found `FUNC_2998_B600` (KB-free readout over
+  `[0x746]+6`).
+  **Fifth follow-up, 2026-10-13, Ghidra decompiled-C re-trace**:
+  `FUNC_2998_B622` (`decompile/exports/160-2998-14.c` line 9471) turned
+  out to be far more than a simple cross-check - it's the actual
+  validating SET-side/copy-executor for `DATa SOUrce`/`TARget`.
+  Resolves **both** `[0x4F6]` (source) and `[0x5F8]` (target) through
+  the same `SUB_93B1C` call confirmed for `REFProt`, proving `[0x4F6]`
+  holds the full `0`(ACQ)/`1..4`(numbered)/`5..30`(lettered) selector
+  (not just a 2-state boolean, which is merely what `FUNC_2998_B227`'s
+  narrower report path collapses it to). Validates `[0x5F8]` against
+  the device-variant byte `[0x1B83]` and `[0x5F7]` (now characterized
+  as a **lettered-reference feature-gate**: `4` + variant `0x1E`
+  enables the full `1..30` range; otherwise, in range or not,
+  force-defaults to `[0x5F8]=4`/`[0x4F6]=0` - an exact match for the
+  manual's "REF4 is the only available reference memory for the 2220
+  and 2221"). Rejects source/target pairing `{REF1,REF4}` in either
+  order. Performs a real copy: `ACQ`->numbered-ref via
+  `draw_pending_line_segment`/`SUB_93925`/`reset_plot_home_or_acq`;
+  ref->ref via `SUB_9471C`/`SUB_94D9C` (lettered source) or a
+  capability-bit check (numbered source) then `FUNC_2998_7609`, gated
+  by a `1`/`4` category match when either endpoint is `REF1`/`REF4`.
+  This reinforces the `DATa SOUrce`/`TARget` candidate identity for
+  `[0x4F6]`/`[0x5F8]` from weak corroboration to strong (though still
+  not 100%-proven by a direct string/ID trace).
   Remaining open within this subsystem: `[0x742]`'s individual fields
   beyond the far-pointer/length pairs, `[0x746]`/`[0x74A]`'s exact pool
   semantics, the `B3A3`-vs-`B568` bit-mapping inconsistency, `PERM`'s
-  SET-side (not found), `[0x5F7]`'s full identity, and firm confirmation
-  of the separate "ACQ"/"REF" 2-state resolver's (`FUNC_2998_B1E8`/
-  `B1FC`/`B227`, `[0x4F6]`) owning command (candidates: `DATa SOUrce`,
-  `REFOrmat TARget`, `CURSor TARget`).
+  SET-side (not found), `[0x5F7]`'s precise real-world meaning (beyond
+  "lettered-reference feature-gate"), the `{REF1,REF4}`-pairing
+  rejection and `1`/`4` category-match's rationale, and the newly
+  surfaced, not-yet-traced callees `SUB_93925`/`SUB_9471C`/
+  `SUB_94D9C`/`FUNC_2998_7609`.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

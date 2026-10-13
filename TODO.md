@@ -880,13 +880,27 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `REFStat? PROTect`'s own builder `FUNC_2998_B568`/`FUNC_2998_D067`
       - they map the same `+0xA` byte oppositely for two of its three
       states; left open. Also found `FUNC_2998_B600` (KB-free readout)
-      and `FUNC_2998_B622` (cross-checks `[0x4F6]`/`[0x5F8]` against new
-      variable `[0x5F7]`, weakly corroborating `DATa SOUrce`/`TARget`).
+      and `FUNC_2998_B622`.
+      **2026-10-13, Ghidra decompiled-C re-trace: `FUNC_2998_B622` is
+      actually the `DATa SOUrce`/`TARget` SET-side/copy-executor**, not
+      a simple cross-check. Resolves `[0x4F6]` (source) through the
+      same `SUB_93B1C` call as `[0x5F8]` (target), proving `[0x4F6]`
+      holds the full `0..30` selector, not just a 2-state boolean.
+      Validates against `[0x5F7]` (now: a lettered-reference
+      feature-gate byte) and the device-variant byte `[0x1B83]`,
+      force-defaulting to `ACQ`->`REF4` on non-full-featured variants -
+      an exact match for the manual's 2220/2221 REF4-only limitation.
+      Performs a real waveform copy (`ACQ`->ref via
+      `draw_pending_line_segment`/`SUB_93925`/`reset_plot_home_or_acq`;
+      ref->ref via `SUB_9471C`/`SUB_94D9C`/`FUNC_2998_7609`), rejecting
+      the `{REF1,REF4}` source/target pairing. `DATa SOUrce`/`TARget`
+      candidate identity is now strong, not just weak corroboration.
       Still open within this subsystem: `[0x742]`'s individual fields,
       `[0x746]`/`[0x74A]`'s exact semantics, the `B3A3`-vs-`B568`
-      inconsistency, `PERM`'s SET-side (not found), `[0x5F7]`'s full
-      identity, and firm confirmation of the separate "ACQ"/"REF"
-      2-state resolver's (`[0x4F6]`) owning command.
+      inconsistency, `PERM`'s SET-side (not found), `[0x5F7]`'s precise
+      meaning, the `{REF1,REF4}`-pairing rejection's rationale, and the
+      newly-surfaced, untraced callees `SUB_93925`/`SUB_9471C`/
+      `SUB_94D9C`/`FUNC_2998_7609`.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

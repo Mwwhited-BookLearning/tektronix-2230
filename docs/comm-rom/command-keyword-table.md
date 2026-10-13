@@ -1172,23 +1172,82 @@ dense-cluster functions in section 9) resolved this:
   from the listing to rule out a transcription error; the discrepancy
   is real as disassembled). Flagging as open rather than guessing
   further.
-- Two more untraced siblings: `FUNC_2998_B600` (physical `0x8B600`)
-  divides `[0x746]+6` by `1024` and prints it as a signed decimal -
-  shaped like a "KB free" readout for the `[0x742]` waveform-data
-  heap. `FUNC_2998_B622` (physical `0x8B622`) cross-checks `[0x4F6]`
-  and `[0x5F8]` against each other and against fixed values `0`/`1`/
-  `4`, gated by the device-variant byte `[0x732]+0x1F` (the
-  already-confirmed `[0x1B83]`) and a new, undocumented byte `[0x5F7]`
-  - on one variant path it force-defaults `[0x5F8]=4`/`[0x4F6]=0`
-  (i.e. target = numbered reference 4, source = live acquisition).
-  This reads like model-variant defaulting for `DATa SOUrce`/`TARget`,
-  consistent with the manual's note that "REF4 is the only available
-  reference memory for the 2220 and 2221 instruments" - corroborating
-  (weakly) the `DATa`-family candidate identity for `[0x4F6]` above,
-  though which of `[0x4F6]`/`[0x5F8]` is `SOUrce` vs. `TARget` is still
-  not pinned down. `[0x5F7]` itself is not yet characterized beyond
-  being compared against `0`/`4` here; it may be a model/instrument-ID
-  byte distinct from the already-confirmed `[0x1B83]` comm-option flag.
+- `FUNC_2998_B600` (physical `0x8B600`) divides `[0x746]+6` by `1024`
+  and prints it as a signed decimal - shaped like a "KB free" readout
+  for the `[0x742]` waveform-data heap.
+- **`FUNC_2998_B622` (physical `0x8B622`) re-examined via Ghidra's
+  decompiled C (`decompile/exports/160-2998-14.c` line 9471,
+  `FUN_0008_b622`) - it is not a simple cross-check, it's the actual
+  validating SET-side implementation that performs a reference-memory
+  copy, strongly reinforcing (not just weakly corroborating) the
+  `DATa SOUrce`/`DATa TARget` candidate identity for `[0x4F6]`/`[0x5F8]`.**
+  Decompiled logic (the string-literal artifacts `*"B"` in the raw
+  Ghidra output are a known segment-addressing quirk - see
+  `docs/architecture/ghidra-project.md` - and resolve to `[0x5F7]`;
+  confirmed against the `.lst` disassembly directly):
+  - Validates `[0x5F8]` (target selector) against the device-variant
+    byte `[0x732]+0x1F` (`[0x1B83]`) and the new byte `[0x5F7]`: when
+    the variant byte `== 0x1E`, requires `[0x5F7] == 4` and
+    `1 <= [0x5F8] <= 30` (the full numbered+lettered range), else
+    errors `0x15` (or `7` if `[0x5F7] == 0`, a distinct error code).
+    On any other variant value, if `[0x5F7] != 0` it only accepts
+    `[0x5F8]` in `{0, 1, 4}` (erroring `0x15` otherwise), and - whether
+    that check passed or was skipped entirely because `[0x5F7] == 0` -
+    it then **unconditionally forces `[0x5F8] = 4` and `[0x4F6] = 0`**
+    (target = `REF4`, source = live acquisition) regardless of the
+    caller's requested values. This is an exact match for the manual's
+    "REF4 is the only available reference memory for the 2220 and 2221
+    instruments": on those (and any other non-`0x1E`-variant) models,
+    any in-range request silently collapses to `ACQ`->`REF4`.
+    **`[0x5F7]` is therefore a model/option feature-gate byte for
+    lettered-reference support** - `4` enables the full `REFA`-`REFZ`
+    range (paired with variant `0x1E`), `0` appears to mean "no
+    reference-selection option at all" (skips validation, forces the
+    `ACQ`/`REF4` default, and reports the distinct error code `7` when
+    the variant byte would otherwise have demanded `[0x5F7] == 4`).
+    Exact real-world meaning of the value `4` itself (vs. e.g. `1`,
+    `2`, `3`, never observed being tested here) is not pinned down.
+  - After validation, resolves **both** `[0x4F6]` (source) and
+    `[0x5F8]` (target) through `SUB_93B1C` - the same resolver already
+    confirmed for `[0x5F8]` in the `REFProt` writeup above - confirming
+    `[0x4F6]` is not merely a 2-state `ACQ`/`REF` boolean (as
+    `FUNC_2998_B1E8`/`B1FC`/`B227`'s narrower report path treats it,
+    below) but can hold the **full** `0`(ACQ)/`1..4`(numbered)/
+    `5..30`(lettered) source selector, using the identical encoding as
+    `[0x5F8]`.
+  - Rejects the specific combination `{[0x4F6], [0x5F8]} == {1, 4}`
+    in either order (source=`REF1`+target=`REF4`, or vice versa) with
+    error `0x15` - a hardware/format constraint between those two
+    specific numbered references, not yet explained.
+  - For `[0x4F6] == 0` (`ACQ` source): requires `[0x5F8]` in `1..4`
+    (numbered only - **lettered references cannot be a copy target
+    when the source is live acquisition**, in this reading); on
+    success calls `draw_pending_line_segment`/`SUB_93925`/
+    `reset_plot_home_or_acq` (physical `0x9C35`-ish - **not yet named**)
+    - a live-acquisition-to-reference copy that also drives the
+      on-screen plot, consistent with the front-panel/GPIB "store to
+      reference" operation completing immediately rather than queuing.
+  - For `[0x4F6] != 0` (a reference source, numbered or lettered):
+    branches on whether the source is lettered (fetches its waveform
+    pointer via `SUB_9471C` keyed by the resolved source index, then
+    `SUB_94D9C`) or numbered (checks a capability bit `0x02` in a
+    per-reference pair of bytes inside the `[0x732]`-pointed struct at
+    `+0x7E`+index, erroring `0x1B` if absent, then reads a per-slot
+    byte at a `0x10`-stride table based at physical `0x18C`). Both
+    paths derive a `1`-or-`4` category value (`local_1a`, role not
+    confirmed - plausibly a record-length class) from a capability bit,
+    which - **only when either endpoint is `REF1` or `REF4`** (the
+    `local_20` value computed from `[0x4F6]`/`[0x5F8]` being `1` or
+    `4`) - must exactly match that endpoint's own category, else errors
+    `0x1B`; otherwise calls `FUNC_2998_7609` (physical `0x87609`, not
+    yet named) to perform the actual reference-to-reference copy, then
+    `reset_plot_home_or_acq`. On success, if the target is numbered
+    (`local_14 != 0`) it also sets bit `0x200` in a word at the far
+    pointer `[0x736]` - plausibly a "redraw/refresh pending" flag.
+  - `SUB_93925`, `SUB_9471C`, `SUB_94D9C`, and `FUNC_2998_7609` are
+    all newly-surfaced, not-yet-individually-traced callees; their
+    exact roles (beyond "performs the copy"/"fetches the waveform
+    pointer") are open items.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
@@ -1205,19 +1264,28 @@ dense-cluster functions in section 9) resolved this:
   each resolved through `SUB_95067`/`FUNC_2998_D067`) `= 30`, exactly
   matching `[0x5F8]`'s full `1..30` range.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
-  separate, simpler 2-state mechanism, **not** touching the `[0x73E]`
-  array at all: a byte flag `[0x4F6]` is set to `0` unconditionally by
-  `FUNC_2998_B1E8`, or to `[0x5F8]`'s low byte (after the same `1..30`
-  range check) by `FUNC_2998_B1FC`; `FUNC_2998_B227` then reports
+  simpler, narrower 2-state **report** path over the same `[0x4F6]`
+  byte that `FUNC_2998_B622` (above) validates/sets with the full
+  selector range: `FUNC_2998_B1E8` sets `[0x4F6]` to `0` unconditionally
+  (forcing `ACQ`), `FUNC_2998_B1FC` sets it to `[0x5F8]`'s low byte
+  (after the same `1..30` range check) - i.e. "make the source match
+  the target," a plausible `DATa TARget`-sets-`SOUrce`-too shorthand,
+  not a separate flag domain. `FUNC_2998_B227` then reports
   keyword-table-1 offset `+0xE` (`"ACQ"`) if `[0x4F6]==0`, else `+0x17B`
-  (`"REF"`). Candidate identity (weaker, more tentative): `DATa
-  SOUrce`, whose query response in the manual's own example literally
-  reads `DAT SOU:ACQ,TAR:REF1,...` (programming-manual.md line 909) -
-  i.e. the data source is either the live acquisition (`"ACQ"`, value
-  `0`) or a specific reference memory (`"REF"` + number, any nonzero
-  `[0x5F8]`). Not confirmed; `REFOrmat TARget`/`CURSor TARget` (lines
-  757-759, 852-872), which draw the same ACQ-vs-reference distinction,
-  remain alternative candidates.
+  (`"REF"`) - collapsing `[0x4F6]`'s full `1..30` range down to a
+  boolean for this particular report, consistent with `B622`'s finding
+  that `[0x4F6]` is the full source selector underneath. Candidate
+  identity, now reinforced by `B622`'s confirmed copy-operation
+  semantics above: `DATa SOUrce`, whose query response in the manual's
+  own example literally reads `DAT SOU:ACQ,TAR:REF1,...`
+  (programming-manual.md line 909) - i.e. the data source is either the
+  live acquisition (`"ACQ"`, value `0`) or a specific reference memory
+  (`"REF"` + number, any nonzero `[0x5F8]`/`[0x4F6]`). `REFOrmat
+  TARget`/`CURSor TARget` (lines 757-759, 852-872), which draw the same
+  ACQ-vs-reference distinction, remain alternative candidates for a
+  *different* command sharing the same keyword pair, but no longer for
+  `[0x4F6]`/`[0x5F8]` themselves given `B622`'s direct validation
+  behavior.
 - `[0x742]` is a **parallel 78-byte (`0x4E`)-stride, 26-record array**,
   indexed in lockstep with `[0x73E]` (confirmed by `FUNC_2998_C85B`'s
   shared index into both). Its fields include far-pointer pairs
