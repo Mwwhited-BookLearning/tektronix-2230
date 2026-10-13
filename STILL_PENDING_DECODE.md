@@ -648,6 +648,17 @@ The single biggest cluster of open items - see
   table-row slots** (`class*2`/`class*2+1`) in several of these tables,
   not one row per reference. See `docs/comm-rom/command-keyword-table.md`
   section 11.
+  **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
+  (physical `0x8718D`) while chasing the two-adjacent-slots question
+  above (didn't resolve it, but found this instead) - a "step to next/
+  previous reference satisfying capability bit `0x02`" scanner with a
+  flag selecting combined numbered+lettered wraparound vs. lettered-
+  only. Its six callers all share a debounced-accumulator shape: a
+  signed delta at `[0x52A]` accumulates into `[0x4C6]`, and crossing
+  +-250 resets it and steps the per-context current-selection byte at
+  `[0x4CA]`+context. Open: whether `[0x52A]`'s delta comes from a
+  physical front-panel knob or something else has not been traced to
+  its source. See `docs/comm-rom/command-keyword-table.md` section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

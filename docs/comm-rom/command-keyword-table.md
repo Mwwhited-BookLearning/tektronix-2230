@@ -1579,6 +1579,37 @@ dense-cluster functions in section 9) resolved this:
     sequence being `7609`'s final "commit the copied data as the new
     contents of numbered reference `class`" step when the copy's
     destination is numbered rather than lettered.
+  - **`FUNC_2998_718D` identified (2026-10-13)**, physical `0x8718D`, a
+    "step to the next/previous reference satisfying a capability bit"
+    scanner found while chasing the two-adjacent-slots question above
+    (it didn't explain that, but surfaced this instead). Given a
+    starting reference (numbered `1..4` or lettered via `[bp+6]`), a
+    signed step (`+1`/`-1` via `[bp+8]`), and a wraparound-mode flag
+    (`[bp+0xa]`), it walks in that direction - up to 30 steps - testing
+    each candidate's capability bit `0x02` (lettered: `[0x1BE2]`/
+    `[0x1BE3]`+index*2, the same pair `FUNC_2998_B622`/`6B4B` already
+    use; numbered: delegates to `SUB_95067`) and returns the first
+    reference that passes, or `0` if it wraps back to the start without
+    finding one. The wraparound-mode flag selects between two distinct
+    behaviors: **nonzero** treats `1..4` and `'a'..'z'` as one combined
+    cyclic range with explicit transition points at both ends (`'a'`<->
+    `'z'`, and `4`<->`'a'`/`'z'` depending on direction); **zero**
+    clamps strictly within `'a'..'z'`, never considering the numbered
+    references at all.
+    
+    Its callers (six found, at physical `0x85F76`/`0x85FBA`/`0x86268`/
+    `0x862A5`/`0x86453`/`0x86496`) all share one shape: a signed
+    accumulator at `[0x4C6]` is incremented each poll by a delta read
+    from `[0x52A]`, and once it crosses roughly `+250`/`-250` it resets
+    to `0`, sets a "selection changed" flag at `[0x46A]`, and calls
+    `FUNC_2998_718D` to step the current selection (held per-context in
+    a small array at `[0x4CA]`, one byte per context) one position in
+    the direction of the overflow. This is mechanically a debounced-
+    encoder "step on threshold crossing" pattern; whether `[0x52A]`'s
+    delta actually originates from a physical front-panel knob read by
+    this comm ROM, or from something else entirely (e.g. a remote
+    command simulating a step), has **not** been traced to its source
+    and is flagged as open rather than assumed.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**

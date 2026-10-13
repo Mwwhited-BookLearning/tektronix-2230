@@ -963,6 +963,13 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       numbered reference occupies two adjacent table-row slots
       (`class*2`/`class*2+1`) in several of these tables, not one row
       per reference - unexplained. See twelfth follow-up.
+      **2026-10-13, identified `FUNC_2998_718D`** (physical `0x8718D`):
+      a "step to next/previous reference satisfying a capability bit"
+      scanner, with combined numbered+lettered vs. lettered-only
+      wraparound modes. Its six callers share a debounced-accumulator
+      shape (`[0x52A]` delta into `[0x4C6]`, stepping `[0x4CA]`+context
+      on a +-250 threshold crossing) - plausibly knob/encoder-driven,
+      not yet traced to its source. See thirteenth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
