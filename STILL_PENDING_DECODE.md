@@ -621,6 +621,20 @@ The single biggest cluster of open items - see
   rejection rationale to "fixed, format-specific storage slots," though
   which of `REF1`/`REF4` is the "short" vs. "long" format class is
   still open. See `docs/comm-rom/command-keyword-table.md` section 11.
+  **Eleventh follow-up, 2026-10-13**: traced `FUNC_2998_6B4B` to its
+  `retf 2` epilogue (confirming the same word-arg-in/far-ptr-out/
+  callee-cleans-2-bytes convention as `SUB_9471C`/`SUB_94D9C`) and
+  worked out the exact point-tag-scan mechanics left open above. The
+  scan's byte-vs-word stride is selected by bits `0x30` of the same
+  `[0x18C]`+class*16 table byte `FUNC_2998_B622` already reads bit
+  `0x01` from; within either stride it's a sequential "skip until
+  marker" walk that stores the distance to the first byte tagged `3`
+  into `+0x32`, then the distance from there to the first byte tagged
+  `1` into `+0x34` - distances-to-first-occurrence, not independent
+  tallies. This is now a solid mechanical answer; the real-world
+  meaning of what `3`/`1` specifically denote (and why that order)
+  remains unconfirmed. See `docs/comm-rom/command-keyword-table.md`
+  section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

@@ -946,6 +946,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       pairing rejection's rationale. New open item: waveform-point
       bytes carry a 2-bit status tag (scanned by both functions),
       meaning not yet confirmed. See tenth follow-up.
+      **2026-10-13, traced `FUNC_2998_6B4B`'s point-tag-scan mechanics**
+      to its exact logic and confirmed its `retf 2` epilogue (same
+      calling convention as `SUB_9471C`/`SUB_94D9C`). The scan's byte-
+      vs-word stride is chosen from bits `0x30` of the `[0x18C]` table
+      byte; it's a sequential "distance to first `3`-tagged byte, then
+      distance to first `1`-tagged byte after that" walk, not a tally.
+      Real-world meaning of the tag values themselves still open. See
+      eleventh follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

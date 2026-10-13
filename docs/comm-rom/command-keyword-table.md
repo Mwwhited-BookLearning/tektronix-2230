@@ -1517,6 +1517,32 @@ dense-cluster functions in section 9) resolved this:
     in `FUNC_2998_7609` above. Individual table fields' real-world
     meaning (beyond "feeds a `[0x742]`-shaped record") not
     characterized one-by-one.
+  - **Point-tag-scan mechanism traced to its exact logic (2026-10-13)**,
+    closing out the "2-bit status tag" open item above with a solid
+    mechanical (if not yet semantic) answer. The scan is gated by bits
+    `0x30` of the **same** `[0x18C]`+class*16 table byte `FUNC_2998_
+    B622` already reads bit `0x01` from (one more confirmed overlap
+    between the two functions' table usage): when `(byte & 0x30) ==
+    0x20`, the scan walks the source buffer **one byte at a time**;
+    otherwise it walks it **two bytes at a time** (skipping the low
+    byte of each pair) - i.e. this field encodes whether each stored
+    sample occupies one byte or two (8-bit-packed vs. 16-bit/word
+    samples), selecting the scan's stride accordingly. Within either
+    stride, the scan is a sequential "skip until marker" walk, not a
+    running tally: it advances through the buffer counting every byte
+    it passes, stops counting (and stores the count so far into
+    `+0x32`) the moment it hits a byte whose low 2 bits equal `3`, then
+    resumes counting from there and stops again (storing that second
+    count into `+0x34`) at the first byte whose low 2 bits equal `1`.
+    So the two output fields are **distances-to-first-occurrence** of
+    two distinct marker values embedded in the sample stream, not
+    independent tallies of how many `3`-tagged or `1`-tagged bytes
+    exist overall. This is consistent with the tag marking sequential
+    structural boundaries (e.g. "end of this record" = `3`, then some
+    second marker = `1`, read off positionally) rather than a simple
+    per-byte classification - but the real-world meaning of *why* `3`
+    comes first and `1` second, and what either specifically denotes,
+    remains unconfirmed.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
