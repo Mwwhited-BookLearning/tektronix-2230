@@ -1080,6 +1080,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `STILL_PENDING_DECODE.md` and `docs/comm-rom/command-keyword-
       table.md` section 11. New untraced lead: sibling `FUNC_2998_CFDA`
       toggles the `0x04` LOCK bit.
+      **2026-10-13, later pass**: traced `FUNC_2998_CFDA` - toggles
+      LOCK unconditionally, gated on PERM being clear; doesn't fit the
+      already-confirmed explicit-SET `B252`/`B2BC` pair (redundant as
+      a GPIB command). Leading guess: a front-panel LOCK-button
+      handler, not yet confirmed either way. Also fixed a stale
+      `VARIABLES.md` doc-sync bug (swapped `B252`/`B2BC` candidate
+      labels, already correct in `command-keyword-table.md` but not
+      brought back into `VARIABLES.md`). See twenty-sixth follow-up in
+      `STILL_PENDING_DECODE.md`.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

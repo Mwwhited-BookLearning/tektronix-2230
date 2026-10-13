@@ -875,6 +875,25 @@ The single biggest cluster of open items - see
   does). A further sibling, `FUNC_2998_CFDA`, was noticed toggling the
   `0x04` LOCK bit but not yet traced - flagged as a new lead. See
   `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twenty-sixth follow-up, 2026-10-13, later pass**: traced
+  `FUNC_2998_CFDA` (physical `0x8CFDA`-`0x8D061`). Given a letter,
+  range-checked and interlocked exactly like `erase_gpib_record`, it
+  checks `[0x73E]+0xA` bit `0x40` (PERM) - fails outright (`0x400`) if
+  set - and otherwise **unconditionally XORs (toggles) bit `0x04`**
+  (LOCK), returning success. Toggle semantics don't match the already-
+  confirmed explicit-SET `B252`(clears both)/`B2BC`(sets LOCK alone)
+  pair, which already cover `REFProt`'s `UNLocked`/`LOCk` SET-sides -
+  a third toggle-based function on the same bit would be redundant as
+  a GPIB command (no parameter lets a caller pick a direction). Not
+  named; leading guess is a **front-panel LOCK-button handler**
+  (toggle fits a physical pushbutton better than a keyword), but no
+  caller has been traced either way. Also corrected a stale doc-sync
+  bug found along the way: `VARIABLES.md`'s `[0x73E]` row had `B252`/
+  `B2BC`'s candidate labels swapped (said `B252`=`LOCked`,
+  `B2BC`=`UNLocked` - backwards from what their own bit operations do)
+  even though `docs/comm-rom/command-keyword-table.md` section 11 had
+  already corrected this in an earlier pass; brought back in sync. See
+  `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/
