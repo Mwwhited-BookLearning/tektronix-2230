@@ -1123,12 +1123,15 @@ dense-cluster functions in section 9) resolved this:
   concerns a different variable entirely).
 - Record field `+0xA` (of `[0x73E]`'s per-letter record) is a **flag
   byte encoding that reference's write-protection state**:
-  `FUNC_2998_B3A3` (the GET/query-side resolver) tests bit `0x04` first
-  -> keyword-table-1 offset `+0x207` (`"UNLock"`); else bit `0x40` ->
-  `+0x14D` (`"PERM"`); else (neither bit) -> `+0x11A` (`"LOCk"`). It
-  special-cases `[0x5F8]` in `1..4` (the numbered references) to return
-  `"UNLock"` directly without touching the array at all - numbered
-  references have no protection state.
+  `FUNC_2998_B3A3` (the GET/query-side resolver) tests bit `0x04`
+  first - **correction, 2026-10-13: it's the *clear* case that's
+  tested first, not the set case as originally transcribed here** -
+  bit `0x04` *clear* -> keyword-table-1 offset `+0x207` (`"UNLock"`);
+  else (bit `0x04` set) test bit `0x40`: *set* -> `+0x14D` (`"PERM"`);
+  *clear* -> `+0x11A` (`"LOCk"`). It special-cases `[0x5F8]` in `1..4`
+  (the numbered references) to return `"UNLock"` directly without
+  touching the array at all - numbered references have no protection
+  state.
 - **Three more sibling SET-side functions identified (2026-10-13,
   later pass), with one re-identified away from `REFProt`**:
   `FUNC_2998_B252` (`and`s the `+0xA` byte with `0xBB`, clearing bits
@@ -1223,27 +1226,36 @@ dense-cluster functions in section 9) resolved this:
     more word fields (`+0`/`+2`/`+4`/`+6`/`+8`) beyond the
     already-documented `+0xA` flag byte, whose normal (non-wiped)
     contents are not yet characterized.
-- **An unresolved inconsistency found while cross-checking the GET
-  side**: `FUNC_2998_B3A3` (above, feeding what looks like a
-  per-reference keyword query - candidate: `REFProt?`) maps the raw
-  `+0xA` byte as bit `0x04` set -> `"UNLock"`, else bit `0x40` set ->
-  `"PERM"`, else (all clear) -> `"LOCk"`. But `FUNC_2998_B568`
-  (physical `0x8B568`, which builds `REFStat? PROTect`'s documented
-  30-character `U`/`L`/`P` string - 4 literal `'U'` characters for the
-  numbered references, then one call per lettered reference to
-  `FUNC_2998_D067` at physical `0x8D067`, confirmed by direct read to
-  simply return the raw `+0xA` byte for a given letter) maps the
-  **same raw byte** as `(byte & 0x44) == 0` -> `'U'`, `== 4` -> `'L'`,
-  else (`0x40`/`0x44`) -> `'P'`. These two consumers agree on the
-  `0x40`-set (`PERM`) case but give **opposite** answers for the
-  all-clear and bit-`0x04`-only cases (`B3A3`: clear=`LOCk`,
-  bit4=`UNLock`; `D067`/`B568`: clear=`U`, bit4=`L`). Not resolved -
-  could mean `B3A3` serves a different field than protection status
-  despite landing on the same three keyword strings, or one of the two
-  consumers has a genuinely inverted convention (re-read both directly
-  from the listing to rule out a transcription error; the discrepancy
-  is real as disassembled). Flagging as open rather than guessing
-  further.
+- **`B3A3`-vs-`B568` bit-mapping inconsistency, resolved as mostly a
+  transcription error (2026-10-13)**: re-read `FUNC_2998_B3A3`'s raw
+  instruction sequence directly (the bullet above was itself wrong
+  about which branch of its own bit-`0x04` test was which - now
+  corrected). With the corrected mapping, `B3A3` (clear->`UNLock`;
+  set & `0x40` clear->`LOCk`; both set->`PERM`) and `FUNC_2998_B568`/
+  `FUNC_2998_D067` (`(byte & 0x44) == 0`->`'U'`; `== 4`->`'L'`; else->
+  `'P'`) **agree on 3 of the 4 possible raw-byte states**: all-clear
+  (`UNLock`/`U`), bit `0x04` set alone (`LOCk`/`L`), and both bits set
+  (`PERM`/`P`). They disagree only on the fourth, bit-`0x40`-set-alone
+  state (`0x04` clear, `0x40` set): `B3A3` would call it `UNLock`
+  (its bit-`0x04` test short-circuits before ever looking at `0x40`),
+  while `B568` would call it `PERM`. This is a genuine latent
+  difference, not just a doc error - but harmless in practice *if*
+  nothing ever produces that raw byte value. None of the three known
+  `+0xA`-byte-modifying functions (`FUNC_2998_B252`/`B2BC`/`B339`)
+  produce it: all three always touch bit `0x04` and `0x40` together
+  (`and 0xBB`, `and 0xBF`+`or 4`, `or 0x44`), never bit `0x40` alone. A
+  whole-ROM grep for an immediate `or ..., 0x40` (the simplest way to
+  set that bit alone) found **no matches at all** in the comm ROM -
+  ruling out one easy hypothesis for `PERM`'s still-missing SET-side
+  and mildly reinforcing the existing guess that `PERM` protection may
+  not be set via a simple immediate-OR flag toggle in this ROM at all
+  (consistent with "permanent" protection being meant to be one-way,
+  possibly requiring a different mechanism such as a register-computed
+  OR, a value loaded as a full replacement byte, or code outside this
+  ROM entirely). If `PERM`'s SET-side is ever found setting bit `0x40`
+  alone, that would both confirm this latent discrepancy is reachable
+  and mean `B3A3` misreports that state as `UNLock` - a real firmware
+  quirk, not just a docs artifact.
 - `FUNC_2998_B600` (physical `0x8B600`) divides `[0x746]+6` by `1024`
   and prints it as a signed decimal - shaped like a "KB free" readout
   for the `[0x742]` waveform-data heap.

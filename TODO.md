@@ -1003,6 +1003,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       than `OFF`; `FUNC_2998_AD17`'s `[bp+6]!=0` branch fits `ON`. The
       `[bp+6]==0` branch isn't yet matched to `OFF`. See seventeenth
       follow-up.
+      **2026-10-13, resolved the `B3A3`-vs-`B568` bit-mapping
+      "inconsistency"**: mostly a doc transcription error (`B3A3` tests
+      the *clear* case of bit `0x04` first, not the set case). The two
+      functions actually agree on 3 of 4 raw-byte states and differ
+      only on the unreachable-so-far "bit `0x40` alone" state; a
+      whole-ROM grep for an immediate `or ..., 0x40` found nothing,
+      ruling out the simplest form of `PERM`'s still-missing SET-side.
+      See eighteenth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

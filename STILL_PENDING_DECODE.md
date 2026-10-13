@@ -691,6 +691,22 @@ The single biggest cluster of open items - see
   ==0` branch (calls only `print_and_reset_acq_buffers`, no flag-bit
   touch) is not yet matched to `OFF` or anything else. See
   `docs/comm-rom/command-keyword-table.md` section 11.
+  **Eighteenth follow-up, 2026-10-13**: resolved the `B3A3`-vs-`B568`
+  bit-mapping "inconsistency" from the fourth follow-up below - it was
+  largely a transcription error in how this doc described `B3A3`'s own
+  branch order (the *clear* case was tested first, not the *set* case
+  as originally written). Corrected, `B3A3` and `B568`/`D067` agree on
+  3 of 4 raw-byte states (all-clear->`UNLock`/`U`; bit `0x04` alone->
+  `LOCk`/`L`; both bits->`PERM`/`P`) and differ only on the fourth
+  (bit `0x40` alone, `0x04` clear): `B3A3` would call it `UNLock`,
+  `B568` would call it `PERM`. None of the three known `+0xA`-byte
+  SET-side functions (`B252`/`B2BC`/`B339`) ever produce that raw byte
+  (all three touch bits `0x04` and `0x40` together), and a whole-ROM
+  grep for an immediate `or ..., 0x40` found zero matches - ruling out
+  the simplest form `PERM`'s still-missing SET-side could take and
+  reinforcing the existing guess that `PERM` isn't a simple
+  immediate-OR flag toggle in this ROM. See `docs/comm-rom/command-
+  keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/
