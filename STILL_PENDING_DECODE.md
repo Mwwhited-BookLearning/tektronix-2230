@@ -894,6 +894,24 @@ The single biggest cluster of open items - see
   even though `docs/comm-rom/command-keyword-table.md` section 11 had
   already corrected this in an earlier pass; brought back in sync. See
   `docs/comm-rom/command-keyword-table.md` section 11.
+  **Twenty-seventh follow-up, 2026-10-13, later pass**: resolved the
+  "real caller still unresolved" question left open by the twenty-
+  fourth/twenty-fifth follow-ups above. `scan_and_repair_gpib_records`
+  (`0x8D476`/`0x95476`) is `validate_gpib_device_records`'s genuine
+  static caller, at physical `0x8DB0A` - confirmed by a label-boundary
+  check showing every label between that function's entry point and
+  the call site is a local jump target, not a separate function. This
+  also fills in the second half of `scan_and_repair_gpib_records`'s own
+  behavior (previously only its first-half per-record consistency
+  loop was traced): it builds a 6-byte-stride plan array on its own
+  stack frame, sorts it by pool offset, flags overlaps/gaps/watermark
+  mismatches into `[0x746]+0xA`/`+0xC`, and - only if those flags came
+  up nonzero and the repair count didn't exceed `6` - calls `validate_
+  gpib_device_records` with that plan array to actually compact the
+  pool. The plan-array layout it builds matches exactly what `validate_
+  gpib_device_records` was already documented to expect, confirming
+  this is the designed caller rather than a coincidental hit. See
+  `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

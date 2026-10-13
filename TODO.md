@@ -1089,6 +1089,17 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       labels, already correct in `command-keyword-table.md` but not
       brought back into `VARIABLES.md`). See twenty-sixth follow-up in
       `STILL_PENDING_DECODE.md`.
+      **2026-10-13, later pass**: found `validate_gpib_device_records`'s
+      real static caller after all - `scan_and_repair_gpib_records`
+      (native `0x8D476`), confirmed via label-boundary check that the
+      call site (`0x8DB0A`) sits inside its own body. This also
+      completes that function's own trace: a second-half plan-array
+      build/sort/overlap-gap-watermark-check pass whose output format
+      matches `validate_gpib_device_records`'s documented input exactly.
+      Closes the "missing caller" question left open since the
+      twenty-third follow-up. See twenty-seventh follow-up in
+      `STILL_PENDING_DECODE.md` and `docs/comm-rom/command-keyword-
+      table.md` section 11.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

@@ -2062,11 +2062,54 @@ dense-cluster functions in section 9) resolved this:
     `[0x746]+8`**: not a static "pool base pointer" as first guessed,
     but a **live watermark - the offset one past the last byte
     currently in use** (consistent with `+6` already being confirmed
-    as the free-space count: `limit - watermark`). No static caller
-    found (same no-caller/register-indirect-dispatch shape as the
-    rest of this cluster). Updated `FUNCTIONS.md`'s `0x95B69` entry and
-    added the matching `0x8DB69` `FUNCTIONAL_NAMES`/`PARAMETER_NAMES`
-    entries.
+    as the free-space count: `limit - watermark`). At the time this
+    bullet was written no static caller had been found (same
+    no-caller/register-indirect-dispatch shape as the rest of this
+    cluster) - **this is now resolved, see the `scan_and_repair_gpib_
+    records` bullet below**. Updated `FUNCTIONS.md`'s `0x95B69` entry
+    and added the matching `0x8DB69` `FUNCTIONAL_NAMES`/
+    `PARAMETER_NAMES` entries.
+  - **`scan_and_repair_gpib_records` (`0x8D476`/`0x95476`) confirmed as
+    `validate_gpib_device_records`'s real static caller, 2026-10-13,
+    later pass**: closes the "no static caller found" question left
+    open by the bullet above. The call site is at physical `0x8DB0A`
+    (immediately before the `validate_gpib_device_records:` label
+    itself), and a label-boundary check of the whole intervening range
+    confirmed every label between `scan_and_repair_gpib_records`'s own
+    entry point and that call site is a local `L_8Dxxx` jump target,
+    not a separate function - the call genuinely sits inside this
+    function's body. This also fills in the second half of this
+    function's own behavior, previously only characterized through its
+    first-half per-record consistency scan/repair loop: after that
+    loop, it builds a 6-byte-stride **plan array on its own stack
+    frame** (`[bp-0xa2]`), one entry per record with `[0x73E]+0xA` bit
+    `0x02` ("has data") set - `+0` = that record's pool offset
+    (`[0x73E]+0`), `+2` = the record index, `+4` = a delete flag
+    (initialized `0`). If more than one entry, it insertion-sorts the
+    array by `+0` ascending. It then walks the sorted array checking
+    for pool-layout anomalies against `[0x746]+0xA`/`+0xC` (the same
+    diagnostic word/counter the first-half loop also writes to): the
+    first entry's offset should be `0` (nonzero sets bit `0x10`,
+    anomaly); each consecutive pair's end-of-data (offset + the
+    record's own length) should exactly equal the next entry's offset
+    (equal = contiguous/OK; greater = **overlap**, marks both entries'
+    delete flags and sets bit `0x08`; less = **gap**, sets bit `0x10`);
+    and the last entry's computed end-of-data should match the pool's
+    live watermark `[0x746]+8` (mismatch marks that entry's delete flag,
+    sets bit `0x20`, and **directly overwrites `[0x746]+8`** with the
+    corrected value). This is exactly the input format `validate_gpib_
+    device_records` (the bullet above) was already documented to
+    expect - strong structural confirmation this is the genuine
+    designed caller, not a coincidental register-indirect hit. Final
+    decision: if the accumulated repair count `[0x746]+0xC` exceeds
+    `6`, gives up entirely (calls `init_comm_device_table`, returns
+    `0xFFFF`, no call to `validate_gpib_device_records` at all); else
+    if the diagnostic word `[0x746]+0xA` is nonzero, calls `validate_
+    gpib_device_records` at `0x8DB0A` with a far pointer to the local
+    plan array plus its count - success returns `1`, failure calls
+    `init_comm_device_table` and returns `0xFFFF`; else (nothing
+    flagged by either half) returns `0` cleanly. Updated `FUNCTIONS.md`'s
+    `0x95476` and `0x95B69` rows to reflect this.
   - **`FUNC_2998_C85B` (`SAVeref`) ruled out as `validate_gpib_device_
     records`'s caller, 2026-10-13, later pass**: the hypothesis above
     - that `SAVeref`'s length-mismatch path calls the pool-compaction
