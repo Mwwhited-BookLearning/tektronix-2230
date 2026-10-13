@@ -969,6 +969,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `+0x4b`), one per slot. Plausibly the two markers from `6B4B`'s
       point-tag scan (`+0x32`/`+0x34`), not proven. See fifteenth
       follow-up.
+      **2026-10-13, identified `FUNC_2998_B051` as `REFDisp?`**
+      (physical `0x8B051`): confirmed by direct, byte-exact string
+      match (its 3 possible responses, read straight from the ROM
+      binary, are `"EMPty"`/`"OFF"`/`"ON"` - exactly the manual's
+      `REFDisp?` set) and by its byte-for-byte match of the documented
+      2230-vs-2220/2221 default-argument rule. Updates the
+      two-adjacent-slots hypothesis toward "the two stored channels
+      (`REFOrmat CHAnnel:CH1/CH2`)" over the point-tag-markers guess.
+      See sixteenth follow-up.
       **2026-10-13, identified `FUNC_2998_718D`** (physical `0x8718D`):
       a "step to next/previous reference satisfying a capability bit"
       scanner, with combined numbered+lettered vs. lettered-only

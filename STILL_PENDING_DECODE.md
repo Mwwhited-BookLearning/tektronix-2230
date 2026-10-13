@@ -660,6 +660,20 @@ The single biggest cluster of open items - see
   `+0x34`, the tag-`3` and tag-`1` distances), though that specific
   mapping isn't proven. See `docs/comm-rom/command-keyword-table.md`
   section 11.
+  **Sixteenth follow-up, 2026-10-13**: identified `FUNC_2998_B051` as
+  **`REFDisp?`**, confirmed by a direct, byte-exact string match (not
+  a guess) - its three possible keyword-table-1 responses, read
+  straight from the ROM binary at the offsets it computes, are
+  `"EMPty"`, `"OFF"`, `"ON"`, exactly the manual's documented `REFDisp?`
+  response set. Also confirms the documented 2230-vs-2220/2221
+  default-argument behavior byte-for-byte (`REF1` vs `REF4`). For
+  numbered references it reads a 2-bit status from `es:[0x732+0x7E]`
+  at both `class*2` and `class*2+1` and ORs them - updates the
+  two-adjacent-slots hypothesis above: ORing two slots to decide
+  on-screen display status fits "the two stored channels, `REFOrmat
+  CHAnnel:{CH1,CH2}`" better than the two point-tag markers originally
+  guessed, though neither is proven. See `docs/comm-rom/command-
+  keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

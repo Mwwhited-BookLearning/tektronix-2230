@@ -1683,6 +1683,45 @@ dense-cluster functions in section 9) resolved this:
   of the array) `+ 26` lettered (individually tracked via the array,
   each resolved through `SUB_95067`/`FUNC_2998_D067`) `= 30`, exactly
   matching `[0x5F8]`'s full `1..30` range.
+- **`FUNC_2998_B051` identified as `REFDisp?` (confirmed by direct
+  string match, 2026-10-13)**, physical `0x8B051`. Takes no stack
+  arguments (plain `retf`, not `retf 2`) and reads `[0x5F8]` (the
+  shared `DATa SOUrce`/`TARget` reference selector) directly. First
+  validates/defaults `[0x5F8]` exactly like `REFProt`/`DATa SOU/TAR`
+  do - but with the **documented `REFDisp?` default-argument rule**
+  byte-for-byte: on the 2230 variant (`[0x732+0x1F]==0x1E`), an absent
+  explicit argument (`[0x5F7]==0`) defaults `[0x5F8]` to `1` (`REF1`);
+  on the 2220/2221 variant, it defaults to `4` (`REF4`) *and* rejects
+  any other explicit value with an error - matching the manual's
+  `REFDisp?`/`ALL REFDisp?` entries exactly ("returns the status of
+  REF1... for the 2230; returns the status of REF4 for the 2220 and
+  2221", programming-manual.md lines 866-868). For numbered references
+  (`1..4`, with `4` aliased to `1` as everywhere else), it reads a
+  2-bit status field from `es:[0x732+0x7E]`, indexed at **both**
+  `class*2` and `class*2+1` (the same two-adjacent-slots scheme as
+  `FUNC_2998_6B4B`/`6F6F`) and **ORs the two together**; for lettered
+  references (`5..30`) it instead delegates to `SUB_93B1C`/`SUB_95067`
+  (the same capability-bit resolver already traced) and keeps only bit
+  `0x02`. The combined 2-bit result selects one of three fixed
+  keyword-table-1 string offsets from `[0x6F2]` (`+0xbe`, `+0x13d`,
+  `+0x141`) - read directly from `binary/160-2998-14.bin` and confirmed
+  byte-exact to be **`"EMPty"`, `"OFF"`, and `"ON"`** respectively
+  (value bit `0x02` clear -> `EMPty`; set and bit `0x01` clear ->
+  `OFF`; both set -> `ON`). This is an exact, string-confirmed match
+  for `REFDisp?`'s documented three-way response (programming-manual.md
+  lines 850, 866-868) - not a guess. Since lettered references can
+  never be displayed (manual: "may not be displayed... directly"),
+  their path only ever yields `EMPty` or `OFF`, consistent with the
+  manual's narrower `REFDisp REF{A-Z}:EMPTY`-only lettered command.
+  **This also sharpens the two-adjacent-slots finding above**: ORing
+  `class*2`'s and `class*2+1`'s display-status bits together to decide
+  "is this reference's trace on" reads much more naturally as **the
+  reference's two stored channels (`REFOrmat CHAnnel:{CH1, CH2}`)**
+  than as the two point-tag-scan markers originally guessed - a
+  numbered reference can apparently hold a saved trace for each of
+  CH1 and CH2 independently, and is reported `ON` if either channel's
+  trace is currently displayed. Not yet proven over the point-tag
+  hypothesis, but now the better-fitting of the two.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
   simpler, narrower 2-state **report** path over the same `[0x4F6]`
   byte that `FUNC_2998_B622` (above) validates/sets with the full
