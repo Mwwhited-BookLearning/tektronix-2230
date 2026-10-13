@@ -1011,6 +1011,13 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       whole-ROM grep for an immediate `or ..., 0x40` found nothing,
       ruling out the simplest form of `PERM`'s still-missing SET-side.
       See eighteenth follow-up.
+    - `[0x690]` is a 41-distinct-value, write-only-in-ROM reason-code
+      variable (not a 2-value status pair as first thought), set across
+      six functions including the per-lettered-reference query entry
+      point `FUNC_2998_C85B`; no read site found in either ROM, likely
+      consumed by a not-yet-found caller to format the already-known
+      `STATUS <code>;` query-field substitution. See nineteenth
+      follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

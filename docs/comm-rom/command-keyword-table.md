@@ -1203,10 +1203,30 @@ dense-cluster functions in section 9) resolved this:
     already-documented `+6`/`+8` "free-space count"/"pool base
     pointer" fields below, now pinned at a 14-byte total structure
     size (7 words, `+0` through `+0xC`).
-  - `[0x690]`'s two observed values (`0x6D9`/`0x6E4`) read like a
-    message/status-code pair rather than a boolean; their real-world
-    text (if any, via the `0xFF7B`-segment string table) is not yet
-    looked up.
+  - **`[0x690]` resolved as a much larger family of codes, and its
+    "real-world text" question answered (2026-10-13)**: `SUB_96126`'s
+    two writes (`0x6D9`/`0x6E4`) are not the whole picture. Grepping
+    every `[0x690]` access across both ROM listings finds **41 distinct
+    write sites total, each storing a different literal word value**
+    (`0xF4` through `0x6E4`, strictly increasing with address), spread
+    across only six functions: `FUNC_2998_C71C`, `FUNC_2998_C85B` (the
+    per-lettered-reference query entry point identified above),
+    `FUNC_2998_D1AA`, `FUNC_2998_D476`, `FUNC_2998_DB69`, and
+    `SUB_96126` itself - i.e. each of these functions sets a different
+    fine-grained reason code at nearly every one of its own internal
+    exit points, not a shared 2-state flag. **No read site for
+    `[0x690]` exists anywhere in either ROM's disassembly** (checked
+    for every access pattern other than the literal-immediate writes
+    above), and none of the 41 write sites loads the `0xFF7B` string-
+    table segment first, so there is no firmware-internal text these
+    codes map to - the "real-world text... not yet looked up" framing
+    was the wrong question. Given `FUNC_2998_C85B` is a query-response
+    builder, the leading hypothesis is that `[0x690]` is the source for
+    the already-documented "`STATUS <code>;`" inline substitution used
+    when a query field can't currently be computed
+    (`rs232-live-session-2026-09-14.md`), most likely read back by
+    whichever *caller* invokes these six functions (not yet found) in
+    order to format that substitution - not by any code inside them.
   - Two functions immediately following `SUB_96126` in the listing,
     `FUNC_2998_E1AF` (above) and **`FUNC_2998_E1E9`** (physical
     `0x8E1E9`), share its no-static-caller shape. `FUNC_2998_E1E9`

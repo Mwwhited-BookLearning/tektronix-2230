@@ -707,6 +707,32 @@ The single biggest cluster of open items - see
   reinforcing the existing guess that `PERM` isn't a simple
   immediate-OR flag toggle in this ROM. See `docs/comm-rom/command-
   keyword-table.md` section 11.
+  **Nineteenth follow-up, 2026-10-13**: looked up `[0x690]`'s
+  "real-world text" per the sixth follow-up's open item, and found the
+  premise wrong - it isn't a 2-value status/message pair at all.
+  Grepping every `[0x690]` access in both ROM listings found **41
+  distinct write sites, each storing its own unique literal word
+  value** (`0xF4` through `0x6E4`, strictly increasing with address),
+  spread across only **six** functions (`FUNC_2998_C71C`,
+  `FUNC_2998_C85B`, `FUNC_2998_D1AA`, `FUNC_2998_D476`,
+  `FUNC_2998_DB69`, and `SUB_96126`/`FUNC_2998_E126` itself) - i.e. each
+  of these functions sets a different fine-grained reason code at
+  nearly every one of its internal exit paths. **No read site for
+  `[0x690]` exists anywhere in either ROM's disassembly** (confirmed by
+  grep for every non-immediate-write access pattern), and no write site
+  loads the `0xFF7B`-segment string-table selector first - so the
+  "real-world text" question has a clean answer: there isn't any
+  firmware-internal text lookup for these codes at all. `FUNC_2998_C85B`
+  (already identified as a per-lettered-reference query-building entry
+  point, section 11 above) is exactly the kind of function the
+  already-documented "`STATUS <code>;` inline substitution for an
+  unavailable query field" behavior (`rs232-live-session-2026-09-14.md`)
+  would need such codes for, making that the leading hypothesis for
+  what consumes `[0x690]` - most plausibly read by the *caller* of these
+  functions (not found yet) rather than by any code within them.
+  Corrected `VARIABLES.md`'s `[0x690]` row (previously said it was
+  written only by `SUB_96126` with exactly two values - both wrong).
+  See `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/
