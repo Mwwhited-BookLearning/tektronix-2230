@@ -598,8 +598,29 @@ The single biggest cluster of open items - see
   reading, none exclusively locked, and no other caller already holds
   the interlock." Open: no setter for bit `0x10`/`[0x746]+4` (the
   presumed "exclusive lock acquire" counterpart to `SUB_9471C`) has
-  been found in this cluster; `FUNC_2998_7609`'s `func_0x00086b4b`
-  branch remains untraced.
+  been found in this cluster.
+  **Tenth follow-up, 2026-10-13**: traced `FUNC_2998_7609` (physical
+  `0x87609`) and its `func_0x00086b4b`/`FUNC_2998_6B4B` branch (both
+  now confirmed). `FUNC_2998_7609` is the actual reference-to-
+  reference copy executor: dispatches numbered sources (`REF1`-`REF3`,
+  and transitively `REF4` via its `SUB_93B1C` alias) to
+  `FUNC_2998_6B4B` to translate into a `[0x742]`-record-shaped
+  descriptor, or lettered sources directly to `SUB_9471C`; both paths
+  converge on a shared format check, `disable_item_pair`/
+  `print_and_reset_acq_buffers`/poll-loop sequence, and a payload
+  `memcpy_far` whose length is recomputed by scanning the source bytes'
+  low 2 bits for values `1`/`3` - a previously-undocumented structural
+  fact that waveform-point bytes carry a 2-bit status tag, meaning not
+  yet confirmed. Also resolved (correcting an earlier, imprecise
+  description) that `FUNC_2998_B622` computes **two distinct** values
+  around this call, not one shared category: a source/target format
+  class (`0..3`, lettered/`ACQ` collapsing to `0`) and a separate
+  "either endpoint is `REF1`-or-`REF4`" priority value, the latter
+  gating a mandatory format-class match only when `REF1`/`REF4` is
+  actually involved - narrowing the long-open `{REF1,REF4}`-pairing
+  rejection rationale to "fixed, format-specific storage slots," though
+  which of `REF1`/`REF4` is the "short" vs. "long" format class is
+  still open. See `docs/comm-rom/command-keyword-table.md` section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

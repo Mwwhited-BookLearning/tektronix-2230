@@ -936,6 +936,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       vs. exclusively-locked), not a dirty-flag pair - which in turn
       explains `SUB_96126`'s "all zero" idle check. No setter for the
       exclusive-lock bit/counter found yet. See ninth follow-up.
+      **2026-10-13, traced `FUNC_2998_7609`/`FUNC_2998_6B4B`** (physical
+      `0x87609`/`0x86B4B`): the real reference-to-reference copy
+      executor and its numbered-reference-to-`[0x742]`-record
+      translator. Also corrected `FUNC_2998_B622`'s own "`1`-or-`4`
+      category" description into two distinct values (a format class
+      and a separate REF1-or-REF4 priority value) whose mandatory match
+      (only when REF1/REF4 is an endpoint) narrows the `{REF1,REF4}`-
+      pairing rejection's rationale. New open item: waveform-point
+      bytes carry a 2-bit status tag (scanned by both functions),
+      meaning not yet confirmed. See tenth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

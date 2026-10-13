@@ -1398,6 +1398,125 @@ dense-cluster functions in section 9) resolved this:
       checksum`), consistent with those functions' own documented
       roles in `FUNCTIONS.md` - but this is inference from naming and
       timing, not a traced causal link.
+  - **Correction (2026-10-13, ground-truth re-trace) to the "`1`-or-`4`
+    category value... from a capability bit" phrasing above**: direct
+    reads of `FUNC_2998_B622`'s own body (not just its callees) show
+    this was imprecise - there are **two distinct, independently-
+    computed values**, not one, and neither comes directly from a
+    capability bit:
+    - A **source/target "format class"** `[bp-0xa]`/`[bp-0x12]` (one
+      computed for `[0x4F6]`, one for `[0x5F8]`, right after the
+      `SUB_93B1C` calls): `0`/`1`/`2`/`3` pass through unchanged for a
+      selector in that range, a selector of `4` maps to `1` (the same
+      `REF4`->`REF1` alias already seen in `SUB_93B1C` - consistent,
+      since by this point `[0x4F6]`/`[0x5F8]` have *not yet* been
+      converted to letters, so this is a second, independent place the
+      alias is applied), and anything `>4` (the lettered range) maps to
+      `0` - i.e. lettered sources and the live acquisition (`ACQ`,
+      value `0`) collapse to the *same* class `0` here.
+    - A separate **"either endpoint is REF1-or-REF4" priority value**
+      `[bp-0x1e]`: `1` if `[0x4F6]==1` or `[0x5F8]==1`; else `4` if
+      `[0x4F6]==4` or `[0x5F8]==4`; else `0` (neither endpoint is
+      numbered-and-exactly-1-or-4). This is the value actually passed
+      to `SUB_93925` (as its `[bp+8]` target-category argument,
+      alongside `[bp-0x12]` as `[bp+6]`) on the immediate-`ACQ`-source
+      path - correcting the earlier description of `SUB_93925`'s own
+      arguments as a single shared category.
+    - For the non-`ACQ`, reference-source path: when the source is
+      **numbered** (`[bp-0xa]` in `1..3`, i.e. original `[0x4F6]` in
+      `{1,2,3,4}` since `4` aliases to `1`), the `[0x732]+0x7E`-indexed
+      capability-bit check gates a read of **one byte** from the
+      `0x10`-stride `[0x18C]` table (indexed by `[0x4F6]`'s *class*,
+      not the raw selector) - its bit `0x01` sets a new **record-
+      format-class value** `[bp-0x18]` to `4` (set) or `1` (clear).
+      When the source is **lettered** (`[bp-0xa]==0` and `[0x4F6]>4`):
+      instead calls `SUB_9471C`/`SUB_94D9C` back-to-back (acquire then
+      immediately release) purely to peek at the fetched `[0x742]`
+      record's own first byte (offset `+0`) - bit `0x01` of *that*
+      byte sets the same `[bp-0x18]` to `4` or `1`, by the identical
+      rule. Either way, `[bp-0x18]` ends up a `1`-or-`4` **record-
+      format class**, derived from a format-class capability bit
+      specific to the source endpoint (table-driven for numbered,
+      record-embedded for lettered) - not from `[0x4F6]`/`[0x5F8]`
+      directly.
+    - The actual compatibility gate: **only when `[bp-0x1e] != 0`**
+      (either endpoint is specifically `REF1` or `REF4`) must
+      `[bp-0x18]` exactly equal `[bp-0x1e]` (both `1`, or both `4`) or
+      the copy is rejected with error `0x1B`. When `[bp-0x1e]==0`
+      (neither endpoint is `REF1`/`REF4`), this check is **skipped
+      entirely** and the copy proceeds unconditionally. This is a
+      **separate mechanism** from the earlier, unconditional
+      `{[0x4F6],[0x5F8]} == {1,4}` pairing rejection (error `0x15`,
+      checked before any of this) - together they strongly suggest
+      `REF1` and `REF4` are fixed, format-specific storage slots (one
+      "short"/class-`1`, one "long"/class-`4`, which is which not
+      pinned down) that reject any copy whose source's actual record
+      format doesn't match the specific numbered endpoint involved,
+      while lettered references and `REF2`/`REF3` are more flexible.
+      This substantially narrows (without fully explaining the
+      hardware/format reason for) the previously-open "`{REF1,REF4}`
+      pairing rejection's rationale" item.
+    - On success (either the match-required or match-skipped path),
+      both branches call the same sequence: `draw_pending_line_segment`
+      (arg `3`) -> `FUNC_2998_7609` (physical `0x87609`, args: resolved
+      source letter `[bp-7]`, resolved target letter `[bp-0xf]`, and a
+      status-out far pointer) -> `reset_plot_home_or_acq` (arg `3`);
+      any nonzero status from either call sets error `0x1B`, else (if
+      `[bp-0x12] != 0`, i.e. target is numbered) `or`-sets `[0x736]`
+      bit `0x200` (the shared redraw-pending flag, confirmed again).
+  - **`FUNC_2998_7609` traced (2026-10-13)** - the actual
+    reference-to-reference copy executor. Dispatches on its resolved
+    source-letter argument: `1..3` (numbered `REF1`/`REF2`/`REF3`, and
+    transitively `REF4` too, since it was already aliased to `1` by
+    `SUB_93B1C` *before* reaching this function - this function cannot
+    distinguish `REF1` from `REF4` at all) calls `FUNC_2998_6B4B`
+    (below) to translate the numbered reference into a `[0x742]`-
+    record-shaped descriptor on the stack; anything else (a lettered
+    `'a'..'z'` byte) calls `SUB_9471C` directly to fetch the real
+    `[0x742]` record pointer for that letter. Both paths converge on
+    shared logic: a target-format compatibility check (reads
+    `[0x1BE4]`/`[0x1BE5]` and sums `[0x46]`/`[0x4A]` against a `0xFFF`
+    threshold to decide whether to call `disable_item_pair` once more),
+    then `print_and_reset_acq_buffers`, a `SUB_97C95`/`SUB_97C6E`-gated
+    poll loop around `restart_current_task` (identical shape to
+    `SUB_93925`'s own retry loop), and finally the actual payload
+    transfer: pointer arithmetic against three more absolute tables
+    (`[0x1C02]`, `[0x1C80]`, `[0x1C94]`) to locate the destination
+    record's base, a `memcpy_far` of a small fixed header-ish region,
+    and then a byte-by-byte scan of the source payload counting bytes
+    whose low 2 bits equal `3` or `1` to recompute a record/point
+    count pair written into the destination record's `+0x32`/`+0x34`
+    fields. This last scan is a genuinely new, not-previously-
+    documented structural finding: **individual stored waveform-point
+    bytes carry a 2-bit status tag in their low bits**, and this
+    routine re-derives record/point boundaries from that tag when
+    repackaging data into the `[0x742]` record format - plausible
+    candidates for the tag's meaning (segment-start/segment-end/
+    continuation markers) are not confirmed; flagging as open rather
+    than guessing further.
+  - **`FUNC_2998_6B4B` traced (2026-10-13)** = physical `0x86B4B`, the
+    numbered-reference-to-record translator called by `FUNC_2998_7609`
+    above. Given a numbered-reference class (`1..3`) and an output far
+    pointer, it gates on the same per-reference capability-bit-pair
+    table `FUNC_2998_B622` already consults via `[0x732]+0x7E`+index -
+    here referenced directly at its **absolute address `[0x1BE2]`**,
+    which arithmetically confirms `0x1BE2 == 0x1B64` (the already-known
+    `[0x732]` resolution) `+ 0x7E` exactly, tying the two references
+    together as the literal same byte for the first time rather than
+    just "same offset, presumably same table." It then fills the
+    output record with fields pulled from several more absolute
+    main-ROM tables - `[0x1DC]`+index, a 10-byte-stride table at
+    `[0x1C14]`, the same `[0x1BE2]` pair copied into `+0x26`/`+0x27`,
+    and 14-byte-stride tables at `[0x576]`/`[0x578]`/`[0x580]` - into
+    output offsets `+0x10` through `+0x31`, consistent with assembling
+    a `[0x742]`-style 78-byte descriptor for a numbered reference's
+    data from scattered per-reference tables rather than a single
+    contiguous struct (unlike lettered references, which already have
+    one). The remainder of the function (from offset `+0x32` onward)
+    performs the same point-tag-scanning length computation described
+    in `FUNC_2998_7609` above. Individual table fields' real-world
+    meaning (beyond "feeds a `[0x742]`-shaped record") not
+    characterized one-by-one.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
