@@ -863,6 +863,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       open item: `[0x73E]`/`[0x746]`/`[0x5F8]` (85-105 references each,
       undocumented), a 12-byte-stride record array distinct from
       everything else in this cluster - needs its own session.
+      **2026-10-13: resolved that new item.** `[0x73E]`/`[0x742]`
+      (12-byte and 78-byte stride, 26 records each, indexed in lockstep)
+      are the lettered reference-memory (`REFA`-`REFZ`) protection-flag
+      and waveform-data arrays respectively; `[0x746]`/`[0x74A]` are a
+      small heap/pool-header struct for `[0x742]`'s waveform data;
+      `[0x5F8]` is the `1..30` reference selector (`1..4`=numbered,
+      `5..30`=lettered). Strong candidate identity: `REFProt`/`REFStat?
+      PROTect`. See `command-keyword-table.md` section 11 and
+      `VARIABLES.md`. Still open within this subsystem: `[0x742]`'s
+      individual fields, `[0x746]`/`[0x74A]`'s exact semantics, the
+      lock/perm SET-side write patterns (only unlock was traced), and
+      firm confirmation of the separate "ACQ"/"REF" 2-state resolver's
+      (`[0x4F6]`) owning command.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

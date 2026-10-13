@@ -1082,41 +1082,117 @@ command's own known record count (would need `ACQuisition`'s own
 `[0x604]`-space ID, not yet determined - its table-3 position (`11`)
 and its `[0x604]`-space ID appear to be different numbering schemes).
 
-### A second, larger, still-unresolved structure found while tracing this: `[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]`
+### A second, larger structure found while tracing this: `[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]` - the lettered reference-memory (`REFA`-`REFZ`) record array, and a strong `REFProt`/`REFStat? PROTect` identification (found 2026-10-13)
 
 While confirming `[0x702]`, grepped the remaining "not yet
 characterized" section-7 entries and found `[0x73E]`/`[0x746]` are
 each referenced **85-105 times** across a large block of code
-(physical roughly `0x8B27D`-`0x8B335` and much further, lines
-~15898-20117 of the listing) - clearly a central, heavily-used
-structure, not a small table. What's confirmed so far:
+(physical roughly `0x8B1E8`-`0x8CD94`, lines ~15826-20117 of the
+listing) - clearly a central, heavily-used structure. Tracing a
+cluster of small sibling functions with no static callers
+(`FUNC_2998_B1E8` through `FUNC_2998_B622`, same
+no-caller-found/register-indirect-dispatch shape already seen for
+other comm-ROM sibling clusters, e.g. "block 7" in section 5 and the
+dense-cluster functions in section 9) resolved this:
 
-- `[0x73E]` is a far pointer to a **12-byte-stride record array**,
-  indexed by `word ptr [0x5F8]` (itself not yet documented anywhere)
-  via a chain through `SUB_93B1C`/`SUB_93B7E`. Record field `+0xA` is a
-  flag byte, modified with `and`/`or` against literal masks (`0xBB`,
-  `0xBF`, `0x04` seen so far).
-- `[0x746]` is a far pointer whose target word is reset to `0`
-  immediately after each `[0x73E]` record update - shaped like a
-  per-record "dirty"/pending-change counter or flag, not yet confirmed.
-- `[0x5F8]` itself is validated against two range checks seen
-  repeatedly (`>0x1E` -> error `0x623=0x15`; `<=4` -> also error
-  `0x15` in at least one path; valid range looks like `5..0x1E`
-  (`5..30`) in the function read so far, but other sites compare it
-  against `1`/`4`/`5` with different branch shapes, so this may cover
-  more than one valid range depending on context) - writes `0x15` to
-  the generic comm-ROM error-code byte `[0x623]` on failure. **Not**
-  confirmed to be the same `0x15` as the still-open `[0x1B83]`/
-  `MESsage` dead-code question elsewhere in this doc - that's a
-  different variable, and this may just be a coincidental shared
-  literal; `[0x623]` is already documented (`VARIABLES.md`'s `[0x5F4]`
-  row) as a general error-status cell with several unrelated codes
-  written to it.
-- `[0x742]`/`[0x74A]` are referenced throughout the same code region
-  (27 and 14 hits respectively) but their specific role within it
-  hasn't been traced yet.
+- **`[0x73E]` is a far pointer to a 12-byte-stride, 26-record array -
+  one record per lettered reference memory `REFA`-`REFZ`.** Confirmed
+  by `FUNC_2998_C85B` (physical `0x8C85B`), a separate entry point
+  that takes a raw ASCII lowercase letter in `[bp+6]` (not the numeric
+  selector below) and computes the record index directly as
+  `letter - 'a'` (`add dx, -0x61`), landing in `0..25` - then uses that
+  same index, times stride `0xC`, against `[0x73E]`, and times stride
+  `0x4E` (78) against the parallel array `[0x742]` (see below). This
+  pins both arrays' record count at 26 and confirms they're indexed in
+  lockstep by the same per-letter index.
+- **`[0x5F8]` is the command-level reference-memory selector**: `1-4`
+  = the four numbered references `REF1`-`REF4`; `5-30` = the 26
+  lettered references `REFA`-`REFZ`. It's resolved into `[0x73E]`/
+  `[0x742]`'s zero-based record index via a helper chain
+  `SUB_93B1C` -> `SUB_93B7E` -> `SUB_96126`; the index arithmetic is
+  consistent with a plain `[0x5F8] - 5` once resolved (matching
+  `FUNC_2998_C85B`'s independent `letter - 'a'` math one-for-one, since
+  letter `'a'` = lettered reference #1 = `[0x5F8]` value `5`).
+  Different call sites range-check `[0x5F8]` differently depending on
+  whether numbered references are a valid target for that particular
+  operation (see below); out-of-range writes `0x15` to the generic
+  comm-ROM error-status byte `[0x623]` (already documented via
+  `VARIABLES.md`'s `[0x5F4]` row as holding several unrelated codes -
+  **not** confirmed to be the same `0x15` as the separate, still-open
+  `[0x1B83]`/`MESsage` dead-code question elsewhere in this doc, which
+  concerns a different variable entirely).
+- Record field `+0xA` (of `[0x73E]`'s per-letter record) is a **flag
+  byte encoding that reference's write-protection state**:
+  `FUNC_2998_B3A3` (the GET/query-side resolver) tests bit `0x04` first
+  -> keyword-table-1 offset `+0x207` (`"UNLock"`); else bit `0x40` ->
+  `+0x14D` (`"PERM"`); else (neither bit) -> `+0x11A` (`"LOCk"`). It
+  special-cases `[0x5F8]` in `1..4` (the numbered references) to return
+  `"UNLock"` directly without touching the array at all - numbered
+  references have no protection state. `FUNC_2998_B339` (the SET-side)
+  only accepts `[0x5F8]` in `5..30`, rejecting `1..4` as an error - you
+  cannot protect a numbered reference. On success it `or`s `0x44`
+  (bits `0x04`+`0x40` together) into the record's `+0xA` byte; since
+  the GET-side resolver checks bit `0x04` first, this reports
+  `"UNLock"` afterward regardless of bit `0x40`'s state - i.e. `0x44`
+  appears to be specifically the "unlock" write pattern, leaving room
+  for separate "lock" (clear `0x04`, set nothing) and "perm" (clear
+  `0x04`, set `0x40`) write patterns elsewhere in the same sibling
+  cluster that weren't individually traced.
+- **Candidate real-world identity (strong, not yet 100% proven by a
+  direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
+  UNLocked}` and its counterpart query `REFStat? PROTect`**
+  (`docs/programming-manual.md` lines ~852-865, ~882). The match is
+  unusually clean: the three decoded keywords (`LOCk`/`PERM`/`UNLock`)
+  are exactly `REFProt`'s three documented states; `REFProt` is
+  documented as applying only to the lettered references `REFA`-`REFZ`
+  (never the numbered ones), matching `FUNC_2998_B339`'s SET-side
+  rejection of `1..4`; and `REFStat? PROTect` is documented as
+  returning a **thirty**-character `U`/`L`/`P` string "from REF1 to
+  REFZ" - `4` numbered (always `U`, matching `FUNC_2998_B3A3`'s
+  hardcoded `1..4` -> `"UNLock"` path) `+ 26` lettered (individually
+  tracked via the array) `= 30`, exactly matching `[0x5F8]`'s full
+  `1..30` range.
+- `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
+  separate, simpler 2-state mechanism, **not** touching the `[0x73E]`
+  array at all: a byte flag `[0x4F6]` is set to `0` unconditionally by
+  `FUNC_2998_B1E8`, or to `[0x5F8]`'s low byte (after the same `1..30`
+  range check) by `FUNC_2998_B1FC`; `FUNC_2998_B227` then reports
+  keyword-table-1 offset `+0xE` (`"ACQ"`) if `[0x4F6]==0`, else `+0x17B`
+  (`"REF"`). Candidate identity (weaker, more tentative): `DATa
+  SOUrce`, whose query response in the manual's own example literally
+  reads `DAT SOU:ACQ,TAR:REF1,...` (programming-manual.md line 909) -
+  i.e. the data source is either the live acquisition (`"ACQ"`, value
+  `0`) or a specific reference memory (`"REF"` + number, any nonzero
+  `[0x5F8]`). Not confirmed; `REFOrmat TARget`/`CURSor TARget` (lines
+  757-759, 852-872), which draw the same ACQ-vs-reference distinction,
+  remain alternative candidates.
+- `[0x742]` is a **parallel 78-byte (`0x4E`)-stride, 26-record array**,
+  indexed in lockstep with `[0x73E]` (confirmed by `FUNC_2998_C85B`'s
+  shared index into both). Its fields include far-pointer pairs
+  (`+0x36`/`+0x38`, `+0x3C`/`+0x3E`) and length words (`+0x3A`,
+  `+0x40`) that get `memcpy_far`'d and pointer-arithmetic'd together in
+  `FUNC_2998_C85B` and its continuation (physical `0x8C7AB`-`0x8CD94`+)
+  - consistent with storing the actual saved waveform curve
+  data/length for each lettered reference (the data behind `REFOrmat`
+  and the reference's own stored trace), not `REFProt`'s simple flag.
+  Not characterized further (field-by-field).
+- `[0x746]` is a small far-pointer **pool-header struct** (not a record
+  array) with fields referenced at `+0`, `+2`, `+4`, `+6`, `+8` - `+8`
+  acts as a pool base pointer that per-record offsets get added to;
+  `+4`/`+6` behave like a free-space count/limit; `+0`/`+2` get reset
+  around each `[0x73E]` record update, shaped like a per-operation
+  dirty flag/counter. `[0x74A]` is a second far pointer used alongside
+  `[0x746]+8` in the same compaction code; its distinct role from
+  `[0x746]` itself isn't pinned down. Together these look like a
+  shared waveform-data heap/compaction manager for the 26 lettered
+  references' stored curve data (`[0x742]`'s payload) - a real,
+  distinct subsystem neighboring the protection-flag mechanism, not
+  traced field-by-field.
 
-This is evidently a substantial, real structure (far larger than a
-"dense cluster" leftover) - flagging it as a distinct, newly-found open
-item for a dedicated future pass rather than rushing a conclusion here.
-See `STILL_PENDING_DECODE.md`/`TODO.md` for the forward pointer.
+See `VARIABLES.md` for the per-variable rows and `STILL_PENDING_DECODE.md`/
+`TODO.md` for what within this subsystem remains open (`[0x742]`'s
+individual fields beyond the far-pointer/length pairs; `[0x746]`/
+`[0x74A]`'s exact pool-management semantics; the lock/perm SET-side
+write patterns other than `FUNC_2998_B339`'s unlock case; and firm
+confirmation of the `"ACQ"`/`"REF"` 2-state resolver's owning
+command).

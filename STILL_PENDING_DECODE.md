@@ -463,21 +463,32 @@ The single biggest cluster of open items - see
   command's record count and starting-record offset into the shared
   12-byte block-6 array based at `[0x6FE]`. Full writeup in
   `command-keyword-table.md` section 10; `VARIABLES.md` has the new
-  row. Tracing it also surfaced a **new, large, still-unresolved
-  structure**: `[0x73E]` (a 12-byte-stride record array, flag byte at
-  `+0xA`) and `[0x746]` (a per-record counter/flag reset to 0 after
-  updates) are each referenced 85-105 times across a big code region,
-  indexed by an undocumented variable `[0x5F8]`, with out-of-range
-  values writing `0x15` to the generic comm-ROM error-code byte
-  `[0x623]` (already documented elsewhere, e.g. `[0x5F4]`'s row, as a
-  general error-status cell with several unrelated error codes seen
-  written to it - this `0x15` is **not** confirmed to be the same
-  `0x15`/`MESsage` discussed above; that's a different variable,
-  `[0x1B83]`, and may just be a coincidental shared literal);
-  `[0x742]`/`[0x74A]`
-  are referenced in the same region but untraced. This is bigger than
-  a leftover "dense cluster" entry and needs its own dedicated pass -
-  not attempted further this session.
+  row.
+  **Third follow-up, 2026-10-13**: the large structure surfaced while
+  tracing `[0x702]` (`[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]`, indexed by
+  `[0x5F8]`) is now substantially resolved: it's the **lettered
+  reference-memory (`REFA`-`REFZ`) record array**. `[0x73E]` (12-byte
+  stride, 26 records) holds a write-protection flag byte at `+0xA`
+  (`"UNLock"`/`"PERM"`/`"LOCk"`, via keyword-table-1); `[0x742]`
+  (78-byte stride, same 26-record indexing) holds the actual saved
+  waveform data pointers/lengths; `[0x746]`/`[0x74A]` are a small
+  pool-header struct managing `[0x742]`'s waveform-data heap.
+  `[0x5F8]` selects `1..4` = numbered refs `REF1`-`REF4` or `5..30` =
+  lettered refs `REFA`-`REFZ`, resolved into the array index via
+  `SUB_93B1C`/`SUB_93B7E`/`SUB_96126` - confirmed independently by
+  `FUNC_2998_C85B`, a sibling entry point that derives the same index
+  directly from a raw letter (`letter - 'a'`). Strong candidate
+  real-world identity: `REFProt`/`REFStat? PROTect` (keyword states and
+  the 4-numbered + 26-lettered = 30-total count both match the manual
+  exactly). Full writeup in `command-keyword-table.md` section 11;
+  `VARIABLES.md` has rows for all 6 variables. Remaining open within
+  this subsystem: `[0x742]`'s individual fields beyond the far-pointer/
+  length pairs, `[0x746]`/`[0x74A]`'s exact pool semantics, the lock/
+  perm SET-side write patterns (only the unlock case, `FUNC_2998_B339`,
+  was traced), and firm confirmation of the separate "ACQ"/"REF"
+  2-state resolver's (`FUNC_2998_B1E8`/`B1FC`/`B227`, `[0x4F6]`) owning
+  command (candidates: `DATa SOUrce`, `REFOrmat TARget`, `CURSor
+  TARget`).
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
