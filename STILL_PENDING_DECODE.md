@@ -689,8 +689,16 @@ The single biggest cluster of open items - see
   better than `OFF`; `FUNC_2998_AD17`'s `[bp+6]!=0` branch (sets only
   the "selected" bit via `set_item_pair_active`) fits `ON`. The `[bp+6]
   ==0` branch (calls only `print_and_reset_acq_buffers`, no flag-bit
-  touch) is not yet matched to `OFF` or anything else. See
-  `docs/comm-rom/command-keyword-table.md` section 11.
+  touch) is not yet matched to `OFF` or anything else. **Checked
+  further, 2026-10-13**: confirmed by direct read that
+  `print_and_reset_acq_buffers` really doesn't touch `[0x1BE2]`
+  anywhere in its own body (ruling out the "maybe it clears the bit
+  internally" guess), and that the class-`2`/`3` branch exhibits the
+  identical `[bp+6]==0` -> "`print_and_reset_acq_buffers` only, no
+  flag touch" behavior as the class-`1`/`4` branch - so this is
+  consistent across both independently-gated paths, not a one-off
+  oversight, which only deepens the puzzle rather than resolving it.
+  Still open. See `docs/comm-rom/command-keyword-table.md` section 11.
   **Eighteenth follow-up, 2026-10-13**: resolved the `B3A3`-vs-`B568`
   bit-mapping "inconsistency" from the fourth follow-up below - it was
   largely a transcription error in how this doc described `B3A3`'s own

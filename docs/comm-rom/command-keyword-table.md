@@ -1800,13 +1800,25 @@ dense-cluster functions in section 9) resolved this:
     guarded by the pre-existing bit-`0x02` check above - i.e. you can't
     turn a reference ON while it's `EMPty`) fits **`REFDisp REF{1-4}:
     ON`** well. `FUNC_2998_AD17`'s `[bp+6]==0` branch calls only
-    `print_and_reset_acq_buffers` (no flag-bit touch at all, per its
-    own `FUNCTIONS.md` entry) - **not yet matched to `:OFF`** or to any
-    other documented `REFDisp` state; it may belong to a different,
-    unrelated command sharing this same dispatcher body, or `:OFF`'s
-    actual bit-clear may happen inside `print_and_reset_acq_buffers`'s
-    own "shared buffer-init tail" in a way not yet traced into. Not
-    resolved.
+    `print_and_reset_acq_buffers` (no flag-bit touch at all - confirmed
+    by direct read of `print_and_reset_acq_buffers`'s own body, physical
+    `0xF0414` in the main ROM: it resets acquisition-buffer pointers and
+    calls `update_plot_position`, nothing else; the "maybe it clears the
+    bit internally" hedge below is ruled out) - **not yet matched to
+    `:OFF`** or to any other documented `REFDisp` state. **Checked
+    2026-10-13 whether this is path-specific**: the class-`2`/`3` branch
+    (`L_8AE31`, which gates on `es:[0x732+0x7E]` directly rather than
+    `FUNC_2998_6B4B`) does the exact same thing on its own `[bp+6]==0`
+    side - `print_and_reset_acq_buffers` only, no `deselect_item_pair`/
+    `disable_item_pair` call either. Identical treatment across both
+    independently-gated branches rules out "oversight in one code path"
+    and makes it look deliberate, which only sharpens the puzzle: if
+    `[bp+6]==0` really is `:OFF`, turning an already-`:ON` reference
+    `:OFF` would leave the "selected" bit set and the display
+    unchanged, per `FUNC_2998_B051`'s own decode. Possible explanations,
+    still unresolved: `AD17` isn't exclusively a `REFDisp` handler (it
+    may be shared with another command using `[bp+6]` for an unrelated
+    purpose), or `[bp+6]`'s boolean isn't ON-vs-OFF at all.
   - The device-variant gate at entry (`es:[0x732+0x1F]==0x14` -> error
     `0x1e`, skipping the whole function) uses a *different* variant
     byte value than the already-documented `0x1E`-for-2230 constant,
