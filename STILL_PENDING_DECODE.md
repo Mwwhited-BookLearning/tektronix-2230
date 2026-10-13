@@ -819,9 +819,29 @@ The single biggest cluster of open items - see
   handlers - making a boot-time or self-test integrity scrub, or purely
   internal calls from `SUB_9471C`/`SUB_94D9C`'s own acquire/release
   logic, a more plausible home for the still-missing caller than a live
-  GPIB/RS-232 command dispatcher. `FUNC_2998_DB69`'s own identity
-  remains untraced. See `docs/comm-rom/command-keyword-table.md`
-  section 11.
+  GPIB/RS-232 command dispatcher.
+  **Twenty-third follow-up, 2026-10-13, later pass**: closed the
+  sixth and last `[0x690]`-writing orphan function the same way -
+  `FUNC_2998_DB69` is byte-for-byte `validate_gpib_device_records`
+  (native `0x8DB69` = aliased `0x95B69 - 0x8000`), already named but
+  under a stale high-level description ("searches for a matching/
+  available entry," estimated ~1000 lines). The real ~192-line body
+  is a **pool defragmentation/compaction pass** over the `[0x73E]`/
+  `[0x742]` lettered-reference waveform heap: given a caller-supplied
+  plan array of (position, record-index, delete-flag) triples, it
+  discards flagged records, leaves already-compacted ones in place,
+  and physically slides the rest down to close gaps, rewriting
+  `[0x73E]+0`/`+4` and `[0x742]`'s far pointers and recomputing
+  checksums as it goes. On success it writes the new compaction
+  cursor into `[0x746]+8` and the remaining space into `[0x746]+6` -
+  **correcting `+8`'s role** from a static "pool base pointer" to a
+  live watermark (offset just past the last used byte), with `+6`
+  confirmed as `limit - watermark`. No static caller found (same
+  shape as its siblings), but this makes `FUNC_2998_C85B` (`SAVeref`)
+  itself - on its length-mismatch path, when an existing record's
+  slot is too small for new data - the leading candidate for the
+  still-missing caller, though unconfirmed by a found call site. See
+  `docs/comm-rom/command-keyword-table.md` section 11.
   **Thirteenth follow-up, 2026-10-13**: identified `FUNC_2998_718D`
   (physical `0x8718D`) while chasing the two-adjacent-slots question
   above (didn't resolve it, but found this instead) - a "step to next/

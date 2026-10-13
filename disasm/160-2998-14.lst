@@ -19789,7 +19789,7 @@ L_8DB63:
     2998:DB65  [8DB65]  8be5            mov     sp, bp
     2998:DB67  [8DB67]  5d              pop     bp
     2998:DB68  [8DB68]  cb              retf    
-FUNC_2998_DB69:
+validate_gpib_device_records:
     2998:DB69  [8DB69]  55              push    bp
     2998:DB6A  [8DB6A]  8bec            mov     bp, sp
     2998:DB6C  [8DB6C]  83ec22          sub     sp, 0x22

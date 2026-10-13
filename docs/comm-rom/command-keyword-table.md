@@ -2023,6 +2023,49 @@ dense-cluster functions in section 9) resolved this:
     below) and force-clears bits `0x08`/`0x10` plus the `+8` handle
     count (forcibly releasing any stuck read/exclusive lock) without
     touching the waveform data itself.
+  - **`FUNC_2998_DB69` identity closed, 2026-10-13, later pass: it's
+    `validate_gpib_device_records`**, already named at its
+    0x9000-segment-aliased address (`0x95B69`), via the exact same
+    native-address-twin pattern as the four functions above
+    (`0x8DB69` = `0x95B69 - 0x8000`). This is the **sixth and last**
+    of the nineteenth follow-up's `[0x690]`-writing orphan functions,
+    closing that list completely. Reading the full ~192-line body at
+    its native address (`(far ptr device_array, count)`, matching
+    `FUNCTIONS.md`'s already-recorded `(device_off, device_seg,
+    count)` stack order) shows its real behavior is considerably more
+    specific than that entry's existing "searches ... for a matching/
+    available entry" description: it's a **pool defragmentation/
+    compaction pass** over the lettered-reference waveform-data heap,
+    not a lookup. For each 6-byte entry in the caller-supplied plan
+    array (`+0` = a target/compare position, `+2` = the `0..25`
+    `[0x73E]`/`[0x742]` record index, `+4` = a delete flag): if the
+    entry's `+4` flag is nonzero, the record is discarded outright
+    (`[0x690]=0x5AA`, `init_gpib_record` + `build_gpib_message_
+    checksum`); if `+4==0` and the entry's `+0` field already sits at
+    or before the running compaction cursor, the record is left in
+    place and just its length is folded into the cursor (no physical
+    move); otherwise (`+0` lies past the cursor and `+4==0`) the
+    record's waveform bytes are physically byte-copied down to the
+    cursor position (`[0x690]=0x585`), `[0x73E]+0`/`+4` and
+    `[0x742]+0x36..+0x3E` are rewritten to the new pool-base-relative
+    offset, and `build_gpib_message_checksum` recomputes its
+    checksums. If the running cursor would ever exceed the `0x6800`
+    pool bound, the whole pass fails (returns `1`); otherwise, on
+    success, it writes the final cursor into **`[0x746]+8`** and
+    `0x6800` minus that cursor into **`[0x746]+6`**. This **reframes
+    `[0x746]+8`**: not a static "pool base pointer" as first guessed,
+    but a **live watermark - the offset one past the last byte
+    currently in use** (consistent with `+6` already being confirmed
+    as the free-space count: `limit - watermark`). No static caller
+    found (same no-caller/register-indirect-dispatch shape as the
+    rest of this cluster), but this strongly suggests the missing
+    caller is whatever logic decides the pool is too fragmented/full
+    to satisfy a pending `SAVeref`/`DATa TARget` write and needs to
+    compact it first - plausibly `FUNC_2998_C85B` (`SAVeref`) itself,
+    on its length-mismatch path, though that call site wasn't found by
+    static search either. Updated `FUNCTIONS.md`'s `0x95B69` entry and
+    added the matching `0x8DB69` `FUNCTIONAL_NAMES`/`PARAMETER_NAMES`
+    entries.
   - `build_gpib_message_checksum` (`D0C2`, immediately preceding
     `D1AA`/`validate_gpib_record_consistency` in the listing) is the
     **write-side counterpart**: given an index, it computes and stores

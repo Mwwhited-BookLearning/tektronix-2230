@@ -218,7 +218,7 @@ FUNCTIONAL_NAMES = {
     # --- Renamed during the "rename everything" pass (session:
     # keep going until everything is renamed) - see NOTES.md "The
     # readout vector display list" and FUNCTIONS.md for evidence. ---
-    # These four are the comm ROM's own *native* addresses for
+    # These five are the comm ROM's own *native* addresses for
     # functions already named below only at their 0x9000-segment-
     # aliased call-target address (reached via `lcall foo ; 0x9471,
     # offset` from sibling GPIB-record functions). Confirmed identical
@@ -230,6 +230,7 @@ FUNCTIONAL_NAMES = {
     0x8D476: "scan_and_repair_gpib_records",       # = 0x95476 native
     0x8D0C2: "build_gpib_message_checksum",        # = 0x950C2 native
     0x8E1E9: "init_gpib_record",                   # = 0x961E9 native
+    0x8DB69: "validate_gpib_device_records",       # = 0x95B69 native
 
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at
@@ -5145,6 +5146,10 @@ PARAMETER_NAMES = {
     # - the REVERSE of FUNCTIONS.md's previous "(count, far ptr
     # device_array)" prose order (fixed there to match this).
     0x95B69: {6: "device_off", 8: "device_seg", 0xA: "count"},
+    # Native-address twin of 0x95B69 above (same 0x9000-segment alias
+    # rule as validate_gpib_record_consistency etc.) - confirmed
+    # byte-for-byte identical, 2026-10-13.
+    0x8DB69: {6: "device_off", 8: "device_seg", 0xA: "count"},
     # format_selftest_result_string (0xE0C3D): "(status_bits)" - the
     # single argument, tested against 0x20/0x02/0x01 bit patterns.
     0xE0C3D: {6: "status_bits"},

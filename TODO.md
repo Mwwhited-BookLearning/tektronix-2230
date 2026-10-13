@@ -1056,6 +1056,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       so a boot/self-test scrub or internal acquire/release calls are
       now the more plausible missing caller than a live command
       dispatcher. See twenty-second follow-up.
+      **2026-10-13, later pass**: closed the sixth/last `[0x690]`-
+      writer too - `DB69` = `validate_gpib_device_records` (native
+      `0x8DB69`), a pool defragmentation/compaction pass over
+      `[0x73E]`/`[0x742]`, not the "lookup" its stale description
+      claimed. Corrects `[0x746]+8` from "pool base pointer" to a live
+      watermark. Makes `SAVeref` (`C85B`)'s own length-mismatch path
+      the leading (still unconfirmed) candidate for the caller. See
+      twenty-third follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see
