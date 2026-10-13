@@ -970,6 +970,13 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       shape (`[0x52A]` delta into `[0x4C6]`, stepping `[0x4CA]`+context
       on a +-250 threshold crossing) - plausibly knob/encoder-driven,
       not yet traced to its source. See thirteenth follow-up.
+      **2026-10-13, searched for `[0x52A]`'s write site**: three
+      independent techniques (direct-displacement stores,
+      immediate-loaded-register byte-pattern grep, the ROM's only two
+      port I/O instructions) all come up empty. Leading hypothesis:
+      `[0x52A]` is a memory-mapped hardware register (e.g. a
+      rotary-encoder counter latch) written by external hardware, not
+      by any CPU instruction - unconfirmed. See fourteenth follow-up.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

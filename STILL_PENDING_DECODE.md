@@ -659,6 +659,18 @@ The single biggest cluster of open items - see
   `[0x4CA]`+context. Open: whether `[0x52A]`'s delta comes from a
   physical front-panel knob or something else has not been traced to
   its source. See `docs/comm-rom/command-keyword-table.md` section 11.
+  **Fourteenth follow-up, 2026-10-13**: searched for `[0x52A]`'s write
+  site across the whole comm ROM via three independent techniques
+  (direct-displacement stores, immediate-loaded-register forms via a
+  raw byte-pattern grep for `0x052a`, and the ROM's only two port I/O
+  instructions) - all three come up empty; every occurrence of
+  `[0x52A]` in the disassembly is one of the 6 known reads, and
+  neither port instruction is positioned near them. Leading hypothesis
+  (unconfirmed, no schematic to check against): `[0x52A]` is a
+  memory-mapped hardware register - e.g. a front-panel rotary-encoder
+  up/down counter latch - that external hardware updates directly,
+  with no CPU store instruction involved at all. See `docs/comm-rom/
+  command-keyword-table.md` section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

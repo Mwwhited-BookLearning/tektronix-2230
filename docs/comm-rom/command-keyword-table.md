@@ -1610,6 +1610,35 @@ dense-cluster functions in section 9) resolved this:
     this comm ROM, or from something else entirely (e.g. a remote
     command simulating a step), has **not** been traced to its source
     and is flagged as open rather than assumed.
+  - **`[0x52A]`'s write site searched for and not found (2026-10-13)**:
+    three independent search techniques across the entire comm ROM
+    disassembly all come up empty. (1) Direct-displacement stores -
+    grepped every `[0x52a]` reference; all 12 are the same 6 read
+    sites (a `cmp word ptr [0x52a], 0` immediately followed by a
+    `mov ax, word ptr [0x52a]`, at physical `0x85F2A`, `0x86239`,
+    `0x86424`, `0x87DC4`, `0x87ED7`, `0x87F58` - matching the 6
+    `FUNC_2998_718D` callers above), none of them writes. (2)
+    Immediate-loaded-register forms - grepped the raw byte pattern for
+    the literal `0x052a` (`2a 05` little-endian) anywhere in the ROM,
+    which would also catch a `mov bx, 0x52a` followed by an indirect
+    store; the only hits are the same 6 read sites' own encoded
+    immediates, no additional occurrences. (3) Hardware I/O - this ROM
+    contains exactly two port instructions in its entire disassembly,
+    `in ax, 0x5d` (physical `0x84092`) and `out 0xff, al` (physical
+    `0x8C004`); neither is positioned near, or obviously feeds, any of
+    the 6 `[0x52A]` read sites. Taken together, this makes a
+    register-indirect write using some other, not-literally-`0x52a`
+    base computation the only remaining software explanation - but
+    given the value's behavior (a small signed per-poll delta that
+    accumulates toward a debounce threshold, read only, never reset by
+    software), the more likely explanation is that `[0x52A]` is a
+    **memory-mapped hardware register** - e.g. a front-panel
+    rotary-encoder up/down counter latch wired directly onto the comm
+    co-processor's bus at that address - that external hardware
+    updates directly, with no CPU store instruction ever executing.
+    Unconfirmed (would need the schematic to verify) but consistent
+    with everything found so far; recorded as the leading hypothesis
+    rather than a proven fact.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
