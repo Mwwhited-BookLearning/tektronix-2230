@@ -383,9 +383,15 @@ GPIB command-byte buffer. `[0x586]`'s own hand-off (how a resolved
 GPIB command byte gets there) remains untraced, but that's now a
 clearly separate question from this one.
 
-`init_comm_rx_message_pipeline`, `set_comm_rx_busy_for_mode`, and
-`scan_quoted_arg_char` (this pass's new addition) still have no
-resolved static caller - likely reached only via an unresolved
-far-pointer table, the same unsolved-caller pattern already seen
-elsewhere in this ROM. (`rearm_comm_rx_consume_cursor` is **not** in
-this list - see the correction above, it has 12 confirmed callers.)
+**Resolved, same day, next pass**: `scan_quoted_arg_char` is no longer
+callerless - it's entry 9 of `comm_call_main_rom`'s 24-entry
+parser-state dispatch table at native `0x88060` (reached via `[0x5A4]`'s
+indirect `lcall`, not a static call site at all). See
+`docs/comm-rom/command-keyword-table.md` section 7 for the full
+24-entry dump; most of this ROM's other "no resolved static caller"
+functions turn out to be explained the same way. `init_comm_rx_
+message_pipeline` (native `0x8E597`) and `set_comm_rx_busy_for_mode`
+(native `0x8EA89`) remain genuinely unexplained - both fall outside
+that table's address range (`0x83B1A`-`0x85098`). (`rearm_comm_rx_
+consume_cursor` is **not** in this list either - see the correction
+above, it has 12 confirmed callers.)

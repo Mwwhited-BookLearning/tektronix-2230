@@ -863,12 +863,52 @@ aliasing transparently), lands on native `0x88060`. Dumping that
 address as a 24-entry array of 4-byte far pointers (the shape
 `comm_call_main_rom`'s indexing implies) resolves **every single
 entry** to a real, consistent address in the comm ROM's own lower half
-(`0x83B1A`-`0x85098`, all segment `0x839f`, ascending) - a clean,
-dedicated per-parser-state handler table, exactly matching the
+(`0x83B1A`-`0x85098`, segment `0x839f` throughout, though not strictly
+ascending - entry 23 at `0x83E42` sits lower than entries 8-22) - a
+clean, dedicated per-parser-state handler table, exactly matching the
 already-documented 23-ish distinct state values `[0x5A4]` is observed
-to take. The per-state semantics of each of the 24 entries aren't
-decoded yet, but the table's existence, base address, and boot
-initialization are now fully confirmed.
+to take.
+
+**Full 24-entry dump (found 2026-10-14, cross-matched against this
+session's other investigations)**:
+
+| `[0x5A4]` state (index) | Target (native) | Function | Notes |
+|---|---|---|---|
+| 0 | `0x83B1A` | `FUNC_2998_3B1A` | not characterized |
+| 1 | `0x83B33` | `FUNC_2998_3B33` | not characterized |
+| 2 | `0x83B52` | `FUNC_2998_3B52` | calls `fetch_next_comm_rx_char` |
+| 3 | `0x83B86` | `FUNC_2998_3B86` | calls `fetch_next_comm_rx_char` and `rearm_comm_rx_consume_cursor` |
+| 4 | `0x83C35` | `FUNC_2998_3C35` | not characterized |
+| 5 | `0x83D2C` | `FUNC_2998_3D2C` | calls `fetch_next_comm_rx_char` |
+| 6 | `0x83D4C` | `FUNC_2998_3D4C` | not characterized |
+| 7 | `0x83DD4` | `FUNC_2998_3DD4` | not characterized |
+| 8 | `0x83E79` | `FUNC_2998_3E79` | calls `rearm_comm_rx_consume_cursor`; initializes the quoted-string token buffer pointer `[0x5F0]`/`[0x5F2]` to `DS:0x5A9` |
+| 9 | `0x83F22` | `scan_quoted_arg_char` | the quoted-string/caret-escape per-character scanner |
+| 10 | `0x84095` | `FUNC_2998_4095` | not characterized |
+| 11 | `0x8409F` | `FUNC_2998_409F` | not characterized |
+| 12 | `0x840A9` | `FUNC_2998_40A9` | calls `rearm_comm_rx_consume_cursor` |
+| 13 | `0x84240` | `FUNC_2998_4240` | calls `rearm_comm_rx_consume_cursor` |
+| 14 | `0x842F4` | `FUNC_2998_42F4` | calls `normalize_and_validate_arg_char` and `bump_comm_token_length_bounded`; detects the SCPI `:` hierarchy separator |
+| 15 | `0x843F0` | `FUNC_2998_43F0` | calls `bump_comm_token_length_bounded`; writes `[0x5FE]` from `[0x608]` (section 8 above) |
+| 16 | `0x844D0` | `FUNC_2998_44D0` | the generic multi-command argument-type validator (section "FUNC_2998_44D0" in `command-parser-token-scan-and-plot-handler.md`) |
+| 17 | `0x84E99` | `FUNC_2998_4E99` | not characterized |
+| 18 | `0x84F31` | `FUNC_2998_4F31` | not characterized |
+| 19 | `0x84F3B` | `FUNC_2998_4F3B` | calls `fetch_next_comm_rx_char` |
+| 20 | `0x84FBF` | `FUNC_2998_4FBF` | not characterized |
+| 21 | `0x85022` | `FUNC_2998_5022` | calls `fetch_next_comm_rx_char` and `finalize_comm_rx_line_boundary` |
+| 22 | `0x85098` | `FUNC_2998_5098` | not characterized |
+| 23 | `0x83E42` | `FUNC_2998_3E42` | not characterized |
+
+This resolves the "no resolved static caller" status that had been
+attached to several functions named across this project's sessions
+(`scan_quoted_arg_char`, and everything in the cross-reference list
+above) - they're not actually uncalled, they're reached exclusively
+through this table's register-indirect `lcall`, which is itself fully
+confirmed (base address, boot-time write site, and now every entry's
+target). The *per-state semantics* of the still-uncharacterized
+entries (0, 1, 4, 6, 7, 10, 11, 17, 18, 20, 22, 23) remain unknown -
+that's a distinct, separate open question from "how is this code
+reached at all," which is now fully answered for this whole range.
 
 ### Still uncharacterized
 

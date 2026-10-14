@@ -1746,11 +1746,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       (`[0x5F0]`/`[0x5F2]`), and the original target question - how a
       byte reaches the GPIB command buffer `[0x586]` that `parse_next_
       gpib_command_byte` reads from - turned out to be a separate,
-      still-open question from the quoted-string path. Also no
-      resolved static caller yet for `init_comm_rx_message_pipeline`,
-      `set_comm_rx_busy_for_mode`, or `scan_quoted_arg_char` - likely
-      an unresolved far-pointer table, worth checking against other
-      already-resolved table dumps in this ROM.
+      still-open question from the quoted-string path.
+      **Resolved, 2026-10-14, next pass**: `scan_quoted_arg_char`'s
+      caller mystery is explained - it's entry 9 of
+      `comm_call_main_rom`'s 24-entry parser-state dispatch table at
+      native `0x88060` (full dump: `docs/comm-rom/command-keyword-
+      table.md` section 7), reached only via `[0x5A4]`'s indirect
+      `lcall`. Still genuinely unresolved: `init_comm_rx_message_
+      pipeline` (native `0x8E597`) and `set_comm_rx_busy_for_mode`
+      (native `0x8EA89`) - both fall outside that table's address
+      range (`0x83B1A`-`0x85098`).
 
 ## Ongoing documentation goal
 

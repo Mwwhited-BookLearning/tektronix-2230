@@ -149,9 +149,15 @@ The single biggest cluster of open items - see
   `[0x5F4]`/`[0x5F0]`/`[4]` rows. **Still open**: `[0x5A9]`'s own
   reader (no code anywhere reads back through `[0x5F0]`/`[0x5F2]`);
   `[0x586]`'s hand-off, now confirmed as a separate question from this
-  one; and no resolved static caller for `init_comm_rx_message_
-  pipeline`, `set_comm_rx_busy_for_mode`, or `scan_quoted_arg_char` -
-  likely reached only via an unresolved far-pointer table.
+  one. **Resolved, same day, next pass**: `scan_quoted_arg_char`'s "no
+  resolved static caller" status is explained - it's entry 9 of the
+  `comm_call_main_rom` 24-entry parser-state dispatch table at native
+  `0x88060` (full dump in `docs/comm-rom/command-keyword-table.md`
+  section 7), reached only via `[0x5A4]`'s indirect `lcall`. Still
+  genuinely unexplained by any known mechanism: `init_comm_rx_message_
+  pipeline` (native `0x8E597`) and `set_comm_rx_busy_for_mode` (native
+  `0x8EA89`) - both fall outside that table's address range
+  (`0x83B1A`-`0x85098`).
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

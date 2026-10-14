@@ -156,8 +156,14 @@ lines 6793-7064) shows:
   either ROM's disassembly (same for `reinit_comm_channel`,
   `0x8FB01`) - both are `kind="entry"` in the `.symbols.json`, meaning
   they're reached by some mechanism the current reachability trace
-  doesn't model (most likely an indirect/computed call, analogous to
-  `comm_call_main_rom`'s own `[0x72A]` table).
+  doesn't model. **Resolved, 2026-10-14, even later pass**: confirmed
+  to be exactly that - `FUNC_2998_44D0` is entry 16 of
+  `comm_call_main_rom`'s own `[0x72A]`/native-`0x88060` 24-entry
+  parser-state dispatch table (full dump in `docs/comm-rom/command-
+  keyword-table.md` section 7), reached only via `[0x5A4]`'s indirect
+  `lcall`. The same table also explains `FUNC_2998_43F0` (entry 15)
+  and several other previously-"no resolved static caller" functions
+  across this ROM.
 - Walks a parsed argument list via 12-byte records off a pointer table
   at `[0x702]`, validating each argument's type through calls to
   `FUNC_2998_477F`/`FUNC_2998_4835`/`FUNC_2998_4BE6`/`FUNC_2998_49EC`
