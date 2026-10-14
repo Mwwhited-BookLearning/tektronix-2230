@@ -1156,6 +1156,18 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       shaped like a top-level per-keyword dispatch mechanism. See
       thirty-third follow-up in `STILL_PENDING_DECODE.md` and
       `docs/comm-rom/command-keyword-table.md` section 13.
+      **2026-10-13, later pass - picked up the `FUNC_2998_0A8C`
+      cluster**: named the shared prolog `validate_source_and_select_
+      response_header` (`0x80A8C`) and its validator `validate_
+      source_selector_has_data` (`0x81344`, range-checks new selector
+      `[0x4F4]` 0..4). Identified one of the 13 siblings,
+      `build_wfid_descriptor_string` (`0x804F6`), via string-pool
+      evidence (`WFMpre:WFID`-style descriptor). The other 12 siblings
+      don't embed direct string references and remain unidentified -
+      likely delegate via an index to a shared helper, a lead for a
+      future pass. See thirty-fourth follow-up in
+      `STILL_PENDING_DECODE.md` and `docs/comm-rom/command-keyword-
+      table.md` section 14.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

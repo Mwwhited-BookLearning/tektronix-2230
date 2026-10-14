@@ -1058,6 +1058,25 @@ The single biggest cluster of open items - see
   specific disassembled routines beyond the known ASCII path
   (`print_signed_decimal_serial`/`print_param_list_response`).
 
+  **Thirty-fourth follow-up, 2026-10-13, later pass - the `FUNC_2998_
+  0A8C` dispatch cluster**: picked up the lead flagged at the end of
+  the thirty-third follow-up. Named and characterized the cluster's
+  shared prolog, `FUNC_2998_0A8C` -> `validate_source_and_select_
+  response_header` (validates a new selector `[0x4F4]`, sets up
+  far-pointer response-formatting fields, derives a header code into
+  `[0x556]`) and its own validator, `FUNC_2998_1344` -> `validate_
+  source_selector_has_data` (range-checks `[0x4F4]` 0..4, checks a
+  capability bit via the point-tag-scan function). One of the 13
+  sibling wrapper functions, `FUNC_2998_04F6` -> `build_wfid_
+  descriptor_string`, was identified with string-pool evidence
+  (`"ACQ"`/`"REF"`/`"SAMPLE"`/`"PEAKDET"`/etc. - matches the manual's
+  `WFMpre:WFID` field). **The other 12 siblings remain unidentified**:
+  they don't embed direct string-pool references the way this one
+  does, so they likely delegate through a shared helper via an index -
+  a fresh lead for a future pass, not a dead end. See `docs/comm-rom/
+  command-keyword-table.md` section 14 and `VARIABLES.md`'s `[0x4F4]`/
+  `[0x556]` rows.
+
 ## Stroke-font glyph table (the CRT readout's character shapes)
 
 See `docs/display/vector-display-and-stroke-font.md` and `TODO.md`'s

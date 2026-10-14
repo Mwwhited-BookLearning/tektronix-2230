@@ -371,10 +371,10 @@
     "notes": null
   },
   "804F6": {
-    "name": "FUNC_2998_04F6",
+    "name": "build_wfid_descriptor_string",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "build_wfid_descriptor_string",
     "notes": null
   },
   "8050E": {
@@ -952,10 +952,10 @@
     "notes": null
   },
   "80A8C": {
-    "name": "FUNC_2998_0A8C",
+    "name": "validate_source_and_select_response_header",
     "kind": "sub",
     "ref_count": 13,
-    "functional_name": null,
+    "functional_name": "validate_source_and_select_response_header",
     "notes": null
   },
   "80AAB": {
@@ -1624,10 +1624,10 @@
     "notes": null
   },
   "81344": {
-    "name": "FUNC_2998_1344",
+    "name": "validate_source_selector_has_data",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "validate_source_selector_has_data",
     "notes": null
   },
   "8137B": {

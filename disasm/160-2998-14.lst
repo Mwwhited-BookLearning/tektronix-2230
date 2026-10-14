@@ -398,12 +398,12 @@ L_804F2:
     2998:04F2  [804F2]  8be5            mov     sp, bp
     2998:04F4  [804F4]  5d              pop     bp
     2998:04F5  [804F5]  cb              retf    
-FUNC_2998_04F6:
+build_wfid_descriptor_string:
     2998:04F6  [804F6]  55              push    bp
     2998:04F7  [804F7]  8bec            mov     bp, sp
     2998:04F9  [804F9]  83ec06          sub     sp, 6
     2998:04FC  [804FC]  51              push    cx
-    2998:04FD  [804FD]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:04FD  [804FD]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0502  [80502]  3d0000          cmp     ax, 0
     2998:0505  [80505]  7407            je      L_8050E  ; 0x50e
     2998:0507  [80507]  2bdb            sub     bx, bx
@@ -604,7 +604,7 @@ FUNC_2998_06CA:
     2998:06CB  [806CB]  8bec            mov     bp, sp
     2998:06CD  [806CD]  83ec06          sub     sp, 6
     2998:06D0  [806D0]  56              push    si
-    2998:06D1  [806D1]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:06D1  [806D1]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:06D6  [806D6]  3d0000          cmp     ax, 0
     2998:06D9  [806D9]  7407            je      L_806E2  ; 0x6e2
     2998:06DB  [806DB]  2bdb            sub     bx, bx
@@ -642,7 +642,7 @@ FUNC_2998_0718:
     2998:0719  [80719]  8bec            mov     bp, sp
     2998:071B  [8071B]  83ec06          sub     sp, 6
     2998:071E  [8071E]  56              push    si
-    2998:071F  [8071F]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:071F  [8071F]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0724  [80724]  3d0000          cmp     ax, 0
     2998:0727  [80727]  7504            jne     L_8072D  ; 0x72d
     2998:0729  [80729]  8b360405        mov     si, word ptr [0x504]
@@ -668,7 +668,7 @@ FUNC_2998_074B:
     2998:074C  [8074C]  8bec            mov     bp, sp
     2998:074E  [8074E]  83ec06          sub     sp, 6
     2998:0751  [80751]  51              push    cx
-    2998:0752  [80752]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0752  [80752]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0757  [80757]  3d0000          cmp     ax, 0
     2998:075A  [8075A]  7407            je      L_80763  ; 0x763
     2998:075C  [8075C]  2bdb            sub     bx, bx
@@ -702,7 +702,7 @@ FUNC_2998_0797:
     2998:0798  [80798]  8bec            mov     bp, sp
     2998:079A  [8079A]  83ec0a          sub     sp, 0xa
     2998:079D  [8079D]  56              push    si
-    2998:079E  [8079E]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:079E  [8079E]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:07A3  [807A3]  3d0000          cmp     ax, 0
     2998:07A6  [807A6]  7407            je      L_807AF  ; 0x7af
     2998:07A8  [807A8]  2bdb            sub     bx, bx
@@ -783,7 +783,7 @@ FUNC_2998_0851:
     2998:0852  [80852]  8bec            mov     bp, sp
     2998:0854  [80854]  83ec08          sub     sp, 8
     2998:0857  [80857]  51              push    cx
-    2998:0858  [80858]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0858  [80858]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:085D  [8085D]  3d0000          cmp     ax, 0
     2998:0860  [80860]  7548            jne     L_808AA  ; 0x8aa
     2998:0862  [80862]  c43e5205        les     di, ptr [0x552]
@@ -823,7 +823,7 @@ FUNC_2998_08B3:
     2998:08B3  [808B3]  55              push    bp
     2998:08B4  [808B4]  8bec            mov     bp, sp
     2998:08B6  [808B6]  83ec06          sub     sp, 6
-    2998:08B9  [808B9]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:08B9  [808B9]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:08BE  [808BE]  3d0000          cmp     ax, 0
     2998:08C1  [808C1]  7407            je      L_808CA  ; 0x8ca
     2998:08C3  [808C3]  2bdb            sub     bx, bx
@@ -859,7 +859,7 @@ FUNC_2998_08FC:
     2998:08FD  [808FD]  8bec            mov     bp, sp
     2998:08FF  [808FF]  83ec06          sub     sp, 6
     2998:0902  [80902]  56              push    si
-    2998:0903  [80903]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0903  [80903]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0908  [80908]  3d0000          cmp     ax, 0
     2998:090B  [8090B]  7569            jne     L_80976  ; 0x976
     2998:090D  [8090D]  be0c00          mov     si, 0xc
@@ -917,7 +917,7 @@ FUNC_2998_097F:
     2998:097F  [8097F]  55              push    bp
     2998:0980  [80980]  8bec            mov     bp, sp
     2998:0982  [80982]  83ec06          sub     sp, 6
-    2998:0985  [80985]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0985  [80985]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:098A  [8098A]  3d0000          cmp     ax, 0
     2998:098D  [8098D]  7407            je      L_80996  ; 0x996
     2998:098F  [8098F]  2bdb            sub     bx, bx
@@ -958,7 +958,7 @@ FUNC_2998_09E5:
     2998:09E5  [809E5]  55              push    bp
     2998:09E6  [809E6]  8bec            mov     bp, sp
     2998:09E8  [809E8]  83ec06          sub     sp, 6
-    2998:09EB  [809EB]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:09EB  [809EB]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:09F0  [809F0]  3d0000          cmp     ax, 0
     2998:09F3  [809F3]  750d            jne     L_80A02  ; 0xa02
     2998:09F5  [809F5]  bff190          mov     di, 0x90f1
@@ -976,7 +976,7 @@ FUNC_2998_0A0A:
     2998:0A0A  [80A0A]  55              push    bp
     2998:0A0B  [80A0B]  8bec            mov     bp, sp
     2998:0A0D  [80A0D]  83ec06          sub     sp, 6
-    2998:0A10  [80A10]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0A10  [80A10]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0A15  [80A15]  3d0000          cmp     ax, 0
     2998:0A18  [80A18]  7518            jne     L_80A32  ; 0xa32
     2998:0A1A  [80A1A]  a00005          mov     al, byte ptr [0x500]
@@ -1000,7 +1000,7 @@ FUNC_2998_0A3A:
     2998:0A3A  [80A3A]  55              push    bp
     2998:0A3B  [80A3B]  8bec            mov     bp, sp
     2998:0A3D  [80A3D]  83ec06          sub     sp, 6
-    2998:0A40  [80A40]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0A40  [80A40]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0A45  [80A45]  3d0000          cmp     ax, 0
     2998:0A48  [80A48]  7518            jne     L_80A62  ; 0xa62
     2998:0A4A  [80A4A]  a00005          mov     al, byte ptr [0x500]
@@ -1024,7 +1024,7 @@ FUNC_2998_0A6A:
     2998:0A6A  [80A6A]  55              push    bp
     2998:0A6B  [80A6B]  8bec            mov     bp, sp
     2998:0A6D  [80A6D]  83ec06          sub     sp, 6
-    2998:0A70  [80A70]  9acc072c80      lcall   FUNC_2998_0A8C  ; 0x802c, 0x7cc
+    2998:0A70  [80A70]  9acc072c80      lcall   validate_source_and_select_response_header  ; 0x802c, 0x7cc
     2998:0A75  [80A75]  3d0000          cmp     ax, 0
     2998:0A78  [80A78]  7407            je      L_80A81  ; 0xa81
     2998:0A7A  [80A7A]  2bdb            sub     bx, bx
@@ -1037,13 +1037,13 @@ L_80A88:
     2998:0A88  [80A88]  8be5            mov     sp, bp
     2998:0A8A  [80A8A]  5d              pop     bp
     2998:0A8B  [80A8B]  cb              retf    
-FUNC_2998_0A8C:
+validate_source_and_select_response_header:
     2998:0A8C  [80A8C]  55              push    bp
     2998:0A8D  [80A8D]  8bec            mov     bp, sp
     2998:0A8F  [80A8F]  83ec06          sub     sp, 6
     2998:0A92  [80A92]  833efc0501      cmp     word ptr [0x5fc], 1
     2998:0A97  [80A97]  7f12            jg      L_80AAB  ; 0xaab
-    2998:0A99  [80A99]  9a84102c80      lcall   FUNC_2998_1344  ; 0x802c, 0x1084
+    2998:0A99  [80A99]  9a84102c80      lcall   validate_source_selector_has_data  ; 0x802c, 0x1084
     2998:0A9E  [80A9E]  3d0000          cmp     ax, 0
     2998:0AA1  [80AA1]  7408            je      L_80AAB  ; 0xaab
     2998:0AA3  [80AA3]  a02306          mov     al, byte ptr [0x623]
@@ -1241,7 +1241,7 @@ L_80C81:
     2998:0C81  [80C81]  c746eab105      mov     word ptr [bp - 0x16], 0x5b1
     2998:0C86  [80C86]  c746ecc982      mov     word ptr [bp - 0x14], 0x82c9
 L_80C8B:
-    2998:0C8B  [80C8B]  9a84102c80      lcall   FUNC_2998_1344  ; 0x802c, 0x1084
+    2998:0C8B  [80C8B]  9a84102c80      lcall   validate_source_selector_has_data  ; 0x802c, 0x1084
     2998:0C90  [80C90]  3d0000          cmp     ax, 0
     2998:0C93  [80C93]  7407            je      L_80C9C  ; 0xc9c
     2998:0C95  [80C95]  2bdb            sub     bx, bx
@@ -1937,7 +1937,7 @@ L_81340:
     2998:1340  [81340]  8be5            mov     sp, bp
     2998:1342  [81342]  5d              pop     bp
     2998:1343  [81343]  cb              retf    
-FUNC_2998_1344:
+validate_source_selector_has_data:
     2998:1344  [81344]  55              push    bp
     2998:1345  [81345]  8bec            mov     bp, sp
     2998:1347  [81347]  83ec0e          sub     sp, 0xe

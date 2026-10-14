@@ -2527,3 +2527,57 @@ entry 8, per the `[0x5A4]` dispatch table in section 7).
   `WAVfrm`). Recognized as a large, separate topic outside this
   session's `[0x5F7]` scope - flagged here as an open lead for a future
   pass rather than left undocumented.
+
+## 14. The `FUNC_2998_0A8C` 13-function dispatch cluster, picked up (2026-10-13)
+
+Followed up on the cluster flagged at the end of section 13 above. All
+13 wrapper functions (`FUNC_2998_04F6`, `06CA`, `0718`, `074B`, `0797`,
+`0851`, `08B3`, `08FC`, `097F`, `09E5`, `0A0A`, `0A3A`, `0A6A`, `0A8C`
+itself - physical `0x804F6`-`0x80A8C`) share exactly one caller-side
+shape: each has exactly one reference in the whole `.lst` (no static
+caller found - register-indirect dispatch, the same landing-artifact-
+adjacent situation documented elsewhere in this project), and all 13
+call `FUNC_2998_0A8C` as a shared prolog before doing their own,
+individually-shaped work.
+
+- **`FUNC_2998_0A8C` itself, renamed `validate_source_and_select_
+  response_header`**: validates the new comm-ROM selector `[0x4F4]`
+  (see `VARIABLES.md`) via `FUNC_2998_1344`, propagating any `[0x623]`
+  error as its own return value. On success, it sets up far-pointer
+  pairs `[0x54E]`/`[0x550]` and `[0x552]`/`[0x554]` into a `[0x500]`-
+  based struct (offsets `+0x12`/`+0x1C`), chosen by `[0x500]` bit
+  `0x20` and `[0x73A]+0x34`, then derives a header-style response-
+  format code into `[0x556]` from further `[0x500]`/`[0x501]` bits.
+  `[0x556]` is confirmed read back by 5 of the other 12 sibling
+  functions.
+
+- **`FUNC_2998_1344`, renamed `validate_source_selector_has_data`**:
+  range-checks `[0x4F4]` (`0..4` = ACQ/REF1-REF4, else `[0x623]=0x15`),
+  calls the already-named point-tag-scan function `FUNC_2998_6B4B` to
+  fetch that source's data, then checks capability bit `0x2` of
+  `[0x526]` (`[0x623]=0x15`/`0x22` if clear). Has a **second** call
+  site, found while regenerating the listing, at `0x80C8B` inside
+  `FUNC_2998_0C55` - a function outside the original 13-member cluster,
+  not otherwise characterized this pass.
+
+- **`FUNC_2998_04F6`, renamed `build_wfid_descriptor_string`**:
+  identified via this project's standard "check what string table it
+  references first" technique (`CLAUDE.md` convention, previously used
+  to identify 18 of `self_test_dispatcher`'s siblings) - directly
+  decoding the comm ROM's string pool at segment `0x90F1` (physical
+  `~0x89100`, via the already-confirmed `0x90000`-`0x97FFF` alias of
+  `0x88000`-`0x8FFFF`, an `0x8000` offset) turned up `"ACQ"`, `"REF"`,
+  `"EXT"`, `"SAMPLE"`, `"PEAKDET"`, `"ACCPEAK"`, `"AVERAGE"`,
+  `" - SMOOTH"`, and `", CRV# "` - a strong match for the manual's
+  `WFMpre:WFID` waveform-descriptor-string field format.
+
+- **The other 12 siblings remain unidentified this pass**: none of
+  them show a direct literal string-pool offset reference the way
+  `build_wfid_descriptor_string` does - they most likely delegate to a
+  shared formatting helper via an index rather than embedding string
+  offsets inline, which needs a different tracing approach (follow the
+  index value, not a string reference) to resolve. Not a dead end, just
+  not reached this pass.
+
+See `FUNCTIONS.md` for the three new entries and `VARIABLES.md`'s
+`[0x4F4]`/`[0x556]` rows for the full variable-level detail.

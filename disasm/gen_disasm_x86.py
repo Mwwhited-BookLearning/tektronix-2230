@@ -2091,6 +2091,90 @@ FUNCTIONAL_NAMES = {
                                                # character is invalid
                                                # for an argument token"
                                                # flag (found 2026-10-13)
+    0x804F6: "build_wfid_descriptor_string",   # after calling
+                                               # validate_source_and_
+                                               # select_response_header,
+                                               # builds/prints a WFID-
+                                               # style descriptor:
+                                               # "ACQ"/"REF" (source),
+                                               # "EXT" (external-ref
+                                               # indicator), one of
+                                               # SAMPLE/PEAKDET/ACCPEAK/
+                                               # AVERAGE (acquisition
+                                               # mode), optional " -
+                                               # SMOOTH" suffix, and ",
+                                               # CRV# <n>" - strings
+                                               # confirmed by direct
+                                               # read of the comm ROM's
+                                               # own segment-0x90f1
+                                               # string pool (physical
+                                               # ~0x89100 via the
+                                               # already-confirmed
+                                               # 0x90000-0x97FFF/
+                                               # 0x88000-0x8FFFF address
+                                               # alias). Strong match
+                                               # for the manual's
+                                               # WFMpre:WFID descriptor
+                                               # field; which exact
+                                               # top-level command calls
+                                               # it specifically is not
+                                               # confirmed - no static
+                                               # caller found, same
+                                               # register-indirect-
+                                               # dispatch situation as
+                                               # its 12 near-identical
+                                               # siblings near
+                                               # 0x804F6-0x80A70 (found
+                                               # 2026-10-13)
+    0x80A8C: "validate_source_and_select_response_header", # shared
+                                               # prolog called by all 13
+                                               # sibling functions near
+                                               # 0x804F6-0x80A70: calls
+                                               # validate_source_
+                                               # selector_has_data to
+                                               # validate [0x4f4] (the
+                                               # 0..4 ACQ/REF1-4 source
+                                               # selector) and propagate
+                                               # any [0x623] error; on
+                                               # success, derives far
+                                               # pointer(s) into the
+                                               # [0x500]-based per-
+                                               # channel struct
+                                               # (+0x12/+0x1c) depending
+                                               # on [0x500] bit 0x20 and
+                                               # [0x73a]+0x34, into
+                                               # [0x54e]/[0x550] and
+                                               # [0x552]/[0x554], plus a
+                                               # header-style code into
+                                               # [0x556] from further
+                                               # [0x500]/[0x501] bits.
+                                               # [0x556] confirmed read
+                                               # back by several
+                                               # siblings. Real-world
+                                               # meaning of the [0x500]
+                                               # bit 0x20/[0x73a]+0x34
+                                               # distinction not pinned
+                                               # down (found 2026-10-13)
+    0x81344: "validate_source_selector_has_data", # range-checks [0x4f4]
+                                               # (0..4, ACQ/REF1-4) -
+                                               # else [0x623]=0x15; calls
+                                               # the already-named
+                                               # point-tag-scan function
+                                               # (FUNC_2998_6B4B) to fetch
+                                               # the selected source's
+                                               # data and checks [0x526]
+                                               # bit 0x2 (a per-source
+                                               # "valid data present"
+                                               # capability bit) - else
+                                               # [0x623]=0x15/0x22.
+                                               # Called from
+                                               # validate_source_and_
+                                               # select_response_header
+                                               # and once more directly
+                                               # from FUNC_2998_0C55 (not
+                                               # otherwise characterized
+                                               # this pass) (found
+                                               # 2026-10-13)
     0xFC624: "ack_comm_hw_status_bits",        # (out_status_ptr,
                                                # req_byte_ptr) - reads
                                                # the comm-option hw
