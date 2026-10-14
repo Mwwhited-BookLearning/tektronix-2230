@@ -603,3 +603,40 @@ or the schematic.
   8086/8088 with no 8087 doesn't fault on an unrecognized `ESC` (x87)
   opcode - it's simply a no-op unless paired with `wait`/coprocessor-
   bus-cycle logic, so this wouldn't crash even if occasionally hit.
+
+## Pending questions for next physical review
+
+A running list of firmware findings that a short live session (photos
+or video of the front panel/display while operating specific controls)
+could settle, kept here so they accumulate between sessions instead of
+being lost in chat. Add to this whenever analysis turns up something
+only live hardware can confirm; remove/resolve an item once a session
+answers it (fold the answer into the normal `VARIABLES.md`/`FUNCTIONS.md`/
+relevant `docs/` writeup, same as the existing `SWB1`/`SWB2` live-test
+entries above).
+
+- **`[0x4E7]`/`[0x4E8]` physical identity** (`VARIABLES.md` "Menu
+  navigation" section): these two bytes' bit `0x80` each represents
+  some front-panel control whose simultaneous "both held" state is an
+  "accelerate" chord used by `update_menu_position`, and - newly found,
+  `changes/2026-10-13.md` - also gates `FUNC_2998_CFDA` toggling a
+  lettered reference's LOCK state while stepping through lettered
+  references with the selection knob. **To test**: select a lettered
+  reference (`REFDisp REF{A-Z}`) via the front-panel selection knob,
+  try holding various two-control combinations (candidates: the same
+  knob plus a menu button, or two simultaneous menu buttons) while
+  turning the knob, and watch whether the reference's `LOCK`/`UNLOCK`
+  indicator flips. Video is ideal here since the toggle happens exactly
+  when both controls are active together, not on a single press.
+- **8087 coprocessor presence on other boards**: confirmed absent on
+  the main digital/acquisition board (A10) by direct visual inspection
+  above, but not yet checked on any other board (e.g. an acquisition
+  daughter-board) - relevant to whether `convert_sample_value`'s `fmul`
+  path could ever execute on real hardware. **To test**: a photo of
+  each remaining board showing its chip layout, looking for an 8087 (or
+  empty socket) anywhere in the unit.
+- **ROM socket silkscreen mismatch** (`U3103`/`U3110` read from a photo
+  vs. `CONTEXT.md`'s TekWiki-sourced `U9109`/`U9110`): flagged above as
+  likely just a compressed-photo misread, not yet resolved either way.
+  **To test**: a clearer, direct close-up photo of the ROM socket
+  silkscreen labels.
