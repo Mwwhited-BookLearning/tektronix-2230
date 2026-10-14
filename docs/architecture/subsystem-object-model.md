@@ -42,7 +42,7 @@ package "Serial Command Decoder" {
   [poll_comm_status_tick\n(RX producer)]
   [RX ring buffer\n([0x464]/[0x468], 32x4B]
   [TX queue\n([0x448]/[0x44A]/[0x44C]]
-  [FUNC_2998_F12B / F5AC\n(RX consumers)]
+  [consume_comm_rx_ring_buffer / dispatch_comm_rx_status_bits\n(RX consumers)]
   [parse_next_gpib_command_byte]
 }
 
@@ -91,9 +91,9 @@ package "NVRAM / Persistence" {
 
 [UART registers\n(0x406F0-0x406F7)] --> [poll_comm_status_tick\n(RX producer)]
 [poll_comm_status_tick\n(RX producer)] --> [RX ring buffer\n([0x464]/[0x468], 32x4B]
-[RX ring buffer\n([0x464]/[0x468], 32x4B] --> [FUNC_2998_F12B / F5AC\n(RX consumers)]
-[FUNC_2998_F12B / F5AC\n(RX consumers)] --> [parse_next_gpib_command_byte]
-[FUNC_2998_F12B / F5AC\n(RX consumers)] --> [TX queue\n([0x448]/[0x44A]/[0x44C]]
+[RX ring buffer\n([0x464]/[0x468], 32x4B] --> [consume_comm_rx_ring_buffer / dispatch_comm_rx_status_bits\n(RX consumers)]
+[consume_comm_rx_ring_buffer / dispatch_comm_rx_status_bits\n(RX consumers)] --> [parse_next_gpib_command_byte]
+[consume_comm_rx_ring_buffer / dispatch_comm_rx_status_bits\n(RX consumers)] --> [TX queue\n([0x448]/[0x44A]/[0x44C]]
 [TX queue\n([0x448]/[0x44A]/[0x44C]] --> [UART registers\n(0x406F0-0x406F7)]
 
 [parse_next_gpib_command_byte] --> [comm_call_main_rom\n(lexer/parser, [0x5A4] state)]
@@ -164,8 +164,8 @@ box "Serial Command Decoder (byte framing, no grammar knowledge)" #LightBlue
 participant "UART HW\n0x406F0-0x406F7" as UART
 participant "poll_comm_status_tick\n(0x96F54/0x8EF54)" as Poll
 participant "RX ring buffer\n[0x464]/[0x468] base 0x46C\n32 x 4-byte records" as RX
-participant "FUNC_2998_F12B\n(0x8F12B)" as F12B
-participant "FUNC_2998_F5AC\n(0x8F5AC)" as F5AC
+participant "consume_comm_rx_ring_buffer\n(0x8F12B)" as F12B
+participant "dispatch_comm_rx_status_bits\n(0x8F5AC)" as F5AC
 end box
 
 box "SCPI-like Command Dispatch (grammar/keyword layer)" #LightYellow
@@ -191,7 +191,7 @@ Poll -> RX : write 4-byte record\n(data, reg+1, reg+3, status)
 RX -> F12B : [0x1BFA]==0 (common case)
 RX -> F5AC : [0x1BFA]!=0 (probe read 0xD0)
 
-F12B -> F12B : SUB_9754C on record's\n+1 byte (masked 0x9F)\n-> translated event-type byte
+F12B -> F12B : translate_comm_rx_event_type on record's\n+1 byte (masked 0x9F)\n-> translated event-type byte
 F12B -> F12B : dispatch bits\n(0x80->SUB_97253, 0x10->SUB_97583)
 F12B -> "TX queue\n[0x448]/[0x44A]/[0x44C]" : service once RX drained
 
@@ -285,7 +285,7 @@ digit loop) feeds Path A — it's how menu-item values like "1.23mV" or
 | Buffer | Pointers | Base | Size/shape | Direction | Notes |
 |---|---|---|---|---|---|
 | RX ring buffer | `[0x464]` (write) / `[0x468]` (read) | `0x46C` | 32 × 4-byte records (`0x80` bytes) | UART → firmware | Records: data byte, reg+1, reg+3, status byte. Correct wraparound confirmed. |
-| TX queue | `[0x448]`/`[0x44A]`/`[0x44C]` | `0xAF`-sized | 1-byte records | firmware → UART | Simpler than RX — no per-byte status needed for outgoing data. Serviced by `FUNC_2998_F12B` once RX is drained. |
+| TX queue | `[0x448]`/`[0x44A]`/`[0x44C]` | `0xAF`-sized | 1-byte records | firmware → UART | Simpler than RX — no per-byte status needed for outgoing data. Serviced by `consume_comm_rx_ring_buffer` once RX is drained. |
 
 **Documentation gap, closed 2026-10-14**: neither buffer previously had
 a row in `VARIABLES.md`'s "Comm ROM" table — `[0x464]` only existed

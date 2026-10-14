@@ -21628,7 +21628,7 @@ L_8EF50:
     2998:EF50  [8EF50]  8be5            mov     sp, bp
     2998:EF52  [8EF52]  5d              pop     bp
     2998:EF53  [8EF53]  cb              retf    
-FUNC_2998_EF54:
+poll_comm_status_tick:
     2998:EF54  [8EF54]  55              push    bp
     2998:EF55  [8EF55]  8bec            mov     bp, sp
     2998:EF57  [8EF57]  83ec10          sub     sp, 0x10
@@ -21787,17 +21787,17 @@ FUNC_2998_F0F9:
     2998:F108  [8F108]  8946f8          mov     word ptr [bp - 8], ax
     2998:F10B  [8F10B]  803e290600      cmp     byte ptr [0x629], 0
     2998:F110  [8F110]  7408            je      L_8F11A  ; 0xf11a
-    2998:F112  [8F112]  9a5c06f596      lcall   SUB_975AC  ; 0x96f5, 0x65c
+    2998:F112  [8F112]  9a5c06f596      lcall   dispatch_comm_rx_status_bits  ; 0x96f5, 0x65c
     2998:F117  [8F117]  e90500          jmp     L_8F11F  ; 0xf11f
 L_8F11A:
-    2998:F11A  [8F11A]  9adb01f596      lcall   SUB_9712B  ; 0x96f5, 0x1db
+    2998:F11A  [8F11A]  9adb01f596      lcall   consume_comm_rx_ring_buffer  ; 0x96f5, 0x1db
 L_8F11F:
     2998:F11F  [8F11F]  ff76f8          push    word ptr [bp - 8]
     2998:F122  [8F122]  9a0e007094      lcall   set_ds_return_old  ; 0x9470, 0xe
     2998:F127  [8F127]  8be5            mov     sp, bp
     2998:F129  [8F129]  5d              pop     bp
     2998:F12A  [8F12A]  cb              retf    
-FUNC_2998_F12B:
+consume_comm_rx_ring_buffer:
     2998:F12B  [8F12B]  55              push    bp
     2998:F12C  [8F12C]  8bec            mov     bp, sp
     2998:F12E  [8F12E]  83ec0e          sub     sp, 0xe
@@ -21841,7 +21841,7 @@ L_8F178:
     2998:F193  [8F193]  8a56f3          mov     dl, byte ptr [bp - 0xd]
     2998:F196  [8F196]  2af6            sub     dh, dh
     2998:F198  [8F198]  52              push    dx
-    2998:F199  [8F199]  9afc05f596      lcall   SUB_9754C  ; 0x96f5, 0x5fc
+    2998:F199  [8F199]  9afc05f596      lcall   translate_comm_rx_event_type  ; 0x96f5, 0x5fc
     2998:F19E  [8F19E]  8846f3          mov     byte ptr [bp - 0xd], al
 L_8F1A1:
     2998:F1A1  [8F1A1]  8a56f3          mov     dl, byte ptr [bp - 0xd]
@@ -22203,7 +22203,7 @@ L_8F548:
     2998:F548  [8F548]  8be5            mov     sp, bp
     2998:F54A  [8F54A]  5d              pop     bp
     2998:F54B  [8F54B]  cb              retf    
-FUNC_2998_F54C:
+translate_comm_rx_event_type:
     2998:F54C  [8F54C]  55              push    bp
     2998:F54D  [8F54D]  8bec            mov     bp, sp
     2998:F54F  [8F54F]  83ec08          sub     sp, 8
@@ -22243,7 +22243,7 @@ L_8F5A8:
     2998:F5A8  [8F5A8]  8be5            mov     sp, bp
     2998:F5AA  [8F5AA]  5d              pop     bp
     2998:F5AB  [8F5AB]  cb              retf    
-FUNC_2998_F5AC:
+dispatch_comm_rx_status_bits:
     2998:F5AC  [8F5AC]  55              push    bp
     2998:F5AD  [8F5AD]  8bec            mov     bp, sp
     2998:F5AF  [8F5AF]  83ec08          sub     sp, 8

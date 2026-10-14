@@ -49,8 +49,8 @@ The single biggest cluster of open items - see
   corrected same day)**, end to end. The producer is the comm ROM's
   already-documented `poll_comm_status_tick` (`FUNCTIONS.md`, raw/
   alias `0x96F54` / native `0x8EF54`) - a same-day pass independently
-  re-found it under its native address as `FUNC_2998_EF54` before
-  recognizing the duplicate; it reads the UART status/interrupt-latch
+  re-found it under its native address before recognizing the
+  duplicate; it reads the UART status/interrupt-latch
   byte via far pointer `[0x6DA]` and, on its data-ready bit, reads the
   actual received byte (plus two more chip registers) via `[0x6D6]` -
   a plain `mov` on the memory-mapped register (the comm ROM has no
@@ -58,24 +58,27 @@ The single biggest cluster of open items - see
   not port-mapped) - into the already-documented RX ring buffer
   (`[0x464]`/`[0x468]` pointers, base `0x46C`, size `0x80`, 4-byte
   records: data + 2 registers + status). What's genuinely new: the
-  consumer, `FUNC_2998_F12B` (native `0x8F12B`), drains the buffer and
+  consumer, `consume_comm_rx_ring_buffer` (native `0x8F12B`), drains the buffer and
   dispatches on translated event-type bits; a sibling dispatcher
-  `FUNC_2998_F5AC` (native `0x8F5AC`), keyed on the captured status
+  `dispatch_comm_rx_status_bits` (native `0x8F5AC`), keyed on the captured status
   byte, hands off directly into the already-documented `parse_next_
   gpib_command_byte` - closing the loop into `[6]`/`[0x580]`'s
   classification/dispatch path. Also newly resolved: scheduler task
   slot 5's target (`[0x73C]/[0x73E]`, `docs/interrupts/task-
   scheduler.md`) is conditional on `[0x1BFA]` (the COMM_LOOPBACK
-  self-test readback flag) - `FUNC_2998_F12B` when zero (the common
-  case), `FUNC_2998_F5AC` when nonzero. (`[0x740]`/`[0x742]`, also set
+  self-test readback flag) - `consume_comm_rx_ring_buffer` when zero (the common
+  case), `dispatch_comm_rx_status_bits` when nonzero. (`[0x740]`/`[0x742]`, also set
   by `init_comm_dispatch_table`, was initially miscast as a third,
   unmatched scheduler-slot pointer - it's actually the already-
   resolved `run_continuous_selftest_tick` `INT255` hook, unrelated to
   the 12-slot task table.) Full trace, including the correction, in
   `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s "Found,
-  2026-10-14" section and `changes/2026-10-14.md`. Not yet done:
-  functional naming of `FUNC_2998_F12B`/`FUNC_2998_F5AC` and the RX
-  ring buffer's consumer-side variables.
+  2026-10-14" section and `changes/2026-10-14.md`. **Functional
+  naming completed, same day, later pass**: `consume_comm_rx_ring_
+  buffer`, `dispatch_comm_rx_status_bits`, and the event-type-
+  translation helper `translate_comm_rx_event_type` (native
+  `0x8F54C`) are now real `FUNCTIONAL_NAMES` entries, not just prose -
+  see `FUNCTIONS.md`.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

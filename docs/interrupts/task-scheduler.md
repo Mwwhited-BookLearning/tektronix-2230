@@ -355,10 +355,10 @@ parallel one for `init_comm_dispatch_table`'s slot2 target (`[0x73c]`).
 branch on `byte ptr [0x1bfa]` (the already-documented COMM_LOOPBACK
 self-test readback flag, `VARIABLES.md` - set to `1` only when that
 probe's readback byte equals exactly `0xD0`): when `[0x1BFA]==0` (the
-common case) it resolves to `FUNC_2998_F12B` (native `0x8F12B`, raw/
+common case) it resolves to `consume_comm_rx_ring_buffer` (native `0x8F12B`, raw/
 alias `0x9712B`) - the RX ring-buffer consumer, see `poll_comm_status_
 tick`'s `FUNCTIONS.md` row; when `[0x1BFA]!=0` it resolves instead to
-`FUNC_2998_F5AC` (native `0x8F5AC`, raw/alias `0x975AC`) - a sibling
+`dispatch_comm_rx_status_bits` (native `0x8F5AC`, raw/alias `0x975AC`) - a sibling
 dispatcher that reaches `parse_next_gpib_command_byte` on bit `0x04`.
 Full trace in `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
 "Found, 2026-10-14" section. (Note: `[0x740]/[0x742]`, also set by

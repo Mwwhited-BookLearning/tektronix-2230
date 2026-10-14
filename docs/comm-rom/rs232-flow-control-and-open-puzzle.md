@@ -85,11 +85,11 @@ handler is the likely mechanism, not yet traced).
 ## Found, 2026-10-14: the genuine incoming RX path, end to end
 
 **Correction, same day, later pass**: the first version of this section
-(below, lightly edited) independently re-traced `FUNC_2998_EF54`'s
+(below, lightly edited) independently re-traced `poll_comm_status_tick`'s
 *producer* side and its ring buffer without recognizing it as a
 function already documented under its main-ROM alias address. Cross-
 checked against a Ghidra decompile of the main ROM, which immediately
-surfaced the duplicate: `FUNC_2998_EF54` (native `0x8EF54`) **is**
+surfaced the duplicate: the function at native `0x8EF54` **is**
 `FUNCTIONS.md`'s existing `poll_comm_status_tick` (raw/alias
 `0x96F54`), which already documented the same `[0x6DA]`/`[0x6D6]`
 reads and the same `[0x464]`/`0x46C`-`0x46C+0x80` ring buffer. The
@@ -106,16 +106,16 @@ task-scheduler.md's long-open "task slot 5's target, not yet traced"
 question. `[0x73C]/[0x73E]` is set *conditionally* on `[0x1BFA]`
 (`VARIABLES.md`'s already-documented COMM_LOOPBACK self-test readback
 flag, set only when that probe reads exactly `0xD0`): when `[0x1BFA]
-==0` (the common case) it resolves to `FUNC_2998_F12B` (native
+==0` (the common case) it resolves to `consume_comm_rx_ring_buffer` (native
 `0x8F12B`, raw `0x9712B`); when `[0x1BFA]!=0` it resolves instead to
-`FUNC_2998_F5AC` (native `0x8F5AC`, raw `0x975AC`) - this corrects the
+`dispatch_comm_rx_status_bits` (native `0x8F5AC`, raw `0x975AC`) - this corrects the
 earlier (wrong) assumption that slot 5's target was simply "`SUB_975AC`
 /`SUB_9712B`" together, as if both were reached unconditionally. Also
 genuinely new: the consumer/second-dispatcher *behavior* of
-`FUNC_2998_F12B`/`FUNC_2998_F5AC` themselves (`poll_comm_status_tick`'s
+`consume_comm_rx_ring_buffer`/`dispatch_comm_rx_status_bits` themselves (`poll_comm_status_tick`'s
 existing description only covered the producer side) - see below.
 
-**The producer - `poll_comm_status_tick` / `FUNC_2998_EF54`** (native
+**The producer - `poll_comm_status_tick`** (native
 `0x8EF54`, raw/alias `0x96F54`; see `FUNCTIONS.md` for the full
 existing writeup): reads `[0x6DA]` (status/interrupt-latch byte) and
 on bit `0x02` (data-ready) reads the received byte plus two more
@@ -125,40 +125,44 @@ write ptr, base `0x46C`, size `0x80`, 32 four-byte records) - the
 RX-side counterpart of the already-documented TX queue (`[0x448]`/
 `[0x44A]`/`[0x44C]`, base `0xAF`, 1-byte records).
 
-**The consumer - `FUNC_2998_F12B` (native `0x8F12B`)** - task slot 5's
+**The consumer - `consume_comm_rx_ring_buffer` (native `0x8F12B`)** - task slot 5's
 *usual* target per the correction above: drains the ring buffer by
 comparing read pointer `[0x468]`/`[0x46A]` against the write pointer,
-and for each record calls `SUB_9754C` (`0x8F54C`) on the record's `+1`
+and for each record calls `translate_comm_rx_event_type` (`0x8F54C`) on the record's `+1`
 status/class byte (masked `0x9F`) to get a translated event-type byte,
 dispatches further on specific bits of that result (`0x80` ->
 `SUB_97253`, `0x10` -> `SUB_97583`), advances the read pointer by 4
 with wraparound at `0x46C+0x80`, and services the TX queue once
 drained.
 
-**The alternate dispatcher - `FUNC_2998_F5AC` (native `0x8F5AC`)** -
+**The alternate dispatcher - `dispatch_comm_rx_status_bits` (native `0x8F5AC`)** -
 task slot 5's target only when `[0x1BFA]!=0`: keyed on `[0x598]` (the
 raw status byte saved during capture), calls bit-by-bit: `SUB_976C0`
 (`0x20`), `SUB_9785B` (`0x10`), and - **bit `0x04`** -
 `parse_next_gpib_command_byte` (`0x8F905`) directly, the function
 already known to read the staged byte out of `ds:0x586`/`ds:0x590`
 into `[0x580]` and feed it onward into `process_gpib_command_byte`'s
-classification/dispatch path. Whether `FUNC_2998_F12B` ever reaches
+classification/dispatch path. Whether `consume_comm_rx_ring_buffer` ever reaches
 this bit-`0x04` path too (e.g. via a shared callee) isn't confirmed -
 not traced in this pass.
 
 Full chain, hardware to parser: `[0x6D6]`/`[0x6DA]` (UART registers)
--> `poll_comm_status_tick`/`FUNC_2998_EF54` -> RX ring buffer
+-> `poll_comm_status_tick` -> RX ring buffer
 (`[0x464]`/`[0x468]`, base `0x46C`) -> task slot 5's `[0x73C]/[0x73E]`
-(conditional on `[0x1BFA]`) -> `FUNC_2998_F12B` (usual) or
-`FUNC_2998_F5AC` (rare) -> `parse_next_gpib_command_byte` -> `[0x580]`/
+(conditional on `[0x1BFA]`) -> `consume_comm_rx_ring_buffer` (usual) or
+`dispatch_comm_rx_status_bits` (rare) -> `parse_next_gpib_command_byte` -> `[0x580]`/
 `[6]` -> the command dispatch machinery documented elsewhere in this
 directory.
 
-Not yet done: naming `FUNC_2998_F12B`/`FUNC_2998_F5AC` and the RX
-ring-buffer's consumer-side variables (`SUB_9754C`, `[0x598]`) via
-`gen_disasm_x86.py`'s `FUNCTIONAL_NAMES`; reconciling `poll_comm_
-status_tick`'s `FUNCTIONS.md` row with this section's extra consumer-
-chain detail (should likely be merged into that row directly); and
-adding `docs/interrupts/task-scheduler.md`'s slot-5 resolution. Left
-for a follow-up pass rather than done here to avoid further duplicate
-rediscovery without re-reading that file first.
+**Done, same day, later pass**: `consume_comm_rx_ring_buffer`,
+`dispatch_comm_rx_status_bits`, and `translate_comm_rx_event_type`
+are now real `gen_disasm_x86.FUNCTIONAL_NAMES` entries (native
+`0x8F12B`/`0x8F5AC`/`0x8F54C`, each with an alias-address entry too),
+and `poll_comm_status_tick`'s rename - documented in prose for a
+prior session but never actually applied to the generator, per the
+exhaustive-grep finding below - has also finally been applied. The
+consumer-chain detail has been merged into `FUNCTIONS.md`'s
+`poll_comm_status_tick` row, with dedicated rows added for the other
+three. `docs/interrupts/task-scheduler.md`'s slot-5 resolution was
+already current. `[0x598]` was not separately named this pass - still
+only referenced inline as "the raw captured status byte."

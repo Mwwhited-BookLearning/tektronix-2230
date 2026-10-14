@@ -367,15 +367,15 @@ partition "Serial command decoder (byte framing only)" {
   endif
 
   if ([0x1BFA]==0? (COMM_LOOPBACK\nprobe result, common case)) then (yes)
-    partition "FUNC_2998_F12B (0x8F12B)" {
+    partition "consume_comm_rx_ring_buffer (0x8F12B)" {
       :Drain ring buffer\n([0x468]/[0x46A] read ptr\nvs [0x464]/[0x466] write ptr);
-      :SUB_9754C on record's +1 byte\n(masked 0x9F) -> translated\nevent-type byte;
+      :translate_comm_rx_event_type on record's +1 byte\n(masked 0x9F) -> translated\nevent-type byte;
       :dispatch on bits\n(0x80->SUB_97253, 0x10->SUB_97583);
       :advance read ptr by 4,\nwraparound;
       :service TX queue\n([0x448]/[0x44A]/[0x44C])\nonce RX drained;
     }
   else (no, [0x1BFA]!=0:\nprobe read exactly 0xD0)
-    partition "FUNC_2998_F5AC (0x8F5AC)" {
+    partition "dispatch_comm_rx_status_bits (0x8F5AC)" {
       :Keyed on [0x598]\n(raw status byte saved at capture);
       :bit 0x20 -> SUB_976C0;
       :bit 0x10 -> SUB_9785B;

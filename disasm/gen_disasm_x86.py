@@ -263,6 +263,76 @@ FUNCTIONAL_NAMES = {
     # `docs/comm-rom/command-keyword-table.md` section 11.
     0x8CEF5: "erase_gpib_record",
 
+    # 2026-10-14: the comm ROM's genuine incoming-UART-data path,
+    # traced end to end (see changes/2026-10-14.md). poll_comm_status_
+    # tick's name had been used in prose/FUNCTIONS.md for a prior
+    # session already but was never actually added here - confirmed by
+    # grep, this is the fix. The other three are newly named this pass.
+    0x8EF54: "poll_comm_status_tick",           # = 0x96F54 alias. The
+                                                 # RX producer: reads
+                                                 # [0x6DA] (UART status/
+                                                 # interrupt-latch) and
+                                                 # [0x6D6] (data reg),
+                                                 # packages data + two
+                                                 # more register bytes +
+                                                 # status into a 4-byte
+                                                 # record written to the
+                                                 # RX ring buffer
+                                                 # ([0x464]/[0x466]
+                                                 # write ptr, base
+                                                 # 0x46C, 32 records);
+                                                 # also toggles the
+                                                 # comm-status icon on
+                                                 # bit 0x80
+    0x8F12B: "consume_comm_rx_ring_buffer",     # = 0x9712B alias. The
+                                                 # common-case RX
+                                                 # consumer (task slot
+                                                 # 5 target when
+                                                 # [0x1BFA] COMM_
+                                                 # LOOPBACK flag is 0):
+                                                 # drains the ring
+                                                 # buffer ([0x468]/
+                                                 # [0x46A] read ptr vs.
+                                                 # [0x464]/[0x466]
+                                                 # write ptr), calls
+                                                 # translate_comm_rx_
+                                                 # event_type on each
+                                                 # record's +1 status
+                                                 # byte, dispatches on
+                                                 # the translated bits
+                                                 # (0x80 -> SUB_97253,
+                                                 # 0x10 -> SUB_97583),
+                                                 # then services the TX
+                                                 # queue once drained
+    0x8F5AC: "dispatch_comm_rx_status_bits",    # = 0x975AC alias. The
+                                                 # COMM_LOOPBACK-probe
+                                                 # sibling (task slot 5
+                                                 # target when [0x1BFA]
+                                                 # is nonzero): keyed on
+                                                 # [0x598] (raw captured
+                                                 # status byte), calls
+                                                 # bit-by-bit SUB_976C0
+                                                 # (0x20), SUB_9785B
+                                                 # (0x10), and - bit
+                                                 # 0x04 - parse_next_
+                                                 # gpib_command_byte
+                                                 # directly
+    0x8F54C: "translate_comm_rx_event_type",    # = 0x9754C alias.
+                                                 # Helper called by
+                                                 # consume_comm_rx_ring_
+                                                 # buffer on each RX
+                                                 # record's +1 status/
+                                                 # class byte (masked
+                                                 # 0x9F); returns the
+                                                 # translated event-type
+                                                 # byte consume_comm_rx_
+                                                 # ring_buffer then
+                                                 # bit-dispatches on
+    0x96F54: "poll_comm_status_tick",           # = 0x8EF54 native
+    0x9712B: "consume_comm_rx_ring_buffer",     # = 0x8F12B native
+    0x975AC: "dispatch_comm_rx_status_bits",    # = 0x8F5AC native
+    0x9754C: "translate_comm_rx_event_type",    # = 0x8F54C native
+
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at
                                                # [0x742] and a 12-byte

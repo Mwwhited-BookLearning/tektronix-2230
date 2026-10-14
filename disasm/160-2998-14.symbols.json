@@ -16989,10 +16989,10 @@
     "notes": null
   },
   "8EF54": {
-    "name": "FUNC_2998_EF54",
+    "name": "poll_comm_status_tick",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "poll_comm_status_tick",
     "notes": null
   },
   "8EFB5": {
@@ -17136,10 +17136,10 @@
     "notes": null
   },
   "8F12B": {
-    "name": "FUNC_2998_F12B",
+    "name": "consume_comm_rx_ring_buffer",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "consume_comm_rx_ring_buffer",
     "notes": null
   },
   "8F140": {
@@ -17528,10 +17528,10 @@
     "notes": null
   },
   "8F54C": {
-    "name": "FUNC_2998_F54C",
+    "name": "translate_comm_rx_event_type",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "translate_comm_rx_event_type",
     "notes": null
   },
   "8F565": {
@@ -17563,10 +17563,10 @@
     "notes": null
   },
   "8F5AC": {
-    "name": "FUNC_2998_F5AC",
+    "name": "dispatch_comm_rx_status_bits",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "dispatch_comm_rx_status_bits",
     "notes": null
   },
   "8F5C1": {

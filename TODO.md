@@ -640,19 +640,6 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       using more captured samples, or finding the ROM's own plot-scale-
       for-readout-text constant directly instead of reverse-solving
       from output.
-- [ ] Name the functions/variables found while resolving the comm
-      ROM's incoming-data path via `FUNCTIONAL_NAMES`. Note (corrected
-      2026-10-14, later pass): `FUNC_2998_EF54` is NOT new - it's
-      `poll_comm_status_tick` (`FUNCTIONS.md`, raw/alias `0x96F54`)
-      already found under that alias address, so just rename it
-      directly rather than inventing a new name. `FUNC_2998_F12B`/
-      `FUNC_2998_F5AC` (the ring buffer's consumer and sibling
-      dispatcher, native `0x8F12B`/`0x8F5AC`) and the RX ring buffer
-      at `[0x464]`/`[0x468]` ARE genuinely new and still need names.
-      `[0x740]` is already resolved (`run_continuous_selftest_tick`'s
-      hook, not a scheduler task slot) - see `docs/comm-rom/rs232-
-      flow-control-and-open-puzzle.md`'s "Found, 2026-10-14" section
-      and its same-day correction for the full trace.
 - [ ] A previously-undocumented far-pointer sub-table at
       `[0x1AD0]`-`[0x1ADE]` (written by `init_selftest_register_group`,
       pointing at the UART register bank `0x406F0` and its neighbors
