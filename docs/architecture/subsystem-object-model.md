@@ -287,12 +287,15 @@ digit loop) feeds Path A — it's how menu-item values like "1.23mV" or
 | RX ring buffer | `[0x464]` (write) / `[0x468]` (read) | `0x46C` | 32 × 4-byte records (`0x80` bytes) | UART → firmware | Records: data byte, reg+1, reg+3, status byte. Correct wraparound confirmed. |
 | TX queue | `[0x448]`/`[0x44A]`/`[0x44C]` | `0xAF`-sized | 1-byte records | firmware → UART | Simpler than RX — no per-byte status needed for outgoing data. Serviced by `FUNC_2998_F12B` once RX is drained. |
 
-**Documentation gap, not a hardware mystery**: as of this writing,
-neither buffer has a row in `VARIABLES.md` or `MEMORY_MAP.md` — they
-exist only in `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
-prose and `changes/2026-10-14.md`. Worth a follow-up pass to add both
-to `VARIABLES.md`'s "Comm ROM" table alongside the already-documented
-`[0x732]`/`REFA`-`REFZ` structures.
+**Documentation gap, closed 2026-10-14**: neither buffer previously had
+a row in `VARIABLES.md`'s "Comm ROM" table — `[0x464]` only existed
+there under its unrelated main-ROM meaning (the `[0x1D10]` menu-item
+index), with a stale "not reconciled" caveat. Both buffers now have
+their own rows there (`[0x464]`/`[0x466]`, `[0x468]`/`[0x46A]`,
+`[0x448]`/`[0x44A]`/`[0x44C]`), and the main-ROM `[0x464]` entry's
+caveat now points at them instead of just flagging the collision as
+unresolved. This is a genuine same-address reuse across the two ROMs'
+separate contexts, not an error.
 
 ## 4. CRT layout buffers and screen data paging
 
@@ -493,9 +496,9 @@ actually missing, or did I just not find it":
    is confirmed only as a self-test consumer of `[0x758]`/`[0x759]`;
    no general-purpose menu-state-machine consumer for ordinary
    (non-self-test) operation has been traced. See section 5.
-6. **Serial FIFO buffers lack `VARIABLES.md`/`MEMORY_MAP.md` entries**
-   — a documentation-completeness gap, not a mystery; the buffers
-   themselves are well understood (section 3).
+6. ~~Serial FIFO buffers lack `VARIABLES.md` entries~~ — **closed
+   2026-10-14**: both buffers now have dedicated rows in `VARIABLES.md`'s
+   "Comm ROM" table (section 3).
 
 ## See also
 

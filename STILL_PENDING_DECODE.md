@@ -1591,6 +1591,45 @@ See `docs/display/readout-memory.md` and `TODO.md`.
 - **The mechanism that auto-advances a write position across readout
   writes hasn't been found** - not yet clear whether it's a
   software-maintained cursor or a hardware auto-increment feature.
+- **Screen data paging is confirmed absent, 2026-10-14** - an
+  exhaustive grep of `MEMORY_MAP.md`/`FUNCTIONS.md`/`VARIABLES.md`/
+  every `docs/display/*` file found zero evidence of page-flipping,
+  bank-switching, or double-buffering for either CRT buffer (readout
+  text memory or the vector display list). Every "bank"/"page"/"flip"
+  hit in current docs is unrelated (ACQ RAM banks, front-panel switch
+  banks, service-manual page numbers, the vector-icon Y-axis-flip
+  rendering option). Treat this as a real, confirmed gap - not a hint
+  that paging logic is still waiting to be found. See
+  `docs/architecture/subsystem-object-model.md` section 4.
+- **The vector display list's hardware consumer has never been
+  found** - the producer chain (`print_readout_string`->
+  `draw_readout_char`->`plot_readout_point_relative`->
+  `plot_readout_point`, writing to the stroke-font buffer at physical
+  `0x02200`) is well understood, but nothing that reads that buffer
+  back and actually paints it to the CRT has been traced. Doubly moot
+  on this project's own physical test hardware: `draw_readout_char` is
+  gated by `[0x1B83]` and returns immediately without drawing on both
+  of this project's test units (both Option-12/RS-232 equipped). See
+  `docs/display/vector-display-and-stroke-font.md` and
+  `docs/architecture/subsystem-object-model.md` section 4.
+
+## Configuration settings persistence (NVRAM/EEPROM)
+
+**Confirmed absent, 2026-10-14.** No load-from or save-to a
+non-volatile store has been found anywhere in either ROM.
+`selftest_cmos` only *tests* the CMOS chip (a self-test diagnostic,
+pass/fail), it never reads settings from it or writes settings to it.
+The staged-settings-commit mechanism (`commit_pending_settings_and_
+refresh_display`, `0xE8D64`, decoding raw bytes `[0x4e0]`-`[0x4fc]`
+into flags `[0x1b6x]`-`[0x1b8x]`) only moves data between RAM
+structures - nothing in its call chain reaches outside RAM. As far as
+current documentation shows, every boot starts from code-level
+defaults; whatever front-panel/menu settings a user configures appear
+not to survive a power cycle. Worth keeping an eye out for a
+not-yet-found candidate (an unidentified I/O port write, or a call
+into a not-yet-traced function) rather than assuming this is settled -
+but nothing has turned up despite looking. See
+`docs/architecture/subsystem-object-model.md` section 6.
 
 ## I/O ports (true 8086 port-space `in`/`out`, not memory-mapped)
 

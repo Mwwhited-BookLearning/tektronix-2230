@@ -1726,6 +1726,21 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       specific sub-question as a real negative result rather than an
       unlooked-at gap. See `STILL_PENDING_DECODE.md`'s matching
       2026-10-11 update.
+- [ ] Four gaps surfaced 2026-10-14 while writing the subsystem object
+      model (`docs/architecture/subsystem-object-model.md`) are worth
+      actively chasing, not just leaving flagged: (1) the vector
+      display list's hardware draw-consumer (what actually scans
+      `0x02200` and paints it to the CRT - never found); (2) a
+      general-purpose, normal-operation front-panel menu-navigation
+      state machine (`update_menu_position` is self-test-only, per the
+      existing `STILL_PENDING_DECODE.md` "Menu/UI rendering" item this
+      restates rather than duplicates); (3) whether any
+      config-persistence mechanism exists at all (currently: confirmed
+      absent, see `STILL_PENDING_DECODE.md`'s new "Configuration
+      settings persistence" section); (4) screen data paging - now
+      confirmed absent from all current docs rather than just
+      unsearched, see `STILL_PENDING_DECODE.md`'s "Display / CRT
+      readout hardware" section.
 
 ## Ongoing documentation goal
 
