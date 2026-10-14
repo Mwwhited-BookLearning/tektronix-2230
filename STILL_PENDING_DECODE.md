@@ -950,6 +950,28 @@ The single biggest cluster of open items - see
   up/down counter latch - that external hardware updates directly,
   with no CPU store instruction involved at all. See `docs/comm-rom/
   command-keyword-table.md` section 11.
+  **Twenty-ninth follow-up, 2026-10-13, later pass - supersedes the
+  fourteenth follow-up's hardware-register hypothesis**: that search
+  was scoped only to the comm ROM; `[0x52A]` is a low-RAM address both
+  ROMs' code can reference. A raw byte-pattern grep of all six ROM
+  binaries found 3 genuine write sites in the **main ROM**, inside a
+  function (`FUNC_3633_9500`, physical `0xE9500`) that exists only in
+  the main ROM's secondary heuristic disassembly listing
+  (`sysrom_3532_3633_heuristic.lst`), not its primary one. The writes
+  store **the difference between a remembered previous value
+  (`[0x526]`/`[0x528]`) and the function's current incoming
+  parameter** - a software-computed delta, not a hardware latch; the
+  "no CPU store instruction involved" hypothesis is now ruled out, not
+  just unconfirmed. The function's one known caller is a magnitude/
+  decade numeric-formatter dispatcher (`FUNC_3532_51D9`); combined with
+  the already-known `compute_and_draw_scale_marker` consumer (reads
+  `[0x52A]` as an incremental screen-position shift) and the comm ROM's
+  debounced accumulators, a plausible (unproven) unifying story is
+  "how much a formatted/plotted value changed since the last update."
+  Also surfaced, unresolved: a mid-function, no-prologue entry point
+  (`SUB_E951A`) inside the same function, reached by six separate
+  far-call sites. See `docs/comm-rom/command-keyword-table.md` section
+  11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

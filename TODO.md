@@ -992,6 +992,16 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       `[0x52A]` is a memory-mapped hardware register (e.g. a
       rotary-encoder counter latch) written by external hardware, not
       by any CPU instruction - unconfirmed. See fourteenth follow-up.
+      **2026-10-13, later pass - hardware-register hypothesis ruled
+      out**: that search was comm-ROM-only. Found 3 genuine write
+      sites in the main ROM (`FUNC_3633_9500`, physical `0xE9500`,
+      present only in the heuristic secondary listing) storing a
+      software-computed delta between a remembered previous value and
+      the current call's parameter - not a hardware latch. Plausible
+      (unproven) unifying story with the known `compute_and_draw_
+      scale_marker` and comm-ROM debounced-accumulator consumers:
+      "how much a formatted/plotted value changed since the last
+      update." See twenty-ninth follow-up.
       **2026-10-13, found numbered-`REFDisp` SET-side candidates**:
       `FUNC_2998_AD17`/`FUNC_2998_AF8A` (no disassembler-resolved
       caller - fit is behavioral). Neither writes `es:[0x732+0x7E]`/

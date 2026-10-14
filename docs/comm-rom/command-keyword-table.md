@@ -1724,6 +1724,51 @@ dense-cluster functions in section 9) resolved this:
     Unconfirmed (would need the schematic to verify) but consistent
     with everything found so far; recorded as the leading hypothesis
     rather than a proven fact.
+  - **Write site found after all, 2026-10-13, later pass - the
+    "memory-mapped hardware register" hypothesis above is wrong**: the
+    three-technique search immediately above was scoped to "the entire
+    comm ROM disassembly" only. A raw byte-pattern search (`2a 05`) of
+    the **main ROM** binaries turns up three genuine stores, none
+    reachable from the comm ROM search because they live in a function
+    the primary disassembly pass never walked into (it only appears in
+    `sysrom_3532_3633_heuristic.lst`): `FUNC_3633_9500` (physical
+    `0xE9500`) contains `mov word ptr [0x52a], 0` (unconditional clear,
+    at entry to a sibling init path) and two conditional stores -
+    `mov word ptr [0x52a], ax` where `ax = [0x526] - [bp+6]`, and
+    `mov word ptr [0x52a], di` where `di = [bp+8] - [0x528]` - selected
+    by a mode byte at `[0x52e]` (`'a'`=`0x61` vs. anything else). Either
+    way, `[0x52a]` ends up holding **the difference between a
+    remembered previous value (`[0x526]`/`[0x528]`) and the function's
+    incoming parameter**; the function's tail then always updates
+    `[0x526]`/`[0x528]` to the new parameter value before returning -
+    classic "delta since last call" bookkeeping, not a per-poll
+    hardware latch.
+  - `FUNC_3633_9500`'s one confirmed caller, `FUNC_3532_51D9` (physical
+    `0xF51D9`), is a magnitude-based dispatcher: it compares an incoming
+    value (`[bp+6]`) against `10`/`100`/`1000`/`10000` and calls one of
+    four sibling functions (`SUB_E94B2`/`SUB_E94CC`/`SUB_E94E6`/
+    `FUNC_3633_9500`) depending which decade it falls in, each paired
+    with a different adjustment to a working column/precision counter
+    (`[bp-0x10]`), and indexes a 6-byte-stride table at `0x638`+
+    (a selector `[bp+8]`)`*6` - the overall shape of a **scaled-value
+    display formatter picking a decade/precision for a measurement
+    readout** (same family as the already-documented `format_number`/
+    `format_hex_word`/`format_decimal_word` group, though not yet shown
+    to be the same routines). This fits neatly with `[0x52A]`'s comm-ROM
+    consumers (the debounced accumulator feeding `FUNC_2998_718D`) and
+    with `compute_and_draw_scale_marker` (physical `0xED9BC` in the main
+    ROM, newly noticed while chasing this) which reads `[0x52A]` as a
+    signed offset to incrementally shift an on-screen marker position
+    (`[0x1BEC]`) left/right rather than recomputing it from scratch -
+    i.e. **`[0x52A]` is plausibly "how much the formatted/plotted value
+    changed since the last update," used by multiple consumers (comm
+    ROM's selection stepper, main ROM's marker redraw) to do incremental
+    work instead of a full recompute**. Not fully proven end-to-end
+    (the six `SUB_E951A` callers found during this same search use an
+    unusual mid-function entry point with no prologue of its own,
+    reusing whatever `bp` frame the caller already set up - flagged as
+    an oddity, not chased further here), but the "hardware register, no
+    CPU write" hypothesis above is now conclusively ruled out.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**
