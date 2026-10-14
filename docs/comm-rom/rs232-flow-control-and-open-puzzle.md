@@ -166,3 +166,64 @@ consumer-chain detail has been merged into `FUNCTIONS.md`'s
 three. `docs/interrupts/task-scheduler.md`'s slot-5 resolution was
 already current. `[0x598]` was not separately named this pass - still
 only referenced inline as "the raw captured status byte."
+
+## Resolved, 2026-10-14, later pass: the genuine incoming-data ring buffer, found
+
+The "Direction correction" section above explicitly flagged "no
+genuine incoming-data ring buffer has been identified yet" as open.
+It's now found, closing that question. **Tooling note first**:
+`consume_comm_rx_ring_buffer`'s two dispatch targets (`0x80` ->
+`SUB_97253`, `0x10` -> `SUB_97583`) had no disassembled body in any
+committed listing - not `160-2998-14.lst` (filtered out by
+`gen_disasm_2998.py`'s `render_comm_only()`, which only renders the
+native `0x80000`-`0x8FFFF` range, while these are reached only
+through the `0x90000`-alias window from the comm ROM's own heuristic
+entry points) nor `sysrom_3532_3633.lst` (that listing's separate
+`gen_disasm_x86.py` run never reaches them, since nothing in the main
+ROM literally calls them). Worked around with a one-off direct
+capstone disassembly of the raw bytes in `binary/160-2998-14.bin` at
+native file offsets `0xF253`/`0xF583` (`native - 0x80000`).
+
+**`process_comm_rx_data_byte`** (native `0x8F253`, raw/alias
+`0x97253`) is the real RS-232 RX byte-processing pipeline:
+- strips parity per the already-documented `[0x4ED]` mode byte (same
+  field `enqueue_comm_char` reads on the TX side);
+- detects XON (`0x11`)/XOFF (`0x13`) control bytes, clearing/setting a
+  new RX-paused flag `[0x45D]` and, on XON, setting a new pending-
+  resume flag `[0x45A]`;
+- detects CR (`0x0D`)/LF (`0x0A`) line-boundary bytes per the line-
+  terminator mode `[0x4EF]`, updating two new message-boundary
+  pointer pairs `[0x440]`/`[0x442]` and `[0x444]`/`[0x446]`;
+- enqueues the processed byte into a new RX **message** buffer
+  (`[0x434]`/`[0x436]` write ptr, `[0x43C]` base/read ptr, wraps to
+  offset `0xF` at bound `0xAF`), setting a new full flag `[0x451]`
+  and logging error code `0x19` into `[0x68C]` on overflow.
+
+This is a *different* buffer from `poll_comm_status_tick`'s raw
+4-byte-record RX ring buffer (`[0x464]`/`[0x468]`, base `0x46C`) -
+that one holds raw hardware captures (data byte + 2 register bytes +
+status); this one holds the *processed* byte stream after parity
+stripping and XON/XOFF filtering, i.e. the buffer an actual line-
+oriented consumer (GPIB/RS-232 command parser) would read from. See
+`VARIABLES.md`'s new rows for the full field-by-field writeup.
+
+**`resume_comm_tx_queue_if_pending`** (native `0x8F583`, raw/alias
+`0x97583`) is `process_comm_rx_data_byte`'s XON-handling counterpart:
+if `[0x45A]` is set, it calls `service_comm_tx_queue` to resume
+transmission - completing the RX side of the XON/XOFF software
+flow-control loop whose TX side (`get_xon_xoff_byte`/
+`service_comm_tx_queue`) was already documented above.
+
+**Not yet resolved**: `dispatch_comm_rx_status_bits`'s own two
+dispatch targets, `SUB_976C0` (`0x20`) and `SUB_9785B` (`0x10`), were
+only partially traced the same way (raw-byte capstone dump, bodies
+not fully captured) - lower confidence, not yet named. `SUB_976C0`
+looks like a lazy-init/bus-reset-detection routine that also writes
+`0x83` to the `[0x6D6]` UART bank's `+3` register when the new
+`[0x451]` full flag is set (plausibly RTS-deassert, the hardware-
+flow-control counterpart to this section's software XON/XOFF
+mechanism, but not confirmed against a schematic); `SUB_9785B`
+closely parallels `service_comm_tx_queue`'s own dequeue-and-transmit
+logic behind an unexplained priority chain of flags `[0x455]`-
+`[0x458]`. See `VARIABLES.md`'s new row for both and
+`STILL_PENDING_DECODE.md` for this as a tracked open item.

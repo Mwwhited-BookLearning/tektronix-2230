@@ -17276,10 +17276,10 @@
     "notes": null
   },
   "8F253": {
-    "name": "FUNC_2998_F253",
+    "name": "process_comm_rx_data_byte",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "process_comm_rx_data_byte",
     "notes": null
   },
   "8F277": {
@@ -17549,10 +17549,10 @@
     "notes": null
   },
   "8F583": {
-    "name": "FUNC_2998_F583",
+    "name": "resume_comm_tx_queue_if_pending",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "resume_comm_tx_queue_if_pending",
     "notes": null
   },
   "8F5A8": {

@@ -21848,13 +21848,13 @@ L_8F1A1:
     2998:F1A4  [8F1A4]  80e280          and     dl, 0x80
     2998:F1A7  [8F1A7]  80fa00          cmp     dl, 0
     2998:F1AA  [8F1AA]  7405            je      L_8F1B1  ; 0xf1b1
-    2998:F1AC  [8F1AC]  9a0303f596      lcall   SUB_97253  ; 0x96f5, 0x303
+    2998:F1AC  [8F1AC]  9a0303f596      lcall   process_comm_rx_data_byte  ; 0x96f5, 0x303
 L_8F1B1:
     2998:F1B1  [8F1B1]  8a56f3          mov     dl, byte ptr [bp - 0xd]
     2998:F1B4  [8F1B4]  80e210          and     dl, 0x10
     2998:F1B7  [8F1B7]  80fa00          cmp     dl, 0
     2998:F1BA  [8F1BA]  7405            je      L_8F1C1  ; 0xf1c1
-    2998:F1BC  [8F1BC]  9a3306f596      lcall   SUB_97583  ; 0x96f5, 0x633
+    2998:F1BC  [8F1BC]  9a3306f596      lcall   resume_comm_tx_queue_if_pending  ; 0x96f5, 0x633
 L_8F1C1:
     2998:F1C1  [8F1C1]  c43e6404        les     di, ptr [0x464]
     2998:F1C5  [8F1C5]  8cc3            mov     bx, es
@@ -21918,7 +21918,7 @@ L_8F242:
     2998:F24F  [8F24F]  8be5            mov     sp, bp
     2998:F251  [8F251]  5d              pop     bp
     2998:F252  [8F252]  cb              retf    
-FUNC_2998_F253:
+process_comm_rx_data_byte:
     2998:F253  [8F253]  55              push    bp
     2998:F254  [8F254]  8bec            mov     bp, sp
     2998:F256  [8F256]  83ec0e          sub     sp, 0xe
@@ -22226,7 +22226,7 @@ L_8F575:
     2998:F57D  [8F57D]  8be5            mov     sp, bp
     2998:F57F  [8F57F]  5d              pop     bp
     2998:F580  [8F580]  ca0200          retf    2
-FUNC_2998_F583:
+resume_comm_tx_queue_if_pending:
     2998:F583  [8F583]  55              push    bp
     2998:F584  [8F584]  8bec            mov     bp, sp
     2998:F586  [8F586]  83ec06          sub     sp, 6

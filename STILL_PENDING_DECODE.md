@@ -79,6 +79,33 @@ The single biggest cluster of open items - see
   translation helper `translate_comm_rx_event_type` (native
   `0x8F54C`) are now real `FUNCTIONAL_NAMES` entries, not just prose -
   see `FUNCTIONS.md`.
+- **Resolved, 2026-10-14, later pass**: the genuine incoming-data
+  message buffer (the gap flagged in this same file's earlier entry
+  and in `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
+  "Direction correction" section) is found. `consume_comm_rx_ring_
+  buffer`'s two dispatch targets, previously unnamed `SUB_97253`/
+  `SUB_97583` (no disassembled body in any listing - reached only via
+  the comm ROM's `0x90000`-alias window, which `gen_disasm_2998.py`'s
+  `render_comm_only()` filters out of its rendered output; worked
+  around with a one-off raw-byte capstone disassembly), are now
+  `process_comm_rx_data_byte` (native `0x8F253`) and `resume_comm_tx_
+  queue_if_pending` (native `0x8F583`) - real `FUNCTIONAL_NAMES`
+  entries. `process_comm_rx_data_byte` is the full RS-232 RX pipeline
+  (parity strip, XON/XOFF flow control, CR/LF line framing, enqueue
+  into a new RX message buffer `[0x434]`/`[0x436]`/`[0x43C]`);
+  `resume_comm_tx_queue_if_pending` is its XON-handling counterpart.
+  Full writeup in `docs/comm-rom/rs232-flow-control-and-open-puzzle.
+  md`'s "Resolved, 2026-10-14" section and `VARIABLES.md`'s new rows.
+  **Still open**: `dispatch_comm_rx_status_bits`'s own two targets,
+  `SUB_976C0` (`0x20`) and `SUB_9785B` (`0x10`), were only partially
+  traced the same way - lower confidence, not yet named. `SUB_976C0`
+  looks like a lazy-init/bus-reset-detection routine that also signals
+  a UART register on RX-buffer-full (plausibly RTS-deassert hardware
+  flow control); `SUB_9785B` closely parallels `service_comm_tx_
+  queue`'s dequeue-and-transmit logic behind an unexplained flag
+  chain `[0x455]`-`[0x458]`. Needs either further tracing or
+  continued documentation as a lead - see `VARIABLES.md`'s
+  `[0x452]`-`[0x458]` row.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

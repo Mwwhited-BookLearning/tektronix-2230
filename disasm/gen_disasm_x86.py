@@ -300,10 +300,12 @@ FUNCTIONAL_NAMES = {
                                                  # record's +1 status
                                                  # byte, dispatches on
                                                  # the translated bits
-                                                 # (0x80 -> SUB_97253,
-                                                 # 0x10 -> SUB_97583),
-                                                 # then services the TX
-                                                 # queue once drained
+                                                 # (0x80 -> process_comm_
+                                                 # rx_data_byte, 0x10 ->
+                                                 # resume_comm_tx_queue_
+                                                 # if_pending), then
+                                                 # services the TX queue
+                                                 # once drained
     0x8F5AC: "dispatch_comm_rx_status_bits",    # = 0x975AC alias. The
                                                  # COMM_LOOPBACK-probe
                                                  # sibling (task slot 5
@@ -332,6 +334,48 @@ FUNCTIONAL_NAMES = {
     0x9712B: "consume_comm_rx_ring_buffer",     # = 0x8F12B native
     0x975AC: "dispatch_comm_rx_status_bits",    # = 0x8F5AC native
     0x9754C: "translate_comm_rx_event_type",    # = 0x8F54C native
+
+    0x8F253: "process_comm_rx_data_byte",       # = 0x97253 alias. The
+                                                 # bit-0x80 target from
+                                                 # consume_comm_rx_ring_
+                                                 # buffer: the genuine
+                                                 # RS-232 RX byte
+                                                 # pipeline - strips
+                                                 # parity per [0x4ED],
+                                                 # detects XON (0x11)/
+                                                 # XOFF (0x13) and sets/
+                                                 # clears the RX-paused
+                                                 # flag [0x45D] (kicking
+                                                 # service_comm_tx_queue
+                                                 # via the pending-resume
+                                                 # flag [0x45A] on XON),
+                                                 # detects CR (0x0D)/LF
+                                                 # (0x0A) line boundaries
+                                                 # per [0x4EF] updating
+                                                 # [0x440]/[0x442] and
+                                                 # [0x444]/[0x446], and
+                                                 # enqueues the byte into
+                                                 # the RX message buffer
+                                                 # ([0x434]/[0x436] write
+                                                 # ptr, [0x43C] base/read
+                                                 # ptr, wraps to offset
+                                                 # 0xF at bound 0xAF),
+                                                 # setting the full flag
+                                                 # [0x451] and error code
+                                                 # 0x19 at [0x68C] on
+                                                 # overflow
+    0x8F583: "resume_comm_tx_queue_if_pending",  # = 0x97583 alias. The
+                                                 # bit-0x10 target from
+                                                 # consume_comm_rx_ring_
+                                                 # buffer: if the
+                                                 # pending-resume flag
+                                                 # [0x45A] is set, calls
+                                                 # service_comm_tx_queue
+                                                 # - the other half of
+                                                 # process_comm_rx_data_
+                                                 # byte's XON handling
+    0x97253: "process_comm_rx_data_byte",       # = 0x8F253 native
+    0x97583: "resume_comm_tx_queue_if_pending",  # = 0x8F583 native
 
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at

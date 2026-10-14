@@ -1728,6 +1728,15 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       confirmed absent from all current docs rather than just
       unsearched, see `STILL_PENDING_DECODE.md`'s "Display / CRT
       readout hardware" section.
+- [ ] **`dispatch_comm_rx_status_bits`'s two dispatch targets,
+      `SUB_976C0` (`0x20`) and `SUB_9785B` (`0x10`), need further
+      tracing to reach naming confidence.** Found and partially traced
+      2026-10-14 (raw-byte capstone disassembly, worked around the
+      same `render_comm_only()` alias-window filter gap that blocked
+      `process_comm_rx_data_byte`/`resume_comm_tx_queue_if_pending`
+      before this session named those two) - see `STILL_PENDING_
+      DECODE.md`'s matching entry and `VARIABLES.md`'s `[0x452]`-
+      `[0x458]` row for what's understood so far.
 
 ## Ongoing documentation goal
 
