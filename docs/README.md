@@ -29,6 +29,7 @@ itself.
 
 ## Architecture and methodology
 
+- [Subsystem object model: boot, input, comm dispatch, and display](architecture/subsystem-object-model.md) - a top-down synthesis tying together the comm ROM's serial-decoder-vs-SCPI-dispatch split, text/status output generation, serial FIFOs, CRT vector/text buffers, front-panel and serial input, and boot-sequence branches (diagnostics gating, module detection, config), with a component diagram and per-topic sequence/activity diagrams - and an honest list of confirmed gaps (screen paging, NVRAM persistence, the CRT vector-buffer's draw consumer, the normal-operation front-panel menu consumer)
 - [CPU identity and source language](architecture/cpu-and-language.md) - confirming the 8088/8086 CPU and that the firmware is compiled C, not hand-assembled
 - [Disassembly tooling](architecture/tooling.md) - the recursive-descent disassembler, the loop/function-boundary separator tool
 - [Validation and coverage](architecture/validation-and-coverage.md) - how the disassembly is checked for correctness, the heuristic layer, current code coverage, the NOP-aligned reconstruction
