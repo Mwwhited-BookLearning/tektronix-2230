@@ -2046,6 +2046,51 @@ FUNCTIONAL_NAMES = {
                                                # via SUB_97905([0x57F])
                                                # and returns it masked
                                                # to a byte
+    0x82F3A: "decode_hex_byte_pair",            # calls hex_digit_to_
+                                               # nibble twice (via
+                                               # normalize_and_validate_
+                                               # arg_char between them)
+                                               # and combines the two
+                                               # nibbles (first<<4 |
+                                               # second) into one 0-255
+                                               # byte value; propagates
+                                               # [0x623] error status on
+                                               # either digit failing.
+                                               # The IEEE-488.2 "#H"
+                                               # binary-block hex-pair
+                                               # decoder (found 2026-
+                                               # 10-13 while tracing
+                                               # [0x5F7]'s code-2
+                                               # classification path)
+    0x82F97: "hex_digit_to_nibble",             # converts one ASCII
+                                               # hex digit character at
+                                               # [4] in place to its
+                                               # nibble value (0-9 for
+                                               # '0'-'9' via +0xD0,
+                                               # 0xA-0xF for 'A'-'F' via
+                                               # +0xC9); on anything
+                                               # else, sets [0x623]=0xC
+                                               # and [0x616]=0xFF (found
+                                               # 2026-10-13)
+    0x82FD7: "normalize_and_validate_arg_char", # per-character
+                                               # normalizer called
+                                               # before classifying an
+                                               # argument token: calls
+                                               # SUB_9699B (device-
+                                               # variant char remap, not
+                                               # characterized further),
+                                               # strips bit 0x80 if
+                                               # [0x629], uppercases
+                                               # 'a'-'z', and sets
+                                               # [0x616]=0xFF for DEL
+                                               # (0x7F) or any control/
+                                               # punctuation character
+                                               # below 0x40 that isn't
+                                               # space/','/';'/':'/'?'
+                                               # - the generic "this
+                                               # character is invalid
+                                               # for an argument token"
+                                               # flag (found 2026-10-13)
     0xFC624: "ack_comm_hw_status_bits",        # (out_status_ptr,
                                                # req_byte_ptr) - reads
                                                # the comm-option hw

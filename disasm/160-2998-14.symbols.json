@@ -3745,10 +3745,10 @@
     "notes": null
   },
   "82F3A": {
-    "name": "FUNC_2998_2F3A",
+    "name": "decode_hex_byte_pair",
     "kind": "sub",
     "ref_count": 3,
-    "functional_name": null,
+    "functional_name": "decode_hex_byte_pair",
     "notes": null
   },
   "82F52": {
@@ -3780,10 +3780,10 @@
     "notes": null
   },
   "82F97": {
-    "name": "FUNC_2998_2F97",
+    "name": "hex_digit_to_nibble",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "hex_digit_to_nibble",
     "notes": null
   },
   "82FB3": {
@@ -3808,10 +3808,10 @@
     "notes": null
   },
   "82FD7": {
-    "name": "FUNC_2998_2FD7",
+    "name": "normalize_and_validate_arg_char",
     "kind": "sub",
     "ref_count": 23,
-    "functional_name": null,
+    "functional_name": "normalize_and_validate_arg_char",
     "notes": null
   },
   "82FF3": {

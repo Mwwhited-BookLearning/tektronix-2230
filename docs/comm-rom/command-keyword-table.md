@@ -2441,3 +2441,89 @@ in section 8).
   comm-ROM command besides `DATa SOUrce`/`TARget`/`REFDisp?` ever
   branches on `[0x5F7]`'s classification value directly rather than
   just its zero/nonzero "slot filled" sense.
+
+## 13. `[0x5F7]` code `6` resolved as a parse-error classification; code `2` corrected to the `#H` hex-block accumulator; three new helper functions named (found 2026-10-13)
+
+Picked up section 12's two open loose-end sites (`0x83EDE`/`0x83F04`,
+both writing `[0x5F7] = 6`) and traced them to their enclosing
+function, `FUNC_2998_3E79` (physical `0x83E79` - parser-state table
+entry 8, per the `[0x5A4]` dispatch table in section 7).
+
+- **Code `6` is a parse-error classification, not a fifth successful
+  syntactic form.** Both `0x83EDE`/`0x83F04` set `[0x5F7] = 6` together
+  with `[0x623] = 0xF` and a transition to the generic cleanup state
+  (`[0x5A4] = 1`), on paths reached only after the current character
+  has already been flagged invalid via a newly-identified flag,
+  `[0x616]` (see below). `[0x623] = 0xF`'s own meaning - "unrecognized/
+  invalid argument character" - is independently corroborated this
+  same pass by `FUNC_2998_1A5B`, a small bitmask-to-error-code priority
+  encoder that converts a bitmask `[0x646]` into `[0x623]` (bit `0x1`
+  -> `0xF`, `0x2` -> `0x15`, `0x4` -> `7`, `0x8` -> `5`, `0x40` -> `9`);
+  its caller `FUNC_2998_1731` (a `%`/`#H`/digit-prefix scanner) sets
+  bit `0x1` specifically when no recognized construct matched the
+  current character, matching `[0x5F7] = 6`'s own trigger condition.
+  So `[0x5F7]`'s domain is really `{0, 2, 4, 5}` for successful slot-1
+  matches plus `6` for "slot 1's scan ended in a parse error" - not an
+  undifferentiated fifth match shape as section 12 had left open.
+
+- **`[0x616]`, newly found**: a generic "this character is invalid for
+  an argument token" byte flag. Exactly 3 write sites in the whole
+  comm ROM: reset to `0` at the start of a newly-named function,
+  `normalize_and_validate_arg_char` (`FUNC_2998_2FD7`, physical
+  `0x82FD7`); set to `0xFF` by that same function for DEL (`0x7F`) or
+  any control/punctuation character below `0x40` that isn't space/
+  `,`/`;`/`:`/`?`; and set to `0xFF` independently by a second
+  newly-named function, `hex_digit_to_nibble` (`0x82F97`), when a
+  character fails hex-digit validation. Read back at roughly 14 sites
+  spread across several parser-state handler functions - including
+  both of `FUNC_2998_3E79`'s code-`6` sites above, and one site inside
+  `FUNC_2998_4240` (below) - each time to decide whether to take the
+  generic error path. `normalize_and_validate_arg_char` itself is
+  called from ~10 sites across the parser (`0x8175A`, `0x818ED`,
+  `0x81947`, `0x81A4F`, `0x82F67`, `0x83070`, `0x830DE`, `0x83132`,
+  `0x832A3`, `0x83503`, `0x83C3E`, `0x83D97`, `0x83DBE`, `0x83E0A`),
+  consistent with it being the shared per-character normalizer/
+  validator run before any parser-state handler classifies an argument
+  token.
+
+- **Code `2` corrected**: section 12 had shaped `FUNC_2998_4240`
+  (`0x84268`, the code-`2` writer) as "plain-numeric-literal parsing"
+  from its `shl`-by-8 pattern alone. Direct trace of its body this pass
+  shows it's more specific: it repeatedly calls a third newly-named
+  function, `decode_hex_byte_pair` (`0x82F3A`), which itself calls
+  `hex_digit_to_nibble` twice (re-normalizing the second character via
+  `normalize_and_validate_arg_char` in between) and combines the two
+  resulting nibbles (`first<<4 | second`) into one `0..255` byte value,
+  propagating `[0x623]`'s error status if either digit fails. The
+  `shl ax,1` x8 (i.e. `*256`) + add pattern section 12 noticed is
+  `FUNC_2998_4240` assembling a sequence of these decoded bytes into a
+  multi-byte value in `[0x612]` - the IEEE-488.2 `#H`-style
+  binary-block hex-digit-pair decode loop, not a generic decimal-number
+  scanner. `[0x5F7] = 2` therefore means "slot 1 was typed as a `#H`
+  hex-block literal," a narrower and more specific claim than the
+  prior "numeric-literal-shaped" wording.
+
+- **Net result**: of `[0x5F7]`'s classification domain, `4` (keyword/
+  letter-table match, section 12), `2` (`#H` hex-block literal, this
+  section), and `6` (parse error, this section) are now mechanistically
+  confirmed; `5` (colon-prefixed subfield, section 12) remains shaped
+  but not traced further. See `VARIABLES.md`'s `[0x5F7]`/`[0x616]` rows
+  and `FUNCTIONS.md`'s entries for `decode_hex_byte_pair`/
+  `hex_digit_to_nibble`/`normalize_and_validate_arg_char` for the
+  mechanical detail. Not yet pinned down: code `5`'s own mechanism
+  beyond its shape, and whether any comm-ROM command besides `DATa
+  SOUrce`/`TARget`/`REFDisp?` ever branches on `[0x5F7]`'s
+  classification value directly.
+
+- **Explicitly not pursued this pass**: `FUNC_2998_0A8C` (physical
+  `0x80A8C`), called from 13 near-identical small wrapper functions
+  early in the ROM (`0x804F6`-`0x80A70` range) whose own return value
+  is always `[0x623]`, with one code path also setting up far-pointer
+  response-formatting fields based on bit tests of `[0x500]`/`[0x501]`.
+  Shaped like a top-level per-keyword command-dispatch cluster (the
+  comm ROM has ~17 non-null top-level command IDs per table 3 above -
+  `BYTe`/`CH1`/`DATa`/`ERRor`/`FLOw`/`HELp`/`ID`/`JMP`/`LONg`/
+  `MESsage`/`OPC`/`PLOt`/`REAdout`/`SAVeref`/`TRIggerd`/`VMOde`/
+  `WAVfrm`). Recognized as a large, separate topic outside this
+  session's `[0x5F7]` scope - flagged here as an open lead for a future
+  pass rather than left undocumented.

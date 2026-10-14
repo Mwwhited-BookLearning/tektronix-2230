@@ -1140,6 +1140,22 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       twenty-third follow-up. See twenty-seventh follow-up in
       `STILL_PENDING_DECODE.md` and `docs/comm-rom/command-keyword-
       table.md` section 11.
+      **2026-10-13, later pass - resolves `[0x5F7]` code `6` and
+      corrects code `2`**: traced the two previously-untraced
+      `0x83EDE`/`0x83F04` sites (`FUNC_2998_3E79`) - both are a
+      parse-error classification (`[0x5F7]=6` + `[0x623]=0xF` +
+      `[0x5A4]=1`), not a fifth successful match shape. Found a new
+      flag `[0x616]` ("character invalid for an argument token") and
+      named three helpers: `normalize_and_validate_arg_char`
+      (`0x82FD7`), `hex_digit_to_nibble` (`0x82F97`),
+      `decode_hex_byte_pair` (`0x82F3A`). Corrects code `2`
+      (`FUNC_2998_4240`) from "numeric-literal-shaped" to the
+      IEEE-488.2 `#H` hex-block-pair accumulator. Code `5` not traced
+      further. New untraced lead noticed but explicitly not pursued:
+      `FUNC_2998_0A8C`'s 13-wrapper cluster near `0x804F6`-`0x80A70`,
+      shaped like a top-level per-keyword dispatch mechanism. See
+      thirty-third follow-up in `STILL_PENDING_DECODE.md` and
+      `docs/comm-rom/command-keyword-table.md` section 13.
 - [ ] `COMM/DATA/ENCDG`'s ASCII/BINARY/HEX
       waveform-data formats and the binary checksum algorithm are now
       all confirmed live byte-exact against the manual (see

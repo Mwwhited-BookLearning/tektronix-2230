@@ -1028,6 +1028,31 @@ The single biggest cluster of open items - see
   documented above (variant-gated validation, `ACQ`/`REF4` collapse)
   stands unchanged; only the "persistent feature-gate" framing was
   wrong. See `docs/comm-rom/command-keyword-table.md` section 12.
+  **Thirty-third follow-up, 2026-10-13, later pass - resolves code `6`
+  as a parse-error classification and corrects code `2`'s shape**:
+  traced the two previously-untraced `0x83EDE`/`0x83F04` sites (inside
+  `FUNC_2998_3E79`, parser-state table entry 8) and found both set
+  `[0x5F7]=6` together with `[0x623]=0xF` ("unrecognized/invalid
+  argument character," independently corroborated this pass by
+  `FUNC_2998_1A5B`'s bitmask-to-error-code priority encoder) and a
+  transition to the generic cleanup state (`[0x5A4]=1`) - so code `6`
+  is "slot 1's scan ended in a parse error," not a fifth successful
+  match shape. Along the way, found and named a new generic flag,
+  `[0x616]` ("this character is invalid for an argument token," 3 write
+  sites, ~14 read sites), and three new helper functions:
+  `normalize_and_validate_arg_char` (`0x82FD7`), `hex_digit_to_nibble`
+  (`0x82F97`), `decode_hex_byte_pair` (`0x82F3A`). Tracing the last of
+  these into `FUNC_2998_4240` (the code-`2` writer) also corrects code
+  `2`'s shape from generic "numeric-literal-shaped" to the more
+  specific IEEE-488.2 `#H`-style binary-block hex-digit-pair
+  accumulator (assembles decoded hex-pair bytes into `[0x612]` via
+  `shl`-by-8 + add). Code `5` (colon-subfield-shaped) was not traced
+  further this pass. Also noticed but explicitly not pursued: the
+  `FUNC_2998_0A8C`/13-small-wrapper-function cluster near `0x804F6`-
+  `0x80A70`, shaped like a top-level per-keyword command-dispatch
+  mechanism - flagged as a fresh, unexplored lead for a future pass.
+  See `docs/comm-rom/command-keyword-table.md` section 13 and
+  `VARIABLES.md`'s `[0x5F7]`/`[0x616]` rows.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
