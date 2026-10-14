@@ -1737,6 +1737,19 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       before this session named those two) - see `STILL_PENDING_
       DECODE.md`'s matching entry and `VARIABLES.md`'s `[0x452]`-
       `[0x458]` row for what's understood so far.
+- [ ] **Trace the hand-off from `[4]` (the RX message buffer's
+      per-character scratch cell, consumed by `fetch_next_comm_rx_
+      char`) into the real command buffer `[0x586]` that `parse_next_
+      gpib_command_byte` reads from.** This is the one remaining piece
+      needed to fully close the loop from "byte arrives over RS-232/
+      GPIB" to "byte reaches the dispatched command parser" - found
+      2026-10-14, later pass; see `docs/comm-rom/rs232-flow-control-
+      and-open-puzzle.md`'s "even later pass" section. Also no
+      resolved static caller yet for `init_comm_rx_message_pipeline`,
+      `set_comm_rx_busy_for_mode`, `rearm_comm_rx_consume_cursor`, or
+      `sync_comm_rx_read_ptr_and_release_hold` outside its one known
+      call site - likely an unresolved far-pointer table, worth
+      checking against other already-resolved table dumps in this ROM.
 
 ## Ongoing documentation goal
 

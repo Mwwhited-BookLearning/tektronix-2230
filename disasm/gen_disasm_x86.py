@@ -377,6 +377,144 @@ FUNCTIONAL_NAMES = {
     0x97253: "process_comm_rx_data_byte",       # = 0x8F253 native
     0x97583: "resume_comm_tx_queue_if_pending",  # = 0x8F583 native
 
+    0x8E597: "init_comm_rx_message_pipeline",   # = 0x96597 alias. No
+                                                 # resolved static caller
+                                                 # (heuristic entry, like
+                                                 # several siblings below)
+                                                 # - resets BOTH the raw
+                                                 # hardware ring buffer
+                                                 # ([0x464]/[0x468]) AND
+                                                 # the RX message buffer's
+                                                 # write/consume/read
+                                                 # pointers ([0x434]/
+                                                 # [0x438]/[0x43C], all to
+                                                 # base 0xF - resolving the
+                                                 # earlier "odd 0xF wrap
+                                                 # origin" puzzle: it's
+                                                 # just the buffer's base),
+                                                 # clears line-boundary
+                                                 # markers, sentinels [0]-
+                                                 # [3], and the TX-queue-
+                                                 # reinit flag [0x454], and
+                                                 # does the GPIB UART pulse
+                                                 # (write 3 then 2 to
+                                                 # [0x6D6]+3)
+    0x8E8A2: "sync_comm_rx_read_ptr_and_release_hold",  # = 0x968A2 alias.
+                                                 # Buffer-drain maintenance:
+                                                 # resyncs read ptr [0x43C]
+                                                 # to consume cursor [0x438]
+                                                 # once room has freed,
+                                                 # clears the full flag
+                                                 # [0x451], does the GPIB
+                                                 # UART pulse under certain
+                                                 # line-boundary conditions,
+                                                 # and - when RS-232 hold-
+                                                 # reason-bit-1 is active in
+                                                 # [0x45C] and >= 0x28 (40)
+                                                 # bytes of room are now
+                                                 # free - calls release_
+                                                 # comm_hold(1) to request
+                                                 # XON. Called from fetch_
+                                                 # next_comm_rx_char's
+                                                 # overflow path and as the
+                                                 # first step of finalize_
+                                                 # comm_rx_line_boundary
+    0x8E99B: "fetch_next_comm_rx_char",         # = 0x9699B alias. The
+                                                 # genuine pull-style "get
+                                                 # next received character"
+                                                 # primitive - confirmed by
+                                                 # direct call sites inside
+                                                 # the character/argument
+                                                 # lexer (normalize_and_
+                                                 # validate_arg_char and
+                                                 # ~10 other sites across
+                                                 # FUNC_2998_1731.. FUNC_
+                                                 # 2998_519A) which call
+                                                 # this immediately before
+                                                 # reading byte ptr [4] -
+                                                 # proving the RX message
+                                                 # buffer feeds the real
+                                                 # SCPI/GPIB parser for
+                                                 # ordinary traffic, not
+                                                 # just the overflow-error
+                                                 # case already confirmed
+                                                 # elsewhere. On the error
+                                                 # path (full flag [0x451]
+                                                 # set, nothing left to
+                                                 # consume), stages error
+                                                 # code 0x19 into [0x623]/
+                                                 # [6] and forcibly calls
+                                                 # process_gpib_command_
+                                                 # byte, then sync_comm_rx_
+                                                 # read_ptr_and_release_
+                                                 # hold. On the normal path,
+                                                 # advances consume cursor
+                                                 # [0x438] (wrapping to base
+                                                 # 0xF), reads the byte at
+                                                 # the old position into
+                                                 # [4], and clears the
+                                                 # "more data" sentinel [3]
+                                                 # once caught up to either
+                                                 # the write ptr [0x434] or
+                                                 # the CR-marker [0x440]
+    0x8EA89: "set_comm_rx_busy_for_mode",       # = 0x96A89 alias. (engage)
+                                                 # No resolved static
+                                                 # caller. Tiny RS-232-vs-
+                                                 # GPIB mode dispatcher:
+                                                 # forwards its single arg
+                                                 # to set_comm_flow_hold
+                                                 # when the RS-232 strap
+                                                 # [0x629] is set, else to
+                                                 # set_comm_queue_busy
+    0x8EAAF: "finalize_comm_rx_line_boundary",  # = 0x96AAF alias. Called
+                                                 # from the alpha-char
+                                                 # handling functions (near
+                                                 # FUNC_2998_5115/519A).
+                                                 # Calls sync_comm_rx_read_
+                                                 # ptr_and_release_hold
+                                                 # first, then promotes the
+                                                 # pending LF-marker pair
+                                                 # [0x444]/[0x446] into the
+                                                 # CR-marker slot [0x440]/
+                                                 # [0x442], copies [0x453]
+                                                 # into [0x452] and resets
+                                                 # both staging fields,
+                                                 # recomputes the "more
+                                                 # data pending" sentinels
+                                                 # [0]/[3] from whether
+                                                 # write ptr [0x434] still
+                                                 # differs from read ptr
+                                                 # [0x43C], calls sync_
+                                                 # rs232_control_bit, does
+                                                 # a further GPIB UART
+                                                 # pulse, and finally
+                                                 # releases the critical
+                                                 # flag via set_comm_
+                                                 # critical_flag(0)
+    0x8ECE9: "rearm_comm_rx_consume_cursor",    # = 0x96CE9 alias. Called
+                                                 # standalone throughout
+                                                 # the same lexer functions
+                                                 # that call fetch_next_
+                                                 # comm_rx_char (not always
+                                                 # paired with it) - if the
+                                                 # consume cursor [0x438]
+                                                 # differs from the read
+                                                 # ptr [0x43C], or they
+                                                 # match but the full flag
+                                                 # [0x451] is set, snaps
+                                                 # [0x438] to [0x43C] and
+                                                 # sets the "more data"
+                                                 # sentinel [3]=0xFF
+                                                 # (clearing [2]); a no-op
+                                                 # when already caught up
+                                                 # and not full
+    0x96597: "init_comm_rx_message_pipeline",   # = 0x8E597 native
+    0x968A2: "sync_comm_rx_read_ptr_and_release_hold",  # = 0x8E8A2 native
+    0x9699B: "fetch_next_comm_rx_char",         # = 0x8E99B native
+    0x96A89: "set_comm_rx_busy_for_mode",       # = 0x8EA89 native
+    0x96AAF: "finalize_comm_rx_line_boundary",  # = 0x8EAAF native
+    0x96CE9: "rearm_comm_rx_consume_cursor",    # = 0x8ECE9 native
+
     0x950C2: "build_gpib_message_checksum",   # comm ROM: indexes a
                                                # 78-byte record table at
                                                # [0x742] and a 12-byte
@@ -5293,6 +5431,9 @@ PARAMETER_NAMES = {
     # `cmp word[bp+6],0` branch-select shape as update_comm_tx_ready_
     # flag above.
     0x8009B: {6: "engage"},
+    # set_comm_rx_busy_for_mode (comm ROM, 0x8EA89): "(engage)" -
+    # forwarded unchanged to set_comm_flow_hold or set_comm_queue_busy.
+    0x8EA89: {6: "engage"},
     # get_comm_config_flag (comm ROM, 0x94488): "(index)" - indexes the
     # config/flag array at far ptr [0x73A] directly by bp+6.
     0x94488: {6: "index"},

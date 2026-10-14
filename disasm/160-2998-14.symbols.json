@@ -16156,10 +16156,10 @@
     "notes": null
   },
   "8E597": {
-    "name": "FUNC_2998_E597",
+    "name": "init_comm_rx_message_pipeline",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "init_comm_rx_message_pipeline",
     "notes": null
   },
   "8E627": {
@@ -16387,10 +16387,10 @@
     "notes": null
   },
   "8E8A2": {
-    "name": "FUNC_2998_E8A2",
+    "name": "sync_comm_rx_read_ptr_and_release_hold",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "sync_comm_rx_read_ptr_and_release_hold",
     "notes": null
   },
   "8E8D1": {
@@ -16485,10 +16485,10 @@
     "notes": null
   },
   "8E99B": {
-    "name": "FUNC_2998_E99B",
+    "name": "fetch_next_comm_rx_char",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "fetch_next_comm_rx_char",
     "notes": null
   },
   "8E9AF": {
@@ -16576,10 +16576,10 @@
     "notes": null
   },
   "8EA89": {
-    "name": "FUNC_2998_EA89",
+    "name": "set_comm_rx_busy_for_mode",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "set_comm_rx_busy_for_mode",
     "notes": null
   },
   "8EAA1": {
@@ -16597,10 +16597,10 @@
     "notes": null
   },
   "8EAAF": {
-    "name": "FUNC_2998_EAAF",
+    "name": "finalize_comm_rx_line_boundary",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "finalize_comm_rx_line_boundary",
     "notes": null
   },
   "8EAF0": {
@@ -16828,10 +16828,10 @@
     "notes": null
   },
   "8ECE9": {
-    "name": "FUNC_2998_ECE9",
+    "name": "rearm_comm_rx_consume_cursor",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "rearm_comm_rx_consume_cursor",
     "notes": null
   },
   "8ED0A": {

@@ -106,6 +106,27 @@ The single biggest cluster of open items - see
   chain `[0x455]`-`[0x458]`. Needs either further tracing or
   continued documentation as a lead - see `VARIABLES.md`'s
   `[0x452]`-`[0x458]` row.
+- **Resolved, 2026-10-14, even later pass**: the RX message buffer's
+  consumer chain (left open by the entry above) is now fully traced,
+  and it's proven the buffer feeds the real SCPI/GPIB parser for
+  ordinary traffic, not just the overflow-error path. Six new
+  `FUNCTIONAL_NAMES` entries: `init_comm_rx_message_pipeline` (native
+  `0x8E597`), `fetch_next_comm_rx_char` (`0x8E99B` - the pull-style
+  "get next character" primitive, confirmed called directly from
+  inside the argument lexer immediately before it reads the shared
+  scratch cell `[4]`), `sync_comm_rx_read_ptr_and_release_hold`
+  (`0x8E8A2`), `rearm_comm_rx_consume_cursor` (`0x8ECE9`),
+  `finalize_comm_rx_line_boundary` (`0x8EAAF`), and `set_comm_rx_
+  busy_for_mode` (`0x8EA89`). Also resolves the earlier "odd non-zero
+  wrap origin of `0xF`" puzzle - it's just the buffer's base offset.
+  Full writeup in `docs/comm-rom/rs232-flow-control-and-open-puzzle.
+  md`'s "even later pass" section and `VARIABLES.md`'s `[0x438]`/
+  `[4]`/`[0]`-`[3]` rows. **Still open**: the hand-off from `[4]` into
+  the real command buffer `[0x586]`; and no resolved static caller for
+  `init_comm_rx_message_pipeline`, `set_comm_rx_busy_for_mode`,
+  `rearm_comm_rx_consume_cursor`, or `sync_comm_rx_read_ptr_and_
+  release_hold` outside its call from `finalize_comm_rx_line_boundary`
+  - likely reached only via an unresolved far-pointer table.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

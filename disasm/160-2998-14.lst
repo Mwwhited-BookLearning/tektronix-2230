@@ -2372,7 +2372,7 @@ L_8176E:
     2998:177A  [8177A]  7713            ja      L_8178F  ; 0x14cf
     2998:177C  [8177C]  c70646060001    mov     word ptr [0x646], 0x100
     2998:1782  [81782]  c606fe0400      mov     byte ptr [0x4fe], 0
-    2998:1787  [81787]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:1787  [81787]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:178C  [8178C]  e90900          jmp     L_81798  ; 0x14d8
 L_8178F:
     2998:178F  [8178F]  810e46060100    or      word ptr [0x646], 1
@@ -2524,7 +2524,7 @@ FUNC_2998_1909:
     2998:190F  [8190F]  56              push    si
     2998:1910  [81910]  803efe0401      cmp     byte ptr [0x4fe], 1
     2998:1915  [81915]  7529            jne     L_81940  ; 0x1680
-    2998:1917  [81917]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:1917  [81917]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
     2998:191C  [8191C]  803e020000      cmp     byte ptr [2], 0
     2998:1921  [81921]  740e            je      L_81931  ; 0x1671
     2998:1923  [81923]  a0f104          mov     al, byte ptr [0x4f1]
@@ -2536,7 +2536,7 @@ L_81931:
     2998:1931  [81931]  a00400          mov     al, byte ptr [4]
     2998:1934  [81934]  2ae4            sub     ah, ah
     2998:1936  [81936]  8bf0            mov     si, ax
-    2998:1938  [81938]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:1938  [81938]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:193D  [8193D]  e94a00          jmp     L_8198A  ; 0x16ca
 L_81940:
     2998:1940  [81940]  803efe0402      cmp     byte ptr [0x4fe], 2
@@ -2547,7 +2547,7 @@ L_81940:
     2998:1953  [81953]  9aaa02c982      lcall   decode_hex_byte_pair  ; 0x82c9, 0x2aa
     2998:1958  [81958]  8bf0            mov     si, ax
 L_8195A:
-    2998:195A  [8195A]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:195A  [8195A]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:195F  [8195F]  e92800          jmp     L_8198A  ; 0x16ca
 L_81962:
     2998:1962  [81962]  9a30172c80      lcall   FUNC_2998_19F0  ; 0x802c, 0x1730
@@ -2643,7 +2643,7 @@ L_81A3A:
     2998:1A41  [81A41]  810e46060800    or      word ptr [0x646], 8
     2998:1A47  [81A47]  e90d00          jmp     L_81A57  ; 0x1797
 L_81A4A:
-    2998:1A4A  [81A4A]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:1A4A  [81A4A]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:1A4F  [81A4F]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:1A54  [81A54]  e9a3ff          jmp     L_819FA  ; 0x173a
 L_81A57:
@@ -4759,7 +4759,7 @@ normalize_and_validate_arg_char:
     2998:2FD8  [82FD8]  8bec            mov     bp, sp
     2998:2FDA  [82FDA]  83ec06          sub     sp, 6
     2998:2FDD  [82FDD]  c606160600      mov     byte ptr [0x616], 0
-    2998:2FE2  [82FE2]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:2FE2  [82FE2]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
     2998:2FE7  [82FE7]  803e290600      cmp     byte ptr [0x629], 0
     2998:2FEC  [82FEC]  7405            je      L_82FF3  ; 0x363
     2998:2FEE  [82FEE]  802604007f      and     byte ptr [4], 0x7f
@@ -4842,7 +4842,7 @@ L_830AC:
     2998:30C7  [830C7]  c606090600      mov     byte ptr [0x609], 0
     2998:30CC  [830CC]  c606070600      mov     byte ptr [0x607], 0
 L_830D1:
-    2998:30D1  [830D1]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:30D1  [830D1]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:30D6  [830D6]  e9bd00          jmp     L_83196  ; 0x506
 L_830D9:
     2998:30D9  [830D9]  80f900          cmp     cl, 0
@@ -4874,7 +4874,7 @@ L_83119:
     2998:311E  [8311E]  2bc7            sub     ax, di
     2998:3120  [83120]  8bd0            mov     dx, ax
     2998:3122  [83122]  88160906        mov     byte ptr [0x609], dl
-    2998:3126  [83126]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3126  [83126]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:312B  [8312B]  803e020000      cmp     byte ptr [2], 0
     2998:3130  [83130]  7564            jne     L_83196  ; 0x506
     2998:3132  [83132]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
@@ -4883,7 +4883,7 @@ L_83119:
     2998:313E  [8313E]  803e020000      cmp     byte ptr [2], 0
     2998:3143  [83143]  7477            je      L_831BC  ; 0x52c
 L_83145:
-    2998:3145  [83145]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3145  [83145]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:314A  [8314A]  e94900          jmp     L_83196  ; 0x506
 L_8314D:
     2998:314D  [8314D]  e94900          jmp     L_83199  ; 0x509
@@ -4896,7 +4896,7 @@ L_83153:
     2998:315F  [8315F]  7461            je      L_831C2  ; 0x532
 L_83161:
     2998:3161  [83161]  c606090600      mov     byte ptr [0x609], 0
-    2998:3166  [83166]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3166  [83166]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:316B  [8316B]  c606070600      mov     byte ptr [0x607], 0
     2998:3170  [83170]  e92300          jmp     L_83196  ; 0x506
 L_83173:
@@ -4905,11 +4905,11 @@ L_83173:
     2998:317A  [8317A]  803e020000      cmp     byte ptr [2], 0
     2998:317F  [8317F]  7408            je      L_83189  ; 0x4f9
 L_83181:
-    2998:3181  [83181]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3181  [83181]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:3186  [83186]  e90d00          jmp     L_83196  ; 0x506
 L_83189:
     2998:3189  [83189]  c606070600      mov     byte ptr [0x607], 0
-    2998:318E  [8318E]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:318E  [8318E]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:3193  [83193]  e92c00          jmp     L_831C2  ; 0x532
 L_83196:
     2998:3196  [83196]  e95300          jmp     L_831EC  ; 0x55c
@@ -4924,7 +4924,7 @@ L_83199:
     2998:31AF  [831AF]  26803f2f        cmp     byte ptr es:[bx], 0x2f
     2998:31B3  [831B3]  7510            jne     L_831C5  ; 0x535
 L_831B5:
-    2998:31B5  [831B5]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:31B5  [831B5]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:31BA  [831BA]  eb03            jmp     L_831BF  ; 0x52f
 L_831BC:
     2998:31BC  [831BC]  e92800          jmp     L_831E7  ; 0x557
@@ -4938,7 +4938,7 @@ L_831C5:
     2998:31CB  [831CB]  2af6            sub     dh, dh
     2998:31CD  [831CD]  01160e06        add     word ptr [0x60e], dx
     2998:31D1  [831D1]  52              push    dx
-    2998:31D2  [831D2]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:31D2  [831D2]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:31D7  [831D7]  83c402          add     sp, 2
 L_831DA:
     2998:31DA  [831DA]  c43e0e06        les     di, ptr [0x60e]
@@ -5027,7 +5027,7 @@ FUNC_2998_3298:
     2998:3298  [83298]  55              push    bp
     2998:3299  [83299]  8bec            mov     bp, sp
     2998:329B  [8329B]  83ec0c          sub     sp, 0xc
-    2998:329E  [8329E]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:329E  [8329E]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:32A3  [832A3]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:32A8  [832A8]  c746f40000      mov     word ptr [bp - 0xc], 0
     2998:32AD  [832AD]  c746f80000      mov     word ptr [bp - 8], 0
@@ -5902,8 +5902,8 @@ L_83B5B:
     2998:3B62  [83B62]  c606a40514      mov     byte ptr [0x5a4], 0x14
     2998:3B67  [83B67]  e91800          jmp     L_83B82  ; 0x3b82
 L_83B6A:
-    2998:3B6A  [83B6A]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
-    2998:3B6F  [83B6F]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:3B6A  [83B6A]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
+    2998:3B6F  [83B6F]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
 L_83B74:
     2998:3B74  [83B74]  803e030000      cmp     byte ptr [3], 0
     2998:3B79  [83B79]  75e0            jne     L_83B5B  ; 0x3b5b
@@ -5934,8 +5934,8 @@ FUNC_2998_3B86:
 L_83BB8:
     2998:3BB8  [83BB8]  e93a00          jmp     L_83BF5  ; 0x3bf5
 L_83BBB:
-    2998:3BBB  [83BBB]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
-    2998:3BC0  [83BC0]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:3BBB  [83BBB]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
+    2998:3BC0  [83BC0]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
     2998:3BC5  [83BC5]  803e04000d      cmp     byte ptr [4], 0xd
     2998:3BCA  [83BCA]  7445            je      L_83C11  ; 0x3c11
     2998:3BCC  [83BCC]  803e04000a      cmp     byte ptr [4], 0xa
@@ -5955,7 +5955,7 @@ L_83BF8:
     2998:3BF8  [83BF8]  c706fc050000    mov     word ptr [0x5fc], 0
     2998:3BFE  [83BFE]  c606a40504      mov     byte ptr [0x5a4], 4
     2998:3C03  [83C03]  c7063e060000    mov     word ptr [0x63e], 0
-    2998:3C09  [83C09]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:3C09  [83C09]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:3C0E  [83C0E]  e91600          jmp     L_83C27  ; 0x3c27
 L_83C11:
     2998:3C11  [83C11]  803e020000      cmp     byte ptr [2], 0
@@ -6058,7 +6058,7 @@ FUNC_2998_3D2C:
     2998:3D2F  [83D2F]  83ec06          sub     sp, 6
     2998:3D32  [83D32]  803e020000      cmp     byte ptr [2], 0
     2998:3D37  [83D37]  7505            jne     L_83D3E  ; 0x3d3e
-    2998:3D39  [83D39]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:3D39  [83D39]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
 L_83D3E:
     2998:3D3E  [83D3E]  c606050620      mov     byte ptr [0x605], 0x20
     2998:3D43  [83D43]  c606a40506      mov     byte ptr [0x5a4], 6
@@ -6090,7 +6090,7 @@ L_83D68:
 L_83D8B:
     2998:3D8B  [83D8B]  803e030000      cmp     byte ptr [3], 0
     2998:3D90  [83D90]  743e            je      L_83DD0  ; 0x3dd0
-    2998:3D92  [83D92]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3D92  [83D92]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:3D97  [83D97]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:3D9C  [83D9C]  c606a40507      mov     byte ptr [0x5a4], 7
     2998:3DA1  [83DA1]  e92c00          jmp     L_83DD0  ; 0x3dd0
@@ -6102,7 +6102,7 @@ L_83DA4:
 L_83DB2:
     2998:3DB2  [83DB2]  803e030000      cmp     byte ptr [3], 0
     2998:3DB7  [83DB7]  740a            je      L_83DC3  ; 0x3dc3
-    2998:3DB9  [83DB9]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3DB9  [83DB9]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:3DBE  [83DBE]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
 L_83DC3:
     2998:3DC3  [83DC3]  e90a00          jmp     L_83DD0  ; 0x3dd0
@@ -6131,7 +6131,7 @@ L_83DE9:
 L_83DFE:
     2998:3DFE  [83DFE]  803e030000      cmp     byte ptr [3], 0
     2998:3E03  [83E03]  740d            je      L_83E12  ; 0x3e12
-    2998:3E05  [83E05]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3E05  [83E05]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:3E0A  [83E0A]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:3E0F  [83E0F]  e90c00          jmp     L_83E1E  ; 0x3e1e
 L_83E12:
@@ -6165,7 +6165,7 @@ FUNC_2998_3E42:
     2998:3E54  [83E54]  c606a40501      mov     byte ptr [0x5a4], 1
     2998:3E59  [83E59]  e91900          jmp     L_83E75  ; 0x3e75
 L_83E5C:
-    2998:3E5C  [83E5C]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:3E5C  [83E5C]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:3E61  [83E61]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:3E66  [83E66]  c606a40507      mov     byte ptr [0x5a4], 7
     2998:3E6B  [83E6B]  e90700          jmp     L_83E75  ; 0x3e75
@@ -6216,7 +6216,7 @@ L_83EED:
 L_83EF0:
     2998:3EF0  [83EF0]  803e160600      cmp     byte ptr [0x616], 0
     2998:3EF5  [83EF5]  750d            jne     L_83F04  ; 0x3f04
-    2998:3EF7  [83EF7]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:3EF7  [83EF7]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:3EFC  [83EFC]  c606a4050e      mov     byte ptr [0x5a4], 0xe
     2998:3F01  [83F01]  e90f00          jmp     L_83F13  ; 0x3f13
 L_83F04:
@@ -6238,7 +6238,7 @@ FUNC_2998_3F22:
     2998:3F2F  [83F2F]  c606230604      mov     byte ptr [0x623], 4
     2998:3F34  [83F34]  e9e500          jmp     L_8401C  ; 0x401c
 L_83F37:
-    2998:3F37  [83F37]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:3F37  [83F37]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
     2998:3F3C  [83F3C]  c746f8ffff      mov     word ptr [bp - 8], 0xffff
     2998:3F41  [83F41]  e99700          jmp     L_83FDB  ; 0x3fdb
 L_83F44:
@@ -6431,13 +6431,13 @@ L_840CF:
     2998:40D6  [840D6]  803e040048      cmp     byte ptr [4], 0x48
     2998:40DB  [840DB]  750d            jne     L_840EA  ; 0x40ea
     2998:40DD  [840DD]  c606fa0501      mov     byte ptr [0x5fa], 1
-    2998:40E2  [840E2]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:40E2  [840E2]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:40E7  [840E7]  e92100          jmp     L_8410B  ; 0x410b
 L_840EA:
     2998:40EA  [840EA]  803e040042      cmp     byte ptr [4], 0x42
     2998:40EF  [840EF]  7512            jne     L_84103  ; 0x4103
     2998:40F1  [840F1]  c606fa0501      mov     byte ptr [0x5fa], 1
-    2998:40F6  [840F6]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:40F6  [840F6]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:40FB  [840FB]  c606a4050b      mov     byte ptr [0x5a4], 0xb
     2998:4100  [84100]  e93901          jmp     L_8423C  ; 0x423c
 L_84103:
@@ -6459,12 +6459,12 @@ L_84127:
 L_84135:
     2998:4135  [84135]  e90800          jmp     L_84140  ; 0x4140
 L_84138:
-    2998:4138  [84138]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4138  [84138]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:413D  [8413D]  e9e800          jmp     L_84228  ; 0x4228
 L_84140:
     2998:4140  [84140]  803efa0506      cmp     byte ptr [0x5fa], 6
     2998:4145  [84145]  750d            jne     L_84154  ; 0x4154
-    2998:4147  [84147]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4147  [84147]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:414C  [8414C]  c606a40510      mov     byte ptr [0x5a4], 0x10
     2998:4151  [84151]  e9e800          jmp     L_8423C  ; 0x423c
 L_84154:
@@ -6539,10 +6539,10 @@ L_8420E:
     2998:4213  [84213]  3d0500          cmp     ax, 5
     2998:4216  [84216]  74ac            je      L_841C4  ; 0x41c4
 L_84218:
-    2998:4218  [84218]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4218  [84218]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:421D  [8421D]  e90800          jmp     L_84228  ; 0x4228
 L_84220:
-    2998:4220  [84220]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:4220  [84220]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:4225  [84225]  e91400          jmp     L_8423C  ; 0x423c
 L_84228:
     2998:4228  [84228]  803e030000      cmp     byte ptr [3], 0
@@ -6576,7 +6576,7 @@ L_8425C:
 L_84270:
     2998:4270  [84270]  c606ff0502      mov     byte ptr [0x5ff], 2
 L_84275:
-    2998:4275  [84275]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4275  [84275]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:427A  [8427A]  c606a40510      mov     byte ptr [0x5a4], 0x10
     2998:427F  [8427F]  e96e00          jmp     L_842F0  ; 0x42f0
 L_84282:
@@ -6601,7 +6601,7 @@ L_84282:
     2998:42B0  [842B0]  c606a40501      mov     byte ptr [0x5a4], 1
     2998:42B5  [842B5]  e93800          jmp     L_842F0  ; 0x42f0
 L_842B8:
-    2998:42B8  [842B8]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:42B8  [842B8]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:42BD  [842BD]  e91c00          jmp     L_842DC  ; 0x42dc
 L_842C0:
     2998:42C0  [842C0]  803e020000      cmp     byte ptr [2], 0
@@ -6610,7 +6610,7 @@ L_842C0:
     2998:42CC  [842CC]  c606a40501      mov     byte ptr [0x5a4], 1
     2998:42D1  [842D1]  e91c00          jmp     L_842F0  ; 0x42f0
 L_842D4:
-    2998:42D4  [842D4]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:42D4  [842D4]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:42D9  [842D9]  e91400          jmp     L_842F0  ; 0x42f0
 L_842DC:
     2998:42DC  [842DC]  803e030000      cmp     byte ptr [3], 0
@@ -6646,7 +6646,7 @@ L_842FD:
 L_84331:
     2998:4331  [84331]  8b7ef8          mov     di, word ptr [bp - 8]
     2998:4334  [84334]  893ef805        mov     word ptr [0x5f8], di
-    2998:4338  [84338]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4338  [84338]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:433D  [8433D]  c606a40517      mov     byte ptr [0x5a4], 0x17
     2998:4342  [84342]  e94800          jmp     L_8438D  ; 0x438d
 L_84345:
@@ -6758,7 +6758,7 @@ L_8445E:
 L_8446D:
     2998:446D  [8446D]  803e04003a      cmp     byte ptr [4], 0x3a
     2998:4472  [84472]  750d            jne     L_84481  ; 0x4481
-    2998:4474  [84474]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4474  [84474]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:4479  [84479]  c606a40517      mov     byte ptr [0x5a4], 0x17
     2998:447E  [8447E]  e94b00          jmp     L_844CC  ; 0x44cc
 L_84481:
@@ -7780,7 +7780,7 @@ L_84ED9:
 L_84EE8:
     2998:4EE8  [84EE8]  803e030000      cmp     byte ptr [3], 0
     2998:4EED  [84EED]  740a            je      L_84EF9  ; 0x4ef9
-    2998:4EEF  [84EEF]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4EEF  [84EEF]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:4EF4  [84EF4]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
 L_84EF9:
     2998:4EF9  [84EF9]  803e04002c      cmp     byte ptr [4], 0x2c
@@ -7792,7 +7792,7 @@ L_84EF9:
 L_84F0F:
     2998:4F0F  [84F0F]  803e030000      cmp     byte ptr [3], 0
     2998:4F14  [84F14]  740f            je      L_84F25  ; 0x4f25
-    2998:4F16  [84F16]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:4F16  [84F16]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:4F1B  [84F1B]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:4F20  [84F20]  c606a40507      mov     byte ptr [0x5a4], 7
 L_84F25:
@@ -7849,14 +7849,14 @@ L_84F83:
 L_84F98:
     2998:4F98  [84F98]  803e030000      cmp     byte ptr [3], 0
     2998:4F9D  [84F9D]  740a            je      L_84FA9  ; 0x4fa9
-    2998:4F9F  [84F9F]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
-    2998:4FA4  [84FA4]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:4F9F  [84F9F]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
+    2998:4FA4  [84FA4]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
 L_84FA9:
     2998:4FA9  [84FA9]  e90f00          jmp     L_84FBB  ; 0x4fbb
 L_84FAC:
     2998:4FAC  [84FAC]  c606230608      mov     byte ptr [0x623], 8
     2998:4FB1  [84FB1]  c606a40501      mov     byte ptr [0x5a4], 1
-    2998:4FB6  [84FB6]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:4FB6  [84FB6]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
 L_84FBB:
     2998:4FBB  [84FBB]  8be5            mov     sp, bp
     2998:4FBD  [84FBD]  5d              pop     bp
@@ -7905,14 +7905,14 @@ FUNC_2998_5022:
     2998:5025  [85025]  83ec06          sub     sp, 6
     2998:5028  [85028]  803e290600      cmp     byte ptr [0x629], 0
     2998:502D  [8502D]  7543            jne     L_85072  ; 0x5072
-    2998:502F  [8502F]  9a3f028796      lcall   SUB_96AAF  ; 0x9687, 0x23f
+    2998:502F  [8502F]  9a3f028796      lcall   finalize_comm_rx_line_boundary  ; 0x9687, 0x23f
     2998:5034  [85034]  c606420600      mov     byte ptr [0x642], 0
     2998:5039  [85039]  c606020600      mov     byte ptr [0x602], 0
     2998:503E  [8503E]  c606a40503      mov     byte ptr [0x5a4], 3
     2998:5043  [85043]  e94e00          jmp     L_85094  ; 0x5094
 L_85046:
-    2998:5046  [85046]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
-    2998:504B  [8504B]  9a2b018796      lcall   SUB_9699B  ; 0x9687, 0x12b
+    2998:5046  [85046]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
+    2998:504B  [8504B]  9a2b018796      lcall   fetch_next_comm_rx_char  ; 0x9687, 0x12b
     2998:5050  [85050]  803e04000d      cmp     byte ptr [4], 0xd
     2998:5055  [85055]  741b            je      L_85072  ; 0x5072
     2998:5057  [85057]  803e04000a      cmp     byte ptr [4], 0xa
@@ -7928,7 +7928,7 @@ L_85072:
     2998:5079  [85079]  803e020000      cmp     byte ptr [2], 0
     2998:507E  [8507E]  7414            je      L_85094  ; 0x5094
     2998:5080  [85080]  9aef038796      lcall   send_response_terminator  ; 0x9687, 0x3ef
-    2998:5085  [85085]  9a3f028796      lcall   SUB_96AAF  ; 0x9687, 0x23f
+    2998:5085  [85085]  9a3f028796      lcall   finalize_comm_rx_line_boundary  ; 0x9687, 0x23f
     2998:508A  [8508A]  c606a40503      mov     byte ptr [0x5a4], 3
     2998:508F  [8508F]  c606020600      mov     byte ptr [0x602], 0
 L_85094:
@@ -7997,7 +7997,7 @@ FUNC_2998_5115:
     2998:5115  [85115]  55              push    bp
     2998:5116  [85116]  8bec            mov     bp, sp
     2998:5118  [85118]  83ec06          sub     sp, 6
-    2998:511B  [8511B]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:511B  [8511B]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:5120  [85120]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:5125  [85125]  803e040041      cmp     byte ptr [4], 0x41
     2998:512A  [8512A]  7262            jb      L_8518E  ; 0x518e
@@ -8022,7 +8022,7 @@ FUNC_2998_5115:
     2998:5163  [85163]  8bd8            mov     bx, ax
     2998:5165  [85165]  268a11          mov     dl, byte ptr es:[bx + di]
     2998:5168  [85168]  88160806        mov     byte ptr [0x608], dl
-    2998:516C  [8516C]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:516C  [8516C]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:5171  [85171]  9ab803c982      lcall   FUNC_2998_3048  ; 0x82c9, 0x3b8
     2998:5176  [85176]  803e070600      cmp     byte ptr [0x607], 0
     2998:517B  [8517B]  7409            je      L_85186  ; 0x5186
@@ -8044,7 +8044,7 @@ FUNC_2998_519A:
     2998:519A  [8519A]  55              push    bp
     2998:519B  [8519B]  8bec            mov     bp, sp
     2998:519D  [8519D]  83ec06          sub     sp, 6
-    2998:51A0  [851A0]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:51A0  [851A0]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:51A5  [851A5]  9a4703c982      lcall   normalize_and_validate_arg_char  ; 0x82c9, 0x347
     2998:51AA  [851AA]  803e040041      cmp     byte ptr [4], 0x41
     2998:51AF  [851AF]  7259            jb      L_8520A  ; 0x520a
@@ -8069,7 +8069,7 @@ FUNC_2998_519A:
     2998:51E8  [851E8]  8bd8            mov     bx, ax
     2998:51EA  [851EA]  268a11          mov     dl, byte ptr es:[bx + di]
     2998:51ED  [851ED]  88160806        mov     byte ptr [0x608], dl
-    2998:51F1  [851F1]  9a79048796      lcall   SUB_96CE9  ; 0x9687, 0x479
+    2998:51F1  [851F1]  9a79048796      lcall   rearm_comm_rx_consume_cursor  ; 0x9687, 0x479
     2998:51F6  [851F6]  9ab803c982      lcall   FUNC_2998_3048  ; 0x82c9, 0x3b8
     2998:51FB  [851FB]  803e070600      cmp     byte ptr [0x607], 0
     2998:5200  [85200]  750d            jne     L_8520F  ; 0x520f
@@ -20694,7 +20694,7 @@ L_8E593:
     2998:E593  [8E593]  8be5            mov     sp, bp
     2998:E595  [8E595]  5d              pop     bp
     2998:E596  [8E596]  cb              retf    
-FUNC_2998_E597:
+init_comm_rx_message_pipeline:
     2998:E597  [8E597]  55              push    bp
     2998:E598  [8E598]  8bec            mov     bp, sp
     2998:E59A  [8E59A]  83ec06          sub     sp, 6
@@ -20981,7 +20981,7 @@ FUNC_2998_E872:
     2998:E89C  [8E89C]  8be5            mov     sp, bp
     2998:E89E  [8E89E]  5d              pop     bp
     2998:E89F  [8E89F]  ca0200          retf    2
-FUNC_2998_E8A2:
+sync_comm_rx_read_ptr_and_release_hold:
     2998:E8A2  [8E8A2]  55              push    bp
     2998:E8A3  [8E8A3]  8bec            mov     bp, sp
     2998:E8A5  [8E8A5]  83ec06          sub     sp, 6
@@ -21079,7 +21079,7 @@ L_8E997:
     2998:E997  [8E997]  8be5            mov     sp, bp
     2998:E999  [8E999]  5d              pop     bp
     2998:E99A  [8E99A]  cb              retf    
-FUNC_2998_E99B:
+fetch_next_comm_rx_char:
     2998:E99B  [8E99B]  55              push    bp
     2998:E99C  [8E99C]  8bec            mov     bp, sp
     2998:E99E  [8E99E]  83ec06          sub     sp, 6
@@ -21097,7 +21097,7 @@ L_8E9BC:
     2998:E9C3  [8E9C3]  c606230619      mov     byte ptr [0x623], 0x19
     2998:E9C8  [8E9C8]  c606060019      mov     byte ptr [6], 0x19
     2998:E9CD  [8E9CD]  9a5b011185      lcall   process_gpib_command_byte  ; 0x8511, 0x15b
-    2998:E9D2  [8E9D2]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:E9D2  [8E9D2]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:E9D7  [8E9D7]  e91b00          jmp     L_8E9F5  ; 0xe9f5
 L_8E9DA:
     2998:E9DA  [8E9DA]  9aef058796      lcall   finish_comm_response  ; 0x9687, 0x5ef
@@ -21170,7 +21170,7 @@ L_8EA85:
     2998:EA85  [8EA85]  8be5            mov     sp, bp
     2998:EA87  [8EA87]  5d              pop     bp
     2998:EA88  [8EA88]  cb              retf    
-FUNC_2998_EA89:
+set_comm_rx_busy_for_mode:
     2998:EA89  [8EA89]  55              push    bp
     2998:EA8A  [8EA8A]  8bec            mov     bp, sp
     2998:EA8C  [8EA8C]  83ec06          sub     sp, 6
@@ -21186,11 +21186,11 @@ L_8EAA9:
     2998:EAA9  [8EAA9]  8be5            mov     sp, bp
     2998:EAAB  [8EAAB]  5d              pop     bp
     2998:EAAC  [8EAAC]  ca0200          retf    2
-FUNC_2998_EAAF:
+finalize_comm_rx_line_boundary:
     2998:EAAF  [8EAAF]  55              push    bp
     2998:EAB0  [8EAB0]  8bec            mov     bp, sp
     2998:EAB2  [8EAB2]  83ec06          sub     sp, 6
-    2998:EAB5  [8EAB5]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:EAB5  [8EAB5]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:EABA  [8EABA]  c606a305ff      mov     byte ptr [0x5a3], 0xff
     2998:EABF  [8EABF]  c43e4404        les     di, ptr [0x444]
     2998:EAC3  [8EAC3]  893e4004        mov     word ptr [0x440], di
@@ -21398,7 +21398,7 @@ L_8ECE0:
     2998:ECE5  [8ECE5]  8be5            mov     sp, bp
     2998:ECE7  [8ECE7]  5d              pop     bp
     2998:ECE8  [8ECE8]  cb              retf    
-FUNC_2998_ECE9:
+rearm_comm_rx_consume_cursor:
     2998:ECE9  [8ECE9]  55              push    bp
     2998:ECEA  [8ECEA]  8bec            mov     bp, sp
     2998:ECEC  [8ECEC]  83ec06          sub     sp, 6
@@ -21501,7 +21501,7 @@ FUNC_2998_EDE5:
     2998:EDE5  [8EDE5]  55              push    bp
     2998:EDE6  [8EDE6]  8bec            mov     bp, sp
     2998:EDE8  [8EDE8]  83ec08          sub     sp, 8
-    2998:EDEB  [8EDEB]  9a32008796      lcall   SUB_968A2  ; 0x9687, 0x32
+    2998:EDEB  [8EDEB]  9a32008796      lcall   sync_comm_rx_read_ptr_and_release_hold  ; 0x9687, 0x32
     2998:EDF0  [8EDF0]  a0a305          mov     al, byte ptr [0x5a3]
     2998:EDF3  [8EDF3]  8846f9          mov     byte ptr [bp - 7], al
     2998:EDF6  [8EDF6]  c606a305ff      mov     byte ptr [0x5a3], 0xff

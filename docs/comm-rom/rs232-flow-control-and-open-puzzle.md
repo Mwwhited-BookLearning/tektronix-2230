@@ -227,3 +227,95 @@ closely parallels `service_comm_tx_queue`'s own dequeue-and-transmit
 logic behind an unexplained priority chain of flags `[0x455]`-
 `[0x458]`. See `VARIABLES.md`'s new row for both and
 `STILL_PENDING_DECODE.md` for this as a tracked open item.
+
+## Resolved, 2026-10-14, even later pass: the RX message buffer's consumer chain, and proof it feeds the real parser
+
+The previous section resolved the *write* side of the RX message
+buffer but left its consumer unidentified. That consumer is now fully
+traced, and - critically - it's now proven that the buffer feeds the
+real SCPI/GPIB command parser for **ordinary** traffic, not just the
+overflow-error case.
+
+**`[0x438]`/`[0x43A]`** is the buffer's true **consumption cursor**,
+distinct from the write ptr `[0x434]` and the read ptr `[0x43C]`
+documented in the previous section. The earlier-flagged "odd non-zero
+wrap origin of `0xF`" is also resolved here: `0xF` is simply the
+buffer's literal base offset - `init_comm_rx_message_pipeline` (native
+`0x8E597`) initializes all three pointers to `0xF` at reset, not an
+anomalous wrap target.
+
+Six new functions, all found via `[0x43C]`'s own cross-reference list
+(same already-rendered native `0x80000`-`0x8FFFF` range as the
+previous section - no tooling workaround needed this time):
+
+- **`init_comm_rx_message_pipeline`** (native `0x8E597`) - the
+  RX-pipeline reset: zeroes both the raw hardware ring buffer
+  (`[0x464]`/`[0x468]`) and the message buffer's three pointers (all
+  to `0xF`), clears the line-boundary markers, sentinels `[0]`-`[3]`,
+  and the TX-queue-reinit flag `[0x454]`, and performs a GPIB UART
+  pulse. No resolved static caller - a heuristic entry point, like
+  several of its siblings below.
+- **`fetch_next_comm_rx_char`** (native `0x8E99B`) - the real
+  pull-style "get next received character" primitive. **This is the
+  proof**: it's called directly from inside the character/argument
+  lexer - `normalize_and_validate_arg_char` and roughly ten other
+  sites spanning `FUNC_2998_1731`..`FUNC_2998_519A` (digit/alpha range
+  checks, `hex_digit_to_nibble`, quote/comma/semicolon delimiter
+  handling) - immediately before each of those reads `byte ptr [4]`.
+  On the normal path it advances `[0x438]` (wrapping to base `0xF`),
+  reads the byte at the old position into `[4]`, and clears the
+  "more data" sentinel `[3]` once caught up to either the write ptr
+  `[0x434]` or the CR-marker `[0x440]`. On the error path (full flag
+  `[0x451]` set, nothing left to consume) it stages error `0x19` into
+  `[0x623]`/`[6]` and forcibly calls `process_gpib_command_byte` - the
+  mechanism already confirmed in the previous section, now shown to be
+  one branch of the same function that serves ordinary reads.
+- **`sync_comm_rx_read_ptr_and_release_hold`** (native `0x8E8A2`) -
+  buffer-drain maintenance: resyncs the read ptr `[0x43C]` to the
+  consume cursor `[0x438]` once room has freed, clears the full flag,
+  does a GPIB UART pulse under certain line-boundary conditions, and -
+  when RS-232 hold-reason-bit-`1` is active in the already-confirmed
+  hold bitmask `[0x45C]` and >= `0x28` (40) bytes are now free - calls
+  `release_comm_hold(1)` to request XON. This directly cross-validates
+  today's buffer-fullness tracking against the separately-confirmed
+  `engage_comm_hold`/`release_comm_hold` mechanism (`FUNCTIONS.md`
+  lines documenting `0x97BE6`/`0x97C28`) - independent evidence the
+  read of this subsystem is correct.
+- **`rearm_comm_rx_consume_cursor`** (native `0x8ECE9`) - called
+  standalone throughout the same lexer functions that call
+  `fetch_next_comm_rx_char` (not always paired with it): if the
+  consume cursor differs from the read ptr, or they match but the
+  full flag is set, snaps the cursor to the read ptr and sets the
+  "more data" sentinel; a no-op otherwise.
+- **`finalize_comm_rx_line_boundary`** (native `0x8EAAF`) - called
+  from the alpha-char handling functions near `FUNC_2998_5115`/
+  `FUNC_2998_519A`: calls `sync_comm_rx_read_ptr_and_release_hold`
+  first, then promotes the pending LF-marker pair `[0x444]`/`[0x446]`
+  into the CR-marker slot `[0x440]`/`[0x442]`, recomputes the
+  "more data pending" sentinels from whether the write and read
+  pointers still differ, and releases the critical flag.
+- **`set_comm_rx_busy_for_mode(engage)`** (native `0x8EA89`) - a tiny
+  RS-232-vs-GPIB dispatcher forwarding its argument to
+  `set_comm_flow_hold` or `set_comm_queue_busy`. No resolved static
+  caller.
+
+**`[4]`** is the global "current input character" scratch cell that
+the entire argument/character lexer reads throughout
+`FUNC_2998_1731`-`FUNC_2998_519A`. `fetch_next_comm_rx_char`'s normal
+path is its *only* writer. This is the direct link: every ordinary
+received byte that the pipeline hands to the parser passes through
+`[4]`, written by the same function that's also the overflow-error
+handler - so the "closes the incoming-data gap" claim from the
+previous section is now true end-to-end, not just up to an
+unconnected buffer.
+
+**Not yet traced**: the hand-off from `[4]` into the command buffer
+`[0x586]` that `parse_next_gpib_command_byte` ultimately reads from -
+i.e. exactly how a fully-lexed/validated character makes it from this
+per-character scratch cell into the real command-buffer text that
+gets dispatched. `init_comm_rx_message_pipeline`, `set_comm_rx_busy_
+for_mode`, `rearm_comm_rx_consume_cursor`, and
+`sync_comm_rx_read_ptr_and_release_hold` (outside its call from
+`finalize_comm_rx_line_boundary`) still have no resolved static
+caller - likely reached only via an unresolved far-pointer table, the
+same unsolved-caller pattern already seen elsewhere in this ROM.
