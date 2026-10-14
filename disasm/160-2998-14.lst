@@ -6229,7 +6229,7 @@ L_83F13:
     2998:3F1E  [83F1E]  8be5            mov     sp, bp
     2998:3F20  [83F20]  5d              pop     bp
     2998:3F21  [83F21]  cb              retf    
-FUNC_2998_3F22:
+scan_quoted_arg_char:
     2998:3F22  [83F22]  55              push    bp
     2998:3F23  [83F23]  8bec            mov     bp, sp
     2998:3F25  [83F25]  83ec0a          sub     sp, 0xa
@@ -6269,7 +6269,7 @@ L_83F8F:
 L_83F92:
     2998:3F92  [83F92]  a00400          mov     al, byte ptr [4]
     2998:3F95  [83F95]  8846f7          mov     byte ptr [bp - 9], al
-    2998:3F98  [83F98]  9af4169f83      lcall   FUNC_2998_50E4  ; 0x839f, 0x16f4
+    2998:3F98  [83F98]  9af4169f83      lcall   append_char_to_comm_token_buffer  ; 0x839f, 0x16f4
     2998:3F9D  [83F9D]  803e230600      cmp     byte ptr [0x623], 0
     2998:3FA2  [83FA2]  7578            jne     L_8401C  ; 0x401c
     2998:3FA4  [83FA4]  8a56f7          mov     dl, byte ptr [bp - 9]
@@ -6305,7 +6305,7 @@ L_83FF0:
 L_83FF3:
     2998:3FF3  [83FF3]  837ef800        cmp     word ptr [bp - 8], 0
     2998:3FF7  [83FF7]  740c            je      L_84005  ; 0x4005
-    2998:3FF9  [83FF9]  9af4169f83      lcall   FUNC_2998_50E4  ; 0x839f, 0x16f4
+    2998:3FF9  [83FF9]  9af4169f83      lcall   append_char_to_comm_token_buffer  ; 0x839f, 0x16f4
     2998:3FFE  [83FFE]  803e2ba329      cmp     byte ptr [0xa32b], 0x29
     2998:4003  [84003]  98              cwde    
     2998:4004  [84004]  14eb            adc     al, 0xeb
@@ -6662,7 +6662,7 @@ L_8435B:
     2998:435B  [8435B]  897ef8          mov     word ptr [bp - 8], di
     2998:435E  [8435E]  83ff00          cmp     di, 0
     2998:4361  [84361]  7505            jne     L_84368  ; 0x4368
-    2998:4363  [84363]  9ad2169f83      lcall   FUNC_2998_50C2  ; 0x839f, 0x16d2
+    2998:4363  [84363]  9ad2169f83      lcall   bump_comm_token_length_bounded  ; 0x839f, 0x16d2
 L_84368:
     2998:4368  [84368]  803e020000      cmp     byte ptr [2], 0
     2998:436D  [8436D]  7506            jne     L_84375  ; 0x4375
@@ -6772,7 +6772,7 @@ L_84496:
     2998:4496  [84496]  c606a40510      mov     byte ptr [0x5a4], 0x10
     2998:449B  [8449B]  e92e00          jmp     L_844CC  ; 0x44cc
 L_8449E:
-    2998:449E  [8449E]  9ad2169f83      lcall   FUNC_2998_50C2  ; 0x839f, 0x16d2
+    2998:449E  [8449E]  9ad2169f83      lcall   bump_comm_token_length_bounded  ; 0x839f, 0x16d2
     2998:44A3  [844A3]  ff064006        inc     word ptr [0x640]
     2998:44A7  [844A7]  833e400610      cmp     word ptr [0x640], 0x10
     2998:44AC  [844AC]  7e05            jle     L_844B3  ; 0x44b3
@@ -7958,7 +7958,7 @@ FUNC_2998_50B2:
     2998:50BE  [850BE]  8be5            mov     sp, bp
     2998:50C0  [850C0]  5d              pop     bp
     2998:50C1  [850C1]  cb              retf    
-FUNC_2998_50C2:
+bump_comm_token_length_bounded:
     2998:50C2  [850C2]  55              push    bp
     2998:50C3  [850C3]  8bec            mov     bp, sp
     2998:50C5  [850C5]  83ec06          sub     sp, 6
@@ -7973,7 +7973,7 @@ L_850E0:
     2998:50E0  [850E0]  8be5            mov     sp, bp
     2998:50E2  [850E2]  5d              pop     bp
     2998:50E3  [850E3]  cb              retf    
-FUNC_2998_50E4:
+append_char_to_comm_token_buffer:
     2998:50E4  [850E4]  55              push    bp
     2998:50E5  [850E5]  8bec            mov     bp, sp
     2998:50E7  [850E7]  83ec06          sub     sp, 6

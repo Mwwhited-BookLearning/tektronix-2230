@@ -2251,19 +2251,97 @@ FUNCTIONAL_NAMES = {
                                                # see that function's own
                                                # reachability caveat
                                                # above. [0x5F4] is the
-                                               # same counter two nearby,
-                                               # still-unnamed sibling
-                                               # functions (physical
-                                               # 0x850C2/0x850E4, called
-                                               # directly from
-                                               # comm_call_main_rom)
+                                               # same counter the two
+                                               # sibling functions below
+                                               # (0x850C2/0x850E4)
                                                # increment while bounds-
                                                # checking a command
                                                # token/argument being
                                                # scanned - see docs/
                                                # comm-rom/command-parser-
                                                # token-scan-and-plot-
-                                               # handler.md
+                                               # handler.md. Byte-
+                                               # identical twin at
+                                               # 0x850B2 left unnamed -
+                                               # no caller found for it,
+                                               # so there's no evidence
+                                               # it's used any
+                                               # differently than this
+                                               # function (found 2026-
+                                               # 10-14)
+    0x850C2: "bump_comm_token_length_bounded", # increments [0x5F4]
+                                               # if < 0x64 (100);
+                                               # otherwise sets error
+                                               # 0xB into [0x623] and
+                                               # aborts the parser via
+                                               # [0x5A4]=1. Pure length
+                                               # counter, no buffer
+                                               # write - called from
+                                               # FUNC_2998_42F4 and
+                                               # FUNC_2998_43F0 right
+                                               # after a non-separator
+                                               # character is confirmed
+                                               # (e.g. not SCPI `:`),
+                                               # tracking overall
+                                               # token/path length
+                                               # separately from the
+                                               # quoted-string buffer
+                                               # below (found 2026-10-
+                                               # 14)
+    0x850E4: "append_char_to_comm_token_buffer", # the real [4] ->
+                                               # token-buffer hand-off:
+                                               # if [0x5F4] < 0x47 (71),
+                                               # writes the current
+                                               # input char [4] through
+                                               # the far pointer at
+                                               # [0x5F0]:[0x5F2]
+                                               # (initialized by
+                                               # FUNC_2998_3E79 to
+                                               # DS:0x5A9 - a dedicated
+                                               # scratch token buffer,
+                                               # distinct from the GPIB
+                                               # command buffer [0x586]
+                                               # that parse_next_gpib_
+                                               # command_byte reads
+                                               # from), advances both
+                                               # the pointer and [0x5F4];
+                                               # otherwise sets error
+                                               # 0xB into [0x623] and
+                                               # aborts via [0x5A4]=1.
+                                               # Called twice from
+                                               # FUNC_2998_3F22, right
+                                               # after fetch_next_comm_
+                                               # rx_char fills [4] -
+                                               # this resolves the "[4]
+                                               # -> [0x586] hand-off"
+                                               # open question, except
+                                               # the destination buffer
+                                               # turns out to be [0x5A9]
+                                               # not [0x586] (found
+                                               # 2026-10-14)
+    0x83F22: "scan_quoted_arg_char",           # per-character state
+                                               # machine ([0x5FA] holds
+                                               # the state) for scanning
+                                               # a quoted SCPI string
+                                               # argument: calls fetch_
+                                               # next_comm_rx_char,
+                                               # then handles the
+                                               # closing/doubled `"`
+                                               # delimiter and `^`-
+                                               # prefixed control-
+                                               # character escapes
+                                               # (`^` + 0x40-0x5F maps
+                                               # to the corresponding
+                                               # 0x00-0x1F control
+                                               # code, classic caret-
+                                               # notation), appending
+                                               # ordinary literal
+                                               # characters to the
+                                               # token buffer via
+                                               # append_char_to_comm_
+                                               # token_buffer. No
+                                               # resolved static caller
+                                               # (found 2026-10-14)
     0x82D01: "print_string_serial",            # (far_str_ptr) - loops
                                                # sending each byte via
                                                # serial_tx_buffer_put

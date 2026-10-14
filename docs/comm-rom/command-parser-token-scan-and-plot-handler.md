@@ -207,11 +207,21 @@ writeup - this file's "Still open" item below is resolved.
   this session to be one of the 8 functions that directly call
   `fetch_next_comm_rx_char`, the real pull-style "get next received
   character" primitive (see the same RX-pipeline doc section above).
+- ~~`FUNC_2998_50C2`/`FUNC_2998_50E4`~~ - **resolved 2026-10-14**:
+  named `bump_comm_token_length_bounded` (native `0x850C2`, pure
+  `[0x5F4]` length counter, bound `0x64`) and
+  `append_char_to_comm_token_buffer` (native `0x850E4`, the real
+  `[4]` -> token-buffer hand-off, bound `0x47`, writes through
+  `[0x5F0]`:`[0x5F2]` into scratch buffer `DS:0x5A9`) - found while
+  chasing exactly the lead this doc flagged. Also named their caller,
+  `scan_quoted_arg_char` (native `0x83F22`), the quoted-string/caret-
+  escape per-character state machine. See `docs/comm-rom/rs232-flow-
+  control-and-open-puzzle.md`'s matching "even later pass" section.
 - `FUNC_2998_50B2` (byte-identical to `reset_comm_token_length` but no
-  confirmed caller found), `FUNC_2998_50C2`, `FUNC_2998_50E4`,
-  `FUNC_2998_5115`, `FUNC_2998_519A`, `FUNC_2998_3048`,
-  `FUNC_2998_477F`, `FUNC_2998_4835`, `FUNC_2998_4BE6`,
-  `FUNC_2998_49EC` - all plausibly characterized above but not
+  confirmed caller found), `FUNC_2998_5115`, `FUNC_2998_519A`,
+  `FUNC_2998_3048`, `FUNC_2998_477F`, `FUNC_2998_4835`,
+  `FUNC_2998_4BE6`, `FUNC_2998_49EC` - all plausibly characterized
+  above but not
   confidently enough to rename per this project's "don't guess real
   hardware content" standard.
 - The printer/plotter `FORmat` override write site (`[0x461]`) is

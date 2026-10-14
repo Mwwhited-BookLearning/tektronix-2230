@@ -340,13 +340,52 @@ also read elsewhere in the ROM - e.g. `FUNC_2998_1731`, see the
 correction above - but those other readers aren't shown to get their
 value from this pipeline, so they're out of scope for this proof.)
 
-**Not yet traced**: the hand-off from `[4]` into the command buffer
-`[0x586]` that `parse_next_gpib_command_byte` ultimately reads from -
-i.e. exactly how a fully-lexed/validated character makes it from this
-per-character scratch cell into the real command-buffer text that
-gets dispatched. `init_comm_rx_message_pipeline`, `set_comm_rx_busy_
-for_mode`, `rearm_comm_rx_consume_cursor`, and
-`sync_comm_rx_read_ptr_and_release_hold` (outside its call from
-`finalize_comm_rx_line_boundary`) still have no resolved static
-caller - likely reached only via an unresolved far-pointer table, the
-same unsolved-caller pattern already seen elsewhere in this ROM.
+**Resolved, 2026-10-14, even later pass: the `[4]` hand-off, and a
+correction - the destination is `[0x5A9]`, not `[0x586]`**
+
+The question above ("where does a fetched character in `[4]` actually
+end up?") is answered, but the premise was wrong: it never reaches
+`[0x586]` (the GPIB command buffer `parse_next_gpib_command_byte`
+reads from) at all. Found via `docs/comm-rom/command-parser-token-
+scan-and-plot-handler.md`'s lead on `[0x5F4]`/`[0x5F0]` (that doc's
+"Still open" list had flagged `FUNC_2998_50C2`/`FUNC_2998_50E4` as a
+plausible token-length/accumulator mechanism, from a different,
+earlier investigation thread into the same general address range):
+
+- **`append_char_to_comm_token_buffer`** (native `0x850E4`) - if the
+  token-length counter `[0x5F4]` is `< 0x47` (71), writes `[4]`
+  through the far pointer at `[0x5F0]`:`[0x5F2]` - initialized
+  elsewhere (`FUNC_2998_3E79`) to the literal far pointer
+  `DS:0x5A9`, a dedicated scratch buffer, not `[0x586]` - advancing
+  both the pointer and `[0x5F4]`; past the bound, sets error `0xB`
+  into `[0x623]` and aborts via `[0x5A4]=1`. Called twice, both from
+  `scan_quoted_arg_char`, immediately after `fetch_next_comm_rx_char`
+  fills `[4]`. **This is the actual `[4]` -> token-buffer hand-off.**
+- **`bump_comm_token_length_bounded`** (native `0x850C2`) - a sibling
+  with the same error-on-overflow shape but a different bound
+  (`0x64`=100) and no buffer write at all - purely tracks token/path
+  length, called from two different functions (`FUNC_2998_42F4`,
+  `FUNC_2998_43F0`) right after a non-`:` character is confirmed -
+  i.e. counting overall command-path length, separate from the
+  quoted-string buffer above.
+- **`scan_quoted_arg_char`** (native `0x83F22`) - the caller of both
+  `fetch_next_comm_rx_char` and `append_char_to_comm_token_buffer`: a
+  per-character state machine (state in `[0x5FA]`) that scans a
+  quoted SCPI string argument, handling the closing/doubled `"`
+  delimiter and `^`-prefixed control-character escapes (`^` followed
+  by `0x40`-`0x5F` maps to the control code `0x00`-`0x1F` at the same
+  offset - classic caret-notation for embedding control characters in
+  a string literal, e.g. `^M` for CR). No resolved static caller.
+
+So `[0x5A9]` (not `[0x586]`) is where a validated character from a
+*quoted string argument* lands - a separate scratch buffer from the
+GPIB command-byte buffer. `[0x586]`'s own hand-off (how a resolved
+GPIB command byte gets there) remains untraced, but that's now a
+clearly separate question from this one.
+
+`init_comm_rx_message_pipeline`, `set_comm_rx_busy_for_mode`, and
+`scan_quoted_arg_char` (this pass's new addition) still have no
+resolved static caller - likely reached only via an unresolved
+far-pointer table, the same unsolved-caller pattern already seen
+elsewhere in this ROM. (`rearm_comm_rx_consume_cursor` is **not** in
+this list - see the correction above, it has 12 confirmed callers.)

@@ -5383,10 +5383,10 @@
     "notes": null
   },
   "83F22": {
-    "name": "FUNC_2998_3F22",
+    "name": "scan_quoted_arg_char",
     "kind": "entry",
     "ref_count": 0,
-    "functional_name": null,
+    "functional_name": "scan_quoted_arg_char",
     "notes": null
   },
   "83F37": {
@@ -7147,10 +7147,10 @@
     "notes": null
   },
   "850C2": {
-    "name": "FUNC_2998_50C2",
+    "name": "bump_comm_token_length_bounded",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "bump_comm_token_length_bounded",
     "notes": null
   },
   "850DC": {
@@ -7168,10 +7168,10 @@
     "notes": null
   },
   "850E4": {
-    "name": "FUNC_2998_50E4",
+    "name": "append_char_to_comm_token_buffer",
     "kind": "sub",
     "ref_count": 2,
-    "functional_name": null,
+    "functional_name": "append_char_to_comm_token_buffer",
     "notes": null
   },
   "850FE": {

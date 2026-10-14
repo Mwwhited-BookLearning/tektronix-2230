@@ -133,9 +133,24 @@ The single biggest cluster of open items - see
   `FUNC_2998_5115`/`FUNC_2998_519A`, which is also how it resolves that
   doc's previously-unnamed `SUB_96CE9`). See `docs/comm-rom/rs232-
   flow-control-and-open-puzzle.md`'s corrected call-site listings for
-  the full detail. **Still open**: the hand-off from `[4]` into the
-  real command buffer `[0x586]`; and no resolved static caller for
-  `init_comm_rx_message_pipeline` or `set_comm_rx_busy_for_mode` -
+  the full detail. **Resolved, same day, even later pass**: the `[4]`
+  hand-off is traced - but not into `[0x586]`. `scan_quoted_arg_char`
+  (native `0x83F22`) calls `fetch_next_comm_rx_char` then forwards the
+  validated `[4]` into `append_char_to_comm_token_buffer` (native
+  `0x850E4`), which writes it through far pointer `[0x5F0]`/`[0x5F2]`
+  into scratch buffer `DS:0x5A9` - a dedicated quoted-string-argument
+  token buffer, separate from the GPIB command buffer `[0x586]`.
+  Sibling `bump_comm_token_length_bounded` (native `0x850C2`) tracks a
+  different, buffer-less length bound for the overall command path.
+  This also resolved two items from `command-parser-token-scan-and-
+  plot-handler.md`'s "Still open" list (`FUNC_2998_50C2`/
+  `FUNC_2998_50E4`). Full writeup in `docs/comm-rom/rs232-flow-
+  control-and-open-puzzle.md`'s matching section and `VARIABLES.md`'s
+  `[0x5F4]`/`[0x5F0]`/`[4]` rows. **Still open**: `[0x5A9]`'s own
+  reader (no code anywhere reads back through `[0x5F0]`/`[0x5F2]`);
+  `[0x586]`'s hand-off, now confirmed as a separate question from this
+  one; and no resolved static caller for `init_comm_rx_message_
+  pipeline`, `set_comm_rx_busy_for_mode`, or `scan_quoted_arg_char` -
   likely reached only via an unresolved far-pointer table.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
