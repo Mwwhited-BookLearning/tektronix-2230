@@ -1771,9 +1771,13 @@ dense-cluster functions in section 9) resolved this:
     work instead of a full recompute**. Not fully proven end-to-end
     (the six `SUB_E951A` callers found during this same search use an
     unusual mid-function entry point with no prologue of its own,
-    reusing whatever `bp` frame the caller already set up - flagged as
-    an oddity, not chased further here), but the "hardware register, no
-    CPU write" hypothesis above is now conclusively ruled out.
+    reusing whatever `bp` frame the caller already set up - this was
+    already fully explained before this session, 2026-10-11, as a real
+    inherited-`bp`/`mov sp,bp` frame-collapse bug: see `docs/decode-
+    anomalies/landing-artifacts-and-jump-tables.md`'s "Follow-up,
+    2026-10-11: resolved `0xE951A`'s... stack mismatch" section - not a
+    new oddity to chase), but the "hardware register, no CPU write"
+    hypothesis above is now conclusively ruled out.
 - **Candidate real-world identity (strong, not yet 100% proven by a
   direct string/ID trace): `REFProt REF{A-Z}:{LOCked, PERM, or
   UNLocked}` and its counterpart query `REFStat? PROTect`**

@@ -982,10 +982,12 @@ The single biggest cluster of open items - see
   `[0x52A]` as an incremental screen-position shift) and the comm ROM's
   debounced accumulators, a plausible (unproven) unifying story is
   "how much a formatted/plotted value changed since the last update."
-  Also surfaced, unresolved: a mid-function, no-prologue entry point
-  (`SUB_E951A`) inside the same function, reached by six separate
-  far-call sites. See `docs/comm-rom/command-keyword-table.md` section
-  11.
+  Also re-surfaced, but already resolved before this session
+  (2026-10-11, see the matching entry further down this file): a
+  mid-function, no-prologue entry point (`SUB_E951A`) inside the same
+  function, reached by six separate far-call sites - a real inherited-
+  `bp`/`mov sp,bp` frame-collapse bug, not a new oddity. See `docs/
+  comm-rom/command-keyword-table.md` section 11.
   **Thirtieth follow-up, 2026-10-13, later pass - confirms the
   twenty-sixth follow-up's "front-panel LOCK-button handler" guess**:
   `FUNC_2998_CFDA` (toggle-LOCK) has exactly one call site in the comm
