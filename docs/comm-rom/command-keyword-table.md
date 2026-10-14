@@ -2285,6 +2285,32 @@ dense-cluster functions in section 9) resolved this:
     the `0x04` LOCK bit gated on the `0x40` PERM bit being clear - a
     distinct "toggle lock" operation, noticed but not yet traced or
     named; flagged as a new lead for a future pass.
+  - **`FUNC_2998_CFDA`'s real-world trigger identified, 2026-10-13,
+    later pass**: it has exactly **one** call site in the whole comm
+    ROM (via its `0x9000`-segment alias `SUB_94FDA`, at physical
+    `0x864CF`), inside `FUNC_2998_63EA` (physical `0x863EA`) - one of
+    the six debounced-accumulator callers of `FUNC_2998_718D` already
+    documented above (its phase-`3` branch, dispatched on an incoming
+    `[bp+6]` argument of `1`/`3`/`4`; no call site to `FUNC_2998_63EA`
+    itself was found in this ROM, consistent with scheduler-table
+    dispatch rather than a direct `lcall`). After `FUNC_2998_718D`
+    steps the current lettered-reference selection (`[0x4CB]`, clamped
+    `'a'..'z'`) on a knob-delta threshold crossing, the call to
+    `FUNC_2998_CFDA` is gated on `([0x4E8] & 0x80) != 0 && ([0x4E7] &
+    0x80) != 0` - **the exact same two bytes and bit, with the same
+    "both must be set" combination**, that `VARIABLES.md` already
+    documents for `update_menu_position`'s front-panel "accelerate"
+    chord (two controls held simultaneously). This resolves the open
+    "front-panel handler vs. something else" question:
+    **`FUNC_2998_CFDA` (toggle lettered-reference LOCK) fires from the
+    front-panel lettered-reference selection knob, when the operator
+    is holding the same two-control "accelerate" combination already
+    identified elsewhere - not from any GPIB command path.** The exact
+    physical controls behind `[0x4E7]`/`[0x4E8]` remain unconfirmed (per
+    `VARIABLES.md`'s existing hedge), so "which two buttons/knob
+    exactly" stays open, but the trigger *mechanism* (front-panel
+    chord during lettered-reference stepping) is now confirmed by
+    direct trace, not inferred.
   - `build_gpib_message_checksum` (`D0C2`, immediately preceding
     `D1AA`/`validate_gpib_record_consistency` in the listing) is the
     **write-side counterpart**: given an index, it computes and stores

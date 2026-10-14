@@ -1108,6 +1108,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       labels, already correct in `command-keyword-table.md` but not
       brought back into `VARIABLES.md`). See twenty-sixth follow-up in
       `STILL_PENDING_DECODE.md`.
+      **2026-10-13, later pass - confirms the front-panel guess**:
+      `FUNC_2998_CFDA` has exactly one call site, inside the
+      lettered-reference knob stepper (`FUNC_2998_63EA`), gated on the
+      same `[0x4E7]`/`[0x4E8]` bit-`0x80` "accelerate" chord already
+      documented for `update_menu_position`. Confirmed by direct trace:
+      toggling a lettered reference's LOCK state is a front-panel
+      action, not a GPIB command. See thirtieth follow-up in
+      `STILL_PENDING_DECODE.md`.
       **2026-10-13, later pass**: found `validate_gpib_device_records`'s
       real static caller after all - `scan_and_repair_gpib_records`
       (native `0x8D476`), confirmed via label-boundary check that the

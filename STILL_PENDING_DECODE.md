@@ -972,6 +972,21 @@ The single biggest cluster of open items - see
   (`SUB_E951A`) inside the same function, reached by six separate
   far-call sites. See `docs/comm-rom/command-keyword-table.md` section
   11.
+  **Thirtieth follow-up, 2026-10-13, later pass - confirms the
+  twenty-sixth follow-up's "front-panel LOCK-button handler" guess**:
+  `FUNC_2998_CFDA` (toggle-LOCK) has exactly one call site in the comm
+  ROM, inside `FUNC_2998_63EA` - one of the six debounced-accumulator
+  callers of `FUNC_2998_718D`, specifically the lettered-reference
+  (`[0x4CB]`, `'a'..'z'`) selector. The call is gated on `[0x4E8]&0x80`
+  and `[0x4E7]&0x80` both being set - the identical two-byte, same-bit,
+  "both held" condition `VARIABLES.md` already documents as `update_
+  menu_position`'s front-panel "accelerate" chord. Confirms by direct
+  trace (not just shape-matching) that toggling a lettered reference's
+  LOCK state happens via a front-panel control combination while
+  stepping through lettered references with the selection knob, not
+  via any GPIB command path. Which two physical controls `[0x4E7]`/
+  `[0x4E8]` are remains unconfirmed. See `docs/comm-rom/command-
+  keyword-table.md` section 11.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path
