@@ -340,6 +340,125 @@ remaining leads (a small unread comm-ROM byte span, or a pure
 hardware-level effect) - a same-day claim here that the comm ROM "has
 no heuristic pass" was wrong and has been corrected there.
 
+## Level 1 detail: comm ROM serial decoder -> SCPI-like dispatch handoff
+
+Added 2026-10-14 alongside `docs/architecture/subsystem-object-
+model.md`, which this diagram is a control-flow-style companion to
+(that doc has the matching sequence diagram with the same addresses).
+Draws the explicit line between the comm ROM's two different jobs:
+byte-level UART framing/buffering (no grammar knowledge) and the
+SCPI-like keyword/grammar layer sitting on top of it. These were
+previously documented in prose across several files
+(`docs/comm-rom/rs232-flow-control-and-open-puzzle.md`,
+`docs/comm-rom/command-parser-token-scan-and-plot-handler.md`) but
+never drawn as one control-flow path end to end.
+
+```plantuml
+@startuml
+start
+
+partition "Serial command decoder (byte framing only)" {
+  :Task-scheduler tick fires\npoll_comm_status_tick\n(0x96F54 / native 0x8EF54);
+  :Read [0x6DA] (UART status/\ninterrupt-latch byte);
+  if (bit 0x02 set? (data ready)) then (yes)
+    :Read byte off [0x6D6]\n(plain `mov`, not `in` -\nno real port I/O in this ROM)\n+ 2 more register bytes (+1, +3);
+    :Package 4-byte record\n(data, reg+1, reg+3, status);
+    :Write into RX ring buffer\n([0x464]/[0x466] write ptr,\nbase 0x46C, 32x4-byte records);
+  endif
+
+  if ([0x1BFA]==0? (COMM_LOOPBACK\nprobe result, common case)) then (yes)
+    partition "FUNC_2998_F12B (0x8F12B)" {
+      :Drain ring buffer\n([0x468]/[0x46A] read ptr\nvs [0x464]/[0x466] write ptr);
+      :SUB_9754C on record's +1 byte\n(masked 0x9F) -> translated\nevent-type byte;
+      :dispatch on bits\n(0x80->SUB_97253, 0x10->SUB_97583);
+      :advance read ptr by 4,\nwraparound;
+      :service TX queue\n([0x448]/[0x44A]/[0x44C])\nonce RX drained;
+    }
+  else (no, [0x1BFA]!=0:\nprobe read exactly 0xD0)
+    partition "FUNC_2998_F5AC (0x8F5AC)" {
+      :Keyed on [0x598]\n(raw status byte saved at capture);
+      :bit 0x20 -> SUB_976C0;
+      :bit 0x10 -> SUB_9785B;
+      if (bit 0x04 set?) then (yes)
+        :fall through to\nparse_next_gpib_command_byte;
+      endif
+    }
+  endif
+}
+
+partition "SCPI-like command dispatch (grammar/keyword layer)" {
+  :parse_next_gpib_command_byte\n(0x8F905): stage byte from\nds:0x586/ds:0x590 into [0x580];
+  :process_gpib_command_byte:\nclassification/dispatch;
+  :comm_call_main_rom (0x839F5):\n[0x5A4] parser-state byte indexes\n24-entry far-call table at [0x72A]\n(boot value 9006:0000 ->\nphysical 0x88060, entries\n0x83B1A-0x85098);
+  :Keyword-table walk\n(FUNC_2998_5115/FUNC_2998_519A,\n26-letter x 6-byte-record lookup,\nbase ptrs [0x6EA]/[0x6F6]);
+  :Resolved command ID -> [0x604]\n(confirmed against 0x17=PLOt);
+  :Argument validation\n(FUNC_2998_44D0, generic -\nnot PLOt-specific);
+  :SET/GET flag family\n(get/set_comm_config_flag,\nflag_value_to_keyword_ptr,\ncompute_response_format_flags)\n<-> REFA-REFZ reference records\n([0x73E]/[0x742]/[0x746]/[0x74A]);
+}
+
+stop
+@enduml
+```
+
+**Why this matters as its own diagram**: this project already made
+the mistake once of treating a slot in the scheduler's 12-entry tick
+table as if it were an entry in the SCPI dispatcher's 24-entry
+far-call table (or vice versa) - see `changes/2026-10-14.md`'s
+"duplicate rediscovery" correction. The two tables, at two different
+addresses, driving two different subsystems, are easy to conflate;
+keeping them in visually separate partitions here is deliberate.
+
+## Level 1 detail: front-panel input poll path
+
+Added 2026-10-14 alongside `docs/architecture/subsystem-object-
+model.md`. Shows `scheduler_tick_service`'s per-tick front-panel poll
+and its one confirmed consumer, explicitly contrasted with the
+serial/GPIB input path above to make clear these are structurally
+independent - no merge point between the two has been found anywhere
+in the disassembly.
+
+```plantuml
+@startuml
+start
+
+partition "Front panel (scheduler_tick_service, 0xE6524)" {
+  :Called every tick from\nINT2_HANDLER_LATE;
+  :Read [0x758] (SWB2) / [0x759] (SWB1)\nfrom physical 0x403FFA/0x403FFB;
+  :Compare against previous state\nin [0x7B4] (edge-detect);
+  if (edge detected?) then (yes)
+    :update_menu_position;
+    note right
+      CONFIRMED only for self-test
+      routines - checked 2026-09-14,
+      all 9 callers exhaustively
+      enumerated, all are self-test
+      functions. No general-purpose
+      normal-operation menu-navigation
+      state machine has been traced -
+      a real, tracked gap (see
+      STILL_PENDING_DECODE.md's
+      "Menu/UI rendering" section and
+      TODO.md's 2026-10-14 entry).
+    end note
+  endif
+}
+
+partition "Serial / GPIB (separate scheduler slot)" {
+  :poll_comm_status_tick\n(see the comm-ROM decoder diagram\nabove for the full chain);
+  :...eventually reaches\ncomm_call_main_rom;
+}
+
+note over "Front panel (scheduler_tick_service, 0xE6524)", "Serial / GPIB (separate scheduler slot)"
+  No code path merging these two inputs has
+  been found. They are independent from
+  hardware poll all the way to their
+  respective (partially-unknown) consumers.
+end note
+
+stop
+@enduml
+```
+
 ## Level 1 detail: (more as identified)
 
 As the remaining subsystem-test subroutines above get identified, add

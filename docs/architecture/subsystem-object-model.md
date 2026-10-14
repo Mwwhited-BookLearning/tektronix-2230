@@ -512,6 +512,9 @@ actually missing, or did I just not find it":
 - `docs/display/vector-display-and-stroke-font.md`,
   `docs/display/readout-memory.md` — CRT buffer detail
 - `JUMP_MAP.md` — boot sequence, self-test dispatcher, the
-  SELECT-C1/C2 open puzzle this file's section 2 depends on
+  SELECT-C1/C2 open puzzle this file's section 2 depends on, and (as
+  of 2026-10-14) its own control-flow-style companion diagrams for
+  this file's sections 1 and 5 (the serial-decoder/SCPI-dispatch
+  handoff, and the front-panel input poll path)
 - `VARIABLES.md` lines ~178-217 — the comm-ROM RAM-structure table
   this file's sections 1 and 3 are drawn from
