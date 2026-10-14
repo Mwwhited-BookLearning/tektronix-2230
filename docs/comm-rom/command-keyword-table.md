@@ -1082,7 +1082,9 @@ command's own known record count (would need `ACQuisition`'s own
 `[0x604]`-space ID, not yet determined - its table-3 position (`11`)
 and its `[0x604]`-space ID appear to be different numbering schemes).
 
-### A second, larger structure found while tracing this: `[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]` - the lettered reference-memory (`REFA`-`REFZ`) record array, and a strong `REFProt`/`REFStat? PROTect` identification (found 2026-10-13)
+## 11. `[0x73E]`/`[0x746]`/`[0x742]`/`[0x74A]` - the lettered reference-memory (`REFA`-`REFZ`) record array, and a strong `REFProt`/`REFStat? PROTect` identification (found 2026-10-13)
+
+A second, larger structure found while tracing section 10's `[0x702]` work:
 
 While confirming `[0x702]`, grepped the remaining "not yet
 characterized" section-7 entries and found `[0x73E]`/`[0x746]` are
@@ -1332,14 +1334,27 @@ dense-cluster functions in section 9) resolved this:
     "REF4 is the only available reference memory for the 2220 and 2221
     instruments": on those (and any other non-`0x1E`-variant) models,
     any in-range request silently collapses to `ACQ`->`REF4`.
-    **`[0x5F7]` is therefore a model/option feature-gate byte for
+    **`[0x5F7]` was read here as a model/option feature-gate byte for
     lettered-reference support** - `4` enables the full `REFA`-`REFZ`
     range (paired with variant `0x1E`), `0` appears to mean "no
     reference-selection option at all" (skips validation, forces the
     `ACQ`/`REF4` default, and reports the distinct error code `7` when
     the variant byte would otherwise have demanded `[0x5F7] == 4`).
-    Exact real-world meaning of the value `4` itself (vs. e.g. `1`,
-    `2`, `3`, never observed being tested here) is not pinned down.
+    **Correction, 2026-10-13: this characterization was wrong in kind,
+    though not in its net effect - see section 12 below.** `[0x5F7]`
+    is not a persistent model/option flag at all; it is an ephemeral
+    per-command argument-token classification byte, reset to `0` and
+    recomputed from scratch by the comm ROM's generic argument
+    tokenizer on every single command. The value `4` specifically
+    means "operand slot 1 was recognized via the keyword/letter-table
+    matching path" (the same path section 8 already traced for
+    `[0x5fe]`/`[0x606]`), which happens to be the only syntactic form
+    that could ever spell out a lettered designator like `REFA` in the
+    first place - so checking `[0x5F7] == 4` is mechanistically "was
+    this argument entered as a keyword/letter token," not a read of a
+    stored capability bit. The net external behavior described above
+    (variant-gated validation, collapse to `ACQ`/`REF4` on non-`0x1E`
+    variants) is unaffected by this correction.
   - After validation, resolves **both** `[0x4F6]` (source) and
     `[0x5F8]` (target) through `SUB_93B1C` - the same resolver already
     confirmed for `[0x5F8]` in the `REFProt` writeup above - confirming
@@ -2363,3 +2378,66 @@ individual fields beyond the far-pointer/length pairs; `[0x746]`/
 write patterns other than `FUNC_2998_B339`'s unlock case; and firm
 confirmation of the `"ACQ"`/`"REF"` 2-state resolver's owning
 command).
+
+## 12. `[0x5F7]`'s own write site found; it is `[0x5fe]`'s slot-1 sibling, not a model/option flag (found 2026-10-13)
+
+`VARIABLES.md` had flagged `[0x5F7]` with "no other reader/writer
+traced yet" beyond the two consumers documented in section 10
+(`FUNC_2998_B622`/`DATa SOUrce`/`TARget`, `FUNC_2998_B051`/`REFDisp?`).
+Grepped `disasm/160-2998-14.lst` directly for every `mov byte ptr
+[0x5f7]`/`cmp byte ptr [0x5f7]` site - roughly 20 found, all inside the
+same parser-state handler table range (`0x83B1A`-`0x85098`) section 7
+already confirmed, none reached by a resolvable static `lcall` (same
+register-indirect dispatch situation already noted for `FUNC_2998_43F0`
+in section 8).
+
+- **Reset sites** (start of a fresh argument scan): `FUNC_2998_3C35`'s
+  `L_83CF0` (physical `0x83CF0`) zeroes `[0x5ff]`, `[0x5f7]`, `[0x606]`,
+  `[0x5f8]`, `[0x5f4]` together and sets `[0x609]`/`[0x5fe]`/`[0x606]`
+  to the sentinel `0xfb`; `FUNC_2998_4E99` (physical `0x84E9F`) resets
+  the same `[0x5ff]`/`[0x5f7]`/`[0x609]`/`[0x5fe]` group to a plain `0`
+  instead. Both are entry-level "clear the argument-parse state" resets
+  for two different top-level parse functions.
+- **Classification sites**, each gated on `cmp byte ptr [0x5f7], 0` to
+  decide whether operand **slot 1** (`[0x5f7]` itself) or operand
+  **slot 2** (`[0x5ff]`) receives the result - the *exact* slot-1/
+  slot-2 pairing mechanism section 8 already confirmed for
+  `[0x5fe]`/`[0x606]` (which hold the copied *value*; `[0x5f7]`/`[0x5ff]`
+  are the parallel classification bytes for the same two slots):
+  - `FUNC_2998_43F0` @ `0x84427`: writes `4` (else, slot already
+    taken, writes `[0x5ff] = 4` at `0x84444`) - **this is the same
+    handler/branch section 8 traced as the source of `[0x606]`/
+    `[0x5fe]`'s copied value from `[0x608]`** (itself fed by the
+    letter-bucket keyword-matcher `FUNC_2998_5115`/`FUNC_2998_519A`).
+    So `[0x5F7] == 4` mechanistically means "slot 1 was filled via the
+    keyword/letter-table matching path," not a stored capability bit.
+  - `FUNC_2998_4240` @ `0x84268`: writes `2` (else `[0x5ff] = 2` at
+    `0x84270`), in a branch that computes its result via a `shl`-by-8
+    and a call to `FUNC_2998_2F3A` rather than any keyword-table walk -
+    shaped like plain-numeric-literal parsing, not keyword matching.
+  - `FUNC_2998_42F4` @ `0x84318`: writes `5` unconditionally (gated
+    instead on `[0x623] == 0`, i.e. no prior parse error), in a branch
+    reached after testing the current character against `:` (`0x3a`) -
+    looks like a colon-prefixed subfield form (e.g. a `h:m` or `x:y`
+    style argument), not traced further this pass.
+  - Two further sites (`0x83EDE`, `0x83F04`) write `6`, inside
+    functions not yet opened this pass - flagged as an open loose end.
+- **Net result**: `[0x5F7]` is `[0x5fe]`'s direct counterpart for
+  operand slot 1 (small integer tag for *which parser-state handler/
+  syntactic form* filled the slot, domain `{0, 2, 4, 5, 6, ...}`),
+  reset fresh on every command's argument scan rather than persisting
+  across commands. It is **not** a model/option EEPROM-style flag.
+  Section 10's `[0x5F7] == 4` check (gating `DATa SOUrce`/`TARget` and
+  `REFDisp?`'s lettered-reference acceptance) reads correctly now as
+  "was this argument's token recognized via the keyword/letter-table
+  path" - the only parse path that could ever produce a lettered
+  designator like `REFA` in the first place, which is *why* the two
+  consumers require exactly that code rather than any other. The
+  documented external behavior (variant-gated validation, `ACQ`/`REF4`
+  collapse on non-`0x1E` variants) is unchanged by this correction;
+  only the internal mechanism backing it is. Not yet pinned down: the
+  real syntactic meaning of codes `2`/`5`/`6` beyond their shape
+  (plain-numeric vs. colon-subfield vs. untraced), and whether any
+  comm-ROM command besides `DATa SOUrce`/`TARget`/`REFDisp?` ever
+  branches on `[0x5F7]`'s classification value directly rather than
+  just its zero/nonzero "slot filled" sense.

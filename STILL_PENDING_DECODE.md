@@ -508,8 +508,10 @@ The single biggest cluster of open items - see
   holds the full `0`(ACQ)/`1..4`(numbered)/`5..30`(lettered) selector
   (not just a 2-state boolean, which is merely what `FUNC_2998_B227`'s
   narrower report path collapses it to). Validates `[0x5F8]` against
-  the device-variant byte `[0x1B83]` and `[0x5F7]` (now characterized
-  as a **lettered-reference feature-gate**: `4` + variant `0x1E`
+  the device-variant byte `[0x1B83]` and `[0x5F7]` (at the time
+  characterized as a **lettered-reference feature-gate** - corrected
+  by the thirty-second follow-up below, it's really an ephemeral
+  per-command argument-token classification byte: `4` + variant `0x1E`
   enables the full `1..30` range; otherwise, in range or not,
   force-defaults to `[0x5F8]=4`/`[0x4F6]=0` - an exact match for the
   manual's "REF4 is the only available reference memory for the 2220
@@ -1003,6 +1005,29 @@ The single biggest cluster of open items - see
   via any GPIB command path. Which two physical controls `[0x4E7]`/
   `[0x4E8]` are remains unconfirmed. See `docs/comm-rom/command-
   keyword-table.md` section 11.
+  **Thirty-second follow-up, 2026-10-13, later pass - resolves
+  `[0x5F7]`'s write site, overturning the fifth follow-up's "lettered-
+  reference feature-gate" characterization above**: grepped
+  `disasm/160-2998-14.lst` directly for every `[0x5f7]` access (~20
+  found, none reached by a resolvable static `lcall` - same dispatch-
+  table situation as `[0x5fe]`). It is reset to `0` at the start of
+  each command's argument scan (`FUNC_2998_3C35`'s `L_83CF0`, physical
+  `0x83CF0`; mirrored in `FUNC_2998_4E99`, `0x84E9F`) and is `[0x5fe]`'s
+  direct sibling for operand slot 1 of the generic two-operand argument
+  tokenizer (`[0x5fe]`/`[0x5ff]` are slot 2's byte pair) - a per-command
+  classification code, not a persistent model/option flag. `4` comes
+  from `FUNC_2998_43F0` (`0x84427`), the exact handler already traced
+  in `docs/comm-rom/command-keyword-table.md` section 8 as the source
+  of `[0x5fe]`/`[0x606]`'s copied value from the letter-bucket keyword-
+  matcher's `[0x608]` - so `[0x5F7]==4` mechanistically means "slot 1
+  was recognized via the keyword/letter-table matching path," the only
+  form that could ever spell a lettered designator like `REFA`. Other
+  observed codes: `2` (`FUNC_2998_4240`, `0x84268`, numeric-literal-
+  shaped), `5` (`FUNC_2998_42F4`, `0x84318`, colon-subfield-shaped), `6`
+  (two untraced sites, `0x83EDE`/`0x83F04`). The external behavior
+  documented above (variant-gated validation, `ACQ`/`REF4` collapse)
+  stands unchanged; only the "persistent feature-gate" framing was
+  wrong. See `docs/comm-rom/command-keyword-table.md` section 12.
 - Binary/hex `CURVe?` waveform transfer is now fully confirmed **as a
   wire protocol** (see the practical guide), but still isn't tied to
   specific disassembled routines beyond the known ASCII path

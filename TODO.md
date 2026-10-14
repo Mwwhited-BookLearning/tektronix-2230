@@ -886,8 +886,11 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       a simple cross-check. Resolves `[0x4F6]` (source) through the
       same `SUB_93B1C` call as `[0x5F8]` (target), proving `[0x4F6]`
       holds the full `0..30` selector, not just a 2-state boolean.
-      Validates against `[0x5F7]` (now: a lettered-reference
-      feature-gate byte) and the device-variant byte `[0x1B83]`,
+      Validates against `[0x5F7]` (at the time: thought to be a
+      lettered-reference feature-gate byte; corrected 2026-10-13,
+      later pass - it's really `[0x5fe]`'s per-command argument-token
+      classification sibling, see `STILL_PENDING_DECODE.md`'s
+      thirty-second follow-up) and the device-variant byte `[0x1B83]`,
       force-defaulting to `ACQ`->`REF4` on non-full-featured variants -
       an exact match for the manual's 2220/2221 REF4-only limitation.
       Performs a real waveform copy (`ACQ`->ref via
@@ -897,10 +900,11 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       candidate identity is now strong, not just weak corroboration.
       Still open within this subsystem: `[0x742]`'s individual fields,
       `[0x746]`/`[0x74A]`'s exact semantics, the `B3A3`-vs-`B568`
-      inconsistency, `PERM`'s SET-side (not found), `[0x5F7]`'s precise
-      meaning, the `{REF1,REF4}`-pairing rejection's rationale, and the
+      inconsistency, `PERM`'s SET-side (not found), the
+      `{REF1,REF4}`-pairing rejection's rationale, and the
       newly-surfaced, untraced callees `SUB_93925`/`SUB_9471C`/
-      `SUB_94D9C`/`FUNC_2998_7609`.
+      `SUB_94D9C`/`FUNC_2998_7609`. (`[0x5F7]`'s own meaning is now
+      resolved - see above.)
       **2026-10-13, ground-truth re-trace of the resolver chain
       itself**: the earlier "`SUB_93B1C -> SUB_93B7E -> SUB_96126`,
       arithmetic consistent with `[0x5F8]-5`" framing was an imprecise
