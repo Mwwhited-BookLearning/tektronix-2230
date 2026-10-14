@@ -537,8 +537,11 @@ The single biggest cluster of open items - see
   was an imprecise blend, and that `SUB_96126` isn't part of the index
   resolution at all: `SUB_93B1C` (physical `0x8BB1C`) is a switch that
   converts the numeric selector to an ASCII **letter** (`0..3`
-  pass through; `4`/`REF4` aliases to `1`/`REF1` - confirmed, not
-  explained; `5..30` -> `(input+0x5C)&0xFF` = `'a'..'z'`); `SUB_93B7E`
+  pass through; `4`/`REF4` aliases to `1`/`REF1` unconditionally,
+  independent of device variant - **explained, twenty-eighth follow-up
+  below, via the programming manual's "REF4... occupies the REF1-REF3
+  memory locations in the 2230" note**; `5..30` -> `(input+0x5C)&0xFF`
+  = `'a'..'z'`); `SUB_93B7E`
   (physical `0x8BB7E`) is the separate step converting that letter to
   the `0..25` record index (`byte-0x61`, else sentinel `0xFFFF`);
   `SUB_96126` (physical `0x8E126`, = `FUNC_2998_E126`) takes no
@@ -710,8 +713,19 @@ The single biggest cluster of open items - see
   artifact. Plausible tie-in to the manual's note that 2230's REF4
   "occupies the REF1-REF3 memory locations" (i.e. isn't a distinct
   physical store on this model) - but `FUNC_2998_6B4B`'s offset-`+0`
-  byte has no established meaning yet, so this is a lead, not a
-  resolution. Does **not** resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
+  byte has no established meaning yet, so the specific bit-sense story
+  is a lead, not a resolution. **Thirty-first follow-up, 2026-10-13,
+  later pass - the broader premise is now corroborated**: `SUB_93B1C`
+  (resolver-chain writeup above) maps selector `4` to the same output
+  as `1` **unconditionally, regardless of the `[0x1B83]` device-variant
+  byte** - i.e. not a 2220/2221-only compatibility shim, but a
+  universal rule on this firmware. That matches the manual's "REF4...
+  occupies the REF1-REF3 memory locations in the 2230" read as a
+  general 2230 hardware fact rather than a 2220/2221-specific
+  restriction, and gives two independent code sites (this gate and
+  `SUB_93B1C`'s selector normalization) converging on the same
+  explanation - resolving the long-open "REF4->1 alias root cause"
+  question. Does **not** resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
   from the seventeenth follow-up, which remains open. See `docs/
   comm-rom/command-keyword-table.md` section 11.
   **Eighteenth follow-up, 2026-10-13**: resolved the `B3A3`-vs-`B568`

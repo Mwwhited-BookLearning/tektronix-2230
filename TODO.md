@@ -906,7 +906,9 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       arithmetic consistent with `[0x5F8]-5`" framing was an imprecise
       blend. Direct reads show `SUB_93B1C` converts the selector to an
       ASCII letter (switch: `0..3` unchanged, `4`/`REF4` aliases to
-      `1`/`REF1` - unexplained, `5..30` -> `'a'..'z'`); `SUB_93B7E` is
+      `1`/`REF1` unconditionally, independent of device variant - see
+      the thirty-first follow-up below for why, `5..30` -> `'a'..'z'`);
+      `SUB_93B7E` is
       the separate letter->`0..25`-index step; `SUB_96126` (=
       `FUNC_2998_E126`) takes no arguments and is actually a
       test-and-set interlock/busy-flag over the struct `[0x746]` points
@@ -1022,6 +1024,13 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       note, but not proven - `6B4B`'s `+0` byte has no established
       meaning yet. Doesn't resolve the `[bp+6]==0`-isn't-`OFF` puzzle.
       See twenty-eighth follow-up.
+      **2026-10-13, later pass - the broader REF4-not-a-distinct-store
+      premise is now corroborated and the REF4->1 alias root cause is
+      resolved**: `SUB_93B1C` maps selector `4` to `1` unconditionally,
+      independent of device variant - not a 2220/2221-only shim.
+      Matches the manual's "REF4... occupies the REF1-REF3 memory
+      locations in the 2230" as a general 2230 hardware fact; two
+      independent code sites now agree. See thirty-first follow-up.
       **2026-10-13, resolved the `B3A3`-vs-`B568` bit-mapping
       "inconsistency"**: mostly a doc transcription error (`B3A3` tests
       the *clear* case of bit `0x04` first, not the set case). The two

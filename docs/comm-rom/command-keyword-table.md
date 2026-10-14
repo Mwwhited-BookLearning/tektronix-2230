@@ -1171,8 +1171,13 @@ dense-cluster functions in section 9) resolved this:
   - `SUB_93B1C` (physical `0x8BB1C`) is a plain switch on its one word
     argument: `0`/`1`/`2`/`3` pass through unchanged, `4` (`REF4`) maps
     to `1` (**the same output as `REF1`** - a genuine, directly-read
-    anomaly, not an index/offset computation and not yet explained),
-    and anything else (the raw `5..30` lettered range) computes
+    anomaly, not an index/offset computation; this mapping is
+    unconditional, independent of the `[0x1B83]` device-variant byte -
+    **explained, 2026-10-13, later pass: see the class-1/4 gate writeup
+    below**, which connects this to the programming manual's "REF4...
+    occupies the REF1-REF3 memory locations in the 2230" note as a
+    general 2230 hardware fact, not a 2220/2221-only shim), and
+    anything else (the raw `5..30` lettered range) computes
     `(input + 0x5C) & 0xFF`, which for `5..30` lands exactly on ASCII
     `'a'..'z'`. It converts the numeric selector to a **letter
     character**, not to an array index.
@@ -1914,11 +1919,23 @@ dense-cluster functions in section 9) resolved this:
     REF1's own record with the opposite bit sense would plausibly be
     testing "is REF1 free/not individually in use" (allowing the
     combined-mode request) vs. class 1's own "is REF1 already in a
-    usable state." **Not confirmed** - `FUNC_2998_6B4B`'s offset-`+0`
-    byte itself has no established meaning yet (its documented field
-    map only covers `+0x10` through the point-tag-scan tail from
-    `+0x32`); this is a plausible explanation for the asymmetry, not a
-    settled one. Doesn't resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
+    usable state." `FUNC_2998_6B4B`'s offset-`+0` byte itself still has
+    no established meaning of its own (its documented field map only
+    covers `+0x10` through the point-tag-scan tail from `+0x32`), so the
+    *specific bit-sense story* remains a plausible reading, not settled
+    - but **the broader premise (REF4 has no storage distinct from
+    REF1-3 on the 2230) is now independently corroborated, 2026-10-13,
+    later pass, by `SUB_93B1C`'s own unconditional `4`->`1` output
+    mapping** (see the resolver-chain writeup above): that mapping holds
+    regardless of the `[0x1B83]` device-variant byte, i.e. it isn't a
+    2220/2221-only compatibility shim - selector `4` is treated as
+    identical to selector `1` universally, on real 2230 hardware too,
+    exactly matching the manual's "occupies the REF1-REF3 memory
+    locations in the 2230" as a general hardware fact rather than a
+    2220/2221-specific restriction. Two independent code sites
+    (`SUB_93B1C`'s selector normalization and `AD17`'s hardcoded
+    class-1 gate) now converge on the same manual-documented
+    explanation. Doesn't resolve the `[bp+6]==0`-isn't-`:OFF` puzzle
     above, which remains open.
 - `FUNC_2998_B1E8`/`B1FC`/`B227` (physical `0x8B1E8`-`0x8B24B`) are a
   simpler, narrower 2-state **report** path over the same `[0x4F6]`
