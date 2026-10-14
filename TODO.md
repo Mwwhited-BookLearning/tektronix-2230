@@ -640,27 +640,14 @@ apply_names.py`. See `docs/architecture/ghidra-project.md`'s
       using more captured samples, or finding the ROM's own plot-scale-
       for-readout-text constant directly instead of reverse-solving
       from output.
-- [ ] Find the comm ROM's actual **incoming**-data path - narrowed
-      2026-10-09, not yet closed. The ring buffer at `[0x448]`/`[0x44C]`
-      (base `0xAF`, size `0x384`) turned out to be a TX queue
-      (`serial_tx_buffer_put` producer, `service_comm_tx_queue`
-      consumer), not RX. **Now confirmed**: `comm_call_main_rom`/
-      `process_gpib_command_byte` run via a dedicated scheduler task
-      slot's default-handler table entry (`comm_task4_default_handler`,
-      see `docs/interrupts/task-scheduler.md`'s 2026-10-09 section) -
-      i.e. tick-driven cooperative polling, not a byte-level hardware
-      interrupt. **Still missing**: where a real incoming byte first
-      lands in `[6]`/`[0x580]`/`[0x590]` from actual hardware -
-      `comm_call_main_rom` itself only ever writes `[6]` with 2 fixed
-      literals, never from an I/O port read. **Both previously-flagged
-      leads are now ruled out (2026-10-09)**: all 5 main-ROM
-      `[0x590]` writes (including `0xF63CE`) are one unrelated
-      buffer-bookkeeping code shape, and `FUNC_2998_56F8`/
-      `FUNC_2998_5712` have zero callers anywhere in the comm ROM
-      (confirmed by raw byte scan for far-pointer references, not just
-      listing grep) - they're blind prologue-scan artifacts from
-      `gen_disasm_2998.py`, not proven-reachable code. New lead found
-      instead: a previously-undocumented far-pointer sub-table at
+- [ ] Name the functions/variables found while resolving the comm
+      ROM's incoming-data path (`FUNC_2998_EF54`/`FUNC_2998_F12B`/
+      `FUNC_2998_F5AC`, the RX ring buffer at `[0x464]`/`[0x468]`) via
+      `FUNCTIONAL_NAMES`, and identify which scheduler task slot owns
+      the `[0x740]` default-handler pointer - see `changes/2026-10-14
+      .md` and `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
+      "Found, 2026-10-14" section for the full trace.
+- [ ] A previously-undocumented far-pointer sub-table at
       `[0x1AD0]`-`[0x1ADE]` (written by `init_selftest_register_group`,
       pointing at the UART register bank `0x406F0` and its neighbors
       `0x4067C`/`0x406BC`/`0x406F8`) that's never read in any

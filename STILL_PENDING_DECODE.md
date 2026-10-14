@@ -45,48 +45,29 @@ The single biggest cluster of open items - see
 `docs/comm-rom/rs232-breakthrough.md`, and
 `docs/comm-rom/rs232-live-session-2026-09-14.md`.
 
-- **The genuine UART-receive entry point is still unfound, though the
-  surrounding scheduling mechanism is now resolved (2026-10-09).**
-  Where an incoming byte first lands (expected somewhere touching
-  `[6]`/`[0x580]`/`[0x590]`) has never been traced in the disassembly -
-  live RS-232 communication works fine now (see `hardware/manuals/
-  2230_programming/PRACTICAL_GUIDE.md`), so this is purely a
-  documentation gap, not a functional blocker. **Now confirmed**: the
-  loop that reads `[6]` (`comm_call_main_rom`) is reached via a
-  dedicated per-task scheduler default-handler table entry
-  (`comm_task4_default_handler`) - genuine tick-driven cooperative
-  polling, not a byte-level hardware interrupt; see
-  `docs/interrupts/task-scheduler.md`'s 2026-10-09 section for the full
-  trace and table dump. **Both of the previously-flagged leads are now
-  ruled out (2026-10-09)**: all 5 main-ROM writes to `[0x590]`
-  (including `0xF63CE`) belong to one recurring buffer/record-
-  management code shape (`es:[di+2]`/`es:[di+4]` struct fields, gated
-  on `[0x1b83]==0x14`, setting overflow flags `[0x560]`/`[0x55c]`) that
-  has nothing to do with comm/serial - confirmed unrelated, not a lead.
-  `FUNC_2998_56F8`/`FUNC_2998_5712` were confirmed to have **zero**
-  callers anywhere: no far-pointer table entry in the whole comm ROM
-  binary points at either address (checked by raw byte scan, not just
-  listing grep), and `disasm/gen_disasm_2998.py` shows they're seeded
-  purely from a blind `55 8B EC` prologue-signature scan, not reached
-  via any proven call graph - demoted to "probably unreached/dead
-  heuristic matches," not a real lead. See
-  `docs/interrupts/task-scheduler.md`'s 2026-10-09 follow-up section
-  for the new candidate found while ruling these out: a
-  previously-undocumented 4-entry far-pointer sub-table at
-  `[0x1AD0]`-`[0x1ADE]` (written by `init_selftest_register_group`,
-  pointing at the confirmed UART register bank `0x406F0` plus
-  `0x4067C`/`0x406BC`/`0x406F8`) that is never read anywhere in the
-  currently-disassembled code - likely consumed by a generic
-  self-test/exerciser table-walk routine (matching the documented
-  `/DIAGNOSTICS/EXERCISERS/IO/INPUT_PORTS` screen in `MEMORY_MAP.md`)
-  that hasn't been found yet. Also confirmed: the comm ROM's proven
-  listing has no genuine `in`/`out` port instruction at all (the one
-  apparent match at `0x84092` is a disassembler desync artifact in a
-  non-code byte region, not real code) - consistent with
-  `MEMORY_MAP.md`'s existing finding that the UART is memory-mapped,
-  not port-mapped, so the real receive read (if it exists in code
-  reached so far) must be a plain `mov`/`cmp` on `0x406F0`, not an
-  `in` instruction.
+- **The genuine UART-receive entry point is resolved (2026-10-14)**,
+  end to end. The producer is `FUNC_2998_EF54` (`0x8EF54`), which reads
+  the UART status/interrupt-latch byte via far pointer `[0x6DA]` and,
+  on its data-ready bit, reads the actual received byte (plus two more
+  chip registers) via `[0x6D6]` - a plain `mov` on the memory-mapped
+  register (the comm ROM has no genuine `in`/`out` instruction at all;
+  the UART is memory-mapped, not port-mapped) - and packages it into a
+  previously-unidentified RX ring buffer (`[0x464]`/`[0x468]` pointers,
+  base `0x46C`, size `0x80`, 4-byte records: data + 2 registers +
+  status). It's wired into the scheduler as a *third* default-handler
+  pointer pair, `[0x740]`/`[0x742]`, set up by `init_comm_dispatch_
+  table` alongside the already-known `[0x738]`(slot 4)/`[0x73C]`(slot
+  5) pairs. The consumer, `FUNC_2998_F12B` (`0x8F12B`), drains the
+  buffer and, via a second dispatcher `FUNC_2998_F5AC` (`0x8F5AC`)
+  keyed on the captured status byte, hands off directly into the
+  already-documented `parse_next_gpib_command_byte` - closing the loop
+  into `[6]`/`[0x580]`'s classification/dispatch path. Full trace in
+  `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s "Found,
+  2026-10-14" section and `changes/2026-10-14.md`. Not yet done:
+  functional naming of the new functions/variables, and identifying
+  which of the 12 scheduler task slots owns `[0x740]` (slots 0 and 10
+  were still untraced as of the 2026-10-09 table dump and are the
+  likeliest candidates).
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM
