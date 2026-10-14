@@ -62,7 +62,8 @@ confirmed** - see the blocking problem below.
 
 Both functions:
 
-1. Call `SUB_96CE9` then `FUNC_2998_2FD7`.
+1. Call `rearm_comm_rx_consume_cursor` (`SUB_96CE9`) then
+   `normalize_and_validate_arg_char` (`FUNC_2998_2FD7`).
 2. Validate the current input byte (`[4]`) is `0x41`-`0x5A` (`A`-`Z`);
    if not, set a context-specific error code (`[0x623]=2` in `5115`,
    `=4` in `519A`) and return.
@@ -81,7 +82,7 @@ Both functions:
    two string pools `command-keyword-table.md` already documents at
    comm-ROM file offsets `0x8A58`-`0x8F1E`).
 5. Reads a far pointer from the indexed 6-byte record into a scratch
-   area, calls `SUB_96CE9` again then `FUNC_2998_3048` (hypothesized
+   area, calls `rearm_comm_rx_consume_cursor` again then `FUNC_2998_3048` (hypothesized
    string/keyword compare), and checks a match-success flag
    (`[0x607]`): on success, copies a resolved value byte (`[0x608]`)
    into `[0x604]`; on failure, sets an error code.
@@ -191,13 +192,28 @@ writeup - this file's "Still open" item below is resolved.
 
 - ~~`FUNC_2998_5115`/`FUNC_2998_519A`'s *real* letter-indexed table
   base~~ - **resolved 2026-10-11**, see the supersession note above.
+- ~~`SUB_96CE9`~~ - **resolved 2026-10-14**: named
+  `rearm_comm_rx_consume_cursor` (native `0x8ECE9`) while tracing the
+  comm ROM's RX message buffer's consumer chain (unrelated
+  investigation thread) - it's the "snap the consume cursor to the
+  read ptr and set the more-data sentinel" step called at the start of
+  both `FUNC_2998_5115`/`FUNC_2998_519A` here (steps 1 and 5 above) and
+  from 7 other sibling functions spanning `FUNC_2998_1731`..
+  `FUNC_2998_4240`. See `docs/comm-rom/rs232-flow-control-and-open-
+  puzzle.md`'s "Resolved, 2026-10-14, even later pass" section for the
+  full RX-pipeline context this function sits in.
+- ~~`FUNC_2998_2FD7`~~ - **resolved** (prior session): named
+  `normalize_and_validate_arg_char` (native `0x82FD7`) - also confirmed
+  this session to be one of the 8 functions that directly call
+  `fetch_next_comm_rx_char`, the real pull-style "get next received
+  character" primitive (see the same RX-pipeline doc section above).
 - `FUNC_2998_50B2` (byte-identical to `reset_comm_token_length` but no
   confirmed caller found), `FUNC_2998_50C2`, `FUNC_2998_50E4`,
-  `FUNC_2998_5115`, `FUNC_2998_519A`, `SUB_96CE9`, `FUNC_2998_2FD7`,
-  `FUNC_2998_3048`, `FUNC_2998_477F`, `FUNC_2998_4835`,
-  `FUNC_2998_4BE6`, `FUNC_2998_49EC` - all plausibly characterized
-  above but not confidently enough to rename per this project's "don't
-  guess real hardware content" standard.
+  `FUNC_2998_5115`, `FUNC_2998_519A`, `FUNC_2998_3048`,
+  `FUNC_2998_477F`, `FUNC_2998_4835`, `FUNC_2998_4BE6`,
+  `FUNC_2998_49EC` - all plausibly characterized above but not
+  confidently enough to rename per this project's "don't guess real
+  hardware content" standard.
 - The printer/plotter `FORmat` override write site (`[0x461]`) is
   **still not found** - this session's deep dive reached the actual
   `PLOt`-argument-validation code (`FUNC_2998_44D0`) and confirmed it

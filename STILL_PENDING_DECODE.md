@@ -121,12 +121,22 @@ The single biggest cluster of open items - see
   wrap origin of `0xF`" puzzle - it's just the buffer's base offset.
   Full writeup in `docs/comm-rom/rs232-flow-control-and-open-puzzle.
   md`'s "even later pass" section and `VARIABLES.md`'s `[0x438]`/
-  `[4]`/`[0]`-`[3]` rows. **Still open**: the hand-off from `[4]` into
-  the real command buffer `[0x586]`; and no resolved static caller for
-  `init_comm_rx_message_pipeline`, `set_comm_rx_busy_for_mode`,
-  `rearm_comm_rx_consume_cursor`, or `sync_comm_rx_read_ptr_and_
-  release_hold` outside its call from `finalize_comm_rx_line_boundary`
-  - likely reached only via an unresolved far-pointer table.
+  `[4]`/`[0]`-`[3]` rows. **Correction, same day, later re-check**: the
+  call-site claims above were re-verified by enclosing function rather
+  than address proximity. `fetch_next_comm_rx_char`'s real callers are
+  8 functions spanning `FUNC_2998_1909`..`FUNC_2998_5022` (not
+  `FUNC_2998_1731`/`FUNC_2998_5115`/`FUNC_2998_519A`, which turned out
+  to be unrelated siblings); `finalize_comm_rx_line_boundary`'s only
+  callers are 2 sites inside `FUNC_2998_5022`; and
+  `rearm_comm_rx_consume_cursor` is **not** an uncalled entry point -
+  it has 12 confirmed call sites across 9 functions (including
+  `FUNC_2998_5115`/`FUNC_2998_519A`, which is also how it resolves that
+  doc's previously-unnamed `SUB_96CE9`). See `docs/comm-rom/rs232-
+  flow-control-and-open-puzzle.md`'s corrected call-site listings for
+  the full detail. **Still open**: the hand-off from `[4]` into the
+  real command buffer `[0x586]`; and no resolved static caller for
+  `init_comm_rx_message_pipeline` or `set_comm_rx_busy_for_mode` -
+  likely reached only via an unresolved far-pointer table.
 - **The code that walks the command-keyword dispatch table is
   unfound - now confirmed to block a second investigation too.** A
   real command-keyword table was found live on 2026-09-14 (comm ROM

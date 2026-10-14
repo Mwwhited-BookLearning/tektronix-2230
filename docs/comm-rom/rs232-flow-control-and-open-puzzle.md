@@ -257,11 +257,29 @@ previous section - no tooling workaround needed this time):
   several of its siblings below.
 - **`fetch_next_comm_rx_char`** (native `0x8E99B`) - the real
   pull-style "get next received character" primitive. **This is the
-  proof**: it's called directly from inside the character/argument
-  lexer - `normalize_and_validate_arg_char` and roughly ten other
-  sites spanning `FUNC_2998_1731`..`FUNC_2998_519A` (digit/alpha range
-  checks, `hex_digit_to_nibble`, quote/comma/semicolon delimiter
-  handling) - immediately before each of those reads `byte ptr [4]`.
+  proof**: it's called from 9 sites across 8 enclosing functions -
+  `FUNC_2998_1909`, `normalize_and_validate_arg_char`, `FUNC_2998_3B52`,
+  `FUNC_2998_3B86`, `FUNC_2998_3D2C` (2 sites), `FUNC_2998_3F22`,
+  `FUNC_2998_4F3B` (2 sites), and `FUNC_2998_5022` - immediately before
+  each of those reads `byte ptr [4]` (digit/alpha range checks,
+  `hex_digit_to_nibble`, quote/comma/semicolon delimiter handling).
+  **Correction (same day, later re-check)**: an earlier pass in this
+  section described the callers loosely as "spanning
+  `FUNC_2998_1731`..`FUNC_2998_519A`" - that was wrong. Checking each
+  call site's actual enclosing function (not just address proximity)
+  turned up the 8 functions listed above; `FUNC_2998_1731` and
+  `FUNC_2998_519A` are themselves *not* among them. `FUNC_2998_1731` in
+  particular reads `[4]` on entry with no preceding call to
+  `fetch_next_comm_rx_char` in its own body, and its caller
+  (`FUNC_2998_1AE1`) is deep in plot/waveform-output code
+  (`draw_pending_line_segment`, `reset_plot_home_or_acq`,
+  `redraw_option_status_icon`) - see `command-parser-token-scan-and-
+  plot-handler.md` for that cluster. `[4]` is a generic single-byte
+  scratch cell, not uniquely owned by the RX pipeline, so a bare read
+  of it elsewhere in the ROM doesn't by itself imply RX-buffer
+  consumption; only the 8 functions above are confirmed to pull `[4]`
+  from this pipeline. This doesn't weaken the proof - it narrows and
+  sharpens it to the sites that actually call the function.
   On the normal path it advances `[0x438]` (wrapping to base `0xF`),
   reads the byte at the old position into `[4]`, and clears the
   "more data" sentinel `[3]` once caught up to either the write ptr
@@ -281,33 +299,46 @@ previous section - no tooling workaround needed this time):
   `engage_comm_hold`/`release_comm_hold` mechanism (`FUNCTIONS.md`
   lines documenting `0x97BE6`/`0x97C28`) - independent evidence the
   read of this subsystem is correct.
-- **`rearm_comm_rx_consume_cursor`** (native `0x8ECE9`) - called
-  standalone throughout the same lexer functions that call
-  `fetch_next_comm_rx_char` (not always paired with it): if the
+- **`rearm_comm_rx_consume_cursor`** (native `0x8ECE9`) - called from
+  12 sites across 9 functions: `FUNC_2998_1731`, `FUNC_2998_3048` (2),
+  `FUNC_2998_3298`, `FUNC_2998_3B86`, `FUNC_2998_3E79`,
+  `FUNC_2998_40A9`, `FUNC_2998_4240`, `FUNC_2998_5115` (2), and
+  `FUNC_2998_519A` (2) - genuinely spanning the `FUNC_2998_1731`..
+  `FUNC_2998_519A` range (only `FUNC_2998_3B86` overlaps with the
+  `fetch_next_comm_rx_char` caller list above; this function's own
+  caller set is mostly a *different* group of siblings). If the
   consume cursor differs from the read ptr, or they match but the
   full flag is set, snaps the cursor to the read ptr and sets the
-  "more data" sentinel; a no-op otherwise.
+  "more data" sentinel; a no-op otherwise. **This is also the function
+  that resolves `SUB_96CE9`**, left unnamed in `command-parser-token-
+  scan-and-plot-handler.md`'s "Still open" list - see that doc for the
+  `FUNC_2998_5115`/`FUNC_2998_519A` keyword-table-walker context two
+  of these call sites sit in.
 - **`finalize_comm_rx_line_boundary`** (native `0x8EAAF`) - called
-  from the alpha-char handling functions near `FUNC_2998_5115`/
-  `FUNC_2998_519A`: calls `sync_comm_rx_read_ptr_and_release_hold`
-  first, then promotes the pending LF-marker pair `[0x444]`/`[0x446]`
-  into the CR-marker slot `[0x440]`/`[0x442]`, recomputes the
-  "more data pending" sentinels from whether the write and read
-  pointers still differ, and releases the critical flag.
+  from 2 sites, both inside `FUNC_2998_5022` (one of the 8 confirmed
+  `fetch_next_comm_rx_char` callers above, not from `FUNC_2998_5115`/
+  `FUNC_2998_519A` as an earlier pass in this section mistakenly said):
+  calls `sync_comm_rx_read_ptr_and_release_hold` first, then promotes
+  the pending LF-marker pair `[0x444]`/`[0x446]` into the CR-marker
+  slot `[0x440]`/`[0x442]`, recomputes the "more data pending"
+  sentinels from whether the write and read pointers still differ, and
+  releases the critical flag.
 - **`set_comm_rx_busy_for_mode(engage)`** (native `0x8EA89`) - a tiny
   RS-232-vs-GPIB dispatcher forwarding its argument to
   `set_comm_flow_hold` or `set_comm_queue_busy`. No resolved static
   caller.
 
 **`[4]`** is the global "current input character" scratch cell that
-the entire argument/character lexer reads throughout
-`FUNC_2998_1731`-`FUNC_2998_519A`. `fetch_next_comm_rx_char`'s normal
-path is its *only* writer. This is the direct link: every ordinary
-received byte that the pipeline hands to the parser passes through
-`[4]`, written by the same function that's also the overflow-error
-handler - so the "closes the incoming-data gap" claim from the
-previous section is now true end-to-end, not just up to an
-unconnected buffer.
+the 8 lexer functions listed above read right after calling
+`fetch_next_comm_rx_char`, which is its *only* confirmed writer.
+This is the direct link: every ordinary received byte that the
+pipeline hands to the parser passes through `[4]`, written by the
+same function that's also the overflow-error handler - so the
+"closes the incoming-data gap" claim from the previous section is
+now true end-to-end, not just up to an unconnected buffer. (`[4]` is
+also read elsewhere in the ROM - e.g. `FUNC_2998_1731`, see the
+correction above - but those other readers aren't shown to get their
+value from this pipeline, so they're out of scope for this proof.)
 
 **Not yet traced**: the hand-off from `[4]` into the command buffer
 `[0x586]` that `parse_next_gpib_command_byte` ultimately reads from -
