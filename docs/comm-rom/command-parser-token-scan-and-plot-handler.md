@@ -1,4 +1,4 @@
-# Comm ROM: the command-line token scanner, and a candidate (unconfirmed) keyword-table walker
+# Comm ROM: the command-line token scanner, and the confirmed keyword-table walker
 
 Found 2026-10-09 while working the "rename every identifiable routine"
 `TODO.md` item - started from three previously-undocumented unnamed

@@ -4604,8 +4604,8 @@ void __cdecl16far init_comm_tx_queue_and_ready_flags(void)
    confirmed)
    
    Evidence: Clears the 10-byte scratch buffer at `[0x586]` used elsewhere for building a GPIB
-   device-address list, conditionally calls `SUB_97905` when in GPIB mode and not device 1, sets
-   `[0x581]=0x80` */
+   device-address list, conditionally calls `parse_next_gpib_command_byte` when in GPIB mode and not
+   device 1, sets `[0x581]=0x80` */
 
 void __cdecl16far reset_gpib_addr_scratch(void)
 
@@ -5609,7 +5609,7 @@ void __cdecl16far service_comm_tx_queue(void)
    
    Evidence: Applies the parity mode in `[0x4ED]` to the argument byte (0=unchanged, else strip bit
    7, and force bit 7 set if mode==3 - space/mark parity), stores it into the tx path at `[0x6D6]`,
-   clears `[0x45A]`, calls `SUB_800FC(0)` */
+   clears `[0x45A]`, calls `update_comm_tx_ready_flag(0)` */
 
 void __stdcall16far enqueue_comm_char(byte param_1)
 
@@ -5901,7 +5901,10 @@ void __cdecl16far FUN_0009_785b(void)
    `0x80` clear) looks up its data byte via `[0x712][byte*4+1]` into `[0x57F]`, and when the
    RS-232/GPIB strap `[0x629]` is set, folds a bit from `[0]` into it and writes it plus tag `0x98`
    to a UART-like register pair via far ptr `[0x6D6]` - called unconditionally as the first step of
-   `process_gpib_command_byte` */
+   `process_gpib_command_byte`. Also toggles bits `0xC`/`0x4`/`0x8` in a flags byte at
+   `[0x732+0x97]` as part of the same pass (merged in 2026-10-08 from a since-removed stale
+   duplicate row that had tentatively named this same address `advance_comm_input_state` before this
+   fuller trace superseded it) */
 
 void __cdecl16far parse_next_gpib_command_byte(void)
 
@@ -6027,7 +6030,7 @@ void __cdecl16far FUN_0009_7a9c(void)
    Evidence: The comm ROM's own top-level channel reinit sequence (analogous to
    `reinit_system_state`): conditionally calls `reinit_system_state` itself cross-ROM, then
    unconditionally runs `reset_comm_parser_state`, `init_comm_channel_state_a`,
-   `init_comm_tx_queue_and_ready_flags`, `SUB_96696`, and resets several more flags */
+   `init_comm_tx_queue_and_ready_flags`, `reset_gpib_addr_scratch`, and resets several more flags */
 
 void __cdecl16far reinit_comm_channel(void)
 

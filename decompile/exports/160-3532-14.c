@@ -7744,14 +7744,15 @@ void __cdecl16far init_default_print_cell_dimensions(void)
 
 
 
-/* compute_readout_buffer_length_and_flag (confidence: Mechanism confirmed; `SUB_FBCCF`/`SUB_F911C`
-   not yet traced)
+/* compute_readout_buffer_length_and_flag (confidence: Mechanism confirmed; both callees now traced
+   - see `init_default_print_cell_dimensions`/`pad_readout_buffer_remainder` below)
    
    Evidence: Computes the linear-address delta between far pointers `[0x1C84]` and `[0x1C80]` (via
    `seg_off_to_linear` x2) into `[0x1C02]` - the same running length/position value read by
    `read_acq_sample_with_wrap` and the "TEKTRONIX" logo builder `SUB_F5898`; builds a far ptr to the
-   buffer's current end at `[0x36]`/`[0x38]`, calls `SUB_FBCCF`, then sets flag bit
-   `[0x22]\|=0x2000` (sibling of the `0x1000` bit set elsewhere in the same report-screen flow) */
+   buffer's current end at `[0x36]`/`[0x38]`, calls `init_default_print_cell_dimensions`, then sets
+   flag bit `[0x22]\|=0x2000` (sibling of the `0x1000` bit set elsewhere in the same report-screen
+   flow) */
 
 void compute_readout_buffer_length_and_flag(void)
 

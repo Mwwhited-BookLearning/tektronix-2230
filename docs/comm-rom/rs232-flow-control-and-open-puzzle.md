@@ -84,69 +84,81 @@ handler is the likely mechanism, not yet traced).
 
 ## Found, 2026-10-14: the genuine incoming RX path, end to end
 
-Direct resolution of the long-open "where does an incoming byte first
-land" question (`TODO.md`, `STILL_PENDING_DECODE.md`'s "Comm ROM /
-RS-232 command parsing" section). Found by following the already-
-confirmed-but-unresolved far pointer `[0x6D6]` (into the UART/GPIB
-register bank at physical `0x406F0`-`0x406F7`) for *reads*, not just
-the previously-documented baud/parity-config *writes*.
+**Correction, same day, later pass**: the first version of this section
+(below, lightly edited) independently re-traced `FUNC_2998_EF54`'s
+*producer* side and its ring buffer without recognizing it as a
+function already documented under its main-ROM alias address. Cross-
+checked against a Ghidra decompile of the main ROM, which immediately
+surfaced the duplicate: `FUNC_2998_EF54` (native `0x8EF54`) **is**
+`FUNCTIONS.md`'s existing `poll_comm_status_tick` (raw/alias
+`0x96F54`), which already documented the same `[0x6DA]`/`[0x6D6]`
+reads and the same `[0x464]`/`0x46C`-`0x46C+0x80` ring buffer. The
+"third default-handler pointer pair, not yet matched to a scheduler
+slot" claim below is also **wrong**: `FUNCTIONS.md` already resolved
+`[0x740]` as `run_continuous_selftest_tick`'s per-tick hook (called via
+the hardware `INT255`/`INTR` chain, confirmed 2026-09-13), not a
+13th entry in the 12-slot default-handler table - that mechanism is
+unrelated to the `switch_to_next_task` task-slot table this section
+originally pointed at. **What genuinely is new** (confirmed directly
+against `init_comm_dispatch_table`'s raw bytes,
+`disasm/sysrom_3633-14.lst`/`sysrom_3532_3633.lst` lines 10745-10780):
+task-scheduler.md's long-open "task slot 5's target, not yet traced"
+question. `[0x73C]/[0x73E]` is set *conditionally* on `[0x1BFA]`
+(`VARIABLES.md`'s already-documented COMM_LOOPBACK self-test readback
+flag, set only when that probe reads exactly `0xD0`): when `[0x1BFA]
+==0` (the common case) it resolves to `FUNC_2998_F12B` (native
+`0x8F12B`, raw `0x9712B`); when `[0x1BFA]!=0` it resolves instead to
+`FUNC_2998_F5AC` (native `0x8F5AC`, raw `0x975AC`) - this corrects the
+earlier (wrong) assumption that slot 5's target was simply "`SUB_975AC`
+/`SUB_9712B`" together, as if both were reached unconditionally. Also
+genuinely new: the consumer/second-dispatcher *behavior* of
+`FUNC_2998_F12B`/`FUNC_2998_F5AC` themselves (`poll_comm_status_tick`'s
+existing description only covered the producer side) - see below.
 
-**The producer - `FUNC_2998_EF54` (physical `0x8EF54`, comm ROM)**:
-reads a second far pointer, `[0x6DA]`, which resolves into the same
-register bank (physical `0x406F4`-ish neighborhood) and functions as
-the UART's status/interrupt-latch byte. It tests bit `0x80` (toggles
-the comm-status icon via `[0x732+0x97]` + `redraw_option_status_icon`)
-and bit `0x02`. **When bit `0x02` (data-ready) is set**, it reads the
-actual received byte straight from `es:[di]` where `di` comes from
-`[0x6D6]` - i.e. a plain `mov dl, byte ptr es:[di]` on the UART's data
-register, exactly the "no `in`/`out` instruction, must be a memory-
-mapped `mov`" shape `STILL_PENDING_DECODE.md` already predicted - plus
-two more register bytes at `[0x6D6]+1` and `[0x6D6]+3`. It packages all
-4 bytes (data, reg+1, reg+3, the original status byte) into one record
-and writes it into a **second, previously-unidentified ring buffer**:
-write pointer `[0x464]`/`[0x466]` (far), base `0x46C`, size `0x80` (32
-four-byte records), with the same wraparound shape as the already-
-documented TX queue - this is that queue's RX-side counterpart
-(`[0x448]`/`[0x44A]`/`[0x44C]`, base `0xAF`, 1-byte records; RX needs
-4 bytes/record since it also carries per-byte status).
+**The producer - `poll_comm_status_tick` / `FUNC_2998_EF54`** (native
+`0x8EF54`, raw/alias `0x96F54`; see `FUNCTIONS.md` for the full
+existing writeup): reads `[0x6DA]` (status/interrupt-latch byte) and
+on bit `0x02` (data-ready) reads the received byte plus two more
+register bytes via `[0x6D6]`, packaging all 4 (data, reg+1, reg+3,
+status) into the already-documented RX ring buffer (`[0x464]`/`[0x466]`
+write ptr, base `0x46C`, size `0x80`, 32 four-byte records) - the
+RX-side counterpart of the already-documented TX queue (`[0x448]`/
+`[0x44A]`/`[0x44C]`, base `0xAF`, 1-byte records).
 
-**Wired into the scheduler exactly like the two already-documented
-task slots** (`docs/interrupts/task-scheduler.md`'s 2026-10-09
-section): `init_comm_dispatch_table` (`0xE6D4D`, main ROM) sets up
-*three* far-pointer pairs, not two - `[0x738]/[0x73A]` (slot 4 ->
-`comm_call_main_rom`, already known) and `[0x73C]/[0x73E]` (slot 5 ->
-`SUB_975AC`/`SUB_9712B`, already known) plus a third, **`[0x740]/
-[0x742]`, set to offset `4` segment `0x96F5` - physical `0x96F54`,
-i.e. `FUNC_2998_EF54` itself**. Whichever task slot's default-handler
-entry does `lcall [0x740]` (not yet matched to one of the 12 dumped
-slot entries - slots 0 and 10 are still "not traced this session" in
-the task-scheduler doc and are the likeliest candidates) is therefore
-the real tick-driven UART poll.
+**The consumer - `FUNC_2998_F12B` (native `0x8F12B`)** - task slot 5's
+*usual* target per the correction above: drains the ring buffer by
+comparing read pointer `[0x468]`/`[0x46A]` against the write pointer,
+and for each record calls `SUB_9754C` (`0x8F54C`) on the record's `+1`
+status/class byte (masked `0x9F`) to get a translated event-type byte,
+dispatches further on specific bits of that result (`0x80` ->
+`SUB_97253`, `0x10` -> `SUB_97583`), advances the read pointer by 4
+with wraparound at `0x46C+0x80`, and services the TX queue once
+drained.
 
-**The consumer - `FUNC_2998_F12B` (physical `0x8F12B`)**: drains the
-ring buffer by comparing read pointer `[0x468]`/`[0x46A]` against the
-write pointer, and for each record calls `SUB_9754C` (`0x8F54C`) on
-the record's `+1` status/class byte (masked `0x9F`) to get a
-translated event-type byte, then dispatches further on specific bits
-of that result (`0x80` -> `SUB_97253`, `0x10` -> `SUB_97583`), advances
-the read pointer by 4 with wraparound at `0x46C+0x80`, and services the
-TX queue once drained.
+**The alternate dispatcher - `FUNC_2998_F5AC` (native `0x8F5AC`)** -
+task slot 5's target only when `[0x1BFA]!=0`: keyed on `[0x598]` (the
+raw status byte saved during capture), calls bit-by-bit: `SUB_976C0`
+(`0x20`), `SUB_9785B` (`0x10`), and - **bit `0x04`** -
+`parse_next_gpib_command_byte` (`0x8F905`) directly, the function
+already known to read the staged byte out of `ds:0x586`/`ds:0x590`
+into `[0x580]` and feed it onward into `process_gpib_command_byte`'s
+classification/dispatch path. Whether `FUNC_2998_F12B` ever reaches
+this bit-`0x04` path too (e.g. via a shared callee) isn't confirmed -
+not traced in this pass.
 
-**Closes the loop into the already-documented command-byte parser**:
-a second, closely-related dispatcher, `FUNC_2998_F5AC` (`0x8F5AC`),
-keyed on `[0x598]` (the raw status byte saved during capture), calls
-bit-by-bit: `SUB_976C0` (`0x20`), `SUB_9785B` (`0x10`), and -
-**bit `0x04`** - `parse_next_gpib_command_byte` (`0x8F905`) directly.
-That is the function already known to read the staged byte out of
-`ds:0x586`/`ds:0x590` into `[0x580]` and feed it onward into
-`process_gpib_command_byte`'s classification/dispatch path. So the
-full chain, producer to parser, is now traced: hardware register
-(`[0x6D6]`/`[0x6DA]`) -> `FUNC_2998_EF54` -> RX ring buffer (`[0x464]`/
-`[0x468]`, base `0x46C`) -> `FUNC_2998_F12B` / `FUNC_2998_F5AC` ->
-`parse_next_gpib_command_byte` -> `[0x580]`/`[6]` -> the command
-dispatch machinery documented elsewhere in this directory.
+Full chain, hardware to parser: `[0x6D6]`/`[0x6DA]` (UART registers)
+-> `poll_comm_status_tick`/`FUNC_2998_EF54` -> RX ring buffer
+(`[0x464]`/`[0x468]`, base `0x46C`) -> task slot 5's `[0x73C]/[0x73E]`
+(conditional on `[0x1BFA]`) -> `FUNC_2998_F12B` (usual) or
+`FUNC_2998_F5AC` (rare) -> `parse_next_gpib_command_byte` -> `[0x580]`/
+`[6]` -> the command dispatch machinery documented elsewhere in this
+directory.
 
-Not yet done: naming `FUNC_2998_EF54`/`FUNC_2998_F12B`/`FUNC_2998_F5AC`
-and the new ring-buffer variables via `gen_disasm_x86.py`'s
-`FUNCTIONAL_NAMES`, and identifying which scheduler task slot owns
-`[0x740]`. Left for a follow-up pass rather than guessed at here.
+Not yet done: naming `FUNC_2998_F12B`/`FUNC_2998_F5AC` and the RX
+ring-buffer's consumer-side variables (`SUB_9754C`, `[0x598]`) via
+`gen_disasm_x86.py`'s `FUNCTIONAL_NAMES`; reconciling `poll_comm_
+status_tick`'s `FUNCTIONS.md` row with this section's extra consumer-
+chain detail (should likely be merged into that row directly); and
+adding `docs/interrupts/task-scheduler.md`'s slot-5 resolution. Left
+for a follow-up pass rather than done here to avoid further duplicate
+rediscovery without re-reading that file first.

@@ -1300,7 +1300,7 @@ void __stdcall16far print_signed_decimal_serial(word n)
 /* print_unsigned_decimal_serial (confidence: Confirmed)
    
    Evidence: `(n)` - converts to decimal via repeated `div 10` into a stack buffer, then prints the
-   string via `SUB_82D01` */
+   string via `print_string_serial` */
 
 void __stdcall16far print_unsigned_decimal_serial(word n)
 
@@ -2779,8 +2779,8 @@ void __cdecl16far print_param_list_response(void)
 
 /* get_next_param_value (confidence: Mechanism confirmed; exact parameter domain not confirmed)
    
-   Evidence: Saves the previous `[0x580]` into `[0x581]`, fetches a value via `SUB_97905([0x57F])`,
-   returns it masked to a byte */
+   Evidence: Saves the previous `[0x580]` into `[0x581]`, fetches a value via
+   `parse_next_gpib_command_byte([0x57F])`, returns it masked to a byte */
 
 undefined1 __cdecl16far get_next_param_value(void)
 
@@ -5200,7 +5200,7 @@ void __cdecl16far FUN_0008_521d(void)
    confirmed)
    
    Evidence: Clears a cluster of comm ROM parser/command state variables; called as part of the comm
-   channel reinitialization sequence in `SUB_97B01` */
+   channel reinitialization sequence in `reinit_comm_channel` */
 
 void __cdecl16far reset_comm_parser_state(void)
 
@@ -5232,8 +5232,8 @@ void __cdecl16far reset_comm_parser_state(void)
    
    Evidence: Handles a received GPIB byte `[6]` under the critical-section lock: bit `0x80` set ->
    marks `[0x590]=0x80`; else clamps and records it into a per-row scratch slot via the `[0x712]`
-   address-to-index table; always calls `SUB_97905`, and conditionally triggers a query response via
-   `print_param_list_response` */
+   address-to-index table; always calls `parse_next_gpib_command_byte`, and conditionally triggers a
+   query response via `print_param_list_response` */
 
 void __cdecl16far process_gpib_command_byte(void)
 

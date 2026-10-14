@@ -347,8 +347,26 @@ mapping, so physical = file offset directly):
 **This resolves the open question directly and concretely**: task slot
 4's default handler *is* the trigger for `comm_call_main_rom`
 (confirmed by table dump, not inference), and task slot 5 has a
-parallel one for `init_comm_dispatch_table`'s slot2 target (`[0x73c]`,
-not yet traced). Both `comm_task4_default_handler` and
+parallel one for `init_comm_dispatch_table`'s slot2 target (`[0x73c]`).
+
+**Slot 5's target resolved, 2026-10-14**: `[0x73C]/[0x73E]` is set
+*conditionally*, not to a single fixed function. Direct read of
+`init_comm_dispatch_table`'s raw bytes (`0xE6D77`-`0xE6D99`) shows a
+branch on `byte ptr [0x1bfa]` (the already-documented COMM_LOOPBACK
+self-test readback flag, `VARIABLES.md` - set to `1` only when that
+probe's readback byte equals exactly `0xD0`): when `[0x1BFA]==0` (the
+common case) it resolves to `FUNC_2998_F12B` (native `0x8F12B`, raw/
+alias `0x9712B`) - the RX ring-buffer consumer, see `poll_comm_status_
+tick`'s `FUNCTIONS.md` row; when `[0x1BFA]!=0` it resolves instead to
+`FUNC_2998_F5AC` (native `0x8F5AC`, raw/alias `0x975AC`) - a sibling
+dispatcher that reaches `parse_next_gpib_command_byte` on bit `0x04`.
+Full trace in `docs/comm-rom/rs232-flow-control-and-open-puzzle.md`'s
+"Found, 2026-10-14" section. (Note: `[0x740]/[0x742]`, also set by
+`init_comm_dispatch_table`, is a *separate* mechanism - `run_
+continuous_selftest_tick`'s `INT255`-driven hook, not a 13th entry in
+this 12-slot table - don't conflate the two when reading that section.)
+
+Both `comm_task4_default_handler` and
 `comm_task5_default_handler` were only ever reached by the heuristic
 disassembly pass, never the proven recursive-descent one - consistent
 with them being reachable *only* through this table, exactly like the
